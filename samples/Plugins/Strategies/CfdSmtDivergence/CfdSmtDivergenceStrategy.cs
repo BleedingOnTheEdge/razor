@@ -1,10 +1,10 @@
-// Chronos/src/Chronos.Samples/Plugins/Strategies/CfdSmtDivergence/CfdSmtDivergenceStrategy.cs
+// Chronos/src/Samples/Plugins/Strategies/CfdSmtDivergence/CfdSmtDivergenceStrategy.cs
 
 using System.Collections.Concurrent;
-using Chronos.Abstractions.Shared;
-using Chronos.Abstractions.Strategies;
+using Abstractions.Shared;
+using Abstractions.Strategies;
 
-namespace Chronos.Samples.Plugins.Strategies.CfdSmtDivergence;
+namespace Samples.Plugins.Strategies.CfdSmtDivergence;
 
 /// <summary>
 /// Trading strategy that detects SMT divergence across multiple CFD symbols.

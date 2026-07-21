@@ -1,6 +1,6 @@
-using Chronos.Abstractions.Shared;
+using Abstractions.Shared;
 
-namespace Chronos.Samples.Plugins.Adapters.MT5;
+namespace Samples.Plugins.Adapters.MT5;
 
 /// <summary>
 /// Financial math contract for MetaTrader 5.

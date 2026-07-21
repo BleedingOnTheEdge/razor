@@ -1,4 +1,4 @@
-namespace Chronos.Samples.Plugins.Strategies.CfdSmtDivergence;
+namespace Samples.Plugins.Strategies.CfdSmtDivergence;
 
 /// <summary>
 /// Checks whether the current UTC time falls within one or more custom work‑time windows.

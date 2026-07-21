@@ -1,13 +1,13 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using Chronos.Abstractions.Adapters;
-using Chronos.Abstractions.Shared;
+using Abstractions.Adapters;
+using Abstractions.Shared;
 using Microsoft.Extensions.Logging;
 
 #pragma warning disable CA1848 // LoggerMessage delegates are not required for samples.
 
-namespace Chronos.Samples.Plugins.Adapters.MT5;
+namespace Samples.Plugins.Adapters.MT5;
 
 /// <summary>
 /// Production‑ready adapter for MetaTrader 5 terminals.

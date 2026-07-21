@@ -1,7 +1,7 @@
-using Chronos.Abstractions.Shared;
+using Abstractions.Shared;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Chronos.Samples.Plugins.Adapters.MT5;
+namespace Samples.Plugins.Adapters.MT5;
 
 /// <summary>
 /// Immutable configuration for an MT5 adapter instance.

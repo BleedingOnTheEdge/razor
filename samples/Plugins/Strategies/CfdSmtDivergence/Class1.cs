@@ -1,4 +1,4 @@
-﻿namespace Chronos.Samples.Plugins.Strategies.CfdSmtDivergence;
+﻿namespace Samples.Plugins.Strategies.CfdSmtDivergence;
 
 /// <summary>
 ///

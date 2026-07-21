@@ -1,10 +1,10 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Sockets;
-using Chronos.Abstractions.Adapters;
-using Chronos.Abstractions.Shared;
+using Abstractions.Adapters;
+using Abstractions.Shared;
 
-namespace Chronos.Samples.Plugins.Adapters.MT5;
+namespace Samples.Plugins.Adapters.MT5;
 
 /// <summary>
 /// TCP client that connects to the MT5 bridge EA.

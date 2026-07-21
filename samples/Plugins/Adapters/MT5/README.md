@@ -9,7 +9,7 @@
 </file>
 
 
-<file path="Chronos/src/Chronos.Samples/Plugins/Adapters/MT5/winsock.mqh">
+<file path="Chronos/src/Samples/Plugins/Adapters/MT5/winsock.mqh">
 ```mqh
 //+------------------------------------------------------------------+
 //|                                                  winsock.mqh     |
@@ -65,10 +65,10 @@ struct sockaddr_in
 </file>
 
 
-<file path="Chronos/src/Chronos.Samples/Plugins/Properties/AssemblyInfo.cs">
+<file path="Chronos/src/Samples/Plugins/Properties/AssemblyInfo.cs">
 ```cs
-using Chronos.Abstractions.Adapters;
-using Chronos.Abstractions.Plugins;
+using Abstractions.Adapters;
+using Abstractions.Plugins;
 
 [assembly: ChronosSdkVersion("1.0.0")]
 [assembly: AdapterVersion("1.0.0")]
@@ -77,15 +77,15 @@ using Chronos.Abstractions.Plugins;
 </file>
 
 
-<file path="Chronos/src/Chronos.Samples/Plugins/Strategies/CfdSmtDivergence/CfdSmtDivergenceStrategy.cs">
+<file path="Chronos/src/Samples/Plugins/Strategies/CfdSmtDivergence/CfdSmtDivergenceStrategy.cs">
 ```cs
-// Chronos/src/Chronos.Samples/Plugins/Strategies/CfdSmtDivergence/CfdSmtDivergenceStrategy.cs
+// Chronos/src/Samples/Plugins/Strategies/CfdSmtDivergence/CfdSmtDivergenceStrategy.cs
 
 using System.Collections.Concurrent;
-using Chronos.Abstractions.Shared;
-using Chronos.Abstractions.Strategies;
+using Abstractions.Shared;
+using Abstractions.Strategies;
 
-namespace Chronos.Samples.Plugins.Strategies.CfdSmtDivergence;
+namespace Samples.Plugins.Strategies.CfdSmtDivergence;
 
 /// <summary>
 /// Trading strategy that detects SMT divergence across multiple CFD symbols.
@@ -445,9 +445,9 @@ internal sealed class CfdSmtDivergenceStrategy : StrategyBase
 </file>
 
 
-<file path="Chronos/src/Chronos.Samples/Plugins/Strategies/CfdSmtDivergence/SessionFilter.cs">
+<file path="Chronos/src/Samples/Plugins/Strategies/CfdSmtDivergence/SessionFilter.cs">
 ```cs
-namespace Chronos.Samples.Plugins.Strategies.CfdSmtDivergence;
+namespace Samples.Plugins.Strategies.CfdSmtDivergence;
 
 /// <summary>
 /// Checks whether the current UTC time falls within one or more trading sessions.
@@ -504,9 +504,9 @@ internal sealed class SessionFilter
 </file>
 
 
-<file path="Chronos/src/Chronos.Samples/Plugins/Strategies/CfdSmtDivergence/WorkTimeFilter.cs">
+<file path="Chronos/src/Samples/Plugins/Strategies/CfdSmtDivergence/WorkTimeFilter.cs">
 ```cs
-namespace Chronos.Samples.Plugins.Strategies.CfdSmtDivergence;
+namespace Samples.Plugins.Strategies.CfdSmtDivergence;
 
 /// <summary>
 /// Checks whether the current UTC time falls within one or more custom work‑time windows.
@@ -558,7 +558,7 @@ internal sealed class WorkTimeFilter
 </file>
 
 
-<file path="Chronos/src/Chronos.Samples/Chronos.Samples.csproj">
+<file path="Chronos/src/Samples/Samples.csproj">
 ```csproj
 <Project Sdk="Microsoft.NET.Sdk">
 
@@ -568,13 +568,13 @@ internal sealed class WorkTimeFilter
         <Nullable>enable</Nullable>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <WarningsAsErrors>nullable,CS1591</WarningsAsErrors>
-        <RootNamespace>Chronos.Samples</RootNamespace>
+        <RootNamespace>Samples</RootNamespace>
 
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Chronos.Abstractions\Chronos.Abstractions.csproj"/>
-        <ProjectReference Include="..\Chronos.Kernel\Chronos.Kernel.csproj"/>
+        <ProjectReference Include="..\Abstractions\Abstractions.csproj"/>
+        <ProjectReference Include="..\Kernel\Kernel.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -593,25 +593,25 @@ internal sealed class WorkTimeFilter
 </file>
 
 
-<file path="Chronos/src/Chronos.Samples/Program.cs">
+<file path="Chronos/src/Samples/Program.cs">
 ```cs
 using System.Collections.Immutable;
-using Chronos.Abstractions.Adapters;
-using Chronos.Abstractions.Shared;
-using Chronos.Abstractions.Strategies;
-using Chronos.Kernel.Backtesting;
-using Chronos.Kernel.Configuration;
-using Chronos.Kernel.Indicators;
-using Chronos.Kernel.Messaging;
-using Chronos.Kernel.Metrics;
-using Chronos.Kernel.Optimization;
-using Chronos.Samples.Plugins.Adapters.MT5;
-using Chronos.Samples.Plugins.Strategies.CfdSmtDivergence;
+using Abstractions.Adapters;
+using Abstractions.Shared;
+using Abstractions.Strategies;
+using Kernel.Backtesting;
+using Kernel.Configuration;
+using Kernel.Indicators;
+using Kernel.Messaging;
+using Kernel.Metrics;
+using Kernel.Optimization;
+using Samples.Plugins.Adapters.MT5;
+using Samples.Plugins.Strategies.CfdSmtDivergence;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 #pragma warning disable CA1303 // Do not pass literals as localized parameters – sample console app
 
-namespace Chronos.Samples;
+namespace Samples;
 
 /// <summary>
 ///

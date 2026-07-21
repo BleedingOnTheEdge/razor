@@ -1,4 +1,4 @@
-﻿namespace Chronos.Samples.Plugins.Adapters.Nobitex;
+﻿namespace Samples.Plugins.Adapters.Nobitex;
 
 /// <summary>
 ///

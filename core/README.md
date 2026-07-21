@@ -33,7 +33,7 @@ Welcome to the Razor.Core solution. This repository contains the heart of the Ra
 └──────────────────┬───────────────────────────┘
 │
 ┌──────────────────▼───────────────────────────┐
-│          Razor.Kernel                  │  (closed‑source core)
+│          Kernel                  │  (closed‑source core)
 │  backtesting • optimisation • live trading    │
 │  genetic algorithm • telemetry • hooks        │
 └──────────────────┬───────────────────────────┘
@@ -56,20 +56,20 @@ Welcome to the Razor.Core solution. This repository contains the heart of the Ra
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
 ┌──────────────────────────────▼──────────────────────────────────────┐
-│                        Razor.Kernel                         │
+│                        Kernel                         │
 │                     (closed‑source core library)                    │
 │  backtesting • optimisation • live trading • genetic algorithm      │
 │  brokers • hooks • telemetry • message bus                         │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
 ┌──────────────────────────────▼──────────────────────────────────────┐
-│                        Razor.Shared                         │
+│                        Shared                         │
 │                   (shared utilities – closed source)                │
 │       memory‑mapped tick lists • binary file mapping               │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │ references
 ┌──────────────────────────────▼──────────────────────────────────────┐
-│                         Razor.Sdk                           │
+│                         Sdk                           │
 │                      (public NuGet SDK – open contracts)            │
 │             hooks • slots • domain types • utilities               │
 └─────────────────────────────────────────────────────────────────────┘
@@ -96,13 +96,13 @@ Welcome to the Razor.Core solution. This repository contains the heart of the Ra
 |---------|-------------|------------|
 <<<<<<< Updated upstream
 | `Razor.Abstractions` | Public SDK for building extensions (adapters, strategies, indicators, hook plugins, NN models) | NuGet package |
-| `Razor.Kernel` | Closed‑source engine implementing all trading logic | Private |
-| `Razor.Engine` | Headless executable that hosts the Kernel and communicates with Razor Cloud | Private |
+| `Kernel` | Closed‑source engine implementing all trading logic | Private |
+| `Engine` | Headless executable that hosts the Kernel and communicates with Razor Cloud | Private |
 =======
-| `Razor.Sdk` | Public SDK for building extensions (adapters, strategies, indicators, hook plugins, NN models). Contains only contracts – no runtime logic. | NuGet package (proprietary, freely redistributable) |
-| `Razor.Shared` | Shared utilities for high‑performance I/O: memory‑mapped tick files (`MemoryMappedTickList`), binary file mapping (`BinaryDataMapper`), and borrowed data management (`BorrowedTickData`). | Private (closed‑source) |
-| `Razor.Kernel` | Core engine implementing all trading logic: backtesting, optimisation, live trading, brokers (simulated and live), genetic algorithm, hooks, telemetry, and message bus. | Private (closed‑source) |
-| `Razor.Engine` | Headless executable that hosts the Kernel, manages extensions, and communicates with Razor Cloud via encrypted WebSocket. Includes CLI, service support, self‑update, and command dispatch (60+ commands). | Private (closed‑source) |
+| `Sdk` | Public SDK for building extensions (adapters, strategies, indicators, hook plugins, NN models). Contains only contracts – no runtime logic. | NuGet package (proprietary, freely redistributable) |
+| `Shared` | Shared utilities for high‑performance I/O: memory‑mapped tick files (`MemoryMappedTickList`), binary file mapping (`BinaryDataMapper`), and borrowed data management (`BorrowedTickData`). | Private (closed‑source) |
+| `Kernel` | Core engine implementing all trading logic: backtesting, optimisation, live trading, brokers (simulated and live), genetic algorithm, hooks, telemetry, and message bus. | Private (closed‑source) |
+| `Engine` | Headless executable that hosts the Kernel, manages extensions, and communicates with Razor Cloud via encrypted WebSocket. Includes CLI, service support, self‑update, and command dispatch (60+ commands). | Private (closed‑source) |
 >>>>>>> Stashed changes
 
 ## Quick Start – Extension Developers
@@ -113,16 +113,16 @@ Welcome to the Razor.Core solution. This repository contains the heart of the Ra
 3. Add the SDK version attribute to your assembly:
 =======
 ```
-Razor.Sdk
+Sdk
        ↑
-Razor.Shared
+Shared
        ↑
-Razor.Kernel
+Kernel
        ↑
-Razor.Engine
+Engine
 ```
 
-Extensions (adapters, strategies, indicators, hook plugins, NN models) reference **only** `Razor.Sdk`.
+Extensions (adapters, strategies, indicators, hook plugins, NN models) reference **only** `Sdk`.
 
 ---
 
@@ -130,7 +130,7 @@ Extensions (adapters, strategies, indicators, hook plugins, NN models) reference
 
 ### For Extension Developers
 
-1. Install the `Razor.Sdk` NuGet package in your .NET class library targeting `net10.0`.
+1. Install the `Sdk` NuGet package in your .NET class library targeting `net10.0`.
 2. Add the SDK version attribute:
 >>>>>>> Stashed changes
    ```csharp
@@ -183,13 +183,13 @@ dotnet test --configuration Release
 ## Licensing
 
 - `Razor.Abstractions` – Proprietary, freely redistributable.
-- `Razor.Kernel` – Closed‑source, all rights reserved.
-- `Razor.Engine` – Closed‑source, distributed as part of the Razor Engine binary.
+- `Kernel` – Closed‑source, all rights reserved.
+- `Engine` – Closed‑source, distributed as part of the Razor Engine binary.
 =======
 #### Run the Engine
 
 ```bash
-cd src/Razor.Engine
+cd src/Engine
 dotnet run -- --auth=username,password,apikey
 ```
 
@@ -203,13 +203,13 @@ dotnet run
 
 **Windows:**
 ```bash
-sc create RazorEngine binPath = "C:\Path\Razor.Engine.exe --service --auth=user,pass,key" start=auto
+sc create RazorEngine binPath = "C:\Path\Engine.exe --service --auth=user,pass,key" start=auto
 ```
 
 **Linux (systemd):**
 ```ini
 [Service]
-ExecStart=/opt/Razor/Razor.Engine --service --auth=user,pass,key
+ExecStart=/opt/Razor/Engine --service --auth=user,pass,key
 WorkingDirectory=/opt/Razor
 Restart=on-failure
 ```
@@ -221,12 +221,12 @@ Restart=on-failure
 ```
 core/
 ├── src/
-│   ├── Razor.Sdk/          ← Public contracts (NuGet package)
+│   ├── Sdk/          ← Public contracts (NuGet package)
 │   │   ├── Hooks/                 ← Hook registration interfaces and contexts
 │   │   ├── Shared/                ← Domain types, enums, exceptions, helpers
 │   │   └── Slots/                 ← Capability interfaces (Adapter, Strategy, NN)
-│   ├── Razor.Shared/       ← Shared utilities (memory‑mapped I/O)
-│   ├── Razor.Kernel/       ← Core engine implementation
+│   ├── Shared/       ← Shared utilities (memory‑mapped I/O)
+│   ├── Kernel/       ← Core engine implementation
 │   │   ├── Backtesting/           ← Backtest runner, input, result
 │   │   ├── Brokers/               ← SimulatedBroker, LiveBroker
 │   │   ├── Clock/                 ← TickClock, SystemClock
@@ -240,7 +240,7 @@ core/
 │   │   ├── Optimization/          ← GeneticOptimizer, Chromosome, Runner
 │   │   ├── Reporting/             ← ReportGenerator (stub; Cloud renders reports)
 │   │   └── Telemetry/             ← CoreMetrics (OpenTelemetry)
-│   └── Razor.Engine/       ← Headless executable
+│   └── Engine/       ← Headless executable
 │       ├── Communication/         ← CloudConnector, BinaryTransferManager
 │       ├── Core/                  ← Security, State, Credentials, Logging
 │       ├── Extensions/            ← ExtensionManager, PluginLoadContext
@@ -249,8 +249,8 @@ core/
 │       ├── Services/              ← BehaviorRecorder, SelfUpdateManager
 │       └── Program.cs             ← Entry point
 ├── tests/
-│   ├── Razor.Sdk.UnitTests/       ← 200+ unit tests
-│   └── Razor.Sdk.IntegrationTests/ ← Integration tests
+│   ├── Sdk.UnitTests/       ← 200+ unit tests
+│   └── Sdk.IntegrationTests/ ← Integration tests
 ├── docs/                           ← Core documentation
 │   ├── Razor Principles.md
 │   ├── Razor Configuration Reference.md
@@ -317,7 +317,7 @@ Razor follows [Semantic Versioning](https://semver.org). Each major version is a
 
 ## Command ID Registry
 
-All 60+ commands are fully implemented in `Razor.Engine.Management.Commands.Handlers`.
+All 60+ commands are fully implemented in `Engine.Management.Commands.Handlers`.
 
 | Category | ID Range | Description |
 |----------|----------|-------------|
@@ -339,10 +339,10 @@ All 60+ commands are fully implemented in `Razor.Engine.Management.Commands.Hand
 
 | Project | License |
 |---------|---------|
-| `Razor.Sdk` | Proprietary, freely redistributable for extension development. |
-| `Razor.Shared` | Closed‑source, all rights reserved. |
-| `Razor.Kernel` | Closed‑source, all rights reserved. |
-| `Razor.Engine` | Closed‑source, distributed as part of the Razor Engine binary. |
+| `Sdk` | Proprietary, freely redistributable for extension development. |
+| `Shared` | Closed‑source, all rights reserved. |
+| `Kernel` | Closed‑source, all rights reserved. |
+| `Engine` | Closed‑source, distributed as part of the Razor Engine binary. |
 
 ---
 

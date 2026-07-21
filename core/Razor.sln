@@ -5,19 +5,19 @@ VisualStudioVersion = 18.2.11415.280
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7D62A9F7-2477-4CB0-9853-AF586609AE49}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Razor.Shared", "src\Razor.Shared\Razor.Shared.csproj", "{F4A28210-1E50-4671-85C4-F97EB9AF7FD5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "src\Shared\Shared.csproj", "{F4A28210-1E50-4671-85C4-F97EB9AF7FD5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Razor.Sdk", "src\Razor.Sdk\Razor.Sdk.csproj", "{DD926C75-28A4-44FD-B63D-D6E129DDD358}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sdk", "src\Sdk\Sdk.csproj", "{DD926C75-28A4-44FD-B63D-D6E129DDD358}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Razor.Kernel", "src\Razor.Kernel\Razor.Kernel.csproj", "{BDB14595-8B8B-4DFA-980B-295B1E1091A6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kernel", "src\Kernel\Kernel.csproj", "{BDB14595-8B8B-4DFA-980B-295B1E1091A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Razor.Engine", "src\Razor.Engine\Razor.Engine.csproj", "{64911A42-42E4-411A-B59B-B6F61C94929D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine", "src\Engine\Engine.csproj", "{64911A42-42E4-411A-B59B-B6F61C94929D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{4442E936-7F46-476B-A60D-991757B9D5E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Razor.Sdk.UnitTests", "tests\Razor.Sdk.UnitTests\Razor.Sdk.UnitTests.csproj", "{2435C8D2-9F37-4E89-B95A-B4D665C706C5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sdk.UnitTests", "tests\Sdk.UnitTests\Sdk.UnitTests.csproj", "{2435C8D2-9F37-4E89-B95A-B4D665C706C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Razor.Sdk.IntegrationTests", "tests\Razor.Sdk.IntegrationTests\Razor.Sdk.IntegrationTests.csproj", "{355B5780-93CF-4453-A2F1-032A219BCFCC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sdk.IntegrationTests", "tests\Sdk.IntegrationTests\Sdk.IntegrationTests.csproj", "{355B5780-93CF-4453-A2F1-032A219BCFCC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

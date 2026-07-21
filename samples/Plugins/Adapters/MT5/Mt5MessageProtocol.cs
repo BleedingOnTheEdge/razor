@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.Json;
 
-namespace Chronos.Samples.Plugins.Adapters.MT5;
+namespace Samples.Plugins.Adapters.MT5;
 
 /// <summary>
 /// Lightweight length‑prefixed JSON messaging protocol over TCP.
