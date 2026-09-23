@@ -20,5 +20,3 @@ The following hook points are candidates for addition in future minor releases:
 | `optimization.best_improved` | Optimisation | Action | Called when a new best fitness is found. |
 
 ---
-
-*This document is a living wish‑list. Features are added or removed as business priorities evolve. None of the items above constitute a commitment for any specific release.*
