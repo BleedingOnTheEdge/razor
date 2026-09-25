@@ -34,7 +34,7 @@ public static class GeneInjector
     public static double[] ExtractGenes(object strategyInstance)
     {
         ArgumentNullException.ThrowIfNull(strategyInstance);
-        var props = GetGeneProperties(strategyInstance.GetType());
+        IReadOnlyList<PropertyInfo> props = GetGeneProperties(strategyInstance.GetType());
         double[] genes = new double[props.Count];
         for (int i = 0; i < props.Count; i++)
         {
@@ -51,7 +51,7 @@ public static class GeneInjector
     public static double[] ExtractAndInitializeGenes(object strategyInstance, INeuralNetworkModel? neuralNet, int seed)
     {
         ArgumentNullException.ThrowIfNull(strategyInstance);
-        var propertyGenes = ExtractGenes(strategyInstance);
+        double[] propertyGenes = ExtractGenes(strategyInstance);
         if (neuralNet == null)
         {
             return propertyGenes;
@@ -63,7 +63,7 @@ public static class GeneInjector
             return propertyGenes;
         }
 
-        var rng = new CustomizedRandom(seed);
+        CustomizedRandom rng = new(seed);
         double[] neuralGenes = new double[neuralGeneCount];
         for (int i = 0; i < neuralGeneCount; i++)
         {
@@ -79,7 +79,7 @@ public static class GeneInjector
         ArgumentNullException.ThrowIfNull(strategyInstance);
         ArgumentNullException.ThrowIfNull(genes);
 
-        var props = GetGeneProperties(strategyInstance.GetType());
+        IReadOnlyList<PropertyInfo> props = GetGeneProperties(strategyInstance.GetType());
         if (genes.Length < props.Count)
         {
             throw new ArgumentException($"Gene array too short. Expected at least {props.Count}, got {genes.Length}.");
@@ -87,7 +87,7 @@ public static class GeneInjector
 
         for (int i = 0; i < props.Count; i++)
         {
-            var attr = props[i].GetCustomAttribute<GeneAttribute>()!;
+            GeneAttribute attr = props[i].GetCustomAttribute<GeneAttribute>()!;
             double val = genes[i];
 
             switch (attr.Type)
@@ -102,7 +102,7 @@ public static class GeneInjector
                     {
                         double steps = (val - attr.Min) / attr.Step;
                         steps = Math.Round(steps, MidpointRounding.AwayFromZero);
-                        val = attr.Min + steps * attr.Step;
+                        val = attr.Min + (steps * attr.Step);
                         val = Math.Clamp(val, attr.Min, attr.Max);
                     }
                     break;
@@ -126,26 +126,15 @@ public static class GeneInjector
             object converted;
             try
             {
-                if (propType == typeof(int))
-                {
-                    converted = (int)Math.Round(val, MidpointRounding.AwayFromZero);
-                }
-                else if (propType == typeof(long))
-                {
-                    converted = (long)Math.Round(val, MidpointRounding.AwayFromZero);
-                }
-                else if (propType == typeof(float))
-                {
-                    converted = (float)val;
-                }
-                else if (propType == typeof(decimal))
-                {
-                    converted = (decimal)val;
-                }
-                else
-                {
-                    converted = Convert.ChangeType(val, propType, CultureInfo.InvariantCulture);
-                }
+                converted = propType == typeof(int)
+                    ? (int)Math.Round(val, MidpointRounding.AwayFromZero)
+                    : propType == typeof(long)
+                        ? (long)Math.Round(val, MidpointRounding.AwayFromZero)
+                        : propType == typeof(float)
+                            ? (float)val
+                            : propType == typeof(decimal)
+                                ? (decimal)val
+                                : Convert.ChangeType(val, propType, CultureInfo.InvariantCulture);
             }
             catch (InvalidCastException ex)
             {
@@ -175,7 +164,7 @@ public static class GeneInjector
                     .ThenBy(p => p.Name)
                     .Select(p =>
                     {
-                        var orig = p.GetCustomAttribute<GeneAttribute>()!;
+                        GeneAttribute orig = p.GetCustomAttribute<GeneAttribute>()!;
                         return new GeneAttribute(orig.Min, orig.Max, orig.Step, orig.Type)
                         {
                             Name = orig.Name,
@@ -208,7 +197,7 @@ public static class GeneInjector
     {
         ArgumentNullException.ThrowIfNull(strategyInstance);
         ArgumentNullException.ThrowIfNull(genes);
-        var props = GetGeneProperties(strategyInstance.GetType());
+        IReadOnlyList<PropertyInfo> props = GetGeneProperties(strategyInstance.GetType());
         int propCount = props.Count;
         InjectPropertyGenes(strategyInstance, genes);
         if (neuralNet != null && genes.Length > propCount)
@@ -224,18 +213,18 @@ public static class GeneInjector
         Debug.Assert(min <= max, "Gene min must be ≤ max.");
         if (step <= 0)
         {
-            return min + rng.NextDouble() * (max - min);
+            return min + (rng.NextDouble() * (max - min));
         }
 
         int steps = (int)Math.Round((max - min) / step);
-        return steps < 0 ? min : min + rng.Next(steps + 1) * step;
+        return steps < 0 ? min : min + (rng.Next(steps + 1) * step);
     }
 
     /// <summary>Builds the complete chromosome schema (properties + optional neural weights).</summary>
     public static IReadOnlyList<GeneAttribute> BuildCompleteSchema(Type strategyType, INeuralNetworkModel? neuralNet)
     {
         ArgumentNullException.ThrowIfNull(strategyType);
-        var schema = ExtractSchema(strategyType).ToList();
+        List<GeneAttribute> schema = [.. ExtractSchema(strategyType)];
 
         if (neuralNet != null)
         {

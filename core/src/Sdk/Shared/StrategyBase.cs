@@ -9,10 +9,8 @@ namespace Sdk.Shared;
 /// </summary>
 public abstract class StrategyBase : IStrategyCapability, IDisposable
 {
-    private readonly ReaderWriterLockSlim _geneLock = new(LockRecursionPolicy.SupportsRecursion);
-
     /// <summary>Lock used to protect gene injection while the strategy is processing ticks.</summary>
-    public ReaderWriterLockSlim GeneLock => _geneLock;
+    public ReaderWriterLockSlim GeneLock { get; } = new(LockRecursionPolicy.SupportsRecursion);
 
     /// <summary>The broker (simulated or live).</summary>
     protected IBroker Broker { get; private set; } = null!;
@@ -98,34 +96,29 @@ public abstract class StrategyBase : IStrategyCapability, IDisposable
     /// <inheritdoc/>
     public virtual void InjectGenes(double[] genes)
     {
-        _geneLock.EnterWriteLock();
+        GeneLock.EnterWriteLock();
         try
         {
             GeneInjector.InjectAll(this, NeuralNetwork, genes);
         }
         finally
         {
-            _geneLock.ExitWriteLock();
+            GeneLock.ExitWriteLock();
         }
     }
 
     /// <inheritdoc/>
     public virtual double[] ExportGenes()
     {
-        _geneLock.EnterReadLock();
+        GeneLock.EnterReadLock();
         try
         {
-            var propertyGenes = GeneInjector.ExtractGenes(this);
-            if (NeuralNetwork == null)
-            {
-                return propertyGenes;
-            }
-
-            return [.. propertyGenes, .. NeuralNetwork.ExportParameters()];
+            double[] propertyGenes = GeneInjector.ExtractGenes(this);
+            return NeuralNetwork == null ? propertyGenes : [.. propertyGenes, .. NeuralNetwork.ExportParameters()];
         }
         finally
         {
-            _geneLock.ExitReadLock();
+            GeneLock.ExitReadLock();
         }
     }
 
@@ -142,7 +135,7 @@ public abstract class StrategyBase : IStrategyCapability, IDisposable
     protected Task<AdapterOrderResponse> BuyAsync(double volume, double? sl = null, double? tp = null,
         string? comment = null)
     {
-        var task = Broker.ExecuteMarketOrderAsync(PrimarySymbol, OrderType.Buy, volume, sl ?? 0, tp ?? 0, comment ?? "");
+        Task<AdapterOrderResponse> task = Broker.ExecuteMarketOrderAsync(PrimarySymbol, OrderType.Buy, volume, sl ?? 0, tp ?? 0, comment ?? "");
         return task;
     }
 
@@ -150,7 +143,7 @@ public abstract class StrategyBase : IStrategyCapability, IDisposable
     protected Task<AdapterOrderResponse> BuyAsync(string symbol, double volume, double? sl = null, double? tp = null,
         string? comment = null)
     {
-        var task = Broker.ExecuteMarketOrderAsync(symbol, OrderType.Buy, volume, sl ?? 0, tp ?? 0, comment ?? "");
+        Task<AdapterOrderResponse> task = Broker.ExecuteMarketOrderAsync(symbol, OrderType.Buy, volume, sl ?? 0, tp ?? 0, comment ?? "");
         return task;
     }
 
@@ -158,7 +151,7 @@ public abstract class StrategyBase : IStrategyCapability, IDisposable
     protected Task<AdapterOrderResponse> SellAsync(double volume, double? sl = null, double? tp = null,
         string? comment = null)
     {
-        var task = Broker.ExecuteMarketOrderAsync(PrimarySymbol, OrderType.Sell, volume, sl ?? 0, tp ?? 0, comment ?? "");
+        Task<AdapterOrderResponse> task = Broker.ExecuteMarketOrderAsync(PrimarySymbol, OrderType.Sell, volume, sl ?? 0, tp ?? 0, comment ?? "");
         return task;
     }
 
@@ -166,7 +159,7 @@ public abstract class StrategyBase : IStrategyCapability, IDisposable
     protected Task<AdapterOrderResponse> SellAsync(string symbol, double volume, double? sl = null, double? tp = null,
         string? comment = null)
     {
-        var task = Broker.ExecuteMarketOrderAsync(symbol, OrderType.Sell, volume, sl ?? 0, tp ?? 0, comment ?? "");
+        Task<AdapterOrderResponse> task = Broker.ExecuteMarketOrderAsync(symbol, OrderType.Sell, volume, sl ?? 0, tp ?? 0, comment ?? "");
         return task;
     }
 
@@ -174,28 +167,28 @@ public abstract class StrategyBase : IStrategyCapability, IDisposable
     protected Task<AdapterOrderResponse> ModifyOrderAsync(long ticket, double? sl = null, double? tp = null,
         double? price = null)
     {
-        var task = Broker.ModifyOrderAsync(ticket, sl, tp, price);
+        Task<AdapterOrderResponse> task = Broker.ModifyOrderAsync(ticket, sl, tp, price);
         return task;
     }
 
     /// <summary>Cancels a pending order by ticket.</summary>
     protected Task<AdapterOrderResponse> CancelOrderAsync(long ticket)
     {
-        var task = Broker.CancelOrderAsync(ticket);
+        Task<AdapterOrderResponse> task = Broker.CancelOrderAsync(ticket);
         return task;
     }
 
     /// <summary>Closes all positions for the primary symbol.</summary>
     protected Task CloseAllAsync(OrderType? type = null)
     {
-        var task = Broker.CloseAllAsync(PrimarySymbol, type);
+        Task<IReadOnlyList<AdapterOrderResponse>> task = Broker.CloseAllAsync(PrimarySymbol, type);
         return task;
     }
 
     /// <summary>Closes all positions for the given symbol.</summary>
     protected Task CloseAllAsync(string symbol, OrderType? type = null)
     {
-        var task = Broker.CloseAllAsync(symbol, type);
+        Task<IReadOnlyList<AdapterOrderResponse>> task = Broker.CloseAllAsync(symbol, type);
         return task;
     }
 
@@ -211,7 +204,7 @@ public abstract class StrategyBase : IStrategyCapability, IDisposable
     {
         if (disposing)
         {
-            _geneLock.Dispose();
+            GeneLock.Dispose();
         }
     }
 

@@ -1,6 +1,6 @@
-using Razor.Core.Sdk.Hooks;
+using Sdk.Hooks;
 
-namespace Razor.Core.Sdk.IntegrationTests.Hooks;
+namespace Sdk.IntegrationTests.Hooks;
 
 public class HookTypes_IntegrationTests
 {

@@ -1,7 +1,8 @@
-using Razor.Core.Sdk.Shared;
-using Razor.Core.Sdk.Slots;
+using Shared;
+using Sdk.Shared;
+using Sdk.Slots.Adapter;
 
-namespace Razor.Core.Sdk.IntegrationTests.Shared;
+namespace Sdk.IntegrationTests.Shared;
 
 public sealed class BorrowedTickData_IntegrationTests : IDisposable
 {

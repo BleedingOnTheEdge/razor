@@ -1,6 +1,7 @@
-using Razor.Core.Sdk.Shared;
+using Shared;
+using Sdk.Shared;
 
-namespace Razor.Core.Sdk.IntegrationTests.Shared;
+namespace Sdk.IntegrationTests.Shared;
 
 public class Helpers_IntegrationTests
 {

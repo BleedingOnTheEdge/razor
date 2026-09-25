@@ -11,7 +11,7 @@ public sealed record SymbolRequest : IEquatable<SymbolRequest>
     public string Symbol { get; init; } = string.Empty;
 
     /// <summary>Timeframes the strategy consumes. Can include <see cref="TimeFrame.Tick"/> for raw tick feed.</summary>
-    public ImmutableArray<TimeFrame> TimeFrames { get; init; } = ImmutableArray<TimeFrame>.Empty;
+    public ImmutableArray<TimeFrame> TimeFrames { get; init; } = [];
 
     /// <summary>Creates a new symbol request.</summary>
     public SymbolRequest(string symbol, ImmutableArray<TimeFrame> timeFrames)
@@ -28,26 +28,18 @@ public sealed record SymbolRequest : IEquatable<SymbolRequest>
     /// <summary>Override equality to compare content, not reference.</summary>
     public bool Equals(SymbolRequest? other)
     {
-        if (other is null)
-        {
-            return false;
-        }
-
-        if (ReferenceEquals(this, other))
-        {
-            return true;
-        }
-
-        return string.Equals(Symbol, other.Symbol, StringComparison.OrdinalIgnoreCase)
-            && TimeFrames.SequenceEqual(other.TimeFrames);
+        return other is not null
+            && (ReferenceEquals(this, other)
+                || (string.Equals(Symbol, other.Symbol, StringComparison.OrdinalIgnoreCase)
+                    && TimeFrames.SequenceEqual(other.TimeFrames)));
     }
 
     /// <inheritdoc/>
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        HashCode hash = new();
         hash.Add(Symbol, StringComparer.OrdinalIgnoreCase);
-        foreach (var tf in TimeFrames)
+        foreach (TimeFrame tf in TimeFrames)
         {
             hash.Add(tf);
         }

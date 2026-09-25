@@ -96,7 +96,7 @@ public sealed record SymbolProperties
             throw new ConfigurationException("MaxLeverage must be positive.");
         }
 
-        if (SwapRolloverHourUtc < 0 || SwapRolloverHourUtc > 23)
+        if (SwapRolloverHourUtc is < 0 or > 23)
         {
             throw new ConfigurationException("SwapRolloverHourUtc must be between 0 and 23.");
         }
@@ -106,22 +106,22 @@ public sealed record SymbolProperties
             throw new ConfigurationException("TripleSwapDayMultiplier must be non‑negative.");
         }
 
-        if (InitialMarginRate <= 0 || InitialMarginRate > 1)
+        if (InitialMarginRate is <= 0 or > 1)
         {
             throw new ConfigurationException("InitialMarginRate must be in (0, 1].");
         }
 
-        if (MaintenanceMarginRate <= 0 || MaintenanceMarginRate > 1)
+        if (MaintenanceMarginRate is <= 0 or > 1)
         {
             throw new ConfigurationException("MaintenanceMarginRate must be in (0, 1].");
         }
 
-        if (MakerFeeRate < 0 || MakerFeeRate > 1)
+        if (MakerFeeRate is < 0 or > 1)
         {
             throw new ConfigurationException("MakerFeeRate must be in [0, 1].");
         }
 
-        if (TakerFeeRate < 0 || TakerFeeRate > 1)
+        if (TakerFeeRate is < 0 or > 1)
         {
             throw new ConfigurationException("TakerFeeRate must be in [0, 1].");
         }

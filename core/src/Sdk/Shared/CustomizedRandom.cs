@@ -74,28 +74,18 @@ public sealed class CustomizedRandom
 
     /// <summary>Returns a uniform double in [minValue, maxValue).</summary>
     public double NextDouble(double minValue, double maxValue) =>
-        minValue + NextDouble() * (maxValue - minValue);
+        minValue + (NextDouble() * (maxValue - minValue));
 
     /// <summary>Returns a non‑negative random integer less than <paramref name="maxValue"/>.</summary>
     public int Next(int maxValue)
     {
-        if (maxValue <= 0)
-        {
-            return 0;
-        }
-
-        return (int)(NextUInt64() % (ulong)maxValue);
+        return maxValue <= 0 ? 0 : (int)(NextUInt64() % (ulong)maxValue);
     }
 
     /// <summary>Returns a random integer within the specified range.</summary>
     public int Next(int minValue, int maxValue)
     {
-        if (minValue >= maxValue)
-        {
-            return minValue;
-        }
-
-        return minValue + Next(maxValue - minValue);
+        return minValue >= maxValue ? minValue : minValue + Next(maxValue - minValue);
     }
 
     /// <summary>Fills a byte array with random values.</summary>
