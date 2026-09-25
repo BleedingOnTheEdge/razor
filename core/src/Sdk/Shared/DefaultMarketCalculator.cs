@@ -113,9 +113,10 @@ public abstract class DefaultMarketCalculator : IMarketCalculator
     {
         ArgumentNullException.ThrowIfNull(props);
 
-        // For buy orders, use the trigger mode to choose bid or ask.
-        // For sell orders, always use ask for limit/stop checks (exchange convention).
-        double buyTriggerPrice = props.PendingTrigger switch
+        // PendingTrigger selects the single reference price used to evaluate pending orders.
+        // The same reference price applies to every pending order type; the comparison
+        // direction below is what differs between limit and stop orders.
+        double triggerPrice = props.PendingTrigger switch
         {
             PendingOrderTriggerMode.UseBidForBuy => bid,
             PendingOrderTriggerMode.UseAskForBuy => ask,
@@ -123,25 +124,12 @@ public abstract class DefaultMarketCalculator : IMarketCalculator
             _ => ask
         };
 
-        double sellTriggerPrice = props.PendingTrigger switch
-        {
-            // For sell orders, we typically use ask for limit and bid for stop,
-            // but we simplify by using ask for limit and bid for stop.
-            // More precise: SellLimit triggers when ask >= orderPrice, SellStop when bid <= orderPrice.
-            PendingOrderTriggerMode.UseBidForBuy => (pendingType == OrderType.SellLimit) ? ask : bid,
-            PendingOrderTriggerMode.UseAskForBuy => (pendingType == OrderType.SellLimit) ? ask : bid,
-            PendingOrderTriggerMode.UseMidPrice => (pendingType == OrderType.SellLimit) ? ask : bid,
-            _ => (pendingType == OrderType.SellLimit) ? ask : bid
-        };
-
         return pendingType switch
         {
-            OrderType.Buy => false,
-            OrderType.Sell => false,
-            OrderType.BuyLimit => buyTriggerPrice <= orderPrice,
-            OrderType.SellLimit => sellTriggerPrice >= orderPrice,
-            OrderType.BuyStop => buyTriggerPrice >= orderPrice,
-            OrderType.SellStop => sellTriggerPrice <= orderPrice,
+            OrderType.BuyLimit => triggerPrice <= orderPrice,
+            OrderType.SellLimit => triggerPrice >= orderPrice,
+            OrderType.BuyStop => triggerPrice >= orderPrice,
+            OrderType.SellStop => triggerPrice <= orderPrice,
             _ => false
         };
     }
