@@ -1,3 +1,4 @@
+using Shared;
 using Sdk.Shared;
 
 namespace Sdk.UnitTests.Shared;

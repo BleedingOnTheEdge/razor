@@ -1,6 +1,6 @@
-using Razor.Core.Sdk.Shared;
+using Sdk.Shared;
 
-namespace Razor.Core.Sdk.IntegrationTests.Shared;
+namespace Sdk.IntegrationTests.Shared;
 
 internal sealed class TestableIndicator : Indicator
 {

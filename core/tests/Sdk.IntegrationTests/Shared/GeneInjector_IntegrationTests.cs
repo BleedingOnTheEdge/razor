@@ -1,7 +1,7 @@
-using Razor.Core.Sdk.Shared;
-using Razor.Core.Sdk.Slots;
+using Sdk.Shared;
+using Sdk.Slots.NeuralNetwork;
 
-namespace Razor.Core.Sdk.IntegrationTests.Shared;
+namespace Sdk.IntegrationTests.Shared;
 
 public class GeneInjector_IntegrationTests
 {

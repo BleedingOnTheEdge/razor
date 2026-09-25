@@ -1,8 +1,8 @@
-using Razor.Core.Sdk.Shared;
-using Razor.Core.Sdk.Slots;
+using Sdk.Shared;
+using Sdk.Slots.NeuralNetwork;
 using System.Collections.Immutable;
 
-namespace Razor.Core.Sdk.IntegrationTests.Shared;
+namespace Sdk.IntegrationTests.Shared;
 
 public class StrategyBase_IntegrationTests
 {

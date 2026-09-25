@@ -1,4 +1,6 @@
-namespace Razor.Core.Sdk.IntegrationTests;
+using Sdk.Shared;
+
+namespace Sdk.IntegrationTests;
 
 public class SdkVersionAttribute_IntegrationTests
 {

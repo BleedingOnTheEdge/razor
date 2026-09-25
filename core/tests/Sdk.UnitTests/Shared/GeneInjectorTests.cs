@@ -1,5 +1,5 @@
 using Sdk.Shared;
-using Sdk.Slots;
+using Sdk.Slots.NeuralNetwork;
 
 namespace Sdk.UnitTests.Shared;
 

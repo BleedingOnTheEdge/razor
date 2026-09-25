@@ -1,6 +1,7 @@
 #pragma warning disable CA2007
+using Shared;
 using Sdk.Shared;
-using Sdk.Slots;
+using Sdk.Slots.Adapter;
 
 namespace Sdk.UnitTests.Shared;
 
