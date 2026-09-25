@@ -1,10 +1,3 @@
-<<<<<<< Updated upstream
-# Razor Core
-
-**Institutional‑grade algorithmic trading engine – v1.0.0 LTS**
-
-The `core` repository contains the heart of the Razor ecosystem: the public SDK for extension developers, the closed‑source engine that executes backtests, optimizations, and live trading, and the headless engine executable that connects to Razor Cloud.
-=======
 # Solution README.md — Razor.Core
 
 **Location:** `core/README.md` (Root of the Razor.Core solution)  
@@ -18,33 +11,10 @@ The `core` repository contains the heart of the Razor ecosystem: the public SDK 
 **Institutional‑grade algorithmic trading engine – v1.0.0 LTS**
 
 Welcome to the Razor.Core solution. This repository contains the heart of the Razor ecosystem: the public SDK for extension developers, the shared utilities for high‑performance I/O, the closed‑source engine that executes backtests, optimisations, and live trading, and the headless engine executable that connects to Razor Cloud.
->>>>>>> Stashed changes
 
 ## Architecture
 
 ```
-<<<<<<< Updated upstream
-┌──────────────────────────────────────────────┐
-│                  Razor Cloud               │  (SaaS – management & monitoring)
-└──────────────────┬───────────────────────────┘
-│ encrypted WebSocket
-┌──────────────────▼───────────────────────────┐
-│              Razor Engine                   │  (headless binary)
-└──────────────────┬───────────────────────────┘
-│
-┌──────────────────▼───────────────────────────┐
-│          Kernel                  │  (closed‑source core)
-│  backtesting • optimisation • live trading    │
-│  genetic algorithm • telemetry • hooks        │
-└──────────────────┬───────────────────────────┘
-│ references
-┌──────────────────▼───────────────────────────┐
-│       Razor.Abstractions               │  (public NuGet SDK)
-│  hooks • slots • domain types • utilities     │
-└──────────────────────────────────────────────┘
-```
-
-=======
 ┌─────────────────────────────────────────────────────────────────────┐
 │                           Razor Cloud                            │
 │                      (SaaS – management & monitoring)              │
@@ -89,29 +59,15 @@ Welcome to the Razor.Core solution. This repository contains the heart of the Ra
 
 ---
 
->>>>>>> Stashed changes
 ## Projects
 
 | Project | Description | Visibility |
 |---------|-------------|------------|
-<<<<<<< Updated upstream
-| `Razor.Abstractions` | Public SDK for building extensions (adapters, strategies, indicators, hook plugins, NN models) | NuGet package |
-| `Kernel` | Closed‑source engine implementing all trading logic | Private |
-| `Engine` | Headless executable that hosts the Kernel and communicates with Razor Cloud | Private |
-=======
 | `Sdk` | Public SDK for building extensions (adapters, strategies, indicators, hook plugins, NN models). Contains only contracts – no runtime logic. | NuGet package (proprietary, freely redistributable) |
 | `Shared` | Shared utilities for high‑performance I/O: memory‑mapped tick files (`MemoryMappedTickList`), binary file mapping (`BinaryDataMapper`), and borrowed data management (`BorrowedTickData`). | Private (closed‑source) |
 | `Kernel` | Core engine implementing all trading logic: backtesting, optimisation, live trading, brokers (simulated and live), genetic algorithm, hooks, telemetry, and message bus. | Private (closed‑source) |
 | `Engine` | Headless executable that hosts the Kernel, manages extensions, and communicates with Razor Cloud via encrypted WebSocket. Includes CLI, service support, self‑update, and command dispatch (60+ commands). | Private (closed‑source) |
->>>>>>> Stashed changes
 
-## Quick Start – Extension Developers
-
-<<<<<<< Updated upstream
-1. Install the `Razor.Abstractions` NuGet package.
-2. Implement one or more contracts (`IHookManifest`, `IStrategyCapability`, `IAdapterCapability`, `INeuralNetworkModel`, or `Indicator`).
-3. Add the SDK version attribute to your assembly:
-=======
 ```
 Sdk
        ↑
@@ -132,16 +88,9 @@ Extensions (adapters, strategies, indicators, hook plugins, NN models) reference
 
 1. Install the `Sdk` NuGet package in your .NET class library targeting `net10.0`.
 2. Add the SDK version attribute:
->>>>>>> Stashed changes
    ```csharp
    [assembly: SdkVersionAttribute("1.0.0")]
    ```
-<<<<<<< Updated upstream
-4. Build your DLL and place it in the appropriate engine directory (`Adapters/`, `Strategies/`, `Indicators/`, `Plugins/`, or `NeuralNetworks/`).
-5. Manage activation via Razor Cloud.
-
-## Quick Start – Core Developers
-=======
 3. Implement one or more contracts:
    - `IAdapterCapability` – for broker connectivity
    - `IStrategyCapability` – for trading logic
@@ -151,41 +100,25 @@ Extensions (adapters, strategies, indicators, hook plugins, NN models) reference
 4. Build your DLL and place it in the appropriate engine directory.
 5. Manage activation via Razor Cloud.
 
-For detailed guidance, see the [Extension Developer Guide](core/docs/Razor%20Extension%20Developer%20Guide.md).
+For detailed guidance, see the [Extension Developer Guide](../docs/004-contracts/004-010-extension-developer-guide/INDEX.md).
 
 ### For Core Developers
 
 #### Prerequisites
->>>>>>> Stashed changes
+- .NET 10 SDK (`10.0.300`, pinned by [`global.json`](../global.json) at the repository root)
 
-### Prerequisites
-- .NET 10 SDK (`10.0.300` or later, see `global.json`)
-
-### Build
+#### Build
 ```bash
 cd core
 dotnet restore
 dotnet build --configuration Release
 ```
 
-### Test
+#### Test
 ```bash
 dotnet test --configuration Release
 ```
 
-<<<<<<< Updated upstream
-## Documentation
-
-- [Razor Principles](./docs/Razor%20Principles.md)
-- [Configuration Reference](./docs/Razor%20Configuration%20Reference.md)
-- [Plugin Developer Guide](./docs/Razor%20Plugin%20Developer%20Guide.md)
-
-## Licensing
-
-- `Razor.Abstractions` – Proprietary, freely redistributable.
-- `Kernel` – Closed‑source, all rights reserved.
-- `Engine` – Closed‑source, distributed as part of the Razor Engine binary.
-=======
 #### Run the Engine
 
 ```bash
@@ -251,20 +184,14 @@ core/
 ├── tests/
 │   ├── Sdk.UnitTests/       ← 200+ unit tests
 │   └── Sdk.IntegrationTests/ ← Integration tests
-├── docs/                           ← Core documentation
-│   ├── Razor Principles.md
-│   ├── Razor Configuration Reference.md
-│   ├── Razor Extension Developer Guide.md
-│   ├── Razor Installation & Deployment Guide.md
-│   ├── Razor Engine – Finalised Technical Blueprint.md
-│   └── Razor Internal Technical Architecture Document.md
 ├── Razor.sln               ← Solution file
 ├── Directory.Build.props          ← Common build properties
-├── global.json                    ← SDK version
 ├── nuget.config                   ← Package sources
 ├── .editorconfig                  ← Code style rules
 └── .gitignore                     ← Git ignore rules
 ```
+
+The Razor documentation tree (`docs/`) and the SDK pin (`global.json`) live at the **repository root**, outside `core/`.
 
 ---
 
@@ -272,16 +199,16 @@ core/
 
 | Document | Audience | Description |
 |----------|----------|-------------|
-| [Razor Principles](core/docs/Razor%20Principles.md) | All teams | Immutable architectural rules governing every Razor project. |
-| [Configuration Reference](core/docs/Razor%20Configuration%20Reference.md) | Extension developers & power users | Complete catalog of configuration objects, enums, and validation rules. |
-| [Extension Developer Guide](core/docs/Razor%20Extension%20Developer%20Guide.md) | Extension developers | Comprehensive guide for building adapters, strategies, indicators, hook plugins, and NN models. |
-| [Installation & Deployment Guide](core/docs/Razor%20Installation%20%26%20Deployment%20Guide.md) | End‑users & IT staff | Step‑by‑step installation, configuration, and troubleshooting. |
-| [Engine Technical Blueprint](core/docs/Razor%20Engine%20–%20Finalised%20Technical%20Blueprint.md) | Core developers | Complete engine specification: CLI, communication protocol, commands, security. |
-| [Internal Architecture Document](core/docs/Razor%20Internal%20Technical%20Architecture%20Document.md) | Core developers | Data flow, broker architecture, hook system, GA engine, threading, telemetry. |
-| [Product Model](../docs/Razor%20Product%20Model.md) | All teams | Product overview, components, licensing, and workflows. |
-| [Glossary](../docs/Razor%20Glossary.md) | All users | Definitions of all domain‑specific terms. |
-| [Future Features](../docs/Razor%20Future%20Features.md) | Internal & partners | Long‑term roadmap of planned features. |
-| [Project Overview](../docs/Razor%20Proposal.md) | External | High‑level introduction to Razor. |
+| [Razor Principles](../docs/005-cross-cutting/005-001-principles/INDEX.md) | All teams | Immutable architectural rules governing every Razor project. |
+| [Configuration Reference](../docs/004-contracts/004-001-configuration-reference/INDEX.md) | Extension developers & power users | Complete catalog of configuration objects, enums, and validation rules. |
+| [Extension Developer Guide](../docs/004-contracts/004-010-extension-developer-guide/INDEX.md) | Extension developers | Comprehensive guide for building adapters, strategies, indicators, hook plugins, and NN models. |
+| [Installation & Deployment Guide](../docs/006-operational/006-001-installation-and-deployment/INDEX.md) | End‑users & IT staff | Step‑by‑step installation, configuration, and troubleshooting. |
+| [Engine Technical Blueprint](../docs/002-blueprint/002-020-engine-technical-blueprint/INDEX.md) | Core developers | Complete engine specification: CLI, communication protocol, commands, security. |
+| [Internal Architecture Document](../docs/002-blueprint/002-030-internal-architecture/INDEX.md) | Core developers | Data flow, broker architecture, hook system, GA engine, threading, telemetry. |
+| [Product Model](../docs/002-blueprint/002-010-product-model/INDEX.md) | All teams | Product overview, components, licensing, and workflows. |
+| [Glossary](../docs/005-cross-cutting/005-010-glossary/INDEX.md) | All users | Definitions of all domain‑specific terms. |
+| [Future Features](../docs/002-blueprint/002-040-future-features/INDEX.md) | Internal & partners | Long‑term roadmap of planned features. |
+| [Project Overview](../docs/002-blueprint/002-001-project-overview/INDEX.md) | External | High‑level introduction to Razor. |
 
 ---
 
@@ -350,17 +277,16 @@ All 60+ commands are fully implemented in `Engine.Management.Commands.Handlers`.
 
 This repository is closed‑source. Contribution is restricted to Razor core team members.
 
-For extension development, please refer to the [Extension Developer Guide](core/docs/Razor%20Extension%20Developer%20Guide.md).
+For extension development, please refer to the [Extension Developer Guide](../docs/004-contracts/004-010-extension-developer-guide/INDEX.md).
 
 ---
 
 ## Support
 
-- **Documentation:** See the `docs/` directory.
+- **Documentation:** See the [documentation index](../docs/INDEX.md).
 - **Issues:** Contact Razor support through the Cloud dashboard.
 - **Community:** Visit the Razor developer forum (coming soon).
 
 ---
 
-*This README is the authoritative entry point for the Razor.Core solution. All code, documentation, and design decisions must align with the [Razor Principles](core/docs/Razor%20Principles.md).*
->>>>>>> Stashed changes
+*This README is the authoritative entry point for the Razor.Core solution. All code, documentation, and design decisions must align with the [Razor Principles](../docs/005-cross-cutting/005-001-principles/INDEX.md).*
