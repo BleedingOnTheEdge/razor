@@ -56,7 +56,7 @@ public abstract class DefaultMarketCalculator : IMarketCalculator
             leverage = 1;
         }
 
-        return (price * volume * symbolProps.ContractSize) / leverage * symbolProps.InitialMarginRate;
+        return price * volume * symbolProps.ContractSize / leverage * symbolProps.InitialMarginRate;
     }
 
     /// <inheritdoc/>
@@ -128,11 +128,16 @@ public abstract class DefaultMarketCalculator : IMarketCalculator
             // For sell orders, we typically use ask for limit and bid for stop,
             // but we simplify by using ask for limit and bid for stop.
             // More precise: SellLimit triggers when ask >= orderPrice, SellStop when bid <= orderPrice.
+            PendingOrderTriggerMode.UseBidForBuy => (pendingType == OrderType.SellLimit) ? ask : bid,
+            PendingOrderTriggerMode.UseAskForBuy => (pendingType == OrderType.SellLimit) ? ask : bid,
+            PendingOrderTriggerMode.UseMidPrice => (pendingType == OrderType.SellLimit) ? ask : bid,
             _ => (pendingType == OrderType.SellLimit) ? ask : bid
         };
 
         return pendingType switch
         {
+            OrderType.Buy => false,
+            OrderType.Sell => false,
             OrderType.BuyLimit => buyTriggerPrice <= orderPrice,
             OrderType.SellLimit => sellTriggerPrice >= orderPrice,
             OrderType.BuyStop => buyTriggerPrice >= orderPrice,
