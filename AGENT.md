@@ -14,6 +14,12 @@ included_paths: []
 
 `README.md` is human-facing and is not normative for agents.
 
+## Product — Definition
+
+A **Product** is the top-level unit of intent that a documentation system describes and an agent must not drift from. It is an organisation or directory (or org-root) that contains one or more codebases, domains, or repos, and that exists to deliver a coherent set of capabilities to defined users.
+
+The Product here is **Razor**. Its defined users, in priority order, are **Traders** (the primary end users), **Developers** (building hooks, slots and extensions on the ecosystem), and the **Owner / shareholders / potential investors**. See the `Product` entry in the glossary.
+
 ## Skill (MUST)
 Invoke the `docs` skill before reading or writing any doc.
 Modes: read, index, validate, extend, init, repair.
@@ -35,6 +41,21 @@ No org-root anchor is reachable from this workspace, so `org_docs_fallback: noti
 | Cross-cutting rules and vocabulary | docs/005-cross-cutting/INDEX.md |
 | Install and operate the engine | docs/006-operational/INDEX.md |
 | Open documentation questions | NEED_CLEARIFICATION.md |
+
+## Agents and skills
+| Purpose | Invocation |
+|---|---|
+| Loop operating procedure | skill `product-loop` |
+| Gap analysis, triage, delegation, merge decision | agent `orchestrator` |
+| Implement one issue on one branch | agent `coder` |
+| Multi-aspect review of a PR | agent `reviewer` |
+
+## Operating constraints (MUST)
+- **Scope of work is `core/` only.** Do not build UI or mobile. `samples/` is deferred by decision.
+- **Stack:** FastEndpoints on ASP.NET, with PostgreSQL for storage. **No Docker, ever.** **No Redis** — keep cache logic behind an interface so Redis can be swapped in later without redesign.
+- The Panel backend project is named exactly **`Panel`** in the solution, never `Razor.Panel`.
+- Development runs as a **continuous loop**: follow the `product-loop` skill.
+- **Merge into `main` only** (protected, PRs only). **Never merge to `prod`** — that branch is human-only. Delete the source branch after merge and resynchronise checkouts.
 
 ## Index protocol (MUST)
 Build an index of doc **paths**, not contents. Load contents only when a task requires them.
