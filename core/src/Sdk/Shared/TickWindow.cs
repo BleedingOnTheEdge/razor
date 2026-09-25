@@ -38,8 +38,11 @@ public sealed class TickWindow : IDisposable
 
     private readonly Dictionary<(string Symbol, TimeFrame Timeframe), CompletedBar> _lastCompletedBar = [];
 
-    // Rolling accumulators for O(1) GetCurrentStats
-    private readonly Dictionary<(string Symbol, TimeFrame Timeframe), RollingStats> _rollingStats = [];
+    // Rolling accumulators for O(1) GetCurrentStats, one per aggregated price type.
+    private readonly Dictionary<(string Symbol, TimeFrame Timeframe, PriceType PriceType), RollingStats> _rollingStats = [];
+
+    /// <summary>Price types accumulated per symbol/timeframe so <see cref="GetCurrentStats"/> stays O(1) for each.</summary>
+    private static readonly PriceType[] AggregatedPriceTypes = [PriceType.Bid, PriceType.Ask, PriceType.Mid];
 
     /// <summary>
     /// Raised when a full timeframe window completes (i.e., a new candle would have closed).
@@ -58,7 +61,10 @@ public sealed class TickWindow : IDisposable
             foreach (TimeFrame tf in timeframes.Where(tf => tf != TimeFrame.Tick))
             {
                 tfDict[tf] = 0;
-                _rollingStats[(sym, tf)] = new RollingStats();
+                foreach (PriceType priceType in AggregatedPriceTypes)
+                {
+                    _rollingStats[(sym, tf, priceType)] = new RollingStats();
+                }
             }
 
             _lastCompleteTimes[sym] = tfDict;
@@ -86,8 +92,8 @@ public sealed class TickWindow : IDisposable
             long currentWindowStart = tick.Time / periodTicks * periodTicks;
             if (currentWindowStart > lastTime)
             {
-                // Finalise the completed bar using the rolling accumulator
-                if (_rollingStats.TryGetValue((symbol, tf), out RollingStats? stats) && stats.Count > 0)
+                // Finalise the completed bar using the mid-price accumulator
+                if (_rollingStats.TryGetValue((symbol, tf, PriceType.Mid), out RollingStats? stats) && stats.Count > 0)
                 {
                     _lastCompletedBar[(symbol, tf)] = new CompletedBar(
                         stats.Open, stats.High, stats.Low, stats.Close, stats.Volume, true);
@@ -99,25 +105,32 @@ public sealed class TickWindow : IDisposable
                 }
 
                 // Reset rolling stats for the new window
-                _rollingStats[(symbol, tf)] = new RollingStats();
+                foreach (PriceType priceType in AggregatedPriceTypes)
+                {
+                    _rollingStats[(symbol, tf, priceType)] = new RollingStats();
+                }
+
                 WindowCompleted?.Invoke(symbol, tf);
                 times[tf] = currentWindowStart;
             }
 
-            // Update rolling stats with this tick
-            if (_rollingStats.TryGetValue((symbol, tf), out RollingStats? rolling))
+            // Update the rolling stats of every aggregated price type with this tick
+            foreach (PriceType priceType in AggregatedPriceTypes)
             {
-                double price = (tick.Bid + tick.Ask) * 0.5;
-                if (rolling.Count == 0)
+                if (_rollingStats.TryGetValue((symbol, tf, priceType), out RollingStats? rolling))
                 {
-                    rolling.Open = price;
-                }
+                    double price = SelectPrice(tick, priceType);
+                    if (rolling.Count == 0)
+                    {
+                        rolling.Open = price;
+                    }
 
-                rolling.High = Math.Max(rolling.High, price);
-                rolling.Low = rolling.Count == 0 ? price : Math.Min(rolling.Low, price);
-                rolling.Close = price;
-                rolling.Volume += tick.Volume;
-                rolling.Count++;
+                    rolling.High = Math.Max(rolling.High, price);
+                    rolling.Low = rolling.Count == 0 ? price : Math.Min(rolling.Low, price);
+                    rolling.Close = price;
+                    rolling.Volume += tick.Volume;
+                    rolling.Count++;
+                }
             }
         }
 
@@ -200,8 +213,8 @@ public sealed class TickWindow : IDisposable
         first++;
         isComplete = first == 0 || buffer[first - 1].Time < windowStart;
 
-        // Use rolling stats if available and up‑to‑date
-        if (_rollingStats.TryGetValue((symbol, tf), out RollingStats? stats) && stats.Count > 0)
+        // Use the rolling stats for the requested price type if available and up‑to‑date
+        if (_rollingStats.TryGetValue((symbol, tf, priceType), out RollingStats? stats) && stats.Count > 0)
         {
             open = stats.Open;
             high = stats.High;
@@ -223,13 +236,7 @@ public sealed class TickWindow : IDisposable
                 continue;
             }
 
-            double price = priceType switch
-            {
-                PriceType.Bid => t.Bid,
-                PriceType.Ask => t.Ask,
-                PriceType.Mid => (t.Bid + t.Ask) * 0.5,
-                _ => t.Bid
-            };
+            double price = SelectPrice(t, priceType);
             volume += t.Volume;
             if (isFirst)
             {
@@ -251,6 +258,18 @@ public sealed class TickWindow : IDisposable
                 close = price;
             }
         }
+    }
+
+    /// <summary>Selects the bid, ask or mid price of a tick for the requested aggregation price type.</summary>
+    private static double SelectPrice(Tick tick, PriceType priceType)
+    {
+        return priceType switch
+        {
+            PriceType.Bid => tick.Bid,
+            PriceType.Ask => tick.Ask,
+            PriceType.Mid => (tick.Bid + tick.Ask) * 0.5,
+            _ => tick.Bid
+        };
     }
 
     /// <inheritdoc/>
