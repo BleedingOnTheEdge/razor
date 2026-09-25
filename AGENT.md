@@ -52,8 +52,8 @@ No org-root anchor is reachable from this workspace, so `org_docs_fallback: noti
 
 ## Operating constraints (MUST)
 - **Scope of work is `core/` only.** Do not build UI or mobile. `samples/` is deferred by decision.
-- **Stack:** FastEndpoints on ASP.NET, with PostgreSQL for storage. **No Docker, ever.** **No Redis** — keep cache logic behind an interface so Redis can be swapped in later without redesign.
-- The Panel backend project is named exactly **`Panel`** in the solution, never `Razor.Panel`.
+- **Stack:** FastEndpoints on ASP.NET, PostgreSQL for storage, with **EF Core** for data access and schema migrations. **Not in v1.0.0: no Docker, no Redis.** Keep cache logic behind an interface so Redis can be swapped in later without redesign. (A v1 scope constraint, not a permanent prohibition — the roadmap `002-040-future-features/002-040-050-infrastructure-operations-observability.md` plans a Docker host, Docker Swarm/Kubernetes and a Redis message bus for a later release.)
+- The **Cloud** backend project is named exactly **`Cloud`** in the solution — not `Razor.Cloud`, and not `Panel`. It is the backend the frontend will consume, and it is built last (see the Active directive in the `product-loop` skill). Residual `Razor.Cloud` references in `docs/` are aligned to `Cloud` in the documentation naming pass.
 - Development runs as a **continuous loop**: follow the `product-loop` skill.
 - **Merge into `main` only** (protected, PRs only). **Never merge to `prod`** — that branch is human-only. Delete the source branch after merge and resynchronise checkouts.
 
