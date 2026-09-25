@@ -108,9 +108,11 @@ public static class GeneInjector
                     break;
 
                 case GeneType.Categorical:
-                    // DAT‑03: Use Floor for categorical indices to map to whole integer category IDs.
+                    // A categorical gene selects a whole‑number choice: clamp to the configured
+                    // range, then round to the nearest whole number (half away from zero), the
+                    // same rounding convention as the Discrete genes and the numeric conversions below.
                     val = Math.Clamp(val, attr.Min, attr.Max);
-                    val = Math.Floor(val);
+                    val = Math.Round(val, MidpointRounding.AwayFromZero);
                     break;
 
                 case GeneType.Parametric:

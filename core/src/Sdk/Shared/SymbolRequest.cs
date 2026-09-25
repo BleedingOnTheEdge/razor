@@ -5,7 +5,13 @@ namespace Sdk.Shared;
 /// <summary>
 /// A trading symbol and the timeframes the strategy consumes for it.
 /// </summary>
-public sealed record SymbolRequest : IEquatable<SymbolRequest>
+/// <remarks>
+/// Equality is the compiler‑generated record equality: field by field, with the
+/// <see cref="ImmutableArray{T}"/> of timeframes compared through its own
+/// (storage‑based) equality. Symbol uniqueness across a specification is enforced
+/// separately and case‑insensitively by <see cref="StrategySpecification.Validate"/>.
+/// </remarks>
+public sealed record SymbolRequest
 {
     /// <summary>Broker symbol (e.g., "EURUSD", "BTCUSDT").</summary>
     public string Symbol { get; init; } = string.Empty;
@@ -23,26 +29,5 @@ public sealed record SymbolRequest : IEquatable<SymbolRequest>
     /// <summary>Parameterless constructor for record initialisation.</summary>
     public SymbolRequest()
     {
-    }
-
-    /// <summary>Override equality to compare content, not reference.</summary>
-    public bool Equals(SymbolRequest? other)
-    {
-        return other is not null
-            && (ReferenceEquals(this, other)
-                || (string.Equals(Symbol, other.Symbol, StringComparison.OrdinalIgnoreCase)
-                    && TimeFrames.SequenceEqual(other.TimeFrames)));
-    }
-
-    /// <inheritdoc/>
-    public override int GetHashCode()
-    {
-        HashCode hash = new();
-        hash.Add(Symbol, StringComparer.OrdinalIgnoreCase);
-        foreach (TimeFrame tf in TimeFrames)
-        {
-            hash.Add(tf);
-        }
-        return hash.ToHashCode();
     }
 }

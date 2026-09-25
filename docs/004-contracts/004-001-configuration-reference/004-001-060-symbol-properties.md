@@ -19,7 +19,7 @@ Adapters return this object per symbol; it defines exchange‑specific contract 
 |-------|------|-------------|
 | `AssetClass` | `AssetClass` | Market category (Forex, CryptoSpot, Equity, …). |
 | `MarginMode` | `MarginMode` | Cross or Isolated margin. |
-| `PendingTrigger` | `PendingOrderTriggerMode` | Which price triggers pending buy orders. |
+| `PendingTrigger` | `PendingOrderTriggerMode` | Which price triggers pending orders — applies to pending buy **and** sell orders (limit and stop). |
 | `MarginCurrency` | `string` | Currency for margin calculations. |
 | `ContractSize` | `double` | Size of one standard contract. |
 | `TickSize` | `double` | Minimum price increment. |

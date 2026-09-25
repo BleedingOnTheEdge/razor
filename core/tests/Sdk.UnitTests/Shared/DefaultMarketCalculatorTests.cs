@@ -19,7 +19,8 @@ public class DefaultMarketCalculatorTests
         double fundingRate = 0,
         double initialMarginRate = 1.0,
         double takerFeeRate = 0.002,
-        PendingOrderTriggerMode triggerMode = PendingOrderTriggerMode.UseAskForBuy)
+        PendingOrderTriggerMode triggerMode = PendingOrderTriggerMode.UseAskForBuy,
+        long holdingCostIntervalTicks = TimeSpan.TicksPerDay)
     {
         return new SymbolProperties
         {
@@ -37,6 +38,7 @@ public class DefaultMarketCalculatorTests
             SwapRolloverHourUtc = 0,
             TripleSwapDayMultiplier = 1,
             FundingRate = fundingRate,
+            HoldingCostIntervalTicks = holdingCostIntervalTicks,
             InitialMarginRate = initialMarginRate,
             MaintenanceMarginRate = 0.5,
             MakerFeeRate = 0.001,
@@ -188,14 +190,16 @@ public class DefaultMarketCalculatorTests
     [Fact]
     public void CalculateFunding_Buy_Pays_Negative()
     {
-        var props = CreateProps(fundingRate: 0.01, contractSize: 1);
+        // The symbol funds hourly, so a one-hour elapse is exactly one funding period.
+        var props = CreateProps(fundingRate: 0.01, contractSize: 1, holdingCostIntervalTicks: TimeSpan.TicksPerHour);
         Assert.Equal(-1.0, _calc.CalculateFunding(props, 1, 100, OrderType.Buy, TimeSpan.TicksPerHour, 0), 10);
     }
 
     [Fact]
     public void CalculateFunding_Sell_Receives_Positive()
     {
-        var props = CreateProps(fundingRate: 0.01, contractSize: 1);
+        // The symbol funds hourly, so a one-hour elapse is exactly one funding period.
+        var props = CreateProps(fundingRate: 0.01, contractSize: 1, holdingCostIntervalTicks: TimeSpan.TicksPerHour);
         Assert.Equal(1.0, _calc.CalculateFunding(props, 1, 100, OrderType.Sell, TimeSpan.TicksPerHour, 0), 10);
     }
 
@@ -276,10 +280,12 @@ public class DefaultMarketCalculatorTests
     [Fact]
     public void CalculateHoldingCost_Sum_Of_Swap_And_Funding()
     {
-        var props = CreateProps(swapLong: 10, fundingRate: 0.05, contractSize: 1);
+        // The symbol's holding cost interval is one hour, so one day is 24 funding periods.
+        var props = CreateProps(swapLong: 10, fundingRate: 0.05, contractSize: 1,
+            holdingCostIntervalTicks: TimeSpan.TicksPerHour);
         double cost = _calc.CalculateHoldingCost(props, 2, 100, OrderType.Buy, 0, TimeSpan.TicksPerDay);
-        // Holding cost = swap (2 * 10 * 1 = 20) + funding for one day (24 hours)
-        // Funding: openPrice*volume*contractSize = 100*2*1 = 200, fundingRate=0.05, 24 hours = 24 periods
+        // Holding cost = swap (2 * 10 * 1 = 20) + funding for one day (24 hourly periods)
+        // Funding: openPrice*volume*contractSize = 100*2*1 = 200, fundingRate=0.05, 24 periods
         // Buy pays negative: -200 * 0.05 * 24 = -240
         // Total = 20 + (-240) = -220
         Assert.Equal(-220.0, cost, 10);
@@ -330,7 +336,8 @@ public class DefaultMarketCalculatorTests
     [Fact]
     public void CalculateFunding_With_Multiple_Periods()
     {
-        var props = CreateProps(fundingRate: 0.01, contractSize: 1);
+        // The symbol funds hourly, so a three-hour elapse accrues three funding periods.
+        var props = CreateProps(fundingRate: 0.01, contractSize: 1, holdingCostIntervalTicks: TimeSpan.TicksPerHour);
         double f = _calc.CalculateFunding(props, 1, 100, OrderType.Buy, TimeSpan.TicksPerHour * 3, 0);
         Assert.Equal(-3.0, f, 10);
     }
