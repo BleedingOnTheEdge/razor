@@ -26,6 +26,8 @@ kind: contract
 | `Symbol` | `string` | Broker symbol (e.g., `"EURUSD"`, `"BTCUSDT"`). |
 | `TimeFrames` | `ImmutableArray<TimeFrame>` | Timeframes the strategy consumes. Can include `Tick` if raw tick feed is desired. |
 
+**Equality.** `SymbolRequest` is a record, so equality is the compiler-generated field comparison: `Symbol` is compared **case-sensitively** (ordinal), and `TimeFrames` is compared by `ImmutableArray` **storage equality**, not by content. Two requests with identical contents but separately constructed `TimeFrames` arrays are therefore **not** equal, while the default and `ImmutableArray.Empty` values do compare equal. Symbol uniqueness across a strategy is still enforced case-insensitively by validation (below).
+
 ## Validation
 
 - `InitialBalance` must be `> 0`.
