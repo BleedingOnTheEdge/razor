@@ -36,12 +36,10 @@ public sealed class TickWindow : IDisposable
     private readonly Dictionary<string, Dictionary<TimeFrame, long>> _lastCompleteTimes =
         new(StringComparer.OrdinalIgnoreCase);
 
-    private readonly int _maxTicksPerSymbol;
-
-    private readonly Dictionary<(string Symbol, TimeFrame Timeframe), CompletedBar> _lastCompletedBar = new();
+    private readonly Dictionary<(string Symbol, TimeFrame Timeframe), CompletedBar> _lastCompletedBar = [];
 
     // Rolling accumulators for O(1) GetCurrentStats
-    private readonly Dictionary<(string Symbol, TimeFrame Timeframe), RollingStats> _rollingStats = new();
+    private readonly Dictionary<(string Symbol, TimeFrame Timeframe), RollingStats> _rollingStats = [];
 
     /// <summary>
     /// Raised when a full timeframe window completes (i.e., a new candle would have closed).
@@ -53,12 +51,11 @@ public sealed class TickWindow : IDisposable
     {
         ArgumentNullException.ThrowIfNull(symbols);
         ArgumentNullException.ThrowIfNull(timeframes);
-        _maxTicksPerSymbol = maxTicksPerSymbol;
-        foreach (var sym in symbols)
+        foreach (string sym in symbols)
         {
             _buffers[sym] = new TickRingBuffer(maxTicksPerSymbol);
-            var tfDict = new Dictionary<TimeFrame, long>();
-            foreach (var tf in timeframes.Where(tf => tf != TimeFrame.Tick))
+            Dictionary<TimeFrame, long> tfDict = [];
+            foreach (TimeFrame tf in timeframes.Where(tf => tf != TimeFrame.Tick))
             {
                 tfDict[tf] = 0;
                 _rollingStats[(sym, tf)] = new RollingStats();
@@ -72,25 +69,25 @@ public sealed class TickWindow : IDisposable
     public void PushTick(string symbol, Tick tick)
     {
         ArgumentNullException.ThrowIfNull(symbol);
-        if (!_buffers.TryGetValue(symbol, out var buffer))
+        if (!_buffers.TryGetValue(symbol, out TickRingBuffer? buffer))
         {
             return;
         }
 
-        if (!_lastCompleteTimes.TryGetValue(symbol, out var times))
+        if (!_lastCompleteTimes.TryGetValue(symbol, out Dictionary<TimeFrame, long>? times))
         {
             buffer.Add(tick);
             return;
         }
 
-        foreach (var (tf, lastTime) in times)
+        foreach ((TimeFrame tf, long lastTime) in times)
         {
             long periodTicks = (long)tf * TimeSpan.TicksPerMinute;
             long currentWindowStart = tick.Time / periodTicks * periodTicks;
             if (currentWindowStart > lastTime)
             {
                 // Finalise the completed bar using the rolling accumulator
-                if (_rollingStats.TryGetValue((symbol, tf), out var stats) && stats.Count > 0)
+                if (_rollingStats.TryGetValue((symbol, tf), out RollingStats? stats) && stats.Count > 0)
                 {
                     _lastCompletedBar[(symbol, tf)] = new CompletedBar(
                         stats.Open, stats.High, stats.Low, stats.Close, stats.Volume, true);
@@ -108,7 +105,7 @@ public sealed class TickWindow : IDisposable
             }
 
             // Update rolling stats with this tick
-            if (_rollingStats.TryGetValue((symbol, tf), out var rolling))
+            if (_rollingStats.TryGetValue((symbol, tf), out RollingStats? rolling))
             {
                 double price = (tick.Bid + tick.Ask) * 0.5;
                 if (rolling.Count == 0)
@@ -135,7 +132,7 @@ public sealed class TickWindow : IDisposable
         out double close, out double volume)
     {
         open = high = low = close = volume = 0;
-        if (_lastCompletedBar.TryGetValue((symbol, tf), out var bar))
+        if (_lastCompletedBar.TryGetValue((symbol, tf), out CompletedBar? bar))
         {
             if (bar.IsComplete)
             {
@@ -154,12 +151,7 @@ public sealed class TickWindow : IDisposable
     /// <summary>Returns the most recent ticks for the specified symbol, up to <paramref name="count"/>.</summary>
     public IReadOnlyList<Tick> GetRecentTicks(string symbol, int count)
     {
-        if (!_buffers.TryGetValue(symbol, out var buffer))
-        {
-            return Array.Empty<Tick>();
-        }
-
-        return buffer.GetMostRecent(count);
+        return !_buffers.TryGetValue(symbol, out TickRingBuffer? buffer) ? [] : buffer.GetMostRecent(count);
     }
 
     /// <summary>
@@ -168,12 +160,9 @@ public sealed class TickWindow : IDisposable
     /// </summary>
     public int CopyRecentTicks(string symbol, Span<Tick> destination, int maxCount)
     {
-        if (!_buffers.TryGetValue(symbol, out var buffer))
-        {
-            return 0;
-        }
-
-        return buffer.CopyMostRecent(destination, maxCount);
+        return !_buffers.TryGetValue(symbol, out TickRingBuffer? buffer)
+            ? 0
+            : buffer.CopyMostRecent(destination, maxCount);
     }
 
     /// <summary>
@@ -184,7 +173,7 @@ public sealed class TickWindow : IDisposable
     {
         open = high = low = close = volume = 0;
         isComplete = false;
-        if (!_buffers.TryGetValue(symbol, out var buffer))
+        if (!_buffers.TryGetValue(symbol, out TickRingBuffer? buffer))
         {
             return;
         }
@@ -212,7 +201,7 @@ public sealed class TickWindow : IDisposable
         isComplete = first == 0 || buffer[first - 1].Time < windowStart;
 
         // Use rolling stats if available and up‑to‑date
-        if (_rollingStats.TryGetValue((symbol, tf), out var stats) && stats.Count > 0)
+        if (_rollingStats.TryGetValue((symbol, tf), out RollingStats? stats) && stats.Count > 0)
         {
             open = stats.Open;
             high = stats.High;
@@ -228,7 +217,7 @@ public sealed class TickWindow : IDisposable
         volume = 0;
         for (int i = first; i < n; i++)
         {
-            var t = buffer[i];
+            Tick t = buffer[i];
             if (t.Time < windowStart)
             {
                 continue;
@@ -236,6 +225,7 @@ public sealed class TickWindow : IDisposable
 
             double price = priceType switch
             {
+                PriceType.Bid => t.Bid,
                 PriceType.Ask => t.Ask,
                 PriceType.Mid => (t.Bid + t.Ask) * 0.5,
                 _ => t.Bid
@@ -266,7 +256,7 @@ public sealed class TickWindow : IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        foreach (var buf in _buffers.Values)
+        foreach (TickRingBuffer buf in _buffers.Values)
         {
             buf.Dispose();
         }
@@ -296,7 +286,7 @@ public sealed class TickWindow : IDisposable
         bool found = false;
         for (int i = 0; i < n; i++)
         {
-            var t = buffer[i];
+            Tick t = buffer[i];
             if (t.Time < windowStart)
             {
                 continue;
@@ -357,7 +347,7 @@ public sealed class TickWindow : IDisposable
     private sealed class TickRingBuffer : IDisposable
     {
         private Tick[] _buffer;
-        private int _head, _count;
+        private int _head;
         private readonly int _capacity;
         private bool _disposed;
 
@@ -367,15 +357,15 @@ public sealed class TickWindow : IDisposable
             _buffer = ArrayPool<Tick>.Shared.Rent(_capacity);
         }
 
-        public int Count => _count;
+        public int Count { get; private set; }
 
         public void Add(Tick tick)
         {
             _buffer[_head] = tick;
             _head = (_head + 1) % _capacity;
-            if (_count < _capacity)
+            if (Count < _capacity)
             {
-                _count++;
+                Count++;
             }
         }
 
@@ -383,14 +373,14 @@ public sealed class TickWindow : IDisposable
         {
             get
             {
-                if ((uint)index >= (uint)_count)
+                if ((uint)index >= (uint)Count)
                 {
                     throw new ArgumentOutOfRangeException(nameof(index));
                 }
 
                 // DAT‑02: Fix the start calculation for correct retrieval.
                 int start;
-                if (_count == _capacity)
+                if (Count == _capacity)
                 {
                     // Buffer is full: the oldest valid tick is at _head.
                     start = _head;
@@ -407,14 +397,14 @@ public sealed class TickWindow : IDisposable
 
         public int CopyMostRecent(Span<Tick> destination, int maxCount)
         {
-            if (_count == 0 || maxCount <= 0 || destination.Length == 0)
+            if (Count == 0 || maxCount <= 0 || destination.Length == 0)
             {
                 return 0;
             }
 
-            int actual = Math.Min(Math.Min(maxCount, _count), destination.Length);
+            int actual = Math.Min(Math.Min(maxCount, Count), destination.Length);
             int start;
-            if (_count == _capacity)
+            if (Count == _capacity)
             {
                 // Buffer is full: the oldest valid tick is at _head.
                 start = _head;
@@ -426,8 +416,8 @@ public sealed class TickWindow : IDisposable
             }
 
             // We need to get the 'actual' most recent ticks.
-            // The most recent tick is at index (_count - 1) relative to start.
-            int recentStart = (start + _count - actual) % _capacity;
+            // The most recent tick is at index (Count - 1) relative to start.
+            int recentStart = (start + Count - actual) % _capacity;
             for (int i = 0; i < actual; i++)
             {
                 destination[i] = _buffer[(recentStart + i) % _capacity];
@@ -438,15 +428,15 @@ public sealed class TickWindow : IDisposable
 
         public Tick[] GetMostRecent(int count)
         {
-            if (_count == 0)
+            if (Count == 0)
             {
-                return Array.Empty<Tick>();
+                return [];
             }
 
-            int actual = Math.Min(count, _count);
-            var result = new Tick[actual];
+            int actual = Math.Min(count, Count);
+            Tick[] result = new Tick[actual];
             int start;
-            if (_count == _capacity)
+            if (Count == _capacity)
             {
                 // Buffer is full: the oldest valid tick is at _head.
                 start = _head;
@@ -457,7 +447,7 @@ public sealed class TickWindow : IDisposable
                 start = 0;
             }
 
-            int recentStart = (start + _count - actual) % _capacity;
+            int recentStart = (start + Count - actual) % _capacity;
             for (int i = 0; i < actual; i++)
             {
                 result[i] = _buffer[(recentStart + i) % _capacity];
@@ -473,7 +463,7 @@ public sealed class TickWindow : IDisposable
                 ArrayPool<Tick>.Shared.Return(_buffer);
                 _buffer = [];
                 _disposed = true;
-                _count = 0;
+                Count = 0;
             }
         }
     }
