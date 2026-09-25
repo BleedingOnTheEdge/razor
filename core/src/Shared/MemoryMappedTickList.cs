@@ -13,7 +13,6 @@ public sealed class MemoryMappedTickList : IReadOnlyList<Tick>, IDisposable
 {
     private readonly MemoryMappedFile _mmf;
     private readonly MemoryMappedViewAccessor _accessor;
-    private readonly int _count;
     private unsafe byte* _basePointer;
     private bool _disposed;
 
@@ -34,10 +33,10 @@ public sealed class MemoryMappedTickList : IReadOnlyList<Tick>, IDisposable
     {
         ArgumentNullException.ThrowIfNull(filePath);
 
-        var fileInfo = new FileInfo(filePath);
+        FileInfo fileInfo = new(filePath);
         if (!fileInfo.Exists || fileInfo.Length == 0)
         {
-            _count = 0;
+            Count = 0;
             _mmf = null!;
             _accessor = null!;
             _basePointer = null;
@@ -49,7 +48,7 @@ public sealed class MemoryMappedTickList : IReadOnlyList<Tick>, IDisposable
 
         long dataOffset = 0;
 
-        using (var headerStream = new FileStream(
+        using (FileStream headerStream = new(
                    filePath, FileMode.Open, FileAccess.Read, FileShare.Read,
                    4096, FileOptions.SequentialScan))
         {
@@ -77,9 +76,9 @@ public sealed class MemoryMappedTickList : IReadOnlyList<Tick>, IDisposable
                 $"File contains more than {maxTicks:N0} ticks, which exceeds the maximum supported per file.");
         }
 
-        _count = (int)(dataLength / tickSize);
+        Count = (int)(dataLength / tickSize);
 
-        if (_count == 0)
+        if (Count == 0)
         {
             _mmf = null!;
             _accessor = null!;
@@ -99,7 +98,7 @@ public sealed class MemoryMappedTickList : IReadOnlyList<Tick>, IDisposable
     }
 
     /// <inheritdoc/>
-    public int Count => _count;
+    public int Count { get; }
 
     /// <inheritdoc/>
     public unsafe Tick this[int index]
@@ -107,20 +106,20 @@ public sealed class MemoryMappedTickList : IReadOnlyList<Tick>, IDisposable
         get
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            if ((uint)index >= (uint)_count)
+            if ((uint)index >= (uint)Count)
             {
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
 
             // Use nuint to avoid 32‑bit overflow when index * tickSize exceeds int.MaxValue.
-            return Unsafe.Read<Tick>(_basePointer + (nuint)index * (nuint)Unsafe.SizeOf<Tick>());
+            return Unsafe.Read<Tick>(_basePointer + ((nuint)index * (nuint)Unsafe.SizeOf<Tick>()));
         }
     }
 
     /// <inheritdoc/>
     public IEnumerator<Tick> GetEnumerator()
     {
-        for (int i = 0; i < _count; i++)
+        for (int i = 0; i < Count; i++)
         {
             yield return this[i];
         }
@@ -155,10 +154,7 @@ public sealed class MemoryMappedTickList : IReadOnlyList<Tick>, IDisposable
 
         _disposed = true;
 
-        if (_accessor != null)
-        {
-            _accessor.SafeMemoryMappedViewHandle.ReleasePointer();
-        }
+        _accessor?.SafeMemoryMappedViewHandle.ReleasePointer();
 
         if (disposing)
         {
