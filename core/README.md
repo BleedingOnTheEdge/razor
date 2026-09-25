@@ -97,7 +97,7 @@ Extensions (adapters, strategies, indicators, hook plugins, NN models) reference
    - `INeuralNetworkModel` – for neural network models
    - `Indicator` – for technical indicators
    - `IHookManifest` – for hook plugins
-4. Build your DLL and place it in the appropriate engine directory.
+4. Build your DLL and place it in the appropriate engine directory (`Adapters/`, `Strategies/`, `Indicators/`, `Plugins/`, or `NeuralNetworks/`).
 5. Manage activation via Razor Cloud.
 
 For detailed guidance, see the [Extension Developer Guide](../docs/004-contracts/004-010-extension-developer-guide/INDEX.md).
