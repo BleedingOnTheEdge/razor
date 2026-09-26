@@ -90,10 +90,14 @@ jobs:
         working-directory: core
         run: dotnet test Razor.sln -c Release --no-build --collect:"XPlat Code Coverage" --results-directory TestResults
 
-      # Not yet a meaningful signal: issue #12 records that `dotnet format`
-      # resolves the laxer analysis configuration and applies nothing. It is in
-      # CONTRIBUTING_AGENTS.md's gate list and currently exits 0, so it runs
-      # here until #12 makes it bite.
+      # Enforcing. This step failed on the first-ever CI run (PR #22) purely
+      # because of line endings: `core/.editorconfig` sets `end_of_line = crlf`
+      # while the repository had no `.gitattributes`, so a Windows checkout
+      # (`autocrlf = true`) produced CRLF and satisfied the rule, but the Linux
+      # runner checked the same LF blobs out as LF and violated it. The
+      # repository-root `.gitattributes` now declares the policy (`* text=auto
+      # eol=crlf`, with explicit LF for .sh/.py/.yml), so both environments agree
+      # and this step is a real gate rather than an environment lottery.
       - name: Verify formatting
         working-directory: core
         run: dotnet format --verify-no-changes
