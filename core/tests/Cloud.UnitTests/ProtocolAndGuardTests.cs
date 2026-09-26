@@ -15,6 +15,7 @@ using Cloud.UnitTests.TestSupport;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -200,6 +201,24 @@ public sealed class ProtocolAndGuardTests
     }
 
     [Fact]
+    public async Task TheKeyFilterRefusesAHeaderWhoseValueIsNull()
+    {
+        var options = new CloudOptions { ManagementApiKey = "the-key" };
+        RequestDelegate pipeline = BuildPipeline(options);
+
+        // A header slot can exist and hold no string at all. That is not a key, and it must be refused
+        // rather than handed to the comparison as a value; the guard reads the element and rejects a
+        // non-string before any key material is touched.
+        HttpContext context = Context("/api/engines");
+        context.Request.Headers[ManagementApiKeyMiddleware.HeaderName] =
+            new Microsoft.Extensions.Primitives.StringValues(new string?[] { null });
+
+        await pipeline(context).ConfigureAwait(true);
+
+        Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
+    }
+
+    [Fact]
     public async Task TheKeyFilterServesAnApiRequestThatPresentsTheKeyAndEverythingOutsideTheApi()
     {
         var options = new CloudOptions { ManagementApiKey = "the-key" };
@@ -266,6 +285,37 @@ public sealed class ProtocolAndGuardTests
             Assert.Equal(
                 CloudDbContextFactory.DesignTimeFallbackConnection,
                 fallback.Database.GetConnectionString());
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(CloudOptions.ConnectionStringVariable, original);
+        }
+    }
+
+    [Fact]
+    public void TheConnectionStringComesFromTheEnvironmentWhenTheVariableIsSet()
+    {
+        string? original = Environment.GetEnvironmentVariable(CloudOptions.ConnectionStringVariable);
+
+        try
+        {
+            // The same value this file's design-time test configures, which is also the one the configuration
+            // test asserts: the process environment is shared state, so a value that disagrees with either
+            // would make a concurrently running test fail rather than this one.
+            Environment.SetEnvironmentVariable(CloudOptions.ConnectionStringVariable, "Host=configured");
+
+            IConfiguration configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["Cloud:ConnectionString"] = "Host=a-configured-file"
+                })
+                .Build();
+
+            CloudOptions options = CloudOptions.FromConfiguration(configuration);
+
+            // A deployment supplies the connection string through the environment, so it wins over the file:
+            // the file must not be able to point a deployment at a database nobody meant it to use.
+            Assert.Equal("Host=configured", options.ConnectionString);
         }
         finally
         {

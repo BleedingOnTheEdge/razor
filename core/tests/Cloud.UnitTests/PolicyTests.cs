@@ -12,6 +12,7 @@ using Cloud.Data;
 using Cloud.Engine;
 using Cloud.Protocol;
 using Cloud.Services;
+using Cloud.UnitTests.TestSupport;
 using Microsoft.Extensions.Configuration;
 
 /// <summary>
@@ -45,6 +46,44 @@ public sealed class PolicyTests
         Assert.Equal(4, options.CommandBatchSize);
         Assert.Equal(15, options.ActivateExtensionsTimeoutSeconds);
         Assert.Equal([100, 104], options.RequiredCapabilities);
+    }
+
+    [Fact]
+    public void Options_TakeTheManagementKeyAndTheCapabilityListFromTheEnvironmentFirst()
+    {
+        string? originalKey = Environment.GetEnvironmentVariable(CloudOptions.ManagementApiKeyVariable);
+        string? originalCapabilities = Environment.GetEnvironmentVariable(CloudOptions.RequiredCapabilitiesVariable);
+
+        try
+        {
+            // A deployment injects the management key through the environment so it never has to be written
+            // into appsettings.json, and a value that reaches the file anyway must not be able to override
+            // it. Both values are deliberately the ones the rest of this suite configures, so a test running
+            // concurrently reads the environment it already expects rather than a value it would fail on --
+            // the process environment is shared state and cannot be isolated per test.
+            Environment.SetEnvironmentVariable(
+                CloudOptions.ManagementApiKeyVariable,
+                CloudWebApplicationFactory.ManagementApiKey);
+            Environment.SetEnvironmentVariable(CloudOptions.RequiredCapabilitiesVariable, "100, 104");
+
+            IConfiguration configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["Cloud:ManagementApiKey"] = "a-configured-key",
+                    ["Cloud:RequiredCapabilities"] = "999"
+                })
+                .Build();
+
+            CloudOptions options = CloudOptions.FromConfiguration(configuration);
+
+            Assert.Equal(CloudWebApplicationFactory.ManagementApiKey, options.ManagementApiKey);
+            Assert.Equal([100, 104], options.RequiredCapabilities);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(CloudOptions.ManagementApiKeyVariable, originalKey);
+            Environment.SetEnvironmentVariable(CloudOptions.RequiredCapabilitiesVariable, originalCapabilities);
+        }
     }
 
     [Fact]

@@ -258,6 +258,22 @@ public sealed class CloudEngineSocketTests
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task TheChannelRefusesToWriteToASocketThatIsNotOpen()
+    {
+        // The channel is what turns a session's outbound message into a frame, and a session lives as long as
+        // its socket does. Writing to a socket that never opened, or one that has already closed, is a
+        // transport fault rather than a protocol one: it must surface as a WebSocketException so the pump
+        // tears the connection down instead of silently dropping the message.
+        using var socket = new ClientWebSocket();
+        var channel = new WebSocketEngineChannel(socket);
+
+        Assert.NotEqual(WebSocketState.Open, socket.State);
+        await Assert
+            .ThrowsAsync<WebSocketException>(() => channel.SendAsync("{}", CancellationToken.None))
+            .ConfigureAwait(true);
+    }
+
     private static Uri Relative(string url)
     {
         return new Uri(url, UriKind.Relative);

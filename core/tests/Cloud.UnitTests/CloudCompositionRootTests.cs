@@ -10,8 +10,10 @@ using Cloud.Data;
 using Cloud.Engine;
 using Cloud.Services;
 using Cloud.UnitTests.TestSupport;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging.Abstractions;
 
 /// <summary>
@@ -97,6 +99,39 @@ public sealed class CloudCompositionRootTests
     }
 
     [Fact]
+    public async Task TheBuildHookRunsAfterTheDefaultRegistrationsAndReachesTheContainer()
+    {
+        // The hook is what lets a host replace a registration the composition root makes; supplying a
+        // different store is exactly how the test host runs the real pipeline without a PostgreSQL server.
+        // It must therefore run after the defaults and its registrations must be visible to the application,
+        // or a host could not swap anything.
+        var marker = new BuildHookMarker();
+        using var database = new CloudTestDatabase();
+
+        await using WebApplication app = CloudApplication.Build(
+            [
+                "--Cloud:ConnectionString=Host=unused;Database=unused",
+                "--Cloud:ManagementApiKey=a-build-hook-key"
+            ],
+            services =>
+            {
+                services.RemoveAll<IDbContextFactory<CloudDbContext>>();
+                services.AddSingleton<IDbContextFactory<CloudDbContext>>(database);
+                services.AddSingleton(marker);
+            });
+
+        Assert.Same(marker, app.Services.GetRequiredService<BuildHookMarker>());
+
+        // The replacement took effect rather than being overwritten by the composition root: the application
+        // resolves the store the hook supplied.
+        Assert.Same(database, app.Services.GetRequiredService<IDbContextFactory<CloudDbContext>>());
+
+        // The default registrations that the hook did not replace are still there, so the hook adjusts the
+        // graph instead of replacing it.
+        Assert.NotNull(app.Services.GetRequiredService<EngineRegistrationService>());
+    }
+
+    [Fact]
     public async Task TheRegistryRegistersReportsTheDisplacedSessionAndOnlyUnregistersTheCurrentOne()
     {
         Guid instanceId = Guid.NewGuid();
@@ -128,6 +163,24 @@ public sealed class CloudCompositionRootTests
     }
 
     [Fact]
+    public async Task TheRegistryIgnoresAnUnregisterForAnInstanceItDoesNotHold()
+    {
+        Guid registered = Guid.NewGuid();
+        var registry = new EngineSessionRegistry(NullLogger<EngineSessionRegistry>.Instance);
+        using var harness = new CloudSessionHarness(new CloudTestDatabase());
+        registry.Register(registered, harness.Session);
+
+        // Cleanup arrives on the socket that is ending, so it can name an instance this registry has never
+        // held. That is not a fault, and it must leave the session registered for another instance alone.
+        registry.Unregister(Guid.NewGuid(), harness.Session);
+
+        Assert.True(await registry
+            .TryDeliverPendingCommandsAsync(registered, CancellationToken.None)
+            .ConfigureAwait(true));
+        registry.Dispose();
+    }
+
+    [Fact]
     public void DisposingTheRegistryClosesTheSessionsItHoldsAndIsIdempotent()
     {
         Guid instanceId = Guid.NewGuid();
@@ -140,4 +193,9 @@ public sealed class CloudCompositionRootTests
         registry.Dispose();
         registry.Dispose();
     }
+
+    /// <summary>
+    /// A type nothing else registers, so resolving it proves the build hook's registrations were applied.
+    /// </summary>
+    private sealed class BuildHookMarker;
 }

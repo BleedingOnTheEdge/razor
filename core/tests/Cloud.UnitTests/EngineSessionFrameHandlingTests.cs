@@ -349,6 +349,62 @@ public sealed class EngineSessionFrameHandlingTests
     }
 
     [Fact]
+    public async Task ACommandResponseWithoutAStatusIsAFailureAndWithoutAnErrorCarriesTheStatus()
+    {
+        using var database = new CloudTestDatabase();
+        using var harness = await ConnectAsync(database).ConfigureAwait(true);
+
+        // The Engine's dispatcher always writes a Status. A frame without one is therefore an unusable
+        // report, and Cloud must treat it as a failure rather than as a success it cannot substantiate: the
+        // outcome an operator reads is "failed", and the recorded explanation falls back to the status text,
+        // which is empty here.
+        CommandOutcome noStatus = await harness.Commands
+            .SubmitAsync(harness.InstanceId, 1200, "RunBacktest", null, null, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        Assert.Equal(
+            EngineSessionSignal.Continue,
+            await harness.SendAsync(harness.Peer.BuildEncrypted(
+                CloudProtocol.MessageType.CommandResponse,
+                JsonSerializer.Serialize(new
+                {
+                    Result = new
+                    {
+                        Message = "done"
+                    }
+                }),
+                noStatus.Command!.CorrelationId)).ConfigureAwait(true));
+
+        EngineCommand? missingStatus = await harness.Commands
+            .GetAsync(noStatus.Command.Id, CancellationToken.None)
+            .ConfigureAwait(true);
+        Assert.Equal(CommandStatus.Failed, missingStatus!.Status);
+        Assert.Equal(string.Empty, missingStatus.ErrorMessage);
+
+        // An "Error" report may also arrive without any message text. The status word is then the only
+        // explanation available, and the row must still say why the command failed rather than being blank.
+        CommandOutcome noError = await harness.Commands
+            .SubmitAsync(harness.InstanceId, 1200, "RunBacktest", null, null, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        Assert.Equal(
+            EngineSessionSignal.Continue,
+            await harness.SendAsync(harness.Peer.BuildEncrypted(
+                CloudProtocol.MessageType.CommandResponse,
+                JsonSerializer.Serialize(new
+                {
+                    Status = "Error"
+                }),
+                noError.Command!.CorrelationId)).ConfigureAwait(true));
+
+        EngineCommand? missingError = await harness.Commands
+            .GetAsync(noError.Command.Id, CancellationToken.None)
+            .ConfigureAwait(true);
+        Assert.Equal(CommandStatus.Failed, missingError!.Status);
+        Assert.Equal("Error", missingError.ErrorMessage);
+    }
+
+    [Fact]
     public async Task AManifestForAnInstanceThatNoLongerExistsIsIgnored()
     {
         using var database = new CloudTestDatabase();
