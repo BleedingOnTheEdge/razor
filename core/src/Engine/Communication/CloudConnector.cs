@@ -526,10 +526,11 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
 
     private async Task ConnectSingleEndpointAsync(string endpoint, CancellationToken cancellationToken)
     {
-        _webSocket = new ClientWebSocket();
-        await _webSocket.ConnectAsync(new Uri(endpoint), cancellationToken).ConfigureAwait(false);
+        var socket = new ClientWebSocket();
+        _webSocket = socket;
+        await socket.ConnectAsync(new Uri(endpoint), cancellationToken).ConfigureAwait(false);
 
-        if (_webSocket.State == WebSocketState.Open)
+        if (socket.State == WebSocketState.Open)
         {
             if (RuntimeEnvironment.IsDevelopment)
             {
@@ -542,10 +543,24 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
                 Console.WriteLine("Connected to Cloud.");
             }
 
-            await this.AuthenticateAsync(cancellationToken).ConfigureAwait(false);
-
+            // The AuthResponse that completes the handshake can only be read off the socket, and only the
+            // receive loop reads it, so the loop has to be running before the Auth is sent: started
+            // afterwards it could not be reached until authentication had already finished, which deadlocks
+            // the handshake against any Cloud.
             _receiveCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            _ = Task.Run(() => this.ReceiveLoopAsync(_receiveCts.Token), _receiveCts.Token);
+            _ = Task.Run(() => this.ReceiveLoopAsync(socket, _receiveCts.Token), _receiveCts.Token);
+
+            try
+            {
+                await this.AuthenticateAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // A failed handshake is retried on a fresh socket, so the reader is released first: left
+                // running it would keep reading whichever socket the retry installs.
+                await _receiveCts.CancelAsync().ConfigureAwait(false);
+                throw;
+            }
 
             _isConnected = true;
             _connectionLostEvent.Reset(); // ensure event is not set
@@ -660,17 +675,23 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
         await _stateManager.SetSessionIdAsync(_sessionId, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task ReceiveLoopAsync(CancellationToken cancellationToken)
+    /// <summary>
+    /// Reads and dispatches every frame the cloud sends on one connection.
+    /// </summary>
+    /// <param name="socket">The connection this loop owns; it is a parameter rather than a field read so that
+    /// a loop left over from an abandoned connection cannot consume the frames of its replacement.</param>
+    /// <param name="cancellationToken">Cancellation token; cancelling it ends the loop.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    private async Task ReceiveLoopAsync(WebSocket socket, CancellationToken cancellationToken)
     {
         byte[] buffer = new byte[4096];
         StringBuilder messageBuilder = new StringBuilder();
 
-        while (!cancellationToken.IsCancellationRequested && _webSocket != null &&
-               _webSocket.State == WebSocketState.Open)
+        while (!cancellationToken.IsCancellationRequested && socket.State == WebSocketState.Open)
         {
             try
             {
-                WebSocketReceiveResult result = await _webSocket
+                WebSocketReceiveResult result = await socket
                     .ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken).ConfigureAwait(false);
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
@@ -730,7 +751,10 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
             try
             {
                 string decryptedJson = _securityManager.DecryptMessage(encryptedPayload);
-                message.Payload = JsonSerializer.Deserialize<object>(decryptedJson);
+
+                // The plaintext replaces the cipher text in the same member, so it has to be materialised in
+                // the same shapes the envelope's own deserialisation produces (002-020-020 §3.2).
+                message.Payload = CloudPayloadJsonConverter.Parse(decryptedJson);
             }
             catch (Exception ex)
             {
@@ -806,7 +830,12 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
                             CommandType = payloadDict.GetValueOrDefault("CommandType")?.ToString() ?? string.Empty,
                             Parameters = payloadDict.GetValueOrDefault("Parameters"),
                             TimeoutSeconds = payloadDict.GetValueOrDefault("TimeoutSeconds") as int?,
+
+                            // 002-020-020 §3.5: the command carries the identifier its result must echo, so a
+                            // result can be matched to the command that asked for it. It is taken off the
+                            // envelope first, then from the command's own payload.
                             CorrelationId = message.CorrelationId
+                                ?? payloadDict.GetValueOrDefault("CorrelationId")?.ToString()
                         };
 
                         if (this.CommandReceived != null)
@@ -1001,7 +1030,15 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
                             CultureInfo.InvariantCulture),
                         CommandType = cmdDict.GetValueOrDefault("CommandType")?.ToString() ?? string.Empty,
                         Parameters = cmdDict.GetValueOrDefault("Parameters"),
-                        CorrelationId = Guid.NewGuid().ToString()
+
+                        // 002-020-020 §3.5: the command carries the identifier its result must echo, so a result
+                        // can be matched to the command that asked for it. A command delivered inside a
+                        // heartbeat response has no envelope of its own, so its own identifier is the one that
+                        // makes the result matchable; the envelope's is honoured as a fallback, and a fresh
+                        // identifier is minted only when neither names one.
+                        CorrelationId = cmdDict.GetValueOrDefault("CorrelationId")?.ToString()
+                            ?? message.CorrelationId
+                            ?? Guid.NewGuid().ToString()
                     };
                     if (this.CommandReceived != null)
                     {
