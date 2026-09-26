@@ -504,6 +504,7 @@ latest.txt
 CoverageReport
 CoverageSummary
 TestResults
+/TR*/
 *.DotSettings.user
 #.env
 #**/.env
