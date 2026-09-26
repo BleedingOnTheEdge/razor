@@ -216,6 +216,75 @@ public class TickWindowBranchTests
     }
 
     [Fact]
+    public void GetCurrentStats_Fallback_Tracks_A_Low_That_Arrives_After_The_Open()
+    {
+        // The fallback aggregate is only as good as the prices it walks, so a window whose prices fall after
+        // the first tick must report the lower figure as its low: the open seeds high and low, and every
+        // later tick has to be compared against both.
+        using var window = new TickWindow(SymbolsX, new[] { TimeFrame.M1 });
+        long hour = TimeSpan.TicksPerMinute * 60;
+        window.PushTick("X", new Tick(hour, 5.0, 5.0, 1));
+        window.PushTick("X", new Tick(hour + TimeSpan.TicksPerMinute, 2.0, 2.0, 1));
+
+        window.GetCurrentStats("X", TimeFrame.H1, PriceType.Bid,
+            out double open, out double high, out double low, out double close, out double volume, out bool _);
+
+        Assert.Equal(5.0, open);
+        Assert.Equal(5.0, high);
+        Assert.Equal(2.0, low);
+        Assert.Equal(2.0, close);
+        Assert.Equal(2, volume);
+    }
+
+    [Fact]
+    public void GetCurrentStats_Reads_A_Buffer_That_Has_Wrapped()
+    {
+        // A ring buffer smaller than the number of ticks fed into it reports from its wrapped state, where
+        // the oldest valid tick no longer sits at index zero. The aggregate must follow the head rather than
+        // the array order, or a full buffer would report a window that has already been overwritten.
+        using var window = new TickWindow(SymbolsX, new[] { TimeFrame.M1 }, maxTicksPerSymbol: 2);
+        window.PushTick("X", new Tick(0, 1.0, 1.0, 1));
+        window.PushTick("X", new Tick(TimeSpan.TicksPerMinute, 2.0, 2.0, 1));
+        window.PushTick("X", new Tick(TimeSpan.TicksPerMinute * 2, 3.0, 3.0, 1));
+
+        window.GetCurrentStats("X", TimeFrame.M1, PriceType.Bid,
+            out double open, out double high, out double low, out double close, out double volume, out bool isComplete);
+
+        // The third tick opened and closed the window on its own, so the aggregate is that tick.
+        Assert.Equal(3.0, open);
+        Assert.Equal(3.0, high);
+        Assert.Equal(3.0, low);
+        Assert.Equal(3.0, close);
+        Assert.Equal(1, volume);
+        Assert.True(isComplete);
+    }
+
+    [Fact]
+    public void GetRecentTicks_Returns_Nothing_For_A_Symbol_That_Has_Not_Traded()
+    {
+        // A configured symbol with no ticks yet is the state every window starts in, and it must read as an
+        // empty window rather than as an error or as a buffer of default ticks.
+        using var window = new TickWindow(SymbolsX, new[] { TimeFrame.M1 });
+
+        Assert.Empty(window.GetRecentTicks("X", 5));
+
+        window.PushTick("X", new Tick(0, 1.0, 1.0, 1));
+        Assert.Single(window.GetRecentTicks("X", 5));
+    }
+
+    [Fact]
+    public void Dispose_Releases_Every_Buffer_It_Holds_Once()
+    {
+        // Disposal returns each buffer to the pool. A second call must not return the same arrays again,
+        // which is what makes the window safe to release from both the engine's teardown and a using block.
+        var window = new TickWindow(SymbolsX, new[] { TimeFrame.M1 }, maxTicksPerSymbol: 4);
+        window.PushTick("X", new Tick(0, 1.0, 1.0, 1));
+
+        window.Dispose();
+        window.Dispose();
+    }
+
+    [Fact]
     public void PushTick_Null_Symbol_Is_Rejected()
     {
         using var window = new TickWindow(SymbolsX, new[] { TimeFrame.M1 });

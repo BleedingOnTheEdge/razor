@@ -74,8 +74,21 @@ public class StrategyBaseTests
         public Task<AdapterOrderResponse> ExecuteMarketOrderAsync(string s, OrderType t, double v, double sl, double tp, string c)
         {
             MarketOrderCalls++;
+            LastSymbol = s;
+            LastType = t;
+            LastVolume = v;
+            LastStopLoss = sl;
+            LastTakeProfit = tp;
+            LastComment = c;
             return Task.FromResult(new AdapterOrderResponse());
         }
+
+        public string? LastSymbol;
+        public OrderType LastType;
+        public double LastVolume;
+        public double LastStopLoss;
+        public double LastTakeProfit;
+        public string? LastComment;
 
         public Task<AdapterOrderResponse> PlacePendingOrderAsync(string s, OrderType t, double v, double p, double sl, double tp, string c)
             => Task.FromResult(new AdapterOrderResponse());
@@ -104,6 +117,47 @@ public class StrategyBaseTests
         public Task<IReadOnlyList<Position>> GetOpenPositionsAsync(string? s, CancellationToken ct) => Task.FromResult((IReadOnlyList<Position>)Array.Empty<Position>());
         public Task<IReadOnlyList<Position>> GetHistoryAsync(CancellationToken ct) => Task.FromResult((IReadOnlyList<Position>)Array.Empty<Position>());
         public Task<IReadOnlyList<Order>> GetPendingOrdersAsync(CancellationToken ct) => Task.FromResult((IReadOnlyList<Order>)Array.Empty<Order>());
+    }
+
+    [Fact]
+    public async Task Order_Helpers_Pass_Supplied_Stops_Targets_And_Comment_Through()
+    {
+        // The stop loss, take profit and comment are optional, and each helper substitutes zero or an empty
+        // comment when they are omitted. A caller that does supply them must have them arrive unchanged: a
+        // default substituted for a real stop loss would send an unprotected order.
+        using var strategy = new TestableStrategy();
+        var broker = new CountingBroker();
+        using var tickWindow = new TickWindow(SymbolsEurUsd, TimeframeM1);
+        await strategy.OnConfigureAsync(StrategySpecification.CreateValidated(1000, 10, BtcSymbols));
+        strategy.WireUp(broker, tickWindow);
+
+        await strategy.BuyAsync("EURUSD", 0.1, sl: 1.05, tp: 1.15, comment: "entry");
+        Assert.Equal("EURUSD", broker.LastSymbol);
+        Assert.Equal(OrderType.Buy, broker.LastType);
+        Assert.Equal(0.1, broker.LastVolume);
+        Assert.Equal(1.05, broker.LastStopLoss);
+        Assert.Equal(1.15, broker.LastTakeProfit);
+        Assert.Equal("entry", broker.LastComment);
+
+        await strategy.BuyAsync(0.2, sl: 1.06, tp: 1.16, comment: "primary entry");
+        Assert.Equal("BTCUSDT", broker.LastSymbol);
+        Assert.Equal(1.06, broker.LastStopLoss);
+        Assert.Equal(1.16, broker.LastTakeProfit);
+        Assert.Equal("primary entry", broker.LastComment);
+
+        await strategy.SellAsync("EURUSD", 0.3, sl: 0.95, tp: 0.9, comment: "exit");
+        Assert.Equal(OrderType.Sell, broker.LastType);
+        Assert.Equal(0.95, broker.LastStopLoss);
+        Assert.Equal(0.9, broker.LastTakeProfit);
+        Assert.Equal("exit", broker.LastComment);
+
+        await strategy.SellAsync(0.4, sl: 0.96, tp: 0.91, comment: "primary exit");
+        Assert.Equal("BTCUSDT", broker.LastSymbol);
+        Assert.Equal(0.96, broker.LastStopLoss);
+        Assert.Equal(0.91, broker.LastTakeProfit);
+        Assert.Equal("primary exit", broker.LastComment);
+
+        Assert.Equal(4, broker.MarketOrderCalls);
     }
 
     private sealed class TestNetwork : INeuralNetworkModel

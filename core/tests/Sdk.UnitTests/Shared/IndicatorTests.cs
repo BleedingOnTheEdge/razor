@@ -33,6 +33,19 @@ public class IndicatorTests
     }
 
     [Fact]
+    public void Indexer_Rejects_A_Negative_Index_On_Read_And_On_Write()
+    {
+        // The index is absolute and wraps around the buffer with a modulo, so a negative index would not
+        // fail on its own: it would silently alias a slot on the far side of the buffer. Both accessors
+        // refuse it instead, which is what makes the wrap-around contract safe to rely on.
+        using var ind = new TestableIndicator();
+        ind.Initialize(4);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => ind[-1]);
+        Assert.Throws<ArgumentOutOfRangeException>(() => ind[-1] = 1.0);
+    }
+
+    [Fact]
     public void Initialize_Replaces_Buffer()
     {
         using var ind = new TestableIndicator();
