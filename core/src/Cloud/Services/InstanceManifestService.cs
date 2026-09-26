@@ -73,7 +73,12 @@ internal sealed class InstanceManifestService(
             }
             else
             {
-                instance.ManifestEntries.Add(new ExtensionManifestEntry
+                // Added through the set, not through the loaded navigation. An entity that becomes reachable
+                // only because it was appended to a tracked instance's collection is not reliably detected as
+                // new: EF Core's change tracker sees a client-assigned key that is already populated and
+                // issues an UPDATE, which affects no rows and fails the unit of work. DbSet.Add states the
+                // intent explicitly.
+                db.ExtensionManifestEntries.Add(new ExtensionManifestEntry
                 {
                     Id = Guid.NewGuid(),
                     EngineInstanceId = instance.Id,

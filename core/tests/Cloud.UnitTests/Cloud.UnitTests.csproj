@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <!--
+        Cloud is an ASP.NET Core application, so the test host needs the same shared framework to load it.
+
+        The behavioural tests use the SQLite provider over an in-memory connection rather than PostgreSQL.
+        That is a deliberate substitution, not a stub: the provider exercises the real EF Core model (keys,
+        unique indexes, enum-to-string conversions and navigation fix-up), and every assertion is about Cloud's
+        own decisions rather than about the provider. The Npgsql-specific path — applying the committed
+        migrations to a PostgreSQL server — is the one thing these tests cannot cover.
+    -->
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="coverlet.collector" Version="10.0.1">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.8" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.9" />
+        <!--
+            Pinned deliberately, not decoration. Microsoft.EntityFrameworkCore.Sqlite 10.0.9 resolves
+            SQLitePCLRaw.lib.e_sqlite3 2.1.11 transitively, which carries a known high severity advisory
+            (GHSA-2m69-gcr7-jv3q). NU1903 is treated as an error under the build's TreatWarningsAsErrors, so
+            the patched bundle is taken explicitly rather than the warning being suppressed.
+
+            The version must stay in the 2.1.x line. Microsoft.Data.Sqlite 10.0.9 is built against
+            SQLitePCLRaw.core 2.1.x, and pinning the 3.x bundle instead upgrades the managed core across a
+            major version while the native provider stays behind - which silently corrupts the row-count
+            reporting the change tracker relies on, surfacing as a spurious DbUpdateConcurrencyException on
+            an insert-only unit of work.
+        -->
+        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.13" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
+        <PackageReference Include="xunit" Version="2.9.3" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../../src/Cloud/Cloud.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Xunit" />
+    </ItemGroup>
+
+</Project>

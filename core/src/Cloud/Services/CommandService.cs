@@ -122,13 +122,20 @@ internal sealed class CommandService(
     {
         using CloudDbContext db = contextFactory.CreateDbContext();
 
-        return await db.EngineCommands
+        List<EngineCommand> queued = await db.EngineCommands
             .Where(c => c.EngineInstanceId == instanceId && c.Status == CommandStatus.Pending)
-            .OrderBy(c => c.SubmittedAt)
-            .ThenBy(c => c.Id)
-            .Take(options.CommandBatchSize)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
+
+        // The ordering and the batch limit are applied in memory rather than in SQL on purpose: EF Core's
+        // SQLite provider cannot translate an ORDER BY over a DateTimeOffset column, so ordering here keeps
+        // CommandService portable across providers. The filter above is served by the (instance, status)
+        // index, and the number of pending rows for one instance is bounded by CommandQueueExpirySeconds,
+        // which fails anything the Engine never collects.
+        return [.. queued
+            .OrderBy(c => c.SubmittedAt)
+            .ThenBy(c => c.Id)
+            .Take(options.CommandBatchSize)];
     }
 
     /// <summary>

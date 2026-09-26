@@ -97,8 +97,19 @@ internal sealed class ProfileService(
             return new SelectionOutcome(ServiceStatus.NotFound, "No Engine instance with that identifier.", null);
         }
 
-        instance.Profile ??= new EngineProfile { Id = Guid.NewGuid(), EngineInstanceId = instance.Id };
-        EngineProfile profile = instance.Profile;
+        EngineProfile profile;
+        if (instance.Profile is null)
+        {
+            // Registration creates the profile, so this only runs for an instance written before that was
+            // true. It is added through the set for the same reason as the selection below.
+            profile = new EngineProfile { Id = Guid.NewGuid(), EngineInstanceId = instance.Id };
+            db.EngineProfiles.Add(profile);
+            instance.Profile = profile;
+        }
+        else
+        {
+            profile = instance.Profile;
+        }
 
         if (isActive)
         {
@@ -137,7 +148,10 @@ internal sealed class ProfileService(
                 Kind = kind,
                 Name = trimmedName
             };
-            profile.Selections.Add(selection);
+
+            // Added through the set rather than the navigation; see InstanceManifestService.ApplyAsync for why
+            // a client-assigned key appended to a tracked collection is not reliably seen as a new entity.
+            db.ProfileSelections.Add(selection);
         }
 
         selection.IsActive = isActive;

@@ -81,7 +81,11 @@ internal sealed class CloudOptions
     /// <summary>
     /// Gets the capability identifiers the Engine must support to authenticate (002-020-020 §3.3 step 2).
     /// </summary>
-    public IReadOnlyList<int> RequiredCapabilities { get; private set; } = [];
+    /// <remarks>
+    /// The setter is internal because <see cref="FromConfiguration"/> populates the list; callers outside
+    /// the assembly get a read-only view.
+    /// </remarks>
+    public IReadOnlyList<int> RequiredCapabilities { get; internal set; } = [];
 
     /// <summary>Gets or sets the heartbeat interval Cloud asks an Engine to use, in seconds.</summary>
     public int HeartbeatIntervalSeconds { get; set; } = DefaultHeartbeatIntervalSeconds;
