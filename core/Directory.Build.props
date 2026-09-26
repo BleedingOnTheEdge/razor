@@ -18,6 +18,9 @@
         <PackageProjectUrl>https://razor.BleedingOnTheEdge.com</PackageProjectUrl>
         <RepositoryUrl>https://github.com/BleedingOnTheEdge/razor</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <!-- No PackageLicenseExpression here. This default is inherited by every project in
+             core/, and all of them except Sdk are closed-source (see core/README.md
+             "Licensing"), so a blanket expression would make the closed-source Kernel and
+             Engine declare a license they are not under. Sdk sets its own expression. -->
     </PropertyGroup>
 </Project>

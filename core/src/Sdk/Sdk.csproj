@@ -15,6 +15,13 @@
         <PackageProjectUrl>https://Razor.io</PackageProjectUrl>
         <RepositoryUrl>https://git.Razor.io/Razor/core.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
+        <!-- OWNER DECISION PENDING (issue #18). core/README.md "Licensing" describes Sdk as
+             "Proprietary, freely redistributable for extension development", which is NOT MIT,
+             so this expression contradicts the documented licence. The owner has confirmed the
+             SDK is the one public component (published to the NuGet registry for Hooks and
+             Slots developers), but the exact licence has not been stated. MIT is left here
+             unchanged rather than guessed at: picking a licence is a legal decision. Do not
+             treat this value as agreed until #18 records the ruling. -->
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageIcon>icon.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>

@@ -32,7 +32,9 @@
         <PackageProjectUrl>https://Razor.io</PackageProjectUrl>
         <RepositoryUrl>https://git.Razor.io/Razor/core.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <!-- No PackageLicenseExpression: Kernel is closed-source, all rights reserved
+             (see core/README.md "Licensing"). It previously declared MIT, which
+             contradicted that. -->
         <PackageIcon>icon.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
