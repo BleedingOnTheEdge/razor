@@ -86,8 +86,13 @@ internal static class EngineSocketHandler
             {
                 result = await socket.ReceiveAsync(new Memory<byte>(buffer), context.RequestAborted).ConfigureAwait(false);
             }
-            catch (Exception exception) when (exception is WebSocketException or OperationCanceledException)
+            catch (Exception exception) when (exception is WebSocketException or OperationCanceledException or IOException)
             {
+                // An Engine that is switched off, loses its network or is killed mid-frame surfaces here. The
+                // receive fault is the whole signal that the conversation is over, so it ends the pump rather
+                // than being reported as a server error: the connection is a socket, and a socket ending is an
+                // ordinary event. IOException is in the filter because a dropped TCP connection arrives as one
+                // ("the remote end closed the connection"), not as a WebSocketException.
                 CloudLog.EngineSocketEnded(logger, exception);
                 break;
             }

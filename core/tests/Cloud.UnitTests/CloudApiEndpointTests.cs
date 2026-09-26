@@ -417,6 +417,55 @@ public sealed class CloudApiEndpointTests
     }
 
     [Fact]
+    public async Task AnInstanceWhoseProfileRowIsMissingStillReadsAndCanBeSelected()
+    {
+        using var factory = new CloudWebApplicationFactory();
+        SeededInstance instance = await CloudWebApplicationFactory.SeedInstanceAsync(factory.Database).ConfigureAwait(true);
+        await SeedManifestAsync(factory, instance.InstanceId).ConfigureAwait(true);
+
+        // Registration creates the profile, so an instance without one is a row written before that was true.
+        // It must still be readable — an operator asking about such an instance needs an answer, not an error —
+        // and selecting an extension must repair the profile rather than fail.
+        using (CloudDbContext db = factory.Database.CreateDbContext())
+        {
+            EngineProfile profile = await db.EngineProfiles
+                .SingleAsync(candidate => candidate.EngineInstanceId == instance.InstanceId)
+                .ConfigureAwait(true);
+
+            db.EngineProfiles.Remove(profile);
+            await db.SaveChangesAsync(CancellationToken.None).ConfigureAwait(true);
+        }
+
+        using HttpClient client = factory.CreateAuthorisedClient();
+        using HttpResponseMessage before = await client
+            .GetAsync(Relative($"/api/instances/{instance.InstanceId}"))
+            .ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.OK, before.StatusCode);
+
+        InstanceView view = await ReadAsync<InstanceView>(before).ConfigureAwait(true);
+        Assert.Empty(view.Selections);
+        Assert.Null(view.ActiveSelections.Adapter);
+
+        using HttpResponseMessage selected = await PutJsonAsync(
+            client,
+            $"/api/instances/{instance.InstanceId}/profile/selections",
+            new { Kind = "Adapter", Name = "AdapterA", IsActive = true }).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.OK, selected.StatusCode);
+
+        ProfileSelectionView selectionView = await ReadAsync<ProfileSelectionView>(selected).ConfigureAwait(true);
+        Assert.Equal("AdapterA", selectionView.ActiveSelections.Adapter);
+
+        // The selection was written against a profile that had to be created for it, which is the repair this
+        // test exists to pin: the row and the selection are both there afterwards.
+        using CloudDbContext after = factory.Database.CreateDbContext();
+        EngineProfile repaired = await after.EngineProfiles
+            .Include(candidate => candidate.Selections)
+            .SingleAsync(candidate => candidate.EngineInstanceId == instance.InstanceId)
+            .ConfigureAwait(true);
+        Assert.Equal("AdapterA", Assert.Single(repaired.Selections).Name);
+    }
+
+    [Fact]
     public async Task EveryApiRouteIsRefusedWithoutTheManagementKey()
     {
         using var factory = new CloudWebApplicationFactory();
