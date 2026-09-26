@@ -6,6 +6,7 @@
 
 namespace Engine.Communication;
 
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -24,9 +25,17 @@ using System.Text.Json.Serialization;
 /// <para>
 /// The shapes produced here are the ones the existing readers already expect. A JSON object becomes a
 /// <see cref="Dictionary{TKey,TValue}"/> of <see cref="string"/> to <see cref="object"/> and a JSON array an
-/// <see cref="object"/>[] — the types the payload branches and the command handlers test against. A JSON
-/// string is returned as a <see cref="string"/>, which is also how an encrypted payload arrives before the
-/// security manager replaces it with the decrypted form.
+/// <see cref="object"/>[] — the types the payload branches and the command handlers test against. An
+/// integral number becomes an <see cref="int"/> where it fits, because the command framing and the handlers
+/// read identifiers, seeds and intervals as <see cref="int"/>, and a <see cref="long"/> or
+/// <see cref="double"/> otherwise. A JSON string is returned as a <see cref="string"/>, which is also how an
+/// encrypted payload arrives before the security manager replaces it with the decrypted form.
+/// </para>
+/// <para>
+/// The conversion is driven by the reader rather than by an intermediate <see cref="JsonDocument"/> so that
+/// both entry points share one implementation, and so that a number keeps the width it was written with: a
+/// payload read through a document would widen an integral value to <see cref="double"/> wherever the
+/// reader had already consumed the token.
 /// </para>
 /// </remarks>
 internal sealed class CloudPayloadJsonConverter : JsonConverter<object>
@@ -34,10 +43,7 @@ internal sealed class CloudPayloadJsonConverter : JsonConverter<object>
     /// <inheritdoc/>
     public override object? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        // The reader is positioned at the start of a complete value, so a nested object or array is
-        // materialised by this single parse rather than by a second deserialisation pass.
-        using JsonDocument document = JsonDocument.ParseValue(ref reader);
-        return FromElement(document.RootElement);
+        return ReadValue(ref reader);
     }
 
     /// <inheritdoc/>
@@ -63,53 +69,99 @@ internal sealed class CloudPayloadJsonConverter : JsonConverter<object>
     /// <exception cref="JsonException">The text is not a single JSON value.</exception>
     internal static object? Parse(string json)
     {
-        using JsonDocument document = JsonDocument.Parse(json);
-        return FromElement(document.RootElement);
+        var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json));
+        return reader.Read()
+            ? ReadValue(ref reader)
+            : throw new JsonException("The decrypted payload is empty.");
     }
 
-    /// <summary>
-    /// Converts one parsed JSON value into the CLR shape the Engine's message handling reads.
-    /// </summary>
-    /// <param name="element">The value.</param>
-    /// <returns>The converted value.</returns>
-    internal static object? FromElement(JsonElement element)
+    private static object? ReadValue(ref Utf8JsonReader reader)
     {
-        return element.ValueKind switch
+        switch (reader.TokenType)
         {
-            JsonValueKind.Object => ToDictionary(element),
-            JsonValueKind.Array => element.EnumerateArray().Select(FromElement).ToArray(),
-            JsonValueKind.String => element.GetString(),
-            JsonValueKind.Number => ToNumber(element),
-            JsonValueKind.True => true,
-            JsonValueKind.False => false,
-            _ => null
-        };
+            case JsonTokenType.StartObject:
+                return ReadObject(ref reader);
+
+            case JsonTokenType.StartArray:
+                return ReadArray(ref reader);
+
+            case JsonTokenType.String:
+                return reader.GetString();
+
+            case JsonTokenType.Number:
+                return ReadNumber(ref reader);
+
+            case JsonTokenType.True:
+                return true;
+
+            case JsonTokenType.False:
+                return false;
+
+            case JsonTokenType.Null:
+                return null;
+
+            default:
+                throw new JsonException($"A payload cannot contain a {reader.TokenType} token.");
+        }
     }
 
-    private static Dictionary<string, object> ToDictionary(JsonElement element)
+    private static Dictionary<string, object> ReadObject(ref Utf8JsonReader reader)
     {
         var payload = new Dictionary<string, object>(StringComparer.Ordinal);
-        foreach (JsonProperty property in element.EnumerateObject())
+
+        while (reader.Read())
         {
+            if (reader.TokenType == JsonTokenType.EndObject)
+            {
+                return payload;
+            }
+
+            string name = reader.GetString() ?? string.Empty;
+            if (!reader.Read())
+            {
+                break;
+            }
+
             // A JSON null is a value the handlers distinguish from an absent key, so it is kept. The
             // dictionary's value type is object, not object?, because that is the type the command handlers
             // and the payload branches test against.
-            payload[property.Name] = FromElement(property.Value)!;
+            payload[name] = ReadValue(ref reader)!;
         }
 
-        return payload;
+        throw new JsonException("A payload object was not terminated.");
     }
 
-    private static object ToNumber(JsonElement element)
+    private static object?[] ReadArray(ref Utf8JsonReader reader)
     {
-        // An integral number is materialised as int where it fits, because the command handlers and the
-        // command framing read identifiers, seeds and intervals as int; long and double keep the values that
-        // do not fit.
-        if (element.TryGetInt32(out int intValue))
+        var items = new List<object?>();
+
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonTokenType.EndArray)
+            {
+                return items.ToArray();
+            }
+
+            items.Add(ReadValue(ref reader));
+        }
+
+        throw new JsonException("A payload array was not terminated.");
+    }
+
+    private static object ReadNumber(ref Utf8JsonReader reader)
+    {
+        // Each width is returned on its own: a conditional expression over long and double would take double
+        // as their common type, silently widening every payload number that does not fit an int.
+        if (reader.TryGetInt32(out int intValue))
         {
             return intValue;
         }
 
-        return element.TryGetInt64(out long longValue) ? longValue : element.GetDouble();
+        if (reader.TryGetInt64(out long longValue))
+        {
+            return longValue;
+        }
+
+        return reader.GetDouble();
     }
 }
