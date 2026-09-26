@@ -41,7 +41,10 @@ public class SymbolPropertiesValidationTests
     [InlineData(-1)]
     public void Validate_NonPositive_HoldingCostInterval_Throws(long intervalTicks)
     {
-        var props = CreateValid() with { HoldingCostIntervalTicks = intervalTicks };
+        var props = CreateValid() with
+        {
+            HoldingCostIntervalTicks = intervalTicks
+        };
 
         // The interval is the divisor that turns elapsed time into a number of funding periods, so a zero
         // or negative value is a configuration fault rather than a wide interval: left in place it would
