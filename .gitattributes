@@ -1,0 +1,38 @@
+# Line-ending policy, declared once.
+#
+# Why this file exists: `core/.editorconfig` sets `end_of_line = crlf`, but the
+# repository had no `.gitattributes`, so the working copy's line endings were
+# decided by each machine's `core.autocrlf`. On Windows (`autocrlf = true`) the
+# LF blobs are checked out as CRLF and `dotnet format --verify-no-changes`
+# passes; on a Linux CI runner the same blobs are checked out as LF, which
+# violates `end_of_line = crlf`, so `dotnet format` fails there. The first-ever
+# CI run (PR #22) surfaced this. Declaring the policy here makes both
+# environments agree instead of depending on local git configuration.
+#
+# `text=auto eol=crlf` normalises to LF in the repository and checks out CRLF
+# everywhere, matching `.editorconfig`. Nothing here changes a single byte in
+# the repository's history: the stored blobs are already LF, and `text=auto`
+# keeps them that way.
+* text=auto eol=crlf
+
+# Scripts and manifests that must stay LF: a CRLF shebang or line ending breaks
+# them on Linux, and they are not C#/XML/MSBuild so `.editorconfig` does not
+# govern them.
+*.sh   text eol=lf
+*.py   text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+Dockerfile text eol=lf
+.gitattributes text eol=lf
+.gitignore     text eol=lf
+
+# Binary files: never normalised.
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.dll binary
+*.so  binary
+*.pdf binary
+*.snk binary
+*.pfx binary

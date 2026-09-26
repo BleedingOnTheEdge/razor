@@ -57,6 +57,39 @@ No org-root anchor is reachable from this workspace, so `org_docs_fallback: noti
 - Development runs as a **continuous loop**: follow the `product-loop` skill.
 - **Merge into `main` only** (protected, PRs only). **Never merge to `prod`** — that branch is human-only. Delete the source branch after merge and resynchronise checkouts.
 
+## Continuous integration and coverage (MUST)
+- Workflows live in **`.github/workflows/` at the repository root** -- GitHub reads no other
+  location. Before issue #2 they sat in `core/.github/workflows/`, which is why no pull request in
+  this repository ever had a check run.
+- The .NET steps run from `core/` (`working-directory: core` in the workflow): that is the working
+  directory the quality gates in `CONTRIBUTING_AGENTS.md` are written for, and the one that makes
+  the single SDK pin at `razor/global.json` resolve -- see issue #11.
+- `build.yml` runs, in order and from `core/`: `dotnet restore Razor.sln`,
+  `dotnet build Razor.sln -c Release --no-incremental`,
+  `dotnet test Razor.sln -c Release --no-build --collect:"XPlat Code Coverage" --results-directory TestResults`,
+  then `dotnet format --verify-no-changes`.
+- **Coverage command.** Coverlet writes one Cobertura report per test project; they overlap, so the
+  gate merges them before measuring. The same two commands run locally -- CI adds `--no-build`
+  because `build.yml` builds immediately before testing:
+
+  ```bash
+  cd core
+  dotnet test Razor.sln -c Release --collect:"XPlat Code Coverage" --results-directory TestResults
+  cd ..
+  python3 .github/scripts/coverage_gate.py --results-dir core/TestResults --min-line 90 --min-branch 85
+  ```
+
+  It prints a per-project and merged table, writes `coverage-merged.cobertura.xml` and
+  `coverage-summary.md` under `core/TestResults/`, publishes them as the `coverage` artifact, and
+  exits non-zero when either rate is below its floor.
+- **Threshold.** The agreed gate is line AND branch >= 95% across the whole solution
+  (`CONTRIBUTING_AGENTS.md`, Definition of Done item 4). The floors `build.yml` enforces today are
+  **90% line and 85% branch**, set to the measured baseline (92.31% line / 87.58% branch) minus a
+  margin so the job fails on regression instead of being red on every pull request. Coverlet only
+  instruments assemblies a test project loads, so `Kernel` and `Engine`, which have no test project
+  at all (issue #4), are absent from the report rather than counted as 0%. **Issue #4 raises both
+  floors to 95.**
+
 ## Index protocol (MUST)
 Build an index of doc **paths**, not contents. Load contents only when a task requires them.
 Load only the section a task requires: each document is a directory whose `INDEX.md` lists its sections. See `rules/sectioning.md` in the `docs` skill.

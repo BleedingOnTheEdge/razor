@@ -1,0 +1,137 @@
+# Razor CI -- restore, build, test, and enforce the coverage gate.
+#
+# Issue #2: these workflows used to live at `core/.github/workflows/`, which is
+# not a path GitHub reads. GitHub only looks for `.github/workflows/` at the
+# *repository root*, so no pull request in this repository ever got a check run.
+# The files now sit where GitHub reads them.
+#
+# Every .NET step runs with `working-directory: core`, which is what
+# CONTRIBUTING_AGENTS.md prescribes for the quality gates ("The commands below
+# name Razor.sln relative to core/, so run them from there (in CI, use
+# working-directory: core)"). That cwd also places the runner under the single
+# SDK pin at `razor/global.json` (10.0.300, allowPrerelease=false,
+# rollForward=latestFeature), because the .NET host resolves global.json by
+# walking up from the working directory -- see issue #11. Steps that are not
+# .NET commands run from the repository root, and say so with explicit paths.
+#
+# Removed from CI here, to come back with the project they need (Cloud is
+# Step 4; issue #2 reintroduces them):
+#   * the `tests/Razor.Cloud.UnitTests` test step -- that project does not
+#     exist, and a step that can only fail is worse than no step.
+#   * `publish-cloud.yml` -- every path in it pointed at `src/Razor.Cloud/**`.
+
+name: Build and Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# The build only reads the repository.
+permissions:
+  contents: read
+
+env:
+  # Coverage floors enforced today -- see issue #5.
+  #
+  # The agreed gate is line AND branch >= 95% across the whole solution
+  # (CONTRIBUTING_AGENTS.md, Definition of Done item 4). That number is not
+  # reachable yet: coverlet only instruments assemblies a test project actually
+  # loads, and only the `Sdk` and `Shared` assemblies qualify. `Kernel` and
+  # `Engine` have no test project at all (issue #4), so they are absent from the
+  # report instead of being counted as 0%.
+  #
+  # Measured baseline over the two instrumented test projects: 92.31% line and
+  # 87.58% branch. These floors are therefore a regression gate, not the target:
+  # the job fails on a material drop rather than being red on every pull request
+  # until #4 lands. Issue #4 raises both numbers to 95.
+  COVERAGE_MIN_LINE: '90'
+  COVERAGE_MIN_BRANCH: '85'
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          # Must stay on the pinned band: razor/global.json pins 10.0.300 with
+          # allowPrerelease=false and rollForward=latestFeature. See issue #11.
+          dotnet-version: 10.0.x
+
+      - name: Verify the SDK pin resolves for this working directory
+        working-directory: core
+        run: |
+          resolved="$(dotnet --version)"
+          echo "Resolved SDK: $resolved"
+          case "$resolved" in
+            10.0.*) ;;
+            *)
+              echo "::error::core/ resolved an SDK of $resolved, not 10.0.x -- razor/global.json is not being honoured"
+              exit 1
+              ;;
+          esac
+
+      - name: Restore
+        working-directory: core
+        run: dotnet restore Razor.sln
+
+      - name: Build
+        working-directory: core
+        run: dotnet build Razor.sln -c Release --no-incremental
+
+      - name: Test with coverage
+        working-directory: core
+        run: dotnet test Razor.sln -c Release --no-build --collect:"XPlat Code Coverage" --results-directory TestResults
+
+      # Enforcing. This step failed on the first-ever CI run (PR #22) purely
+      # because of line endings: `core/.editorconfig` sets `end_of_line = crlf`
+      # while the repository had no `.gitattributes`, so a Windows checkout
+      # (`autocrlf = true`) produced CRLF and satisfied the rule, but the Linux
+      # runner checked the same LF blobs out as LF and violated it. The
+      # repository-root `.gitattributes` now declares the policy (`* text=auto
+      # eol=crlf`, with explicit LF for .sh/.py/.yml), so both environments agree
+      # and this step is a real gate rather than an environment lottery.
+      - name: Verify formatting
+        working-directory: core
+        run: dotnet format --verify-no-changes
+
+      - name: Enforce the coverage floor
+        run: |
+          python3 .github/scripts/coverage_gate.py \
+            --results-dir core/TestResults \
+            --min-line "$COVERAGE_MIN_LINE" \
+            --min-branch "$COVERAGE_MIN_BRANCH" \
+            --merged core/TestResults/coverage-merged.cobertura.xml \
+            --summary core/TestResults/coverage-summary.md
+
+      - name: Publish the coverage summary
+        if: always()
+        run: |
+          if [ -f core/TestResults/coverage-summary.md ]; then
+            cat core/TestResults/coverage-summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+          cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
+
+          > `Kernel` and `Engine` have no test project (issue #4), so coverlet does
+          > not instrument them: the rates above cover the instrumented part of the
+          > solution, not every line committed to it. The agreed gate is line and
+          > branch >= 95%; the floors this job enforces are raised to 95 in #4.
+          SUMMARY
+
+      - name: Upload the coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: |
+            core/TestResults/**/coverage.cobertura.xml
+            core/TestResults/coverage-merged.cobertura.xml
+            core/TestResults/coverage-summary.md
+          if-no-files-found: warn
