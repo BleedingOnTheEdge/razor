@@ -1,0 +1,87 @@
+# Publish the Sdk to GitHub Packages.
+#
+# Issue #2: moved here from `core/.github/workflows/`, a path GitHub never
+# reads, so this workflow could never run from where it sat.
+#
+# Stale content fixed in this file:
+#   * `src/Razor.Core.Sdk/Razor.Core.Sdk.csproj` -> `src/Sdk/Sdk.csproj`. The
+#     project was renamed and the old path does not exist.
+#   * the version no longer comes from `VERSION.txt`: that file does not exist
+#     anywhere in the repository, so the step failed and the workflow could
+#     never publish. The release tag that triggers the workflow is the version;
+#     a manual dispatch asks for one explicitly.
+#
+# The .NET steps run with `working-directory: core`, as CONTRIBUTING_AGENTS.md
+# prescribes, which also keeps them under the single SDK pin at
+# `razor/global.json` -- see issue #11.
+
+name: Publish SDK to GitHub Packages
+
+on:
+  push:
+    tags:
+      - 'v*'              # Triggers on tags like v1.0.0, v0.0.4
+  workflow_dispatch:      # Manual trigger
+    inputs:
+      version:
+        description: 'Version to publish, without a leading v (for example 0.0.4).'
+        required: true
+
+jobs:
+  publish-sdk:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          # Must stay on the pinned band; see razor/global.json and issue #11.
+          dotnet-version: 10.0.x
+
+      - name: Resolve the version
+        id: version
+        env:
+          # Empty on a tag push, where the tag itself is the version.
+          DISPATCH_VERSION: ${{ inputs.version }}
+        run: |
+          version="${DISPATCH_VERSION}"
+          if [ -z "$version" ]; then
+            version="${GITHUB_REF_NAME#v}"
+          fi
+          echo "VERSION=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Display version
+        run: echo "Building SDK version ${{ steps.version.outputs.VERSION }}"
+
+      - name: Restore
+        working-directory: core
+        run: dotnet restore src/Sdk/Sdk.csproj
+
+      - name: Build
+        working-directory: core
+        run: dotnet build src/Sdk/Sdk.csproj --configuration Release --no-restore
+
+      - name: Pack
+        working-directory: core
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          dotnet pack src/Sdk/Sdk.csproj \
+            --configuration Release \
+            --no-build \
+            --output ./nupkg \
+            /p:Version="$PACKAGE_VERSION"
+
+      - name: Push to GitHub Packages
+        working-directory: core
+        run: |
+          dotnet nuget push ./nupkg/*.nupkg \
+            --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+            --api-key ${{ secrets.GITHUB_TOKEN }}
