@@ -88,7 +88,12 @@ jobs:
 
       - name: Test with coverage
         working-directory: core
-        run: dotnet test Razor.sln -c Release --no-build --collect:"XPlat Code Coverage" --results-directory TestResults
+        # `--settings coverlet.runsettings` is REQUIRED: without it the exclusion for
+        # generated sources is not applied, so the EF migration, its designer, the model
+        # snapshot and the generated LoggerMessage bodies are instrumented at 0% and drag
+        # the merged figures far below the floor. The gate then fails on a measurement
+        # artifact rather than on a real coverage shortfall.
+        run: dotnet test Razor.sln -c Release --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory TestResults
 
       # Enforcing. This step failed on the first-ever CI run (PR #22) purely
       # because of line endings: `core/.editorconfig` sets `end_of_line = crlf`
