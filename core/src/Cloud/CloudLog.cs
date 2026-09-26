@@ -102,4 +102,10 @@ internal static partial class CloudLog
     /// <param name="correlationId">The command correlation identifier.</param>
     [LoggerMessage(EventId = 1012, Level = LogLevel.Warning, Message = "Queued command {CorrelationId} expired before the Engine collected it.")]
     internal static partial void CommandExpired(ILogger logger, string correlationId);
+
+    /// <summary>Logs that an Engine socket ended abnormally.</summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="exception">The exception that ended the socket.</param>
+    [LoggerMessage(EventId = 1013, Level = LogLevel.Debug, Message = "The Engine socket ended.")]
+    internal static partial void EngineSocketEnded(ILogger logger, Exception exception);
 }

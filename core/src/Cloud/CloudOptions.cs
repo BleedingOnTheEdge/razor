@@ -62,6 +62,16 @@ internal sealed class CloudOptions
     /// <summary>The number of queued commands Cloud hands to an Engine in one heartbeat response.</summary>
     internal const int DefaultCommandBatchSize = 16;
 
+    /// <summary>
+    /// How long Cloud waits for an <c>ActivateExtensions</c> command to be answered, in seconds.
+    /// </summary>
+    /// <remarks>
+    /// Activation loads and inspects assemblies on the Engine, so it is slower than a pure state change but
+    /// still bounded. Without a timeout a lost activation answer would leave the command dispatched for
+    /// ever, because delivery is not acknowledged.
+    /// </remarks>
+    internal const int DefaultActivateExtensionsTimeoutSeconds = 60;
+
     /// <summary>Gets or sets the PostgreSQL connection string.</summary>
     public string? ConnectionString { get; set; }
 
@@ -79,8 +89,11 @@ internal sealed class CloudOptions
     /// <summary>Gets or sets how long a queued command may wait before it is failed, in seconds.</summary>
     public int CommandQueueExpirySeconds { get; set; } = DefaultCommandQueueExpirySeconds;
 
-    /// <summary>Gets or sets the number of queued commands delivered in one heartbeat response.</summary>
+    /// <summary>Gets or sets the number of queued commands delivered in one delivery batch.</summary>
     public int CommandBatchSize { get; set; } = DefaultCommandBatchSize;
+
+    /// <summary>Gets or sets the timeout Cloud applies to an <c>ActivateExtensions</c> command, in seconds.</summary>
+    public int ActivateExtensionsTimeoutSeconds { get; set; } = DefaultActivateExtensionsTimeoutSeconds;
 
     /// <summary>
     /// Builds the options from the environment and the application configuration.
@@ -110,7 +123,11 @@ internal sealed class CloudOptions
             CommandBatchSize = ReadPositiveInt(
                 configuration[$"{SectionName}:CommandBatchSize"],
                 DefaultCommandBatchSize,
-                "CommandBatchSize")
+                "CommandBatchSize"),
+            ActivateExtensionsTimeoutSeconds = ReadPositiveInt(
+                configuration[$"{SectionName}:ActivateExtensionsTimeoutSeconds"],
+                DefaultActivateExtensionsTimeoutSeconds,
+                "ActivateExtensionsTimeoutSeconds")
         };
 
         string capabilityList = Environment.GetEnvironmentVariable(RequiredCapabilitiesVariable)

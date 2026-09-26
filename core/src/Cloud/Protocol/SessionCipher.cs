@@ -140,10 +140,10 @@ internal sealed class SessionCipher : IDisposable
     /// Decrypts a payload the Engine encrypted with the established session key.
     /// </summary>
     /// <param name="cipherText">The base64 framed ciphertext <c>nonce || tag || cipher</c>.</param>
-    /// <returns>The decrypted JSON payload, with the Engine's sequence prefix removed.</returns>
+    /// <returns>The decrypted payload and the sequence number the Engine stamped on it.</returns>
     /// <exception cref="InvalidOperationException">No session key has been established, or the frame is too short.</exception>
     /// <exception cref="CryptographicException">The authentication tag does not verify.</exception>
-    internal string Decrypt(string cipherText)
+    internal DecryptedMessage Decrypt(string cipherText)
     {
         byte[] sessionKey = RequireSessionKey();
 
@@ -163,9 +163,11 @@ internal sealed class SessionCipher : IDisposable
             gcm.Decrypt(nonce, cipher, tag, plain);
         }
 
-        // The Engine prefixes the plaintext with its sequence number and never validates the value, so the
-        // prefix is stripped without interpretation rather than treated as a replay window.
-        return Encoding.UTF8.GetString(plain, SequencePrefixSize, plain.Length - SequencePrefixSize);
+        // The sequence number is returned rather than discarded so that the session can enforce
+        // 002-020-020 §3.3 step 6 ("each message includes a sequence number to prevent replay").
+        ulong sequence = BitConverter.ToUInt64(plain, 0);
+        string json = Encoding.UTF8.GetString(plain, SequencePrefixSize, plain.Length - SequencePrefixSize);
+        return new DecryptedMessage(sequence, json);
     }
 
     /// <summary>
@@ -224,3 +226,10 @@ internal sealed class SessionCipher : IDisposable
             "The session key has not been established; EstablishSession must run before any encryption.");
     }
 }
+
+/// <summary>
+/// A decrypted Engine payload together with the sequence number that accompanied it.
+/// </summary>
+/// <param name="Sequence">The little-endian sequence number the Engine prefixed to the plaintext.</param>
+/// <param name="Json">The decrypted JSON payload.</param>
+internal sealed record DecryptedMessage(ulong Sequence, string Json);
