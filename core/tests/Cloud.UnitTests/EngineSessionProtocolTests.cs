@@ -137,7 +137,10 @@ public sealed class EngineSessionProtocolTests
 
         string confirm = harness.Peer.BuildEncrypted(
             CloudProtocol.MessageType.AuthConfirm,
-            JsonSerializer.Serialize(new { Challenge = "not-the-right-challenge" }));
+            JsonSerializer.Serialize(new
+            {
+                Challenge = "not-the-right-challenge"
+            }));
 
         Assert.Equal(EngineSessionSignal.Close, await harness.SendAsync(confirm).ConfigureAwait(true));
         Assert.Null(harness.Session.InstanceId);
@@ -152,7 +155,10 @@ public sealed class EngineSessionProtocolTests
         // An unauthenticated session has nothing to answer this with, and must not crash on it. The frame is
         // built directly because the peer cannot encrypt anything before a session key exists.
         string heartbeat = System.Text.Json.JsonSerializer.Serialize(
-            CloudMessage.Create(CloudProtocol.MessageType.Heartbeat, new { EngineId = "engine-1" }));
+            CloudMessage.Create(CloudProtocol.MessageType.Heartbeat, new
+            {
+                EngineId = "engine-1"
+            }));
 
         EngineSessionSignal signal = await harness.SendAsync(heartbeat).ConfigureAwait(true);
 
@@ -243,7 +249,10 @@ public sealed class EngineSessionProtocolTests
 
         string firstHeartbeat = harness.Peer.BuildEncrypted(
             CloudProtocol.MessageType.Heartbeat,
-            JsonSerializer.Serialize(new { EngineId = "engine-1" }));
+            JsonSerializer.Serialize(new
+            {
+                EngineId = "engine-1"
+            }));
 
         Assert.Equal(EngineSessionSignal.Continue, await harness.SendAsync(firstHeartbeat).ConfigureAwait(true));
 
@@ -280,7 +289,10 @@ public sealed class EngineSessionProtocolTests
 
         // After the handshake the protocol is encrypted end to end, so a plaintext message is a violation.
         string plaintext = JsonSerializer.Serialize(
-            CloudMessage.Create(CloudProtocol.MessageType.Heartbeat, new { EngineId = "engine-1" }));
+            CloudMessage.Create(CloudProtocol.MessageType.Heartbeat, new
+            {
+                EngineId = "engine-1"
+            }));
 
         Assert.Equal(EngineSessionSignal.Close, await harness.SendAsync(plaintext).ConfigureAwait(true));
     }

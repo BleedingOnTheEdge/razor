@@ -25,7 +25,10 @@ public sealed class ProtocolTests
         // The Engine serialises and reads PascalCase names with default options. A naming policy on either
         // side would silently break authentication, so the exact names are pinned here.
         string json = JsonSerializer.Serialize(
-            CloudMessage.Create(CloudProtocol.MessageType.AuthResponse, new { Status = "Success" }));
+            CloudMessage.Create(CloudProtocol.MessageType.AuthResponse, new
+            {
+                Status = "Success"
+            }));
 
         foreach (string key in EngineJsonKeys.Split(','))
         {
@@ -40,7 +43,10 @@ public sealed class ProtocolTests
     public void Envelope_KeepsThePayloadAsAnObjectForAPlaintextMessage()
     {
         string json = JsonSerializer.Serialize(
-            CloudMessage.Create(CloudProtocol.MessageType.AuthResponse, new { Status = "Success" }));
+            CloudMessage.Create(CloudProtocol.MessageType.AuthResponse, new
+            {
+                Status = "Success"
+            }));
 
         using JsonDocument document = JsonDocument.Parse(json);
         Assert.Equal(JsonValueKind.Object, document.RootElement.GetProperty("Payload").ValueKind);

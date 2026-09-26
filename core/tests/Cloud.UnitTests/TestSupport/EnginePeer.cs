@@ -40,10 +40,16 @@ internal sealed class EnginePeer : IDisposable
     internal string PublicKey => Convert.ToBase64String(_ecdh.PublicKey.ExportSubjectPublicKeyInfo());
 
     /// <summary>Gets the nonce Cloud issued, kept so the peer can compute the same challenge.</summary>
-    internal string? Nonce { get; private set; }
+    internal string? Nonce
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the session identifier Cloud issued.</summary>
-    internal string? SessionId { get; private set; }
+    internal string? SessionId
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Derives the session key from Cloud's public key and nonce, exactly as the Engine does.

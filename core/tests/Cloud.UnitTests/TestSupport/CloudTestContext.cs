@@ -39,25 +39,46 @@ internal sealed class CloudTestContext : IDisposable
     }
 
     /// <summary>Gets the store.</summary>
-    internal CloudTestDatabase Database { get; }
+    internal CloudTestDatabase Database
+    {
+        get;
+    }
 
     /// <summary>Gets the registered instance identifier.</summary>
-    internal Guid InstanceId { get; }
+    internal Guid InstanceId
+    {
+        get;
+    }
 
     /// <summary>Gets the controllable clock.</summary>
-    internal TestTimeProvider Time { get; }
+    internal TestTimeProvider Time
+    {
+        get;
+    }
 
     /// <summary>Gets the options in force.</summary>
-    internal CloudOptions Options { get; }
+    internal CloudOptions Options
+    {
+        get;
+    }
 
     /// <summary>Gets the command service.</summary>
-    internal CommandService Commands { get; }
+    internal CommandService Commands
+    {
+        get;
+    }
 
     /// <summary>Gets the profile service.</summary>
-    internal ProfileService Profiles { get; }
+    internal ProfileService Profiles
+    {
+        get;
+    }
 
     /// <summary>Gets the manifest service.</summary>
-    internal InstanceManifestService Manifests { get; }
+    internal InstanceManifestService Manifests
+    {
+        get;
+    }
 
     /// <summary>
     /// Creates a context with one registered instance.

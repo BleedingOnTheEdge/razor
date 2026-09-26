@@ -60,37 +60,70 @@ internal sealed class CloudSessionHarness : IDisposable
     }
 
     /// <summary>Gets the channel Cloud writes to.</summary>
-    internal RecordingEngineChannel Channel { get; }
+    internal RecordingEngineChannel Channel
+    {
+        get;
+    }
 
     /// <summary>Gets the Engine-side protocol participant.</summary>
-    internal EnginePeer Peer { get; }
+    internal EnginePeer Peer
+    {
+        get;
+    }
 
     /// <summary>Gets the session under test.</summary>
-    internal EngineSession Session { get; }
+    internal EngineSession Session
+    {
+        get;
+    }
 
     /// <summary>Gets the command service.</summary>
-    internal CommandService Commands { get; }
+    internal CommandService Commands
+    {
+        get;
+    }
 
     /// <summary>Gets the profile service.</summary>
-    internal ProfileService Profiles { get; }
+    internal ProfileService Profiles
+    {
+        get;
+    }
 
     /// <summary>Gets the manifest service.</summary>
-    internal InstanceManifestService Manifests { get; }
+    internal InstanceManifestService Manifests
+    {
+        get;
+    }
 
     /// <summary>Gets the registration service.</summary>
-    internal EngineRegistrationService Registration { get; }
+    internal EngineRegistrationService Registration
+    {
+        get;
+    }
 
     /// <summary>Gets the heartbeat service.</summary>
-    internal HeartbeatService Heartbeats { get; }
+    internal HeartbeatService Heartbeats
+    {
+        get;
+    }
 
     /// <summary>Gets the authentication service.</summary>
-    internal EngineAuthenticationService Authentication { get; }
+    internal EngineAuthenticationService Authentication
+    {
+        get;
+    }
 
     /// <summary>Gets the controllable clock.</summary>
-    internal TestTimeProvider Time { get; }
+    internal TestTimeProvider Time
+    {
+        get;
+    }
 
     /// <summary>Gets the Cloud options in force.</summary>
-    internal CloudOptions Options { get; }
+    internal CloudOptions Options
+    {
+        get;
+    }
 
     /// <summary>Gets the Cloud-side identifier of the registered instance.</summary>
     internal Guid InstanceId => _instanceId;
@@ -145,7 +178,10 @@ internal sealed class CloudSessionHarness : IDisposable
 
         string confirm = Peer.BuildEncrypted(
             CloudProtocol.MessageType.AuthConfirm,
-            JsonSerializer.Serialize(new { Challenge = Peer.ComputeChallenge(nonce) }));
+            JsonSerializer.Serialize(new
+            {
+                Challenge = Peer.ComputeChallenge(nonce)
+            }));
 
         // The peer records the session identifier Cloud issued so a test can compare it with what Cloud stored.
         Peer.RecordSessionId(sessionId);
@@ -174,7 +210,13 @@ internal sealed class CloudSessionHarness : IDisposable
         {
             EngineId = engineId,
             LocalTimestamp = DateTimeOffset.UnixEpoch,
-            Health = new { CpuUsage = 1.0, MemoryUsage = 1024L, TasksRunning = 0, LiveTickAge = 0 }
+            Health = new
+            {
+                CpuUsage = 1.0,
+                MemoryUsage = 1024L,
+                TasksRunning = 0,
+                LiveTickAge = 0
+            }
         });
 
         return SendAsync(Peer.BuildEncrypted(CloudProtocol.MessageType.Heartbeat, payload), cancellationToken);
@@ -221,7 +263,10 @@ internal sealed class CloudSessionHarness : IDisposable
         {
             CommandId = 1404,
             Status = succeeded ? "Success" : "Error",
-            Result = succeeded ? new { Message = "done" } : null,
+            Result = succeeded ? new
+            {
+                Message = "done"
+            } : null,
             Error = succeeded ? null : "activation failed"
         });
 
@@ -238,7 +283,10 @@ internal sealed class CloudSessionHarness : IDisposable
         string correlationId,
         CancellationToken cancellationToken = default)
     {
-        string payload = JsonSerializer.Serialize(new { Percent = 50 });
+        string payload = JsonSerializer.Serialize(new
+        {
+            Percent = 50
+        });
         return SendAsync(
             Peer.BuildEncrypted(CloudProtocol.MessageType.CommandProgress, payload, correlationId),
             cancellationToken);
