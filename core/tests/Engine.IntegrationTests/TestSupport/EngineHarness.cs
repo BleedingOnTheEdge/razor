@@ -62,22 +62,40 @@ internal sealed class EngineHarness : IAsyncDisposable
     }
 
     /// <summary>Gets the peer on the other end of the socket.</summary>
-    internal SimulatedCloudServer Cloud { get; }
+    internal SimulatedCloudServer Cloud
+    {
+        get;
+    }
 
     /// <summary>Gets the connector under test.</summary>
-    internal CloudConnector Connector { get; }
+    internal CloudConnector Connector
+    {
+        get;
+    }
 
     /// <summary>Gets the state store the connector persists to.</summary>
-    internal StubStateManager State { get; }
+    internal StubStateManager State
+    {
+        get;
+    }
 
     /// <summary>Gets the telemetry sink the connector reports to.</summary>
-    internal StubTelemetry Telemetry { get; }
+    internal StubTelemetry Telemetry
+    {
+        get;
+    }
 
     /// <summary>Gets the task manager the connector reads heartbeat facts from.</summary>
-    internal StubTaskManager Tasks { get; }
+    internal StubTaskManager Tasks
+    {
+        get;
+    }
 
     /// <summary>Gets the self-update manager the connector offers updates to.</summary>
-    internal StubSelfUpdateManager SelfUpdate { get; }
+    internal StubSelfUpdateManager SelfUpdate
+    {
+        get;
+    }
 
     /// <summary>Gets what the Engine logged, which is where it reports a failure it does not throw.</summary>
     internal LogSink Logs => _logs;

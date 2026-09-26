@@ -62,7 +62,10 @@ internal sealed class SimulatedCloudServer : IAsyncDisposable
     internal string Endpoint { get; private set; } = string.Empty;
 
     /// <summary>Gets the session identifier issued in the <c>AuthResponse</c>.</summary>
-    internal string? SessionId { get; private set; }
+    internal string? SessionId
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets a value indicating whether the challenge in the Engine's <c>AuthConfirm</c> verified against the

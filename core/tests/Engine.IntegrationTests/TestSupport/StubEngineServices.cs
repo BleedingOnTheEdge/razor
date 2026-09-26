@@ -16,7 +16,10 @@ using Engine.Services.Update;
 internal sealed class StubTelemetry : IEngineTelemetry
 {
     /// <summary>Gets the last connection state reported, or <see langword="null"/> if none was.</summary>
-    internal bool? ConnectionState { get; private set; }
+    internal bool? ConnectionState
+    {
+        get; private set;
+    }
 
     /// <inheritdoc/>
     public void SetConnectionState(bool isConnected) => this.ConnectionState = isConnected;
@@ -57,7 +60,10 @@ internal sealed class StubTelemetry : IEngineTelemetry
 internal sealed class StubStateManager : IStateManager
 {
     /// <summary>Gets the session identifier the connector persisted.</summary>
-    internal string? SessionId { get; private set; }
+    internal string? SessionId
+    {
+        get; private set;
+    }
 
     /// <inheritdoc/>
     public string EngineId => "engine-under-test";
@@ -219,7 +225,10 @@ internal sealed class StubTaskManager : ITaskManager
 internal sealed class StubSelfUpdateManager : ISelfUpdateManager
 {
     /// <summary>Gets the update the connector offered, if it offered one.</summary>
-    internal (string Version, Uri DownloadUrl, string Checksum)? Offered { get; private set; }
+    internal (string Version, Uri DownloadUrl, string Checksum)? Offered
+    {
+        get; private set;
+    }
 
     /// <inheritdoc/>
     public bool IsUpdateAvailable => false;
