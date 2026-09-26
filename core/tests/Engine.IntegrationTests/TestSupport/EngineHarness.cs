@@ -25,6 +25,7 @@ internal sealed class EngineHarness : IAsyncDisposable
 
     private readonly CancellationTokenSource _cancellation = new();
     private readonly List<CloudCommand> _commands = [];
+    private readonly LogSink _logs = new();
     private readonly BinaryTransferManager _transferManager;
     private readonly string? _previousPrimaryEndpoint;
     private Task _connectionLoop = Task.CompletedTask;
@@ -77,6 +78,9 @@ internal sealed class EngineHarness : IAsyncDisposable
 
     /// <summary>Gets the self-update manager the connector offers updates to.</summary>
     internal StubSelfUpdateManager SelfUpdate { get; }
+
+    /// <summary>Gets what the Engine logged, which is where it reports a failure it does not throw.</summary>
+    internal LogSink Logs => _logs;
 
     /// <summary>Gets every command the connector dispatched, in the order it dispatched them.</summary>
     internal IReadOnlyList<CloudCommand> Commands
@@ -134,7 +138,9 @@ internal sealed class EngineHarness : IAsyncDisposable
         }
 
         throw new TimeoutException(
-            $"No command matched within the timeout; the dispatched identifiers were [{string.Join(", ", this.Commands.Select(command => command.CommandId))}].");
+            $"No command matched within the timeout; the dispatched identifiers were [{string.Join(", ", this.Commands.Select(command => command.CommandId))}]."
+            + Environment.NewLine
+            + _logs.Render());
     }
 
     /// <summary>Waits for a condition the tests cannot be notified about directly.</summary>
