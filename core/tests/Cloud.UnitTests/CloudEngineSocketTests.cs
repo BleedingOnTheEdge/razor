@@ -85,13 +85,24 @@ public sealed class CloudEngineSocketTests
             socket,
             peer.BuildEncrypted(
                 CloudProtocol.MessageType.CommandProgress,
-                JsonSerializer.Serialize(new { Percent = 40 }),
+                JsonSerializer.Serialize(new
+                {
+                    Percent = 40
+                }),
                 correlationId)).ConfigureAwait(true);
         await SendAsync(
             socket,
             peer.BuildEncrypted(
                 CloudProtocol.MessageType.CommandResponse,
-                JsonSerializer.Serialize(new { CommandId = 1200, Status = "Success", Result = new { NetProfit = 7.5 } }),
+                JsonSerializer.Serialize(new
+                {
+                    CommandId = 1200,
+                    Status = "Success",
+                    Result = new
+                    {
+                        NetProfit = 7.5
+                    }
+                }),
                 correlationId)).ConfigureAwait(true);
 
         await WaitForCommandStatusAsync(client, commandId, "Completed").ConfigureAwait(true);
@@ -151,7 +162,10 @@ public sealed class CloudEngineSocketTests
             socket,
             peer.BuildEncrypted(
                 CloudProtocol.MessageType.AuthConfirm,
-                JsonSerializer.Serialize(new { Challenge = peer.ComputeChallenge(nonce) }))).ConfigureAwait(true);
+                JsonSerializer.Serialize(new
+                {
+                    Challenge = peer.ComputeChallenge(nonce)
+                }))).ConfigureAwait(true);
         await ReadMessageAsync(socket, CloudProtocol.MessageType.AuthAck).ConfigureAwait(true);
 
         await SendAsync(
@@ -195,7 +209,9 @@ public sealed class CloudEngineSocketTests
         // An authenticated session accepts nothing but encrypted frames. A plaintext frame after the handshake
         // is refused, and because Cloud cannot tell a broken client from a hostile one it ends the session
         // rather than carrying on with a connection it no longer trusts.
-        await SendAsync(socket, JsonSerializer.Serialize(CloudMessage.Create(CloudProtocol.MessageType.Heartbeat, new { })))
+        await SendAsync(socket, JsonSerializer.Serialize(CloudMessage.Create(CloudProtocol.MessageType.Heartbeat, new
+        {
+        })))
             .ConfigureAwait(true);
 
         Frame closing = await ReceiveFrameAsync(socket).ConfigureAwait(true);
@@ -286,7 +302,10 @@ public sealed class CloudEngineSocketTests
             socket,
             peer.BuildEncrypted(
                 CloudProtocol.MessageType.AuthConfirm,
-                JsonSerializer.Serialize(new { Challenge = peer.ComputeChallenge(nonce) }))).ConfigureAwait(false);
+                JsonSerializer.Serialize(new
+                {
+                    Challenge = peer.ComputeChallenge(nonce)
+                }))).ConfigureAwait(false);
 
         await ReadMessageAsync(socket, CloudProtocol.MessageType.AuthAck).ConfigureAwait(false);
     }

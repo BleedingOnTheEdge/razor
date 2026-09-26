@@ -72,13 +72,25 @@ public sealed class CloudApiEndpointTests
         using HttpResponseMessage unknownAccount = await PostJsonAsync(
             client,
             "/api/engines",
-            new { AccountId = Guid.NewGuid(), LicenseId = account.LicenseId, EngineId = "engine-x", Name = "x" }).ConfigureAwait(true);
+            new
+            {
+                AccountId = Guid.NewGuid(),
+                LicenseId = account.LicenseId,
+                EngineId = "engine-x",
+                Name = "x"
+            }).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.NotFound, unknownAccount.StatusCode);
 
         using HttpResponseMessage unknownLicence = await PostJsonAsync(
             client,
             "/api/engines",
-            new { AccountId = account.AccountId, LicenseId = Guid.NewGuid(), EngineId = "engine-y", Name = "y" }).ConfigureAwait(true);
+            new
+            {
+                AccountId = account.AccountId,
+                LicenseId = Guid.NewGuid(),
+                EngineId = "engine-y",
+                Name = "y"
+            }).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.NotFound, unknownLicence.StatusCode);
 
         // A request that names neither an Engine identifier nor a display name is refused outright. The
@@ -87,7 +99,13 @@ public sealed class CloudApiEndpointTests
         using HttpResponseMessage unnamed = await PostJsonAsync(
             client,
             "/api/engines",
-            new { AccountId = account.AccountId, LicenseId = account.LicenseId, EngineId = "  ", Name = "n" }).ConfigureAwait(true);
+            new
+            {
+                AccountId = account.AccountId,
+                LicenseId = account.LicenseId,
+                EngineId = "  ",
+                Name = "n"
+            }).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.Conflict, unnamed.StatusCode);
 
         var registration = new EngineRegistrationService(factory.Database, TimeProvider.System);
@@ -100,7 +118,13 @@ public sealed class CloudApiEndpointTests
         using HttpResponseMessage duplicate = await PostJsonAsync(
             client,
             "/api/engines",
-            new { AccountId = account.AccountId, LicenseId = account.LicenseId, EngineId = "engine-dup", Name = "second" }).ConfigureAwait(true);
+            new
+            {
+                AccountId = account.AccountId,
+                LicenseId = account.LicenseId,
+                EngineId = "engine-dup",
+                Name = "second"
+            }).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.Conflict, duplicate.StatusCode);
     }
 
@@ -145,31 +169,53 @@ public sealed class CloudApiEndpointTests
         using HttpResponseMessage unknownInstance = await PostJsonAsync(
             client,
             $"/api/instances/{Guid.NewGuid()}/commands",
-            new { CommandId = 1200, CommandType = "RunBacktest" }).ConfigureAwait(true);
+            new
+            {
+                CommandId = 1200,
+                CommandType = "RunBacktest"
+            }).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.NotFound, unknownInstance.StatusCode);
 
         using HttpResponseMessage zeroId = await PostJsonAsync(
             client,
             $"/api/instances/{instance.InstanceId}/commands",
-            new { CommandId = 0, CommandType = "RunBacktest" }).ConfigureAwait(true);
+            new
+            {
+                CommandId = 0,
+                CommandType = "RunBacktest"
+            }).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.BadRequest, zeroId.StatusCode);
 
         using HttpResponseMessage noType = await PostJsonAsync(
             client,
             $"/api/instances/{instance.InstanceId}/commands",
-            new { CommandId = 1200, CommandType = "  " }).ConfigureAwait(true);
+            new
+            {
+                CommandId = 1200,
+                CommandType = "  "
+            }).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.BadRequest, noType.StatusCode);
 
         using HttpResponseMessage badParameters = await PostJsonAsync(
             client,
             $"/api/instances/{instance.InstanceId}/commands",
-            new { CommandId = 1200, CommandType = "RunBacktest", Parameters = "[1,2,3]" }).ConfigureAwait(true);
+            new
+            {
+                CommandId = 1200,
+                CommandType = "RunBacktest",
+                Parameters = "[1,2,3]"
+            }).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.BadRequest, badParameters.StatusCode);
 
         using HttpResponseMessage badTimeout = await PostJsonAsync(
             client,
             $"/api/instances/{instance.InstanceId}/commands",
-            new { CommandId = 1200, CommandType = "RunBacktest", TimeoutSeconds = 0 }).ConfigureAwait(true);
+            new
+            {
+                CommandId = 1200,
+                CommandType = "RunBacktest",
+                TimeoutSeconds = 0
+            }).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.BadRequest, badTimeout.StatusCode);
     }
 
@@ -340,7 +386,12 @@ public sealed class CloudApiEndpointTests
         using HttpResponseMessage adapterOnly = await PutJsonAsync(
             client,
             $"/api/instances/{instance.InstanceId}/profile/selections",
-            new { Kind = "adapter", Name = "AdapterA", IsActive = true }).ConfigureAwait(true);
+            new
+            {
+                Kind = "adapter",
+                Name = "AdapterA",
+                IsActive = true
+            }).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.OK, adapterOnly.StatusCode);
         ProfileSelectionView adapterView = await ReadAsync<ProfileSelectionView>(adapterOnly).ConfigureAwait(true);
         Assert.Null(adapterView.ActivationCommandId);
@@ -349,7 +400,12 @@ public sealed class CloudApiEndpointTests
         using HttpResponseMessage complete = await PutJsonAsync(
             client,
             $"/api/instances/{instance.InstanceId}/profile/selections",
-            new { Kind = "Strategy", Name = "StrategyA", IsActive = true }).ConfigureAwait(true);
+            new
+            {
+                Kind = "Strategy",
+                Name = "StrategyA",
+                IsActive = true
+            }).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.OK, complete.StatusCode);
 
         ProfileSelectionView completeView = await ReadAsync<ProfileSelectionView>(complete).ConfigureAwait(true);
@@ -378,13 +434,23 @@ public sealed class CloudApiEndpointTests
         using HttpResponseMessage missingKind = await PutJsonAsync(
             client,
             selectionsUrl,
-            new { Kind = (string?)null, Name = "AdapterA", IsActive = true }).ConfigureAwait(true);
+            new
+            {
+                Kind = (string?)null,
+                Name = "AdapterA",
+                IsActive = true
+            }).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.BadRequest, missingKind.StatusCode);
 
         using HttpResponseMessage unknownKind = await PutJsonAsync(
             client,
             selectionsUrl,
-            new { Kind = "NotASlot", Name = "AdapterA", IsActive = true }).ConfigureAwait(true);
+            new
+            {
+                Kind = "NotASlot",
+                Name = "AdapterA",
+                IsActive = true
+            }).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.BadRequest, unknownKind.StatusCode);
 
         // A numeric string parses as the enum's underlying type but is not a defined member, which is a
@@ -392,13 +458,23 @@ public sealed class CloudApiEndpointTests
         using HttpResponseMessage undefinedKind = await PutJsonAsync(
             client,
             selectionsUrl,
-            new { Kind = "99", Name = "AdapterA", IsActive = true }).ConfigureAwait(true);
+            new
+            {
+                Kind = "99",
+                Name = "AdapterA",
+                IsActive = true
+            }).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.BadRequest, undefinedKind.StatusCode);
 
         using HttpResponseMessage unknownInstance = await PutJsonAsync(
             client,
             $"/api/instances/{Guid.NewGuid()}/profile/selections",
-            new { Kind = "Adapter", Name = "AdapterA", IsActive = true }).ConfigureAwait(true);
+            new
+            {
+                Kind = "Adapter",
+                Name = "AdapterA",
+                IsActive = true
+            }).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.NotFound, unknownInstance.StatusCode);
 
         // The Engine never reported "AdapterZ", so activating it would produce a command the Engine cannot
@@ -406,13 +482,23 @@ public sealed class CloudApiEndpointTests
         using HttpResponseMessage unreported = await PutJsonAsync(
             client,
             selectionsUrl,
-            new { Kind = "Adapter", Name = "AdapterZ", IsActive = true }).ConfigureAwait(true);
+            new
+            {
+                Kind = "Adapter",
+                Name = "AdapterZ",
+                IsActive = true
+            }).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.Conflict, unreported.StatusCode);
 
         using HttpResponseMessage blankName = await PutJsonAsync(
             client,
             selectionsUrl,
-            new { Kind = "Adapter", Name = "   ", IsActive = true }).ConfigureAwait(true);
+            new
+            {
+                Kind = "Adapter",
+                Name = "   ",
+                IsActive = true
+            }).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.Conflict, blankName.StatusCode);
     }
 
@@ -449,7 +535,12 @@ public sealed class CloudApiEndpointTests
         using HttpResponseMessage selected = await PutJsonAsync(
             client,
             $"/api/instances/{instance.InstanceId}/profile/selections",
-            new { Kind = "Adapter", Name = "AdapterA", IsActive = true }).ConfigureAwait(true);
+            new
+            {
+                Kind = "Adapter",
+                Name = "AdapterA",
+                IsActive = true
+            }).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.OK, selected.StatusCode);
 
         ProfileSelectionView selectionView = await ReadAsync<ProfileSelectionView>(selected).ConfigureAwait(true);

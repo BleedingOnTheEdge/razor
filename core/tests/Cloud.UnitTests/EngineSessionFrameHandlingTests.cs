@@ -53,7 +53,9 @@ public sealed class EngineSessionFrameHandlingTests
         // because the Engine is still free to send a valid Auth next.
         Assert.Equal(
             EngineSessionSignal.Continue,
-            await harness.SendAsync(Serialize(CloudMessage.Create(CloudProtocol.MessageType.Heartbeat, new { }))).ConfigureAwait(true));
+            await harness.SendAsync(Serialize(CloudMessage.Create(CloudProtocol.MessageType.Heartbeat, new
+            {
+            }))).ConfigureAwait(true));
 
         // An Auth whose payload is not an object cannot carry credentials, so it is refused the same way
         // rather than being read field by field from whatever shape arrived.
@@ -85,7 +87,9 @@ public sealed class EngineSessionFrameHandlingTests
         // it is ignored. Closing here would let any peer abort another Engine's half-finished handshake.
         Assert.Equal(
             EngineSessionSignal.Continue,
-            await harness.SendAsync(Serialize(CloudMessage.Create(CloudProtocol.MessageType.Heartbeat, new { }))).ConfigureAwait(true));
+            await harness.SendAsync(Serialize(CloudMessage.Create(CloudProtocol.MessageType.Heartbeat, new
+            {
+            }))).ConfigureAwait(true));
     }
 
     [Theory]
@@ -142,7 +146,10 @@ public sealed class EngineSessionFrameHandlingTests
         // unverifiable challenge must never be treated as a satisfied one.
         Assert.Equal(
             EngineSessionSignal.Close,
-            await harness.SendAsync(Serialize(CloudMessage.Create(CloudProtocol.MessageType.AuthConfirm, new { Challenge = "x" }))).ConfigureAwait(true));
+            await harness.SendAsync(Serialize(CloudMessage.Create(CloudProtocol.MessageType.AuthConfirm, new
+            {
+                Challenge = "x"
+            }))).ConfigureAwait(true));
 
         Assert.Null(harness.Session.InstanceId);
     }
@@ -188,7 +195,10 @@ public sealed class EngineSessionFrameHandlingTests
             EngineSessionSignal.Close,
             await harness.SendAsync(harness.Peer.BuildEncrypted(
                 CloudProtocol.MessageType.Heartbeat,
-                JsonSerializer.Serialize(new { LocalTimestamp = DateTimeOffset.UnixEpoch }))).ConfigureAwait(true));
+                JsonSerializer.Serialize(new
+                {
+                    LocalTimestamp = DateTimeOffset.UnixEpoch
+                }))).ConfigureAwait(true));
 
         string payload = harness.DecryptLastPayload(CloudProtocol.MessageType.HeartbeatResponse);
         using JsonDocument document = JsonDocument.Parse(payload);
@@ -230,13 +240,19 @@ public sealed class EngineSessionFrameHandlingTests
             EngineSessionSignal.Continue,
             await harness.SendAsync(harness.Peer.BuildEncrypted(
                 CloudProtocol.MessageType.CommandProgress,
-                JsonSerializer.Serialize(new { Percent = 10 }))).ConfigureAwait(true));
+                JsonSerializer.Serialize(new
+                {
+                    Percent = 10
+                }))).ConfigureAwait(true));
 
         Assert.Equal(
             EngineSessionSignal.Continue,
             await harness.SendAsync(harness.Peer.BuildEncrypted(
                 CloudProtocol.MessageType.CommandResponse,
-                JsonSerializer.Serialize(new { Status = "Success" }))).ConfigureAwait(true));
+                JsonSerializer.Serialize(new
+                {
+                    Status = "Success"
+                }))).ConfigureAwait(true));
     }
 
     [Fact]
@@ -252,14 +268,21 @@ public sealed class EngineSessionFrameHandlingTests
             EngineSessionSignal.Continue,
             await harness.SendAsync(harness.Peer.BuildEncrypted(
                 CloudProtocol.MessageType.CommandProgress,
-                JsonSerializer.Serialize(new { Percent = 10 }),
+                JsonSerializer.Serialize(new
+                {
+                    Percent = 10
+                }),
                 correlationId)).ConfigureAwait(true));
 
         Assert.Equal(
             EngineSessionSignal.Continue,
             await harness.SendAsync(harness.Peer.BuildEncrypted(
                 CloudProtocol.MessageType.CommandResponse,
-                JsonSerializer.Serialize(new { Status = "Error", Error = "no such command" }),
+                JsonSerializer.Serialize(new
+                {
+                    Status = "Error",
+                    Error = "no such command"
+                }),
                 correlationId)).ConfigureAwait(true));
 
         using CloudDbContext db = database.CreateDbContext();
@@ -283,7 +306,11 @@ public sealed class EngineSessionFrameHandlingTests
             EngineSessionSignal.Continue,
             await harness.SendAsync(harness.Peer.BuildEncrypted(
                 CloudProtocol.MessageType.CommandProgress,
-                JsonSerializer.Serialize(new { CorrelationId = correlationId, Percent = 55 }))).ConfigureAwait(true));
+                JsonSerializer.Serialize(new
+                {
+                    CorrelationId = correlationId,
+                    Percent = 55
+                }))).ConfigureAwait(true));
 
         using CloudDbContext db = database.CreateDbContext();
         CommandProgressReport stored = await db.CommandProgressReports.SingleAsync().ConfigureAwait(true);
@@ -308,7 +335,11 @@ public sealed class EngineSessionFrameHandlingTests
             EngineSessionSignal.Continue,
             await harness.SendAsync(harness.Peer.BuildEncrypted(
                 CloudProtocol.MessageType.CommandResponse,
-                JsonSerializer.Serialize(new { Status = "Error", Error = "the strategy could not be loaded" }),
+                JsonSerializer.Serialize(new
+                {
+                    Status = "Error",
+                    Error = "the strategy could not be loaded"
+                }),
                 correlationId)).ConfigureAwait(true));
 
         EngineCommand? stored = await harness.Commands.GetAsync(queued.Command.Id, CancellationToken.None).ConfigureAwait(true);
