@@ -32,7 +32,13 @@ internal sealed class EngineSessionRegistry : IDisposable
 
     /// <summary>Initialises a new instance of the <see cref="EngineSessionRegistry"/> class.</summary>
     /// <param name="logger">The logger.</param>
-    internal EngineSessionRegistry(ILogger<EngineSessionRegistry> logger)
+    /// <remarks>
+    /// The constructor is <c>public</c> because the service container only considers public constructors
+    /// when it constructs a registered type. The type itself stays <c>internal</c>, so this is still not
+    /// part of Cloud's published surface; making it non-public would leave the registration resolvable by
+    /// the compiler and unusable at runtime.
+    /// </remarks>
+    public EngineSessionRegistry(ILogger<EngineSessionRegistry> logger)
     {
         _logger = logger;
     }

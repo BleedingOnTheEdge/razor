@@ -75,7 +75,13 @@ internal sealed class EngineSession : IDisposable
     /// <param name="options">The Cloud options.</param>
     /// <param name="timeProvider">The clock.</param>
     /// <param name="logger">The logger.</param>
-    internal EngineSession(
+    /// <remarks>
+    /// The constructor is <c>public</c> because <c>EngineSocketHandler</c> builds a session per connection
+    /// through <c>ActivatorUtilities</c>, which — like the service container — only considers public
+    /// constructors. The type stays <c>internal</c>, so the widened accessibility is what makes the
+    /// connection path constructible without publishing the session.
+    /// </remarks>
+    public EngineSession(
         IEngineChannel channel,
         EngineAuthenticationService authentication,
         HeartbeatService heartbeat,

@@ -86,6 +86,15 @@ internal static class CloudApplication
         services.AddSingleton<HeartbeatService>();
         services.AddSingleton<EngineSessionRegistry>();
 
+        // FastEndpoints marks every route it registers with authorization metadata, and ASP.NET Core refuses
+        // to run a route whose metadata no middleware can act on — so the pipeline needs the authentication
+        // and authorization middleware, and those need their services. Nothing is registered to authenticate
+        // with and no policy is added, so this stack can never admit a caller: the management API key filter
+        // is still the only thing that authorises a request, and the Engine still authenticates through the
+        // protocol handshake. Without these registrations every API request fails with a 500.
+        services.AddAuthentication();
+        services.AddAuthorization();
+
         services.AddFastEndpoints();
     }
 
@@ -104,11 +113,30 @@ internal static class CloudApplication
 
         app.UseManagementApiKey(options);
 
+        // FastEndpoints attaches authorization metadata to every route it registers, and ASP.NET Core
+        // refuses to execute a route that carries that metadata when no middleware can act on it: the
+        // request fails with "contains authorization metadata, but a middleware was not found that supports
+        // authorization" before the endpoint runs. Cloud does not use ASP.NET Core authentication — the
+        // management API key filter above is the whole authorisation model, and the Engine authenticates
+        // through the protocol handshake — so these two calls add no policy of their own. They exist so the
+        // pipeline matches the metadata FastEndpoints declares; without them the whole API answers 500.
+        app.UseAuthentication();
+        app.UseAuthorization();
+
         app.UseFastEndpoints(config =>
         {
             // Enums travel as their names so that a stored status or extension kind is as readable on the API
             // as it is in the database.
             config.Serializer.Options.Converters.Add(new JsonStringEnumConverter());
+
+            // Every endpoint is marked allow-anonymous, and that is deliberate rather than a weakening.
+            // FastEndpoints gives each route an authorization requirement, and with no authentication scheme
+            // registered that requirement can only fail — the authorisation middleware would challenge and
+            // throw "no authenticationScheme was specified". Cloud has no ASP.NET Core identity to carry a
+            // policy: the shared management key in ManagementApiKeyMiddleware is the authorisation model for
+            // the whole /api surface, and the Engine authenticates with the protocol handshake. Marking the
+            // routes anonymous states that plainly instead of leaving a requirement that nothing can satisfy.
+            config.Endpoints.Configurator = definition => definition.AllowAnonymous();
         });
     }
 }
