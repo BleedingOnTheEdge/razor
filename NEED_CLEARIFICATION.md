@@ -8,10 +8,10 @@ When confirmed, promote into the target doc and remove the item.
 | ID | Status | Date | Scope | Summary |
 |---|---|---|---|---|
 | NC-0001 | open | 2026-09-23 | product:razor | Version/Status/Last Updated blocks removed during docs repair |
-| NC-0002 | open | 2026-09-23 | repo:razor | No org-root anchor reachable above the razor repo |
+| NC-0002 | **pruned** | 2026-09-23 | repo:razor | Org-root anchor — **invalid**: `BleedingOnTheEdge/org-root` now exists |
 | NC-0003 | open | 2026-09-23 | product:razor | Section boundaries and generated headings chosen without doc authority |
 | NC-0004 | open | 2026-09-23 | product:razor | `kind` assignments are judgment calls; docs/INDEX.md kind unauthorised |
-| NC-0005 | open | 2026-09-23 | repo:razor | README.md documentation hub links are stale and out of repair scope |
+| NC-0005 | **narrowed** | 2026-09-23 | repo:razor | README stale links — `core/README.md` **fixed** by PR #17; repo-root and `core/src/*/README.md` remain |
 | NC-0006 | open | 2026-09-23 | repo:razor | Subtree anchors (core/, frontends/, samples/) have no AGENT.md |
 
 ## NC-0001 — Removed Version/Status/Last Updated blocks
@@ -115,12 +115,14 @@ When confirmed, promote into the target doc and remove the item.
 
 ## NC-0002 — Org-root anchor unreachable
 
-- **Status:** open
+- **Status:** **pruned — invalid premise (2026-09-26)**
 - **Date:** 2026-09-23
 - **Agent:** qwen-code (docs skill, repair mode)
 - **Scope:** repo:razor
 - **Affected repos:** razor
-- **Situation:** `templates/agent.md` expects a repo `AGENT.md` to name an `org_root` and an `org_docs_fallback`. No org-root docs anchor exists in this workspace: the workspace root is a non-git container, and `razor/` is the organisation's only repository. The anchor above `repo:razor` is therefore unknown.
+- **Situation:** ~~`templates/agent.md` expects a repo `AGENT.md` to name an `org_root` and an `org_docs_fallback`. No org-root docs anchor exists in this workspace: the workspace root is a non-git container, and `razor/` is the organisation's only repository. The anchor above `repo:razor` is therefore unknown.~~ **Superseded:** `BleedingOnTheEdge/org-root` now exists — a git repository at the workspace root carrying the organisation-level `AGENT.md`, the agent personas, the skills, the durable loop memory and `CONTRIBUTING_AGENTS.md`. So the workspace root **is** a git repository and `razor/` is **not** the organisation's only repository. Both halves of this item's premise are false, so it is pruned rather than answered.
+
+  **Follow-up it leaves behind:** `razor/AGENT.md` still cites NC-0002 and states that no org-root anchor is reachable, setting `org_docs_fallback: notify`. That statement is now stale — the org anchor exists — so the router should be revisited and the citation removed. Not done here, because this change is scoped to pruning the clarification list.
 - **Options considered:**
   1. Treat the razor repo root as the org root (`is_org_root: true`, `level: org`).
   2. Anchor razor at `level: repo` with `requires_org_docs: true` and `org_docs_fallback: notify`, omitting `org_root`.
@@ -181,6 +183,7 @@ When confirmed, promote into the target doc and remove the item.
   2. Rewrite the `README.md` links to the new doc IDs.
 - **Chosen approach:** Option 1.
 - **Rationale:** Core Rule 2 and the `repair` mode rules both forbid editing `README.md`; the repair cannot fix it. Recording it lets a human fix the hub, which is outside the `docs` skill's authority.
+- **Update 2026-09-26 — partly resolved, scope narrowed.** `core/README.md` was repaired by PR #17 (issue #16). It had six committed merge-conflict markers and a whole class of dead links pointing at a flat `core/docs/<name>.md` tree that does not exist; the markers are gone and every reference now resolves into the current sectioned tree. Verified: 0 conflict markers (`grep`), 15/15 markdown links resolve, 36/36 tree entries exist, and the non-existent `Razor Plugin Developer Guide.md` target is no longer referenced. **Still open:** `razor/README.md` retains 14 stale references, and `core/src/{Sdk,Kernel,Engine,Shared}/README.md` share the same dead-link class. Those are Step 3 documentation work.
 - **Reversibility:** high
 - **Promotion target:** `razor/README.md` (human-authored; not covered by the `docs` skill)
 
