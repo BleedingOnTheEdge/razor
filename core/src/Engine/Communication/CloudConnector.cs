@@ -770,7 +770,7 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
                 {
                     if (payload.TryGetValue("Status", out object? statusObj) && statusObj.ToString() == "Success")
                     {
-                        _sessionId = payload.TryGetValue("SessionId", out object? sessionObj)
+                        string? sessionId = payload.TryGetValue("SessionId", out object? sessionObj)
                             ? sessionObj.ToString()
                             : null;
                         if (payload.TryGetValue("PublicKey", out object? pubKeyObj))
@@ -785,7 +785,13 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
 
                         _securityManager.DeriveSharedSecret();
 
-                        if (_sessionId != null)
+                        // Send the confirming frame BEFORE publishing the session identifier. AuthenticateAsync
+                        // polls for that identifier, so publishing it first let the poll return while this frame
+                        // was still pending -- and the caller's first heartbeat then overtook AuthConfirm. A peer
+                        // reading the handshake in the order 002-020-020 Section 3.3 prescribes then received a
+                        // Heartbeat where it expected AuthConfirm, never acknowledged the session, and the
+                        // connector reconnected in a loop.
+                        if (sessionId != null)
                         {
                             string challenge = _securityManager.GenerateChallenge(nonceObj?.ToString() ?? string.Empty);
                             var confirm = new CloudMessage
@@ -796,6 +802,8 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
                             };
                             await this.SendAsync(confirm, cancellationToken).ConfigureAwait(false);
                         }
+
+                        _sessionId = sessionId;
                     }
                     else
                     {

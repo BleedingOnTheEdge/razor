@@ -49,6 +49,10 @@ internal sealed class SimulatedCloudServer : IAsyncDisposable
     private readonly ConcurrentQueue<CloudMessage> _received = new();
     private readonly TaskCompletionSource _handshakeCompleted = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly SemaphoreSlim _sendLock = new(1, 1);
+
+    /// <summary>Gets a record of what the server observed, so a failed wait can say why it failed.</summary>
+    internal LogSink Log { get; } = new();
+
     private WebSocket? _socket;
     private bool _challengeVerified;
     private bool _disposed;
@@ -109,8 +113,25 @@ internal sealed class SimulatedCloudServer : IAsyncDisposable
     /// <param name="timeout">How long to wait; the default is generous so a slow machine does not fail a test
     /// that is merely slow.</param>
     /// <returns>A task that completes when the Engine has been authenticated.</returns>
-    internal Task WaitForHandshakeAsync(TimeSpan? timeout = null) =>
-        _handshakeCompleted.Task.WaitAsync(timeout ?? DefaultTimeout);
+    /// <exception cref="TimeoutException">The Engine never authenticated, reported with the frames it did send
+    /// and the engine's own log, so a failure says why rather than only that it timed out.</exception>
+    internal async Task WaitForHandshakeAsync(TimeSpan? timeout = null)
+    {
+        TimeSpan limit = timeout ?? DefaultTimeout;
+
+        try
+        {
+            await _handshakeCompleted.Task.WaitAsync(limit).ConfigureAwait(false);
+        }
+        catch (TimeoutException)
+        {
+            throw new TimeoutException(
+                $"The Engine never completed the handshake within {limit.TotalSeconds:0}s. "
+                + $"Frames received: [{string.Join(", ", _received.Select(m => m.MessageType))}]. "
+                + $"Connected: {_socket is not null}. "
+                + $"Engine log:{Environment.NewLine}{Log.Render()}");
+        }
+    }
 
     /// <summary>Sends an encrypted message whose payload the caller supplies.</summary>
     /// <param name="messageType">The message discriminator.</param>
@@ -187,10 +208,12 @@ internal sealed class SimulatedCloudServer : IAsyncDisposable
     {
         if (!context.WebSockets.IsWebSocketRequest)
         {
+            Log.Add($"Rejected a non-WebSocket request to {context.Request.Path}.");
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             return;
         }
 
+        Log.Add("The Engine connected.");
         using WebSocket socket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
         _socket = socket;
 
@@ -201,6 +224,7 @@ internal sealed class SimulatedCloudServer : IAsyncDisposable
         finally
         {
             _socket = null;
+            Log.Add("The Engine disconnected.");
         }
     }
 
@@ -209,9 +233,11 @@ internal sealed class SimulatedCloudServer : IAsyncDisposable
         CloudMessage? auth = await ReceiveAsync(socket, cancellationToken).ConfigureAwait(false);
         if (auth is null || auth.MessageType != "Auth")
         {
+            Log.Add($"Expected an Auth frame first but received '{auth?.MessageType ?? "nothing"}'.");
             return;
         }
 
+        Log.Add("Received the Auth frame.");
         var authPayload = (Dictionary<string, object>)auth.Payload!;
 
         // 002-020-020 §3.3 steps 1-2: the Engine's ephemeral key opens the session, and Cloud answers with its
@@ -242,8 +268,11 @@ internal sealed class SimulatedCloudServer : IAsyncDisposable
         CloudMessage? confirm = await ReceiveAsync(socket, cancellationToken).ConfigureAwait(false);
         if (confirm is null)
         {
+            Log.Add("The Engine never returned an AuthConfirm frame.");
             return;
         }
+
+        Log.Add($"Received the {confirm.MessageType} frame.");
 
         // Step 3-5: an AuthConfirm whose challenge is the nonce signed with the session key proves the Engine
         // derived the same key. A peer that only echoed the frame would not notice a mismatch.
@@ -252,6 +281,8 @@ internal sealed class SimulatedCloudServer : IAsyncDisposable
             string challenge = challengeDocument.RootElement.GetProperty("Challenge").GetString()!;
             _challengeVerified = challenge == _security.GenerateChallenge(nonce);
         }
+
+        Log.Add($"Challenge verified: {_challengeVerified}.");
 
         await this.SendAsync(
             socket,
@@ -263,6 +294,7 @@ internal sealed class SimulatedCloudServer : IAsyncDisposable
             },
             cancellationToken).ConfigureAwait(false);
 
+        Log.Add("Sent the AuthAck frame; the handshake is complete.");
         _handshakeCompleted.TrySetResult();
 
         while (!cancellationToken.IsCancellationRequested)
