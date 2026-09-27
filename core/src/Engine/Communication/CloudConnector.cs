@@ -526,10 +526,11 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
 
     private async Task ConnectSingleEndpointAsync(string endpoint, CancellationToken cancellationToken)
     {
-        _webSocket = new ClientWebSocket();
-        await _webSocket.ConnectAsync(new Uri(endpoint), cancellationToken).ConfigureAwait(false);
+        var socket = new ClientWebSocket();
+        _webSocket = socket;
+        await socket.ConnectAsync(new Uri(endpoint), cancellationToken).ConfigureAwait(false);
 
-        if (_webSocket.State == WebSocketState.Open)
+        if (socket.State == WebSocketState.Open)
         {
             if (RuntimeEnvironment.IsDevelopment)
             {
@@ -542,10 +543,24 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
                 Console.WriteLine("Connected to Cloud.");
             }
 
-            await this.AuthenticateAsync(cancellationToken).ConfigureAwait(false);
-
+            // The AuthResponse that completes the handshake can only be read off the socket, and only the
+            // receive loop reads it, so the loop has to be running before the Auth is sent: started
+            // afterwards it could not be reached until authentication had already finished, which deadlocks
+            // the handshake against any Cloud.
             _receiveCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            _ = Task.Run(() => this.ReceiveLoopAsync(_receiveCts.Token), _receiveCts.Token);
+            _ = Task.Run(() => this.ReceiveLoopAsync(socket, _receiveCts.Token), _receiveCts.Token);
+
+            try
+            {
+                await this.AuthenticateAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // A failed handshake is retried on a fresh socket, so the reader is released first: left
+                // running it would keep reading whichever socket the retry installs.
+                await _receiveCts.CancelAsync().ConfigureAwait(false);
+                throw;
+            }
 
             _isConnected = true;
             _connectionLostEvent.Reset(); // ensure event is not set
@@ -660,17 +675,23 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
         await _stateManager.SetSessionIdAsync(_sessionId, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task ReceiveLoopAsync(CancellationToken cancellationToken)
+    /// <summary>
+    /// Reads and dispatches every frame the cloud sends on one connection.
+    /// </summary>
+    /// <param name="socket">The connection this loop owns; it is a parameter rather than a field read so that
+    /// a loop left over from an abandoned connection cannot consume the frames of its replacement.</param>
+    /// <param name="cancellationToken">Cancellation token; cancelling it ends the loop.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    private async Task ReceiveLoopAsync(WebSocket socket, CancellationToken cancellationToken)
     {
         byte[] buffer = new byte[4096];
         StringBuilder messageBuilder = new StringBuilder();
 
-        while (!cancellationToken.IsCancellationRequested && _webSocket != null &&
-               _webSocket.State == WebSocketState.Open)
+        while (!cancellationToken.IsCancellationRequested && socket.State == WebSocketState.Open)
         {
             try
             {
-                WebSocketReceiveResult result = await _webSocket
+                WebSocketReceiveResult result = await socket
                     .ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken).ConfigureAwait(false);
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
@@ -730,7 +751,10 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
             try
             {
                 string decryptedJson = _securityManager.DecryptMessage(encryptedPayload);
-                message.Payload = JsonSerializer.Deserialize<object>(decryptedJson);
+
+                // The plaintext replaces the cipher text in the same member, so it has to be materialised in
+                // the same shapes the envelope's own deserialisation produces (002-020-020 §3.2).
+                message.Payload = CloudPayloadJsonConverter.Parse(decryptedJson);
             }
             catch (Exception ex)
             {
@@ -746,7 +770,7 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
                 {
                     if (payload.TryGetValue("Status", out object? statusObj) && statusObj.ToString() == "Success")
                     {
-                        _sessionId = payload.TryGetValue("SessionId", out object? sessionObj)
+                        string? sessionId = payload.TryGetValue("SessionId", out object? sessionObj)
                             ? sessionObj.ToString()
                             : null;
                         if (payload.TryGetValue("PublicKey", out object? pubKeyObj))
@@ -761,7 +785,13 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
 
                         _securityManager.DeriveSharedSecret();
 
-                        if (_sessionId != null)
+                        // Send the confirming frame BEFORE publishing the session identifier. AuthenticateAsync
+                        // polls for that identifier, so publishing it first let the poll return while this frame
+                        // was still pending -- and the caller's first heartbeat then overtook AuthConfirm. A peer
+                        // reading the handshake in the order 002-020-020 Section 3.3 prescribes then received a
+                        // Heartbeat where it expected AuthConfirm, never acknowledged the session, and the
+                        // connector reconnected in a loop.
+                        if (sessionId != null)
                         {
                             string challenge = _securityManager.GenerateChallenge(nonceObj?.ToString() ?? string.Empty);
                             var confirm = new CloudMessage
@@ -772,6 +802,8 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
                             };
                             await this.SendAsync(confirm, cancellationToken).ConfigureAwait(false);
                         }
+
+                        _sessionId = sessionId;
                     }
                     else
                     {
@@ -806,7 +838,12 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
                             CommandType = payloadDict.GetValueOrDefault("CommandType")?.ToString() ?? string.Empty,
                             Parameters = payloadDict.GetValueOrDefault("Parameters"),
                             TimeoutSeconds = payloadDict.GetValueOrDefault("TimeoutSeconds") as int?,
+
+                            // 002-020-020 §3.5: the command carries the identifier its result must echo, so a
+                            // result can be matched to the command that asked for it. It is taken off the
+                            // envelope first, then from the command's own payload.
                             CorrelationId = message.CorrelationId
+                                ?? payloadDict.GetValueOrDefault("CorrelationId")?.ToString()
                         };
 
                         if (this.CommandReceived != null)
@@ -906,8 +943,11 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
                     var transfer = _transferManager.GetCompletedTransfer(endTransferId);
                     if (transfer != null)
                     {
-                        // Save the received file to disk
-                        string outputDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "downloads");
+                        // Save the received file to disk. The directory is configurable so that two
+                        // connectors in one process -- concurrent engine instances, or tests running
+                        // side by side -- cannot collide on the same file name: a fixed directory makes
+                        // the second writer fail with a sharing violation rather than saving its file.
+                        string outputDir = AppConstants.DownloadDirectory;
                         Directory.CreateDirectory(outputDir);
                         string outputPath = Path.Combine(outputDir, transfer.FileName);
                         if (File.Exists(transfer.TempFilePath))
@@ -1001,7 +1041,15 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
                             CultureInfo.InvariantCulture),
                         CommandType = cmdDict.GetValueOrDefault("CommandType")?.ToString() ?? string.Empty,
                         Parameters = cmdDict.GetValueOrDefault("Parameters"),
-                        CorrelationId = Guid.NewGuid().ToString()
+
+                        // 002-020-020 §3.5: the command carries the identifier its result must echo, so a result
+                        // can be matched to the command that asked for it. A command delivered inside a
+                        // heartbeat response has no envelope of its own, so its own identifier is the one that
+                        // makes the result matchable; the envelope's is honoured as a fallback, and a fresh
+                        // identifier is minted only when neither names one.
+                        CorrelationId = cmdDict.GetValueOrDefault("CorrelationId")?.ToString()
+                            ?? message.CorrelationId
+                            ?? Guid.NewGuid().ToString()
                     };
                     if (this.CommandReceived != null)
                     {
@@ -1026,8 +1074,14 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
                 await this.CommandReceived.Invoke(stopCommand).ConfigureAwait(false);
             }
 
-            // Force reconnection by disconnecting and signaling the event
+            // Force reconnection by disconnecting and signaling the event.
+            //
+            // The session identifier is cleared, not just the socket: a rejected credential means the session
+            // issued at authentication is no longer valid. Leaving it set would let the rest of the connector
+            // keep reporting an established session -- and keep sending under it -- after the Cloud has said
+            // the credentials are invalid, which is exactly the condition this branch exists to stop.
             _isConnected = false;
+            _sessionId = null;
             _connectionLostEvent.Set();
             await this.DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
             return;
@@ -1090,23 +1144,77 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
 
     private async Task DisplayBroadcastMessageAsync(CloudMessage message, CancellationToken cancellationToken)
     {
-        if (message.Payload is not Dictionary<string, object> payload)
+        // The payload arrives in whichever shape the decoder produced for it: the payload converter yields a
+        // dictionary, but a payload that never went through it is still a JsonElement. Reading only the
+        // dictionary shape silently dropped the broadcast instead of reporting it, so both are accepted.
+        string? text = null;
+        string style = "info";
+        switch (message.Payload)
         {
+            case Dictionary<string, object> dict:
+                text = dict.GetValueOrDefault("Text")?.ToString();
+                style = dict.GetValueOrDefault("Style")?.ToString() ?? "info";
+                break;
+            case JsonElement element when element.ValueKind == JsonValueKind.Object:
+                if (element.TryGetProperty("Text", out JsonElement textElement))
+                {
+                    text = textElement.ValueKind == JsonValueKind.String ? textElement.GetString() : textElement.ToString();
+                }
+
+                if (element.TryGetProperty("Style", out JsonElement styleElement))
+                {
+                    style = styleElement.ValueKind == JsonValueKind.String ? styleElement.GetString() ?? "info" : styleElement.ToString();
+                }
+
+                break;
+        }
+
+        if (string.IsNullOrEmpty(text))
+        {
+            _logUnhandledMessageType(_logger, "BroadcastMessage (no Text in payload)", null);
             return;
         }
 
-        string text = payload.GetValueOrDefault("Text")?.ToString() ?? string.Empty;
-        string style = payload.GetValueOrDefault("Style")?.ToString() ?? "info";
-
-        Console.ForegroundColor = style switch
+        // The colour is a presentation nicety; the text is the message. When the process has no console --
+        // output redirected, or running as a service -- setting a colour throws, and an unguarded call would
+        // discard the broadcast with it. Colour is therefore attempted and never allowed to swallow the text.
+        bool colourChanged = false;
+        try
         {
-            "error" => ConsoleColor.Red,
-            "warning" => ConsoleColor.Yellow,
-            "success" => ConsoleColor.Green,
-            _ => ConsoleColor.Cyan
-        };
-        Console.WriteLine($"\n=== BROADCAST ===\n{text}\n================\n");
-        Console.ResetColor();
+            Console.ForegroundColor = style switch
+            {
+                "error" => ConsoleColor.Red,
+                "warning" => ConsoleColor.Yellow,
+                "success" => ConsoleColor.Green,
+                _ => ConsoleColor.Cyan
+            };
+            colourChanged = true;
+        }
+        catch (IOException)
+        {
+            // No console to colour; the text below is what matters.
+            colourChanged = false;
+        }
+
+        try
+        {
+            Console.WriteLine($"\n=== BROADCAST ===\n{text}\n================\n");
+        }
+        finally
+        {
+            if (colourChanged)
+            {
+                try
+                {
+                    Console.ResetColor();
+                }
+                catch (IOException)
+                {
+                    // Nothing to restore when the console could not take a colour in the first place.
+                }
+            }
+        }
+
         await Task.CompletedTask.ConfigureAwait(false);
     }
 

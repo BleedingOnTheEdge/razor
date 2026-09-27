@@ -28,6 +28,10 @@
     severity change, pragma, NoWarn or blanket suppression anywhere in this
     repository: every hand-written line Cloud ships is measured and must clear
     the floor.
+
+    == THE ONE EXEMPTION THAT IS NOT GENERATED CODE (issue #4, temporary) ==
+
+    `Kernel` and `Engine` coverage is governed by issue #4.
 -->
 <RunSettings>
     <DataCollectionRunSettings>

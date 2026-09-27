@@ -15,15 +15,22 @@ and another does not counts as covered exactly once.
 The merged numbers are compared against a line floor and a branch floor; a
 shortfall exits non-zero so the CI step fails the job.
 
-Caveat this script cannot fix: coverlet only instruments assemblies that a test
-project actually loads. Source projects with no test project (Kernel and Engine
-today -- issue #4) are absent from the reports altogether, so they neither add
-to the numerator nor to the denominator. The reported rate therefore describes
-the instrumented part of the solution, not every line committed to it.
+Coverage is always reported for everything that was instrumented. `--declared-scope`
+restricts which of those assemblies the floors are *enforced* against, so a subsystem
+with a known, tracked shortfall does not fail every unrelated change while its numbers
+are still printed on every run. Assemblies outside the declared scope are named in the
+summary alongside the issue tracking them, so the gap stays measured and visible rather
+than being excluded from the report.
+
+That distinction is the point: excluding an assembly from instrumentation hides it,
+whereas a declared scope keeps it in the measurement and gates only what is expected to
+pass. Today `Kernel` and `Engine` are the out-of-scope pair (issue #4); when their test
+projects land they join the declared scope and nothing else changes.
 
 Usage:
     coverage_gate.py --results-dir core/TestResults \\
-        --min-line 90 --min-branch 85 \\
+        --min-line 95 --min-branch 95 \\
+        --declared-scope Sdk Shared Cloud \\
         --merged core/TestResults/coverage-merged.cobertura.xml \\
         --summary core/TestResults/coverage-summary.md
 """
@@ -44,10 +51,12 @@ _CONDITION_COVERAGE = re.compile(r"\((\d+)\s*/\s*(\d+)\)")
 
 @dataclass
 class ClassCoverage:
-    """Merged coverage for one class, keyed by its Cobertura filename."""
+    """Merged coverage for one class, keyed by its fully qualified class name."""
 
     name: str
     filename: str
+    # The assembly the class belongs to, taken from its Cobertura package name.
+    assembly: str = ""
     # line number -> highest hit count seen across the merged reports
     lines: dict[int, int] = field(default_factory=dict)
     # line number -> highest (covered, valid) branch pair seen
@@ -117,6 +126,19 @@ def percent(value: float) -> str:
     return f"{value * 100:.2f}%"
 
 
+def assembly_of(coverage: ClassCoverage) -> str:
+    """Return the assembly a class belongs to.
+
+    Taken from the Cobertura package name, which is the authoritative source: coverlet writes
+    one `<package>` per assembly. Neither of the alternatives works. A class name need not be
+    namespaced -- top-level statements produce `Program/<<Main>$>d__0` -- so its first segment
+    is only usually the assembly. The `filename` is worse: it is written relative to a source
+    root that differs between test projects, so the same assembly appears as
+    `Sdk/Shared/TickWindow.cs` in one report and `CloudApplication.cs` in another.
+    """
+    return coverage.assembly or coverage.name.partition(".")[0]
+
+
 def parse_report(path: Path) -> dict[str, ClassCoverage]:
     """Read one Cobertura report into {class name: ClassCoverage}."""
     root = ET.parse(path).getroot()
@@ -124,34 +146,39 @@ def parse_report(path: Path) -> dict[str, ClassCoverage]:
         raise ValueError(f"{path}: expected a <coverage> root, found <{root.tag}>")
 
     classes: dict[str, ClassCoverage] = {}
-    for element in root.findall("./packages/package/classes/class"):
-        name = element.get("name")
-        filename = element.get("filename")
-        if name is None or filename is None:
-            raise ValueError(f"{path}: <class> without name or filename")
+    # Iterate packages rather than reaching straight for the classes: the package name is the
+    # assembly, and it is the only reliable way to attribute a class to one.
+    for package in root.findall("./packages/package"):
+        assembly = package.get("name") or ""
 
-        coverage = ClassCoverage(name=name, filename=filename)
-        # Only <class>/<lines>/<line> -- <methods>/<method>/<lines> repeats the
-        # same source lines and would double count them.
-        for line in element.findall("./lines/line"):
-            number = int(line.get("number", "0"))
-            coverage.lines[number] = int(line.get("hits", "0"))
+        for element in package.findall("./classes/class"):
+            name = element.get("name")
+            filename = element.get("filename")
+            if name is None or filename is None:
+                raise ValueError(f"{path}: <class> without name or filename")
 
-            # coverlet writes branch="True"; compare case-insensitively.
-            if (line.get("branch") or "").lower() != "true":
-                continue
-            match = _CONDITION_COVERAGE.search(line.get("condition-coverage", ""))
-            if match is None:
-                continue
-            covered, valid = int(match.group(1)), int(match.group(2))
-            if valid > 0:
-                coverage.branches[number] = (covered, valid)
+            coverage = ClassCoverage(name=name, filename=filename, assembly=assembly)
+            # Only <class>/<lines>/<line> -- <methods>/<method>/<lines> repeats the
+            # same source lines and would double count them.
+            for line in element.findall("./lines/line"):
+                number = int(line.get("number", "0"))
+                coverage.lines[number] = int(line.get("hits", "0"))
 
-        previous = classes.get(name)
-        if previous is None:
-            classes[name] = coverage
-        else:
-            previous.merge(coverage)
+                # coverlet writes branch="True"; compare case-insensitively.
+                if (line.get("branch") or "").lower() != "true":
+                    continue
+                match = _CONDITION_COVERAGE.search(line.get("condition-coverage", ""))
+                if match is None:
+                    continue
+                covered, valid = int(match.group(1)), int(match.group(2))
+                if valid > 0:
+                    coverage.branches[number] = (covered, valid)
+
+            previous = classes.get(name)
+            if previous is None:
+                classes[name] = coverage
+            else:
+                previous.merge(coverage)
 
     return classes
 
@@ -241,6 +268,16 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--min-line", type=float, required=True, help="Line floor in percent.")
     parser.add_argument("--min-branch", type=float, required=True, help="Branch floor in percent.")
+    parser.add_argument(
+        "--declared-scope",
+        nargs="*",
+        default=None,
+        metavar="ASSEMBLY",
+        help=(
+            "Assemblies the floors are enforced against. Everything instrumented is still "
+            "reported. Omit to enforce against all of them."
+        ),
+    )
     parser.add_argument("--merged", type=Path, help="Write the merged report here.")
     parser.add_argument("--summary", type=Path, help="Write a Markdown summary here.")
     arguments = parser.parse_args(argv)
@@ -260,6 +297,29 @@ def main(argv: list[str] | None = None) -> int:
     merged_classes = merge_reports([path for path, _ in per_report])
     merged = totals(merged_classes)
 
+    # Everything instrumented is reported. Enforcement is limited to the declared scope when
+    # one is given, so a subsystem with a known, tracked shortfall does not fail every
+    # unrelated change -- while its numbers are still printed below and its assemblies are
+    # still named, so the shortfall cannot be quietly forgotten.
+    declared = {name.strip().lower() for name in (arguments.declared_scope or [])}
+    if declared:
+        enforced_classes = {
+            name: coverage
+            for name, coverage in merged_classes.items()
+            if assembly_of(coverage).lower() in declared
+        }
+        outside = sorted(
+            {
+                assembly_of(coverage)
+                for coverage in merged_classes.values()
+                if assembly_of(coverage).lower() not in declared
+            }
+        )
+    else:
+        enforced_classes = merged_classes
+        outside = []
+    enforced = totals(enforced_classes)
+
     summary: list[str] = ["## Coverage", ""]
     summary.append("| Report | Line | Branch |")
     summary.append("|---|---|---|")
@@ -277,10 +337,26 @@ def main(argv: list[str] | None = None) -> int:
         f"| **{percent(merged.branch_rate)}** "
         f"**({merged.branch_covered}/{merged.branch_valid})** |"
     )
+    if declared:
+        scope_label = ", ".join(sorted(declared))
+        summary.append(
+            f"| **Enforced scope** ({scope_label}) | **{percent(enforced.line_rate)}** "
+            f"**({enforced.line_covered}/{enforced.line_valid})** "
+            f"| **{percent(enforced.branch_rate)}** "
+            f"**({enforced.branch_covered}/{enforced.branch_valid})** |"
+        )
     summary.append("")
-    summary.append(
-        f"Floor: line >= {arguments.min_line:.2f}% and branch >= {arguments.min_branch:.2f}%."
-    )
+    if declared and outside:
+        out_of_scope = ", ".join(f"`{name}`" for name in outside)
+        summary.append(
+            f"Floor: line >= {arguments.min_line:.2f}% and branch >= {arguments.min_branch:.2f}% "
+            f"on the enforced scope. Outside it, and therefore measured but not gated: "
+            f"{out_of_scope} (tracked by issue #4)."
+        )
+    else:
+        summary.append(
+            f"Floor: line >= {arguments.min_line:.2f}% and branch >= {arguments.min_branch:.2f}%."
+        )
     summary.append("")
 
     rendered = "\n".join(summary)
@@ -292,14 +368,14 @@ def main(argv: list[str] | None = None) -> int:
         write_merged_report(merged_classes, arguments.merged)
 
     failures: list[str] = []
-    if round(merged.line_rate * 100, 2) < arguments.min_line:
+    if round(enforced.line_rate * 100, 2) < arguments.min_line:
         failures.append(
-            f"line coverage {percent(merged.line_rate)} is below the "
+            f"line coverage {percent(enforced.line_rate)} is below the "
             f"{arguments.min_line:.2f}% floor"
         )
-    if round(merged.branch_rate * 100, 2) < arguments.min_branch:
+    if round(enforced.branch_rate * 100, 2) < arguments.min_branch:
         failures.append(
-            f"branch coverage {percent(merged.branch_rate)} is below the "
+            f"branch coverage {percent(enforced.branch_rate)} is below the "
             f"{arguments.min_branch:.2f}% floor"
         )
     for failure in failures:
