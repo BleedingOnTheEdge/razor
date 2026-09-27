@@ -123,8 +123,11 @@ public sealed class MessageBus : IMessageBus, IDisposable
             {
                 if (_handlers.TryGetValue(type, out var list))
                 {
-                    // Use ReferenceEquals for delegate comparison to avoid CS0252.
-                    list.RemoveAll(wr => !wr.TryGetTarget(out var existing) || !ReferenceEquals(existing, handler));
+                    // Remove the matching handler, and dead references while we are here.
+                    // RemoveAll removes where the predicate is true, so this must match the
+                    // handler being unsubscribed -- the previous form negated the comparison and
+                    // therefore removed every OTHER subscriber while keeping this one.
+                    list.RemoveAll(wr => !wr.TryGetTarget(out var existing) || ReferenceEquals(existing, handler));
                     if (list.Count == 0)
                     {
                         _handlers.TryRemove(type, out var _);
