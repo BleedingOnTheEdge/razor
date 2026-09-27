@@ -103,6 +103,30 @@ public sealed class BorrowedTickDataTests : IDisposable
     }
 
     [Fact]
+    public async Task DisposeAsync_Counts_One_File_Once_Per_Borrower_That_Holds_It()
+    {
+        // Two symbols can be served out of one file, in which case the same mapped list and the same path
+        // appear twice. The reference count is what distinguishes that from a single borrow: the first pass
+        // over the path only gives up one of the two claims, and the file is reported as releasable only
+        // once. Getting this wrong would delete a file another symbol is still reading.
+        BinaryDataMapper.WriteTicksToBinary(_tempFile, TestTicks);
+        var adapter = new FakeAdapter();
+        var shared = new MemoryMappedTickList(_tempFile);
+
+        await using var data = new BorrowedTickData(
+            new IReadOnlyList<Tick>[] { shared, shared },
+            ["A", "B"],
+            [shared, shared],
+            [_tempFile, _tempFile],
+            adapter);
+
+        await data.DisposeAsync();
+
+        Assert.Equal(2, adapter.NotifiedPaths.Count);
+        Assert.All(adapter.NotifiedPaths, path => Assert.Equal(_tempFile, path));
+    }
+
+    [Fact]
     public async Task DisposeAsync_Disposes_All_MemoryMappedTickLists()
     {
         BinaryDataMapper.WriteTicksToBinary(_tempFile, TestTicks);

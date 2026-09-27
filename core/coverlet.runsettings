@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Coverage configuration for the XPlat Code Coverage data collector
+    (`dotnet test` with that collector). CI passes this file with the
+    `settings` argument; see .github/workflows/build.yml, "Test with coverage".
+    Without it the run uses coverlet's defaults, which instrument
+    build-generated source along with the hand-written code; the generated
+    sources are never executed by a test, so they sit at 0% and cap the
+    whole-solution rate far below the 95% floor that CONTRIBUTING_AGENTS.md's
+    Definition of Done requires.
+
+    The only exclusion here is EXCLUDE BY FILE, scoped to generated sources:
+
+      * `**/Migrations/*.cs` holds the EF Core migration, its `.Designer.cs`
+        and `CloudDbContextModelSnapshot.cs`, all emitted by the EF Core
+        migrations tooling for the persistence model in 002-030-160 17.1.
+        Regenerating them is a tooling step, not an edit; they are exercised by
+        applying them, which needs a PostgreSQL server rather than a unit test.
+
+      * `**/obj/**` is the build's own output directory. It holds the C# the
+        compiler and the source generators emit: `*.GlobalUsings.g.cs`,
+        `*.AssemblyInfo.cs`, and the `LoggerMessage` generator's method bodies
+        for `CloudLog`, under
+        `obj/<configuration>/net10.0/Microsoft.Extensions.Logging.Generators/`.
+        No hand-written file is ever placed there.
+
+    Hand-written logic is deliberately NOT excluded, and there is no attribute,
+    severity change, pragma, NoWarn or blanket suppression anywhere in this
+    repository: every hand-written line Cloud ships is measured and must clear
+    the floor.
+-->
+<RunSettings>
+    <DataCollectionRunSettings>
+        <DataCollectors>
+            <DataCollector friendlyName="XPlat code coverage">
+                <Configuration>
+                    <Format>cobertura</Format>
+                    <ExcludeByFile>**/Migrations/*.cs,**/obj/**</ExcludeByFile>
+                </Configuration>
+            </DataCollector>
+        </DataCollectors>
+    </DataCollectionRunSettings>
+</RunSettings>
