@@ -935,8 +935,11 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
                     var transfer = _transferManager.GetCompletedTransfer(endTransferId);
                     if (transfer != null)
                     {
-                        // Save the received file to disk
-                        string outputDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "downloads");
+                        // Save the received file to disk. The directory is configurable so that two
+                        // connectors in one process -- concurrent engine instances, or tests running
+                        // side by side -- cannot collide on the same file name: a fixed directory makes
+                        // the second writer fail with a sharing violation rather than saving its file.
+                        string outputDir = AppConstants.DownloadDirectory;
                         Directory.CreateDirectory(outputDir);
                         string outputPath = Path.Combine(outputDir, transfer.FileName);
                         if (File.Exists(transfer.TempFilePath))
@@ -1063,8 +1066,14 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
                 await this.CommandReceived.Invoke(stopCommand).ConfigureAwait(false);
             }
 
-            // Force reconnection by disconnecting and signaling the event
+            // Force reconnection by disconnecting and signaling the event.
+            //
+            // The session identifier is cleared, not just the socket: a rejected credential means the session
+            // issued at authentication is no longer valid. Leaving it set would let the rest of the connector
+            // keep reporting an established session -- and keep sending under it -- after the Cloud has said
+            // the credentials are invalid, which is exactly the condition this branch exists to stop.
             _isConnected = false;
+            _sessionId = null;
             _connectionLostEvent.Set();
             await this.DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
             return;
@@ -1127,23 +1136,77 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
 
     private async Task DisplayBroadcastMessageAsync(CloudMessage message, CancellationToken cancellationToken)
     {
-        if (message.Payload is not Dictionary<string, object> payload)
+        // The payload arrives in whichever shape the decoder produced for it: the payload converter yields a
+        // dictionary, but a payload that never went through it is still a JsonElement. Reading only the
+        // dictionary shape silently dropped the broadcast instead of reporting it, so both are accepted.
+        string? text = null;
+        string style = "info";
+        switch (message.Payload)
         {
+            case Dictionary<string, object> dict:
+                text = dict.GetValueOrDefault("Text")?.ToString();
+                style = dict.GetValueOrDefault("Style")?.ToString() ?? "info";
+                break;
+            case JsonElement element when element.ValueKind == JsonValueKind.Object:
+                if (element.TryGetProperty("Text", out JsonElement textElement))
+                {
+                    text = textElement.ValueKind == JsonValueKind.String ? textElement.GetString() : textElement.ToString();
+                }
+
+                if (element.TryGetProperty("Style", out JsonElement styleElement))
+                {
+                    style = styleElement.ValueKind == JsonValueKind.String ? styleElement.GetString() ?? "info" : styleElement.ToString();
+                }
+
+                break;
+        }
+
+        if (string.IsNullOrEmpty(text))
+        {
+            _logUnhandledMessageType(_logger, "BroadcastMessage (no Text in payload)", null);
             return;
         }
 
-        string text = payload.GetValueOrDefault("Text")?.ToString() ?? string.Empty;
-        string style = payload.GetValueOrDefault("Style")?.ToString() ?? "info";
-
-        Console.ForegroundColor = style switch
+        // The colour is a presentation nicety; the text is the message. When the process has no console --
+        // output redirected, or running as a service -- setting a colour throws, and an unguarded call would
+        // discard the broadcast with it. Colour is therefore attempted and never allowed to swallow the text.
+        bool colourChanged = false;
+        try
         {
-            "error" => ConsoleColor.Red,
-            "warning" => ConsoleColor.Yellow,
-            "success" => ConsoleColor.Green,
-            _ => ConsoleColor.Cyan
-        };
-        Console.WriteLine($"\n=== BROADCAST ===\n{text}\n================\n");
-        Console.ResetColor();
+            Console.ForegroundColor = style switch
+            {
+                "error" => ConsoleColor.Red,
+                "warning" => ConsoleColor.Yellow,
+                "success" => ConsoleColor.Green,
+                _ => ConsoleColor.Cyan
+            };
+            colourChanged = true;
+        }
+        catch (IOException)
+        {
+            // No console to colour; the text below is what matters.
+            colourChanged = false;
+        }
+
+        try
+        {
+            Console.WriteLine($"\n=== BROADCAST ===\n{text}\n================\n");
+        }
+        finally
+        {
+            if (colourChanged)
+            {
+                try
+                {
+                    Console.ResetColor();
+                }
+                catch (IOException)
+                {
+                    // Nothing to restore when the console could not take a colour in the first place.
+                }
+            }
+        }
+
         await Task.CompletedTask.ConfigureAwait(false);
     }
 

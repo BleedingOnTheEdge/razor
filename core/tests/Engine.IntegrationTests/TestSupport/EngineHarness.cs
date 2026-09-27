@@ -28,6 +28,8 @@ internal sealed class EngineHarness : IAsyncDisposable
     private readonly LogSink _logs = new();
     private readonly BinaryTransferManager _transferManager;
     private readonly string? _previousPrimaryEndpoint;
+    private readonly bool _previousDevelopment;
+    private readonly string? _previousDownloadDir;
     private Task _connectionLoop = Task.CompletedTask;
     private bool _disposed;
 
@@ -37,9 +39,21 @@ internal sealed class EngineHarness : IAsyncDisposable
     /// </summary>
     /// <param name="previousPrimaryEndpoint">The endpoint the environment held before the test, to be put
     /// back on disposal.</param>
-    private EngineHarness(string? previousPrimaryEndpoint)
+    /// <param name="previousDevelopment">Whether the runtime was in development mode before the test, to be
+    /// put back on disposal.</param>
+    /// <param name="previousDownloadDir">The download directory the environment held before the test, to be
+    /// put back on disposal.</param>
+    /// <param name="downloadDir">The directory this harness receives binary transfers into.</param>
+    private EngineHarness(
+        string? previousPrimaryEndpoint,
+        bool previousDevelopment,
+        string? previousDownloadDir,
+        string downloadDir)
     {
         _previousPrimaryEndpoint = previousPrimaryEndpoint;
+        _previousDevelopment = previousDevelopment;
+        _previousDownloadDir = previousDownloadDir;
+        DownloadDirectory = downloadDir;
 
         Cloud = SimulatedCloudServer.Start();
 
@@ -69,6 +83,12 @@ internal sealed class EngineHarness : IAsyncDisposable
 
     /// <summary>Gets the connector under test.</summary>
     internal CloudConnector Connector
+    {
+        get;
+    }
+
+    /// <summary>Gets the directory this harness receives binary transfers into.</summary>
+    internal string DownloadDirectory
     {
         get;
     }
@@ -121,8 +141,28 @@ internal sealed class EngineHarness : IAsyncDisposable
         // RunAsync prompts on the console when no credentials are set, and a test host cannot answer a prompt.
         Credentials.SetCredentials("operator", "secret", "instance-api-key");
 
+        // The connector branches on RuntimeEnvironment.IsProduction, which reads DOTNET_ENVIRONMENT and
+        // defaults to "Production". In the production branch a failed primary connect is swallowed and the
+        // fallback endpoint (wss://cloud.Razor-fallback.io/engine) is tried next -- so a test that does not
+        // force development mode hangs against the real internet until it times out, instead of reporting
+        // why the local connection failed. Forcing development mode makes the connector use the two
+        // endpoints in order and surface the underlying exception.
+        bool previousDevelopment = RuntimeEnvironment.IsDevelopment;
+        RuntimeEnvironment.SetDevelopment(true);
+
         string? previous = Environment.GetEnvironmentVariable("Razor_PRIMARY_ENDPOINT");
-        var harness = new EngineHarness(previous);
+
+        // Each harness gets its own download directory. The connector saves a received binary transfer under
+        // the file name the Cloud chose, so a shared directory makes two tests receiving the same name
+        // collide with a sharing violation rather than each saving its own copy.
+        string? previousDownloadDir = Environment.GetEnvironmentVariable("Razor_DOWNLOAD_DIR");
+        string downloadDir = Path.Combine(
+            Path.GetTempPath(),
+            "razor-engine-tests",
+            Guid.NewGuid().ToString("N"));
+        Environment.SetEnvironmentVariable("Razor_DOWNLOAD_DIR", downloadDir);
+
+        var harness = new EngineHarness(previous, previousDevelopment, previousDownloadDir, downloadDir);
 
         // The Engine reads its endpoint from the environment so a build can be pointed at a staging Cloud
         // without a rebuild; here it is what lets the connector reach the peer instead of the internet.
@@ -211,7 +251,25 @@ internal sealed class EngineHarness : IAsyncDisposable
         await this.Cloud.DisposeAsync().ConfigureAwait(false);
 
         Environment.SetEnvironmentVariable("Razor_PRIMARY_ENDPOINT", _previousPrimaryEndpoint);
+        Environment.SetEnvironmentVariable("Razor_DOWNLOAD_DIR", _previousDownloadDir);
+        RuntimeEnvironment.SetDevelopment(_previousDevelopment);
+        TryDeleteDownloadDirectory();
         _cancellation.Dispose();
+    }
+
+    private void TryDeleteDownloadDirectory()
+    {
+        try
+        {
+            if (Directory.Exists(DownloadDirectory))
+            {
+                Directory.Delete(DownloadDirectory, true);
+            }
+        }
+        catch (IOException)
+        {
+            // A leftover directory is not a test failure: the next run uses a fresh unique path.
+        }
     }
 
     private Task RecordCommandAsync(CloudCommand command)

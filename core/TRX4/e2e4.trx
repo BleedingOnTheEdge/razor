@@ -1,0 +1,155 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="27fb6d8f-0aa5-4a6c-af29-c9b9e6423e04" name="Sina@DESKTOP-LVISFEN 2026-09-27 21:17:39" runUser="DESKTOP-LVISFEN\Sina" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-27T21:17:39.7520704+03:30" queuing="2026-09-27T21:17:39.7520708+03:30" start="2026-09-27T21:17:08.2366149+03:30" finish="2026-09-27T21:17:42.6097375+03:30" />
+  <TestSettings name="default" id="cf268c21-d431-4c28-8231-5663e4136165">
+    <Deployment runDeploymentRoot="Sina_DESKTOP-LVISFEN_2026-09-27_21_17_39" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="03dbbf9a-b2b1-41de-be82-231a1a8127f6" testId="4e269068-4fdb-0bdb-fb4a-87357a15f6d1" testName="Engine.IntegrationTests.CloudHandshakeSocketTests.ABroadcastMessageFromTheCloudIsDisplayed" computerName="DESKTOP-LVISFEN" duration="00:00:30.4919012" startTime="2026-09-27T21:17:09.2019933+03:30" endTime="2026-09-27T21:17:39.7107263+03:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="03dbbf9a-b2b1-41de-be82-231a1a8127f6">
+      <Output>
+        <ErrorInfo>
+          <Message>System.TimeoutException : The operation has timed out.</Message>
+          <StackTrace>   at Engine.IntegrationTests.CloudHandshakeSocketTests.ABroadcastMessageFromTheCloudIsDisplayed() in D:\Work\Projects\BleedingOnTheEdge\.qwen\tmp\wt-26\core\tests\Engine.IntegrationTests\CloudHandshakeSocketTests.cs:line 279&#xD;
+   at Engine.IntegrationTests.CloudHandshakeSocketTests.ABroadcastMessageFromTheCloudIsDisplayed() in D:\Work\Projects\BleedingOnTheEdge\.qwen\tmp\wt-26\core\tests\Engine.IntegrationTests\CloudHandshakeSocketTests.cs:line 291&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e434378c-d5c7-40dd-bccc-cdfe2baaa967" testId="6be494f5-b67c-3dd9-477f-4418be4da783" testName="Engine.IntegrationTests.CloudHandshakeSocketTests.ABinaryTransferFromTheCloudIsAcceptedAcknowledgedAndStored" computerName="DESKTOP-LVISFEN" duration="00:00:00.4816303" startTime="2026-09-27T21:17:39.7385240+03:30" endTime="2026-09-27T21:17:40.1957824+03:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e434378c-d5c7-40dd-bccc-cdfe2baaa967" />
+    <UnitTestResult executionId="69ca546e-31a2-4369-8cd1-386d8ab33856" testId="e09d3c33-2639-de83-63b9-0c2b142bab07" testName="Engine.IntegrationTests.CloudHandshakeSocketTests.ATopLevelCommandIsDispatchedWithTheCorrelationIdOfItsEnvelope" computerName="DESKTOP-LVISFEN" duration="00:00:00.3817884" startTime="2026-09-27T21:17:41.0217273+03:30" endTime="2026-09-27T21:17:41.4036580+03:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="69ca546e-31a2-4369-8cd1-386d8ab33856" />
+    <UnitTestResult executionId="925e6a92-e1a2-4f29-9ebb-875bd0368541" testId="4f516b9c-8c51-3770-3044-f2fc87cc04b6" testName="Engine.IntegrationTests.CloudHandshakeSocketTests.ASelfUpdateOfferInAHeartbeatResponseReachesTheSelfUpdateManager" computerName="DESKTOP-LVISFEN" duration="00:00:00.3662265" startTime="2026-09-27T21:17:42.1611843+03:30" endTime="2026-09-27T21:17:42.5280577+03:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="925e6a92-e1a2-4f29-9ebb-875bd0368541" />
+    <UnitTestResult executionId="db4906db-0b49-4f64-a6b5-8a526e7ee89d" testId="d38e01e3-5609-623a-390a-dac99288ed4f" testName="Engine.IntegrationTests.CloudHandshakeSocketTests.AHeartbeatResponseAskingForALockDispatchesAnEmergencyStop" computerName="DESKTOP-LVISFEN" duration="00:00:00.3913377" startTime="2026-09-27T21:17:41.4038809+03:30" endTime="2026-09-27T21:17:41.7954876+03:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="db4906db-0b49-4f64-a6b5-8a526e7ee89d" />
+    <UnitTestResult executionId="ba4dfbd7-e181-4077-adfe-018a76b6cff1" testId="5c8106ed-744b-ff01-56ac-481a73ebac08" testName="Engine.IntegrationTests.CloudHandshakeSocketTests.AFailedAuthRevalidationDropsTheSession" computerName="DESKTOP-LVISFEN" duration="00:00:00.3764134" startTime="2026-09-27T21:17:40.6449509+03:30" endTime="2026-09-27T21:17:41.0214712+03:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ba4dfbd7-e181-4077-adfe-018a76b6cff1" />
+    <UnitTestResult executionId="8767b8be-29c4-47bd-9f37-52410ce77b66" testId="d2bb8e59-0f5f-af88-f0e5-2df58cb18412" testName="Engine.IntegrationTests.CloudHandshakeSocketTests.ACommandDeliveredInAHeartbeatResponseKeepsItsOwnCorrelationId" computerName="DESKTOP-LVISFEN" duration="00:00:00.4485715" startTime="2026-09-27T21:17:40.1971725+03:30" endTime="2026-09-27T21:17:40.6444987+03:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8767b8be-29c4-47bd-9f37-52410ce77b66" />
+    <UnitTestResult executionId="252820ed-af12-4bdd-adab-69b222f584c6" testId="02c31334-04c2-2b92-7fdd-995f2ca5f5ba" testName="Engine.IntegrationTests.CloudHandshakeSocketTests.TheHandshakeCompletesAndTheEngineAdoptsTheSessionIdentifier" computerName="DESKTOP-LVISFEN" duration="00:00:00.3648069" startTime="2026-09-27T21:17:41.7958040+03:30" endTime="2026-09-27T21:17:42.1607987+03:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="252820ed-af12-4bdd-adab-69b222f584c6" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Engine.IntegrationTests.CloudHandshakeSocketTests.ASelfUpdateOfferInAHeartbeatResponseReachesTheSelfUpdateManager" storage="d:\work\projects\bleedingontheedge\.qwen\tmp\wt-26\core\tests\engine.integrationtests\bin\release\net10.0\engine.integrationtests.dll" id="4f516b9c-8c51-3770-3044-f2fc87cc04b6">
+      <Execution id="925e6a92-e1a2-4f29-9ebb-875bd0368541" />
+      <TestMethod codeBase="D:\Work\Projects\BleedingOnTheEdge\.qwen\tmp\wt-26\core\tests\Engine.IntegrationTests\bin\Release\net10.0\Engine.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Engine.IntegrationTests.CloudHandshakeSocketTests" name="ASelfUpdateOfferInAHeartbeatResponseReachesTheSelfUpdateManager" />
+    </UnitTest>
+    <UnitTest name="Engine.IntegrationTests.CloudHandshakeSocketTests.ACommandDeliveredInAHeartbeatResponseKeepsItsOwnCorrelationId" storage="d:\work\projects\bleedingontheedge\.qwen\tmp\wt-26\core\tests\engine.integrationtests\bin\release\net10.0\engine.integrationtests.dll" id="d2bb8e59-0f5f-af88-f0e5-2df58cb18412">
+      <Execution id="8767b8be-29c4-47bd-9f37-52410ce77b66" />
+      <TestMethod codeBase="D:\Work\Projects\BleedingOnTheEdge\.qwen\tmp\wt-26\core\tests\Engine.IntegrationTests\bin\Release\net10.0\Engine.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Engine.IntegrationTests.CloudHandshakeSocketTests" name="ACommandDeliveredInAHeartbeatResponseKeepsItsOwnCorrelationId" />
+    </UnitTest>
+    <UnitTest name="Engine.IntegrationTests.CloudHandshakeSocketTests.ABinaryTransferFromTheCloudIsAcceptedAcknowledgedAndStored" storage="d:\work\projects\bleedingontheedge\.qwen\tmp\wt-26\core\tests\engine.integrationtests\bin\release\net10.0\engine.integrationtests.dll" id="6be494f5-b67c-3dd9-477f-4418be4da783">
+      <Execution id="e434378c-d5c7-40dd-bccc-cdfe2baaa967" />
+      <TestMethod codeBase="D:\Work\Projects\BleedingOnTheEdge\.qwen\tmp\wt-26\core\tests\Engine.IntegrationTests\bin\Release\net10.0\Engine.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Engine.IntegrationTests.CloudHandshakeSocketTests" name="ABinaryTransferFromTheCloudIsAcceptedAcknowledgedAndStored" />
+    </UnitTest>
+    <UnitTest name="Engine.IntegrationTests.CloudHandshakeSocketTests.AHeartbeatResponseAskingForALockDispatchesAnEmergencyStop" storage="d:\work\projects\bleedingontheedge\.qwen\tmp\wt-26\core\tests\engine.integrationtests\bin\release\net10.0\engine.integrationtests.dll" id="d38e01e3-5609-623a-390a-dac99288ed4f">
+      <Execution id="db4906db-0b49-4f64-a6b5-8a526e7ee89d" />
+      <TestMethod codeBase="D:\Work\Projects\BleedingOnTheEdge\.qwen\tmp\wt-26\core\tests\Engine.IntegrationTests\bin\Release\net10.0\Engine.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Engine.IntegrationTests.CloudHandshakeSocketTests" name="AHeartbeatResponseAskingForALockDispatchesAnEmergencyStop" />
+    </UnitTest>
+    <UnitTest name="Engine.IntegrationTests.CloudHandshakeSocketTests.ATopLevelCommandIsDispatchedWithTheCorrelationIdOfItsEnvelope" storage="d:\work\projects\bleedingontheedge\.qwen\tmp\wt-26\core\tests\engine.integrationtests\bin\release\net10.0\engine.integrationtests.dll" id="e09d3c33-2639-de83-63b9-0c2b142bab07">
+      <Execution id="69ca546e-31a2-4369-8cd1-386d8ab33856" />
+      <TestMethod codeBase="D:\Work\Projects\BleedingOnTheEdge\.qwen\tmp\wt-26\core\tests\Engine.IntegrationTests\bin\Release\net10.0\Engine.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Engine.IntegrationTests.CloudHandshakeSocketTests" name="ATopLevelCommandIsDispatchedWithTheCorrelationIdOfItsEnvelope" />
+    </UnitTest>
+    <UnitTest name="Engine.IntegrationTests.CloudHandshakeSocketTests.AFailedAuthRevalidationDropsTheSession" storage="d:\work\projects\bleedingontheedge\.qwen\tmp\wt-26\core\tests\engine.integrationtests\bin\release\net10.0\engine.integrationtests.dll" id="5c8106ed-744b-ff01-56ac-481a73ebac08">
+      <Execution id="ba4dfbd7-e181-4077-adfe-018a76b6cff1" />
+      <TestMethod codeBase="D:\Work\Projects\BleedingOnTheEdge\.qwen\tmp\wt-26\core\tests\Engine.IntegrationTests\bin\Release\net10.0\Engine.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Engine.IntegrationTests.CloudHandshakeSocketTests" name="AFailedAuthRevalidationDropsTheSession" />
+    </UnitTest>
+    <UnitTest name="Engine.IntegrationTests.CloudHandshakeSocketTests.TheHandshakeCompletesAndTheEngineAdoptsTheSessionIdentifier" storage="d:\work\projects\bleedingontheedge\.qwen\tmp\wt-26\core\tests\engine.integrationtests\bin\release\net10.0\engine.integrationtests.dll" id="02c31334-04c2-2b92-7fdd-995f2ca5f5ba">
+      <Execution id="252820ed-af12-4bdd-adab-69b222f584c6" />
+      <TestMethod codeBase="D:\Work\Projects\BleedingOnTheEdge\.qwen\tmp\wt-26\core\tests\Engine.IntegrationTests\bin\Release\net10.0\Engine.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Engine.IntegrationTests.CloudHandshakeSocketTests" name="TheHandshakeCompletesAndTheEngineAdoptsTheSessionIdentifier" />
+    </UnitTest>
+    <UnitTest name="Engine.IntegrationTests.CloudHandshakeSocketTests.ABroadcastMessageFromTheCloudIsDisplayed" storage="d:\work\projects\bleedingontheedge\.qwen\tmp\wt-26\core\tests\engine.integrationtests\bin\release\net10.0\engine.integrationtests.dll" id="4e269068-4fdb-0bdb-fb4a-87357a15f6d1">
+      <Execution id="03dbbf9a-b2b1-41de-be82-231a1a8127f6" />
+      <TestMethod codeBase="D:\Work\Projects\BleedingOnTheEdge\.qwen\tmp\wt-26\core\tests\Engine.IntegrationTests\bin\Release\net10.0\Engine.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Engine.IntegrationTests.CloudHandshakeSocketTests" name="ABroadcastMessageFromTheCloudIsDisplayed" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="4e269068-4fdb-0bdb-fb4a-87357a15f6d1" executionId="03dbbf9a-b2b1-41de-be82-231a1a8127f6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6be494f5-b67c-3dd9-477f-4418be4da783" executionId="e434378c-d5c7-40dd-bccc-cdfe2baaa967" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e09d3c33-2639-de83-63b9-0c2b142bab07" executionId="69ca546e-31a2-4369-8cd1-386d8ab33856" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4f516b9c-8c51-3770-3044-f2fc87cc04b6" executionId="925e6a92-e1a2-4f29-9ebb-875bd0368541" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d38e01e3-5609-623a-390a-dac99288ed4f" executionId="db4906db-0b49-4f64-a6b5-8a526e7ee89d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5c8106ed-744b-ff01-56ac-481a73ebac08" executionId="ba4dfbd7-e181-4077-adfe-018a76b6cff1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d2bb8e59-0f5f-af88-f0e5-2df58cb18412" executionId="8767b8be-29c4-47bd-9f37-52410ce77b66" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="02c31334-04c2-2b92-7fdd-995f2ca5f5ba" executionId="252820ed-af12-4bdd-adab-69b222f584c6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="8" executed="8" passed="7" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.8)&#xD;
+[xUnit.net 00:00:00.16]   Discovering: Engine.IntegrationTests&#xD;
+[xUnit.net 00:00:00.22]   Discovered:  Engine.IntegrationTests&#xD;
+[xUnit.net 00:00:00.25]   Starting:    Engine.IntegrationTests&#xD;
+[xUnit.net 00:00:30.81]       System.TimeoutException : The operation has timed out.&#xD;
+[xUnit.net 00:00:30.81]       Stack Trace:&#xD;
+[xUnit.net 00:00:30.81]         D:\Work\Projects\BleedingOnTheEdge\.qwen\tmp\wt-26\core\tests\Engine.IntegrationTests\CloudHandshakeSocketTests.cs(279,0): at Engine.IntegrationTests.CloudHandshakeSocketTests.ABroadcastMessageFromTheCloudIsDisplayed()&#xD;
+[xUnit.net 00:00:30.81]         D:\Work\Projects\BleedingOnTheEdge\.qwen\tmp\wt-26\core\tests\Engine.IntegrationTests\CloudHandshakeSocketTests.cs(291,0): at Engine.IntegrationTests.CloudHandshakeSocketTests.ABroadcastMessageFromTheCloudIsDisplayed()&#xD;
+[xUnit.net 00:00:30.81]         --- End of stack trace from previous location ---&#xD;
+Cloud connector starting.&#xD;
+Connecting to ws://127.0.0.1:61853/engine...&#xD;
+Connected to ws://127.0.0.1:61853/engine.&#xD;
+Authenticating with cloud...&#xD;
+Authentication acknowledged.&#xD;
+Authenticated. Session ID: 1618b083-2fc0-4f14-b0d6-581ecacf3d7b&#xD;
+Receive loop ended.&#xD;
+Disconnected from cloud.&#xD;
+Cloud connector starting.&#xD;
+Connecting to ws://127.0.0.1:61855/engine...&#xD;
+Connected to ws://127.0.0.1:61855/engine.&#xD;
+Authenticating with cloud...&#xD;
+Authentication acknowledged.&#xD;
+Authenticated. Session ID: cc09b8f1-3cbf-421f-9e79-5dc3d9f1b8c1&#xD;
+Receive loop ended.&#xD;
+Disconnected from cloud.&#xD;
+Cloud connector starting.&#xD;
+Connecting to ws://127.0.0.1:61857/engine...&#xD;
+Connected to ws://127.0.0.1:61857/engine.&#xD;
+Authenticating with cloud...&#xD;
+Authentication acknowledged.&#xD;
+?? Authentication invalid. Stopping user tasks.&#xD;
+Disconnected from cloud.&#xD;
+Receive loop ended.&#xD;
+Connecting to wss://cloud.Razor-fallback.io/engine...&#xD;
+Error in connector loop: Failed to connect to any cloud endpoint.&#xD;
+Cloud connector starting.&#xD;
+Connecting to ws://127.0.0.1:61859/engine...&#xD;
+Connected to ws://127.0.0.1:61859/engine.&#xD;
+Authenticating with cloud...&#xD;
+Authentication acknowledged.&#xD;
+Authenticated. Session ID: 3aeb0396-ccd5-481f-be4c-80646ea122af&#xD;
+Disconnected from cloud.&#xD;
+Receive loop ended.&#xD;
+Cloud connector starting.&#xD;
+Connecting to ws://127.0.0.1:61861/engine...&#xD;
+Connected to ws://127.0.0.1:61861/engine.&#xD;
+Authenticating with cloud...&#xD;
+Authentication acknowledged.&#xD;
+?? Engine is locked/banned. Stopping user tasks.&#xD;
+Authenticated. Session ID: 9d00f5c2-5215-4a19-a990-b2d089feb2d2&#xD;
+Receive loop ended.&#xD;
+Connecting to wss://cloud.Razor-fallback.io/engine...&#xD;
+Error in connector loop: Failed to connect to any cloud endpoint.&#xD;
+Cloud connector starting.&#xD;
+Connecting to ws://127.0.0.1:61863/engine...&#xD;
+Connected to ws://127.0.0.1:61863/engine.&#xD;
+Authenticating with cloud...&#xD;
+Authentication acknowledged.&#xD;
+Authenticated. Session ID: 62e91f2e-a712-4929-954c-90af3b056c69&#xD;
+Receive loop ended.&#xD;
+Disconnected from cloud.&#xD;
+Cloud connector starting.&#xD;
+Connecting to ws://127.0.0.1:61865/engine...&#xD;
+Connected to ws://127.0.0.1:61865/engine.&#xD;
+Authenticating with cloud...&#xD;
+Authentication acknowledged.&#xD;
+Authenticated. Session ID: c82588d3-1675-4334-a482-8df8e9ba278a&#xD;
+Disconnected from cloud.&#xD;
+Receive loop ended.&#xD;
+[xUnit.net 00:00:33.64]   Finished:    Engine.IntegrationTests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="DESKTOP-LVISFEN" outcome="Error" timestamp="2026-09-27T21:17:39.7139680+03:30">
+        <Text>[xUnit.net 00:00:30.81]     Engine.IntegrationTests.CloudHandshakeSocketTests.ABroadcastMessageFromTheCloudIsDisplayed [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

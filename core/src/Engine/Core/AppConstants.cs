@@ -11,6 +11,17 @@ internal static class AppConstants
     /// <summary>Fallback Cloud endpoint (can be overridden by environment variable).</summary>
     public static string FallbackEndpoint => Environment.GetEnvironmentVariable("Razor_FALLBACK_ENDPOINT") ?? "wss://cloud.Razor-fallback.io/engine";
 
+    /// <summary>
+    /// Directory that binary transfers are saved into (can be overridden by environment variable).
+    /// </summary>
+    /// <remarks>
+    /// Configurable so that two connectors in one process cannot collide on the same file name. With a fixed
+    /// directory the second writer fails with a sharing violation instead of saving its file, which is what
+    /// happens when a test suite (or two engine instances) receives the same file name.
+    /// </remarks>
+    public static string DownloadDirectory => Environment.GetEnvironmentVariable("Razor_DOWNLOAD_DIR")
+        ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "downloads");
+
     /// <summary>Default grace period in hours.</summary>
     public const int DefaultGracePeriodHours = 3;
 

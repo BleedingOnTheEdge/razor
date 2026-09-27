@@ -36,15 +36,45 @@ internal sealed class BroadcastMessageHandler : CommandHandlerBase
         string text = textObj?.ToString() ?? string.Empty;
         string style = dict.TryGetValue("Style", out object? styleObj) ? styleObj?.ToString() ?? "info" : "info";
 
-        Console.ForegroundColor = style switch
+        // The colour is a presentation nicety; the text is the message. Setting a colour throws when the
+        // process has no console (output redirected, or running as a service), and an unguarded call would
+        // discard the broadcast along with it.
+        bool colourChanged = false;
+        try
         {
-            "error" => ConsoleColor.Red,
-            "warning" => ConsoleColor.Yellow,
-            "success" => ConsoleColor.Green,
-            _ => ConsoleColor.Cyan
-        };
-        Console.WriteLine($"\n=== BROADCAST ===\n{text}\n================\n");
-        Console.ResetColor();
+            Console.ForegroundColor = style switch
+            {
+                "error" => ConsoleColor.Red,
+                "warning" => ConsoleColor.Yellow,
+                "success" => ConsoleColor.Green,
+                _ => ConsoleColor.Cyan
+            };
+            colourChanged = true;
+        }
+        catch (IOException)
+        {
+            // No console to colour; the text below is what matters.
+            colourChanged = false;
+        }
+
+        try
+        {
+            Console.WriteLine($"\n=== BROADCAST ===\n{text}\n================\n");
+        }
+        finally
+        {
+            if (colourChanged)
+            {
+                try
+                {
+                    Console.ResetColor();
+                }
+                catch (IOException)
+                {
+                    // Nothing to restore when the console could not take a colour in the first place.
+                }
+            }
+        }
 
         _logBroadcastMessageWarning(Logger, null);
         await SendSuccessAsync(command.CorrelationId ?? string.Empty, new { Message = "Broadcast displayed." }, cancellationToken).ConfigureAwait(false);

@@ -263,7 +263,7 @@ public sealed class CloudHandshakeSocketTests
                 Status = "Success"
             }).ConfigureAwait(true);
 
-        string saved = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "downloads", FileName);
+        string saved = Path.Combine(engine.DownloadDirectory, FileName);
         Assert.True(
             await engine.WaitForAsync(() => File.Exists(saved)).ConfigureAwait(true),
             $"the received file never appeared at {saved}");
