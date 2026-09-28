@@ -1,26 +1,51 @@
 ---
 id: product:razor/contracts/configuration-reference/hook-system
 parent: product:razor/contracts/configuration-reference
-title: 12. Hook System
+title: Hook System
 level: product
 kind: contract
+domains: [extensions]
+flows: [extension-development]
+keywords:
+  - hooks
+  - filter hooks
+  - action hooks
+  - hook registration
+  - hook catalogue
+  - hook contexts
+  - priority ordering
+  - ihookmanifest
+  - ihookregistry
+references:
+  - product:razor/contracts/configuration-reference/slot-capability-interfaces
+code_paths:
+  - core/src/Sdk/Hooks/**
 ---
 
-# 12. Hook System
+# Hook System
 
-**Namespace:** `Razor.Core.Sdk.Hooks`
+**Namespace:** `Sdk.Hooks`
 
-Razor uses a priority‑based hook system for extensibility. Hook plugins implement `IHookManifest` and register callbacks on named hook points.
+Razor uses a priority-based hook system for extensibility. Hook plugins implement `IHookManifest` and
+register strongly typed callbacks on named hook points. The engine calls `RegisterHooks` once at
+plugin load time, passing the root `IHookRegistry`.
 
-## Hook Registration Interfaces
+## Hook Types
+
+- **Filter hooks** (`IFilterRegistration<T>`) transform or reject data flowing through a pipeline. Each callback receives the current value and the hook context, and returns a `FilterResult<T>` indicating whether to allow the value (possibly modified) or reject it.
+- **Action hooks** (`IActionRegistration<T>` or `IActionRegistration`) observe events without modifying data. Typed variants receive the event data; parameterless variants receive only the context.
+
+Registration order is deterministic: by `priority` (lower first), then by plugin name (alphabetical, case-insensitive ordinal), then by registration order within the plugin. Filter callbacks run in that order, each receiving the previous callback's result; the first callback that returns `IsAllowed = false` stops the chain and its rejection is returned. Action callbacks run in order and are all invoked; an exception in an action callback is caught and logged and never stops the chain.
+
+## Registration Interfaces
 
 | Interface | Description |
 |-----------|-------------|
 | `IHookManifest` | Entry point for hook plugins. `void RegisterHooks(IHookRegistry registry)` |
-| `IHookRegistry` | Root registry with `Backtest`, `Live`, `Optimization`, `Report` sub‑registries. |
-| `IFilterRegistration<T>` | Registration point for a filter hook. `void Register(Func<T, IHookContext, FilterResult<T>>, int priority)` |
-| `IActionRegistration<T>` | Registration point for a typed action hook. Callbacks must be synchronous; `async void` is prohibited and will cause process crashes. |
-| `IActionRegistration` | Registration point for a parameterless action hook. Same synchronous requirement. |
+| `IHookRegistry` | Root registry with `Backtest`, `Live`, `Optimization`, `Report` sub-registries. |
+| `IFilterRegistration<T>` | Registration point for a filter hook. `void Register(Func<T, IHookContext, FilterResult<T>> callback, int priority = 100)` |
+| `IActionRegistration<T>` | Registration point for a typed action hook. `void Register(Action<T, IHookContext> callback, int priority = 100)`. Callbacks must be synchronous; `async void` is prohibited and will cause process crashes. |
+| `IActionRegistration` | Registration point for a parameterless action hook. `void Register(Action<IHookContext> callback, int priority = 100)`. Same synchronous requirement. |
 
 ## Filter Results
 
@@ -44,9 +69,9 @@ public readonly struct FilterResult<T>
 | Interface | Pipeline | Key Members |
 |-----------|----------|-------------|
 | `IHookContext` | Base | `HookName`, `UtcNow`, `CancellationToken` |
-| `IBacktestContext` | Backtesting | `CurrentTick`, `CurrentEquity`, `CurrentDrawdown`, `Broker`, `TickWindow`, `OpenPositions` |
-| `ILiveContext` | Live Trading | `CurrentTick`, `CurrentEquity`, `Broker`, `AdapterName`, `IsConnected` |
-| `IOptimizationContext` | Optimization | `CurrentGeneration`, `TotalGenerations`, `BestFitness`, `IsHyperMutation` |
+| `IBacktestContext` | Backtesting | `CurrentTick`, `TickIndex`, `TotalTicks`, `CurrentEquity`, `CurrentBalance`, `CurrentDrawdown`, `Broker`, `TickWindow`, `OpenPositions` |
+| `ILiveContext` | Live Trading | `CurrentTick`, `CurrentEquity`, `CurrentBalance`, `CurrentDrawdown`, `Broker`, `AdapterName`, `IsConnected` |
+| `IOptimizationContext` | Optimization | `CurrentGeneration`, `TotalGenerations`, `PopulationSize`, `BestFitness`, `IsHyperMutation` |
 | `IReportContext` | Reports | `ReportFormat` |
 
 ## Hook Catalog
@@ -65,7 +90,7 @@ public readonly struct FilterResult<T>
 | `OnOrderAfterExecute` | Action\<(AdapterOrderRequest, AdapterOrderResponse)\> | Action after an order is executed or rejected. |
 | `OnPositionOpened` | Action\<Position\> | Action when a new position is opened. |
 | `OnPositionClosed` | Action\<Position\> | Action when a position is closed. |
-| `OnPositionStopout` | Action\<Position\> | Action when a stop‑out occurs. |
+| `OnPositionStopout` | Action\<Position\> | Action when a stop-out occurs. |
 | `OnEquityUpdated` | Action\<EquitySnapshot\> | Action when equity/drawdown is recalculated. |
 | `OnCompleted` | Action | Fires when the backtest completes. |
 
@@ -82,7 +107,7 @@ public readonly struct FilterResult<T>
 | `OnOrderRejected` | Action\<(AdapterOrderRequest, string)\> | Action when an order is rejected. |
 | `OnPositionOpened` | Action\<Position\> | Action when a new position is detected. |
 | `OnPositionClosed` | Action\<Position\> | Action when a position is closed. |
-| `OnPositionStopout` | Action\<Position\> | Action when a stop‑out occurs. |
+| `OnPositionStopout` | Action\<Position\> | Action when a stop-out occurs. |
 | `OnSyncBefore` | Action | Action before periodic state sync. |
 | `OnSyncAfter` | Action | Action after periodic state sync. |
 | `OnReconnectAttempt` | Action\<int\> | Action on a reconnection attempt. |
@@ -112,5 +137,3 @@ public readonly struct FilterResult<T>
 |------|------|-------------|
 | `OnBeforeGenerate` | Filter\<ReportRequest\> | Filter the report request before generation. |
 | `OnAfterGenerate` | Action\<(byte[], string)\> | Action after a report is generated. |
-
----

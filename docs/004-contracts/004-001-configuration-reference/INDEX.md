@@ -3,26 +3,47 @@ id: product:razor/contracts/configuration-reference
 title: Razor Configuration Reference
 level: product
 kind: contract
+domains: [engine, sdk]
+flows: [strategy-development, backtest-run, optimisation-run, live-trading-session, extension-development]
+keywords:
+  - configuration reference
+  - strategy specification
+  - execution specification
+  - optimisation specification
+  - live specification
+  - symbol properties
+  - timeframe
+  - gene attributes
+  - data action policy
+  - slot capabilities
+  - hook system
+  - validation
+  - exceptions
+references:
+  - product:razor/contracts/extension-developer-guide
+code_paths:
+  - core/src/Sdk/Shared/**
+  - core/src/Sdk/Hooks/**
+  - core/src/Sdk/Slots/**
+  - core/src/Kernel/Configuration/**
 ---
 
-# Razor Configuration Reference — Index
+# Razor Configuration Reference
 
-Every configuration object, enum, and data contract that controls engine behaviour, with validation rules.
+Every configuration object, enumeration, and data contract that controls Razor engine behaviour.
+This section is the single source of truth for parameter names, types, validation rules and
+acceptable values - use it when writing strategies, building adapters, or interpreting
+Cloud-supplied payloads. The matching how-to material is in
+`product:razor/contracts/extension-developer-guide`.
 
-| ID | File | Purpose |
-|---|---|---|
-| product:razor/contracts/configuration-reference/purpose | 004-001-001-purpose.md | Purpose |
-| product:razor/contracts/configuration-reference/strategy-specification | 004-001-010-strategy-specification.md | 1. Strategy Specification |
-| product:razor/contracts/configuration-reference/execution-specification | 004-001-020-execution-specification.md | 2. Execution Specification |
-| product:razor/contracts/configuration-reference/optimization-specification | 004-001-030-optimization-specification.md | 3. Optimization Specification |
-| product:razor/contracts/configuration-reference/live-specification | 004-001-040-live-specification.md | 4. Live Specification |
-| product:razor/contracts/configuration-reference/neural-network-model-interface | 004-001-050-neural-network-model-interface.md | 5. Neural Network Model Interface |
-| product:razor/contracts/configuration-reference/symbol-properties | 004-001-060-symbol-properties.md | 6. Symbol Properties |
-| product:razor/contracts/configuration-reference/timeframe | 004-001-070-timeframe.md | 7. TimeFrame |
-| product:razor/contracts/configuration-reference/gene-attributes | 004-001-080-gene-attributes.md | 8. Gene Attributes |
-| product:razor/contracts/configuration-reference/data-action-policy | 004-001-090-data-action-policy.md | 9. Data Action Policy |
-| product:razor/contracts/configuration-reference/adapter-capability-interface | 004-001-100-adapter-capability-interface.md | 10. Adapter Capability Interface |
-| product:razor/contracts/configuration-reference/strategy-capability-interface | 004-001-110-strategy-capability-interface.md | 11. Strategy Capability Interface |
-| product:razor/contracts/configuration-reference/hook-system | 004-001-120-hook-system.md | 12. Hook System |
-| product:razor/contracts/configuration-reference/validation-principles | 004-001-130-validation-principles.md | 13. Validation Principles |
-| product:razor/contracts/configuration-reference/common-exceptions | 004-001-140-common-exceptions.md | 14. Common Exceptions |
+| ID | Purpose | Domains | Flows | Code |
+|---|---|---|---|---|
+| product:razor/contracts/configuration-reference/strategy-specification | `StrategySpecification` and `SymbolRequest`: account setup and the symbols/timeframes a strategy needs. | engine, sdk | strategy-development, backtest-run | core/src/Sdk/Shared/StrategySpecification.cs, core/src/Sdk/Shared/SymbolRequest.cs |
+| product:razor/contracts/configuration-reference/execution-specification | `ExecutionSpecification`: the backtest/optimisation run environment. | engine, backtesting | backtest-run, optimisation-run | core/src/Kernel/Configuration/ExecutionSpecification.cs |
+| product:razor/contracts/configuration-reference/optimization-specification | `OptimizationSpecification`: master seed, population and GA rates. | optimisation | optimisation-run | core/src/Kernel/Configuration/OptimizationSpecification.cs |
+| product:razor/contracts/configuration-reference/live-specification | `LiveSpecification`: magic number and order guard timeout. | live-trading | live-trading-session | core/src/Kernel/Configuration/LiveSpecification.cs |
+| product:razor/contracts/configuration-reference/slot-capability-interfaces | The three slot interfaces: `IAdapterCapability`, `IStrategyCapability`, `INeuralNetworkModel`. | sdk, extensions | extension-development | core/src/Sdk/Slots/** |
+| product:razor/contracts/configuration-reference/market-data-types | `SymbolProperties`, `TimeFrame`, `DataActionPolicy` and the enums they use. | sdk, data | | core/src/Sdk/Shared/SymbolProperties.cs, core/src/Sdk/Shared/TimeFrame.cs, core/src/Sdk/Shared/DataActionPolicy.cs |
+| product:razor/contracts/configuration-reference/gene-attributes | `GeneAttribute` and `GeneType`: the gene schema the GA optimises. | sdk, optimisation | strategy-development, optimisation-run | core/src/Sdk/Shared/GeneAttribute.cs |
+| product:razor/contracts/configuration-reference/hook-system | The hook contract: registration interfaces, contexts, priorities and the hook catalogue. | extensions | extension-development | core/src/Sdk/Hooks/** |
+| product:razor/contracts/configuration-reference/validation-and-exceptions | How specifications validate, and the exceptions they throw. | engine, sdk | | core/src/Sdk/Shared/Exceptions.cs |
