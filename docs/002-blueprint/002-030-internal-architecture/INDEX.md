@@ -52,6 +52,6 @@ Any architecture deviation must be approved by the Razor architecture board.
 | product:razor/blueprint/internal-architecture/messaging-events | The message bus and the catalog of engine events. | engine | | core/src/Kernel/Messaging/**, core/src/Kernel/Events/** |
 | product:razor/blueprint/internal-architecture/threading-concurrency | Which work runs on which thread, and where the locks are. | engine | | |
 | product:razor/blueprint/internal-architecture/telemetry-observability | The metrics the engine emits and how they are exported. | engine, reporting | | core/src/Kernel/Telemetry/** |
-| product:razor/blueprint/internal-architecture/report-generation-engine-role | What the engine contributes to reporting, and why rendering is not its job. | reporting | result-reporting | core/src/Kernel/Reporting/** |
+| product:razor/blueprint/internal-architecture/report-generation-engine-role | What the engine contributes to reporting, and why rendering is not its job. | reporting | reporting | core/src/Kernel/Reporting/** |
 | product:razor/blueprint/internal-architecture/determinism-infrastructure | Portable RNG, seeding, the clock prohibition and golden tests. | engine | | core/src/Sdk/Shared/CustomizedRandom.cs |
-| product:razor/blueprint/internal-architecture/cloud-control-plane | Cloud's surface, placement, and what it must reconstruct from engine runs. | cloud | engine-provisioning | core/src/Cloud/** |
+| product:razor/blueprint/internal-architecture/cloud-control-plane | Cloud's surface, placement, and what it must reconstruct from engine runs. | cloud | onboarding | core/src/Cloud/** |
