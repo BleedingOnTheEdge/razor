@@ -15,13 +15,16 @@ keywords:
   - pending orders
   - holding costs
   - reconciliation
+references:
+  - product:razor/cross-cutting/principles/live-backtest-behavioural-parity
+  - product:razor/cross-cutting/principles/live-trading-robustness
 code_paths:
   - core/src/Kernel/Brokers/**
 ---
 
 # Broker Architecture
 
-Both brokers implement `IBroker` and use the same `IMarketCalculator` for financial math, ensuring live‑backtest parity (Principle 5).
+Both brokers implement `IBroker` and use the same `IMarketCalculator` for financial math, ensuring live‑backtest parity (Principle 5, `product:razor/cross-cutting/principles/live-backtest-behavioural-parity`).
 
 ## SimulatedBroker
 
@@ -54,7 +57,7 @@ Wraps an `IAdapterCapability` for real exchange trading. Adds reconciliation, co
 - **State reconciliation:** `ReconcileAsync()` fetches the full account state from the adapter and corrects local positions/orders. Called at startup and after reconnection.
 - **In‑flight order guard:** Uses `SystemClock.GetTimestamp()` (monotonic) + configurable timeout to prevent duplicate order submissions.
 - **Order execution:** Delegated to adapter methods. Responses are returned immediately; execution reports are handled asynchronously.
-- **Execution reports:** The adapter's `OnExecutionUpdate` event is handled in a fire‑and‑forget task with full exception logging to prevent process crashes (Principle 13).
+- **Execution reports:** The adapter's `OnExecutionUpdate` event is handled in a fire‑and‑forget task with full exception logging to prevent process crashes (Principle 13, `product:razor/cross-cutting/principles/live-trading-robustness`).
 - **Connection management:** `ConnectAndNotifyAsync` and `DisconnectAndNotifyAsync` publish `ConnectionStateEvent` and update telemetry.
 - **Telemetry:** Records order latency, rejection count, and tick arrival latency via `CoreMetrics`.
 - **Logger:** Uses `ILogger<LiveBroker>` for operational visibility.

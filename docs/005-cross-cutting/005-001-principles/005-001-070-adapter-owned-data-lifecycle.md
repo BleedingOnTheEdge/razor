@@ -4,6 +4,13 @@ parent: product:razor/cross-cutting/principles
 title: 7. Adapter‑Owned Data Lifecycle
 level: product
 kind: cross-cutting
+domains: [extensions, data]
+keywords:
+  - principle 7
+  - adapter owned data
+  - file deletion
+  - notifyfilesafetodeleteasync
+  - borrowedtickdata
 ---
 
 # 7. Adapter‑Owned Data Lifecycle

@@ -11,13 +11,15 @@ keywords:
   - systemclock
   - market time
   - wall clock
+references:
+  - product:razor/cross-cutting/principles/internal-clock-no-system-time-in-trading-logic
 code_paths:
   - core/src/Kernel/Clock/**
 ---
 
 # Clock System
 
-Two implementations of `IClock` enforce the separation of market time and wall‑clock time (Principle 3).
+Two implementations of `IClock` enforce the separation of market time and wall‑clock time (Principle 3, `product:razor/cross-cutting/principles/internal-clock-no-system-time-in-trading-logic`).
 
 ## TickClock
 

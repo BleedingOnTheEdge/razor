@@ -16,6 +16,7 @@ keywords:
 references:
   - product:razor/contracts/configuration-reference/hook-system
   - product:razor/contracts/configuration-reference/market-data-types
+  - product:razor/cross-cutting/principles/configuration-is-source-of-truth-strict-validation
 code_paths:
   - core/src/Sdk/Shared/Exceptions.cs
 ---
@@ -25,7 +26,7 @@ code_paths:
 ## Validation Principles
 
 - Every specification record has a `Validate()` method throwing `ConfigurationException`.
-- No critical parameter is silently defaulted (Principle 9).
+- No critical parameter is silently defaulted (Principle 9, `product:razor/cross-cutting/principles/configuration-is-source-of-truth-strict-validation`).
 - All parsing uses `TryParse`-style methods with clear error messages.
 - Fitness evaluation is performed by hook plugins via the `optimization.fitness.evaluate` hook, not by a built-in `IFitnessModel`.
 - Slippage and commission are adapter-internal concerns, handled through the adapter's `IMarketCalculator` and `SymbolProperties`, not through a user-supplied `ISimulationFriction`.

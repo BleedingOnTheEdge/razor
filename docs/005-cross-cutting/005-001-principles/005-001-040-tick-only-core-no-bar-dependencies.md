@@ -4,6 +4,14 @@ parent: product:razor/cross-cutting/principles
 title: 4. Tick‑Only Core — No Bar Dependencies
 level: product
 kind: cross-cutting
+domains: [engine, data, backtesting]
+keywords:
+  - principle 4
+  - tick only
+  - no bars
+  - onbar
+  - tickwindow
+  - barstoticks
 ---
 
 # 4. Tick‑Only Core — No Bar Dependencies

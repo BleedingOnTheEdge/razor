@@ -12,13 +12,15 @@ keywords:
   - optimization specification
   - live specification
   - strategy specification
+references:
+  - product:razor/cross-cutting/principles/configuration-is-source-of-truth-strict-validation
 code_paths:
   - core/src/Kernel/Configuration/**
 ---
 
 # Configuration & Specification System
 
-All configuration is represented by immutable `record` types that implement a `Validate()` method. A `ConfigurationException` is thrown for invalid input. There are no silent defaults for critical parameters (Principle 9).
+All configuration is represented by immutable `record` types that implement a `Validate()` method. A `ConfigurationException` is thrown for invalid input. There are no silent defaults for critical parameters (Principle 9, `product:razor/cross-cutting/principles/configuration-is-source-of-truth-strict-validation`).
 
 **Specifications in `Kernel.Configuration`:**
 

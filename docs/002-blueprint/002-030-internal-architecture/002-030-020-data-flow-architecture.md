@@ -13,6 +13,9 @@ keywords:
   - borrowed ticks
   - merged timeline
   - live data flow
+references:
+  - product:razor/cross-cutting/principles/sorted-tick-data-contract
+  - product:razor/cross-cutting/principles/adapter-owned-data-lifecycle
 code_paths:
   - core/src/Shared/**
   - core/src/Kernel/Backtesting/**
@@ -53,7 +56,7 @@ Adapter.FetchHistoryToBinaryFileAsync()
 1. **Adapter fetches data:** The adapter implements `IAdapterCapability.FetchHistoryToBinaryFileAsync()`, downloading or converting historical data and writing it as a binary file using `BinaryDataMapper.WriteTicksToBinary()`. The file format is:
    - 8‑byte header: `uint32 magic = 0x53524843` ("CHRS"), `int32 version = 1`.
    - Followed by raw `Tick` structs (`[StructLayout(LayoutKind.Sequential, Pack=1)]`), each 33 bytes.
-   - Ticks must be sorted by ascending `Time` (Principle 8). A debug assertion verifies this.
+   - Ticks must be sorted by ascending `Time` (Principle 8, `product:razor/cross-cutting/principles/sorted-tick-data-contract`). A debug assertion verifies this.
 
 2. **Memory‑mapped access:** `MemoryMappedTickList` maps the file into virtual memory using `MemoryMappedFile`, bypassing the managed heap. It uses unsafe pointers for O(1) element access. The file is opened with `FileShare.Read` to allow concurrent reads. The finalizer releases only the raw pointer; managed handles (`MemoryMappedViewAccessor`, `MemoryMappedFile`) are finalized naturally by their own finalizers.
 
@@ -63,7 +66,7 @@ Adapter.FetchHistoryToBinaryFileAsync()
 
 5. **Execution:** The merged stream is consumed by `BacktestRunner` or the optimisation fitness evaluator.
 
-6. **Cleanup:** After processing, `BorrowedTickData.DisposeAsync()` disposes the mapped lists (releasing the memory view) and calls `adapter.NotifyFileSafeToDeleteAsync()` for each file path. This enables adapter‑owned deletion (Principle 7).
+6. **Cleanup:** After processing, `BorrowedTickData.DisposeAsync()` disposes the mapped lists (releasing the memory view) and calls `adapter.NotifyFileSafeToDeleteAsync()` for each file path. This enables adapter‑owned deletion (Principle 7, `product:razor/cross-cutting/principles/adapter-owned-data-lifecycle`).
 
 ## Live Data Flow
 
