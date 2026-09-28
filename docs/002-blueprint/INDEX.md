@@ -3,16 +3,23 @@ id: product:razor/blueprint
 title: Razor Blueprint
 level: product
 kind: blueprint
+domains: [engine, cloud, backtesting, live-trading, optimisation, data, marketplace, licensing, reporting, security]
+keywords:
+  - blueprint
+  - product model
+  - engine specification
+  - internal architecture
+  - future features
 ---
 
-# Razor Blueprint — Index
+# Razor Blueprint
 
 What Razor is, how it is shaped as a product, how the engine is specified, and where it is going.
 
-| ID | File | Purpose |
-|---|---|---|
-| product:razor/blueprint/project-overview | 002-001-project-overview/ | High-level introduction to Razor for investors, partners, and prospective users. |
-| product:razor/blueprint/product-model | 002-010-product-model/ | Product components, deployment and distribution, licensing, user workflows, and branding. |
-| product:razor/blueprint/engine-technical-blueprint | 002-020-engine-technical-blueprint/ | Complete engine specification: CLI and startup, communication protocol, commands, extensions, security, telemetry. |
-| product:razor/blueprint/internal-architecture | 002-030-internal-architecture/ | Internal architecture for core developers: data flow, brokers, backtesting, hooks, genetic optimisation, threading. |
-| product:razor/blueprint/future-features | 002-040-future-features/ | Forward-looking roadmap of planned features beyond v1.0.0 LTS; no commitments implied. |
+| ID | Purpose | Domains | Flows | Code |
+|---|---|---|---|---|
+| product:razor/blueprint/project-overview | What Razor is, the technology it is built on, the market it addresses, and the vision. | engine | | |
+| product:razor/blueprint/product-model | Product components, deployment and distribution, licensing, user workflows, configuration, control and monitoring, extensibility, roadmap and branding. | engine, cloud, licensing, marketplace | onboarding | |
+| product:razor/blueprint/engine-technical-blueprint | The engine specification: CLI and startup, communication protocol, commands, extensions and slots, concurrency, schedules, security, telemetry, self-update and platform behaviour. | engine, cloud, security, extensions | engine-update, extension-deployment | core/src/Engine/** |
+| product:razor/blueprint/internal-architecture | Internal architecture for core developers: data flow, clock, brokers, backtesting, hooks, genetic optimisation, threading, determinism and the Cloud control plane. | engine, cloud, data, backtesting, live-trading, optimisation | backtest-run, live-trading-session, optimisation-run | core/src/Kernel/**, core/src/Shared/** |
+| product:razor/blueprint/future-features | Forward-looking catalogue of planned features beyond v1.0.0 LTS; no commitments implied. | engine, cloud, extensions, data, reporting, operations | | |
