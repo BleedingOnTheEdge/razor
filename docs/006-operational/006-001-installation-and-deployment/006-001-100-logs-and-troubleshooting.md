@@ -1,14 +1,22 @@
 ---
 id: product:razor/operational/installation-and-deployment/logs-and-troubleshooting
 parent: product:razor/operational/installation-and-deployment
-title: 11. Logs and Troubleshooting
+title: Logs and Troubleshooting
 level: product
 kind: operational
+domains: [operations]
+flows: [onboarding, live-trading-session]
+keywords:
+  - logs
+  - troubleshooting
+  - common issues
+  - json logs
+  - support
 ---
 
-# 11. Logs and Troubleshooting
+# Logs and Troubleshooting
 
-## 11.1 Log Files
+## Log Files
 
 Logs are written to the `logs/` directory with daily rotation:
 ```
@@ -19,7 +27,7 @@ logs/Razor-20260708.log
 
 Each log file is in JSON format (`CompactJsonFormatter`) and can be parsed by standard log aggregation tools.
 
-## 11.2 Common Issues
+## Common Issues
 
 | Problem | Likely Cause | Solution |
 |---------|-------------|----------|
@@ -33,7 +41,7 @@ Each log file is in JSON format (`CompactJsonFormatter`) and can be parsed by st
 | State database locked | Another engine instance running | Ensure only one instance runs. |
 | Binary integrity check fails | Tampered binary or unsigned build | Download official build from Razor Cloud. |
 
-## 11.3 Getting Support
+## Getting Support
 
 Send the relevant log excerpts to Razor support through the Cloud dashboard. Do not share your credentials.
 

@@ -1,45 +1,36 @@
 ---
-id: product:razor/operational/installation-and-deployment/installation-steps
+id: product:razor/operational/installation-and-deployment/authentication-and-startup
 parent: product:razor/operational/installation-and-deployment
-title: 4. Installation Steps
+title: Authentication and Startup
 level: product
 kind: operational
+domains: [operations, cloud, security]
+flows: [onboarding]
+keywords:
+  - authentication
+  - interactive prompt
+  - instance api key
+  - environment variable
+  - razor_auth_token
+  - windows service
+  - systemd
+  - command-line flags
+  - --auth
+references:
+  - product:razor/blueprint/engine-technical-blueprint/cli-and-startup
+  - product:razor/blueprint/engine-technical-blueprint/self-update
 ---
 
-# 4. Installation Steps
+# Authentication and Startup
 
-## 4.1 Windows Installation
+The engine is started with credentials supplied at startup; there is no configuration file. The
+engine's CLI and credential contract - the exact `--auth` format, the `--command=restart` flag, and
+the absence of any bootstrap file - is specified in
+`product:razor/blueprint/engine-technical-blueprint/cli-and-startup` and
+`product:razor/blueprint/engine-technical-blueprint/self-update`. This document is the operator
+procedure.
 
-1. **Extract the archive** to a permanent location, e.g., `C:\Razor\`.
-2. **Place extensions** – copy your adapter, strategy, indicator, hook plugin, and NN model DLLs into the appropriate directories (see §8 for details).
-3. **Run the engine**:
-   - Open a **Command Prompt** or **PowerShell** as Administrator.
-   - Navigate to `C:\Razor\`.
-   - Run: `.\Razor.Core.Engine.exe`
-   - On first startup, the engine will prompt you for your **Cloud Username**, **Cloud Password**, and **Instance API Key**. Enter them interactively.
-   - For automated or service deployments, you can pass credentials via the `--auth` flag (see §4.3).
-
-## 4.2 Linux Installation
-
-1. **Extract the archive** to `/opt/Razor/`:
-   ```bash
-   sudo mkdir -p /opt/Razor
-   sudo tar -xzf Razor-linux-x64.tar.gz -C /opt/Razor
-   ```
-2. **Set permissions**:
-   ```bash
-   sudo chmod +x /opt/Razor/Razor.Core.Engine
-   ```
-3. **Place extensions** in the appropriate subdirectories under `/opt/Razor/`.
-4. **Run the engine**:
-   ```bash
-   cd /opt/Razor
-   ./Razor.Core.Engine
-   ```
-   - If you are running interactively, the engine will prompt for credentials.
-   - For background or service operation, use the `--auth` flag as described below.
-
-## 4.3 Authentication Options
+## Authentication Options
 
 Credentials are **never stored on disk**. They are held in memory only for the duration of the session.
 
@@ -48,9 +39,9 @@ Credentials are **never stored on disk**. They are held in memory only for the d
 - Run the engine with no arguments. It will display:
   ```
   === Engine Authentication ===
-  Cloud Username: 
-  Cloud Password: 
-  Instance API Key: 
+  Cloud Username:
+  Cloud Password:
+  Instance API Key:
   ```
 - Enter your credentials. They are validated against Razor Cloud and then used to establish the secure session.
 
@@ -58,7 +49,7 @@ Credentials are **never stored on disk**. They are held in memory only for the d
 
 - Use the following syntax:
   ```bash
-  Razor.Core.Engine.exe --auth=username,password,apikey
+  Engine.exe --auth=username,password,apikey
   ```
 - The three values must be comma‑separated, with no spaces.
 - **Security warning:** The command line is visible to other processes and may be stored in shell history. Use this only in secure, controlled environments. For production services, ensure that the command line is not logged.
@@ -68,7 +59,7 @@ Credentials are **never stored on disk**. They are held in memory only for the d
 - Set the environment variable `Razor_AUTH_TOKEN` to a base64‑encoded string of `username:password:apikey`.
 - The engine reads this variable on startup if the `--auth` flag is not provided.
 
-## 4.4 Running as a Service
+## Running as a Service
 
 The engine can be installed as a background service on both Windows and Linux.
 
@@ -77,7 +68,7 @@ The engine can be installed as a background service on both Windows and Linux.
 1. Install the engine binary in a permanent directory, e.g., `C:\Razor`.
 2. Create a service using `sc`:
    ```
-   sc create RazorEngine binPath = "C:\Razor\Razor.Core.Engine.exe --service --auth=username,password,apikey" start=auto
+   sc create RazorEngine binPath = "C:\Razor\Engine.exe --service --auth=username,password,apikey" start=auto
    ```
 3. Start the service:
    ```
@@ -95,7 +86,7 @@ The engine can be installed as a background service on both Windows and Linux.
    After=network.target
 
    [Service]
-   ExecStart=/opt/Razor/Razor.Core.Engine --service --auth=username,password,apikey
+   ExecStart=/opt/Razor/Engine --service --auth=username,password,apikey
    WorkingDirectory=/opt/Razor
    Restart=on-failure
    RestartSec=10
@@ -115,5 +106,20 @@ The engine can be installed as a background service on both Windows and Linux.
    ```
 
 > **Note:** Replace `username,password,apikey` with the actual credentials. The `--service` flag tells the engine to run as a daemon/service.
+
+## Command‑Line Reference
+
+| Flag | Description |
+|------|-------------|
+| `--auth=username,password,apikey` | Sets credentials via command line. |
+| `--help`, `-h` | Shows help message. |
+| `--version`, `-v` | Shows version information. |
+| `--service` | Runs as a Windows Service (Windows) or systemd (Linux). |
+| `--development` | Runs in development mode (disables some security checks). |
+| `--command=restart` | Internal use for self‑update. |
+
+The credential semantics of `--auth` and the restart semantics of `--command=restart` are owned by
+`product:razor/blueprint/engine-technical-blueprint/cli-and-startup` and
+`product:razor/blueprint/engine-technical-blueprint/self-update`.
 
 ---

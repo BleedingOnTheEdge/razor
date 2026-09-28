@@ -1,27 +1,35 @@
 ---
 id: product:razor/operational/installation-and-deployment/getting-your-engine-binary
 parent: product:razor/operational/installation-and-deployment
-title: 3. Getting Your Engine Binary
+title: Getting Your Engine Binary
 level: product
 kind: operational
+domains: [operations, cloud]
+flows: [onboarding]
+keywords:
+  - download engine
+  - engine binary
+  - engine archive
+  - distribution
+  - archive contents
 ---
 
-# 3. Getting Your Engine Binary
+# Getting Your Engine Binary
 
-## 3.1 Download
+## Download
 
 1. Log in to Razor Cloud.
 2. Navigate to **Engines** → **Download Engine**.
 3. Select your operating system (Windows or Linux).
 4. Download the compressed archive.
 
-## 3.2 Archive Contents
+## Archive Contents
 
 The archive contains:
 
 ```
 Razor/
-├── Razor.Core.Engine.exe       (Windows) / Razor.Core.Engine (Linux)
+├── Engine.exe                    (Windows) / Engine (Linux)
 ├── *.dll                         (engine dependencies)
 ├── Adapters/                     (empty – place adapter DLLs here)
 ├── Strategies/                   (empty – place strategy DLLs here)
