@@ -28,7 +28,7 @@ This file stays tiny. It is the first thing an orchestrator reads.
 | sdk | product:razor/contracts |
 | security | product:razor/blueprint |
 
-The four documentation roots are:
+The six documentation roots are:
 
 | Root | Covers |
 |---|---|
@@ -36,6 +36,8 @@ The four documentation roots are:
 | product:razor/contracts | The configuration data contract and the public extension API. |
 | product:razor/cross-cutting | The principles and the glossary that apply to every part of the product. |
 | product:razor/operational | Procedures for running the product in the field. |
+| product:razor/decisions | The binding product and architecture rulings, and the documents that carry each one's consequences. |
+| product:razor/flows | The end-to-end flows: one route per flow through the documents that specify its parts. |
 
 ## Flows
 
@@ -48,8 +50,9 @@ The four documentation roots are:
 | live-trading-session | backtesting, cloud, data, engine, extensions, live-trading, operations, sdk, security |
 | onboarding | cloud, engine, extensions, licensing, live-trading, operations, security |
 | optimisation-run | backtesting, cloud, engine, optimisation, sdk |
-| reporting | cloud, engine |
+| reporting | cloud, engine, reporting |
 | strategy-development | engine, extensions, optimisation, sdk |
+| walk-forward-analysis | backtesting, cloud, engine, optimisation, reporting, sdk |
 
 ## Cross-domain flows
 
@@ -57,3 +60,8 @@ Every flow above spans more than one domain, which is why each is documented as 
 than inside a single component's blueprint. The two widest are `live-trading-session` (nine
 domains) and `backtest-run` (seven); both cross the engine, the Cloud control plane and the
 public contracts at once.
+
+`walk-forward-analysis` is the tenth and newest: a Cloud-orchestrated sequence of optimisation
+windows followed by out-of-sample backtests, built from the engine's optimisation and backtest
+primitives rather than built into the engine. It spans `backtesting`, `cloud`, `engine`,
+`optimisation`, `reporting` and `sdk`.
