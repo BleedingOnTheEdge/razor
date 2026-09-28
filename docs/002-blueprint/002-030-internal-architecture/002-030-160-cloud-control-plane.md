@@ -17,7 +17,6 @@ keywords:
 references:
   - product:razor/blueprint/product-model
   - product:razor/blueprint/engine-technical-blueprint
-  - product:razor/flows
 code_paths:
   - core/src/Cloud/**
 ---
