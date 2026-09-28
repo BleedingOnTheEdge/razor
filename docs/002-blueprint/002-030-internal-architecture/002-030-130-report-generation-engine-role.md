@@ -1,12 +1,20 @@
 ---
 id: product:razor/blueprint/internal-architecture/report-generation-engine-role
 parent: product:razor/blueprint/internal-architecture
-title: 14. Report Generation (Engine Role)
+title: Report Generation (Engine Role)
 level: product
 kind: blueprint
+domains: [reporting]
+keywords:
+  - reporting
+  - report generation
+  - engine role
+  - report hooks
+code_paths:
+  - core/src/Kernel/Reporting/**
 ---
 
-# 14. Report Generation (Engine Role)
+# Report Generation (Engine Role)
 
 The engine does **not** generate formatted reports (PDF, HTML, Excel, etc.). Report rendering is the responsibility of Razor Cloud. The engine's role is limited to:
 

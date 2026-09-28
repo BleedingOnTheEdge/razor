@@ -1,16 +1,29 @@
 ---
 id: product:razor/blueprint/internal-architecture/broker-architecture
 parent: product:razor/blueprint/internal-architecture
-title: 5. Broker Architecture
+title: Broker Architecture
 level: product
 kind: blueprint
+domains: [live-trading, backtesting]
+flows: [live-trading-session, backtest-run]
+keywords:
+  - broker
+  - simulatedbroker
+  - livebroker
+  - parity
+  - stop out
+  - pending orders
+  - holding costs
+  - reconciliation
+code_paths:
+  - core/src/Kernel/Brokers/**
 ---
 
-# 5. Broker Architecture
+# Broker Architecture
 
 Both brokers implement `IBroker` and use the same `IMarketCalculator` for financial math, ensuring live‑backtest parity (Principle 5).
 
-## 5.1 SimulatedBroker
+## SimulatedBroker
 
 Used exclusively for backtesting and optimisation. Entirely deterministic, single‑threaded per backtest run.
 
@@ -30,7 +43,7 @@ Used exclusively for backtesting and optimisation. Entirely deterministic, singl
 
 **Determinism:** No `DateTime.UtcNow`, no system clock. All randomisation is external (strategy can be seeded). The execution queue time is purely tick‑driven.
 
-## 5.2 LiveBroker
+## LiveBroker
 
 Wraps an `IAdapterCapability` for real exchange trading. Adds reconciliation, connection handling, and telemetry.
 

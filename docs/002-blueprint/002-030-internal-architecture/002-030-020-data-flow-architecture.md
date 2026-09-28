@@ -1,16 +1,28 @@
 ---
 id: product:razor/blueprint/internal-architecture/data-flow-architecture
 parent: product:razor/blueprint/internal-architecture
-title: 3. Data Flow Architecture
+title: Data Flow Architecture
 level: product
 kind: blueprint
+domains: [data, engine]
+keywords:
+  - data flow
+  - historical data
+  - binary tick file
+  - memory mapped
+  - borrowed ticks
+  - merged timeline
+  - live data flow
+code_paths:
+  - core/src/Shared/**
+  - core/src/Kernel/Backtesting/**
 ---
 
-# 3. Data Flow Architecture
+# Data Flow Architecture
 
 Razor deals with ticks in two distinct modes, matching the principle that file‑based storage is only used when the volume demands it (backtesting/optimisation). The live path uses direct streaming with no file intermediary.
 
-## 3.1 Historical Data Flow (Backtesting & Optimisation)
+## Historical Data Flow (Backtesting & Optimisation)
 
 Used when the engine needs to replay large, static tick datasets.
 
@@ -53,7 +65,7 @@ Adapter.FetchHistoryToBinaryFileAsync()
 
 6. **Cleanup:** After processing, `BorrowedTickData.DisposeAsync()` disposes the mapped lists (releasing the memory view) and calls `adapter.NotifyFileSafeToDeleteAsync()` for each file path. This enables adapter‑owned deletion (Principle 7).
 
-## 3.2 Live Data Flow
+## Live Data Flow
 
 Live ticks arrive asynchronously and are not stored in files.
 

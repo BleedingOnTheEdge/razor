@@ -1,21 +1,31 @@
 ---
 id: product:razor/blueprint/internal-architecture/backtesting-engine
 parent: product:razor/blueprint/internal-architecture
-title: 6. Backtesting Engine
+title: Backtesting Engine
 level: product
 kind: blueprint
+domains: [backtesting]
+flows: [backtest-run]
+keywords:
+  - backtesting
+  - backtestrunner
+  - backtestinput
+  - execution flow
+  - gene injection
+code_paths:
+  - core/src/Kernel/Backtesting/**
 ---
 
-# 6. Backtesting Engine
+# Backtesting Engine
 
-## 6.1 Components
+## Components
 
 - **`BacktestInput`** – Immutable record containing all necessary data: tick streams, symbols, strategy, specs, calculator, optional genes and neural network, progress reporter, message bus.
 - **`BacktestRunner`** – The orchestrator implementing `IBacktestRunner`.
 - **`BacktestProgress` / `BacktestResult`** – Data transfer records.
 - **`MergedTickTimeline`** – Merges multiple tick streams into one chronological enumerator.
 
-## 6.2 Execution Flow
+## Execution Flow
 
 1. **Setup:**
    - Creates a `TickClock`.

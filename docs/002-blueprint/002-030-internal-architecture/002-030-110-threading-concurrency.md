@@ -1,12 +1,18 @@
 ---
 id: product:razor/blueprint/internal-architecture/threading-concurrency
 parent: product:razor/blueprint/internal-architecture
-title: 12. Threading & Concurrency
+title: Threading & Concurrency
 level: product
 kind: blueprint
+domains: [engine]
+keywords:
+  - threading
+  - concurrency
+  - thread safety
+  - locks
 ---
 
-# 12. Threading & Concurrency
+# Threading & Concurrency
 
 | Component | Threading Model | Notes |
 |-----------|-----------------|-------|
