@@ -1,98 +1,130 @@
 ---
 id: product:razor/blueprint/engine-technical-blueprint/communication-protocol
 parent: product:razor/blueprint/engine-technical-blueprint
-title: 3. Communication Protocol
+title: Communication Protocol
 level: product
 kind: blueprint
+domains: [engine, cloud, security]
+keywords:
+  - websocket
+  - wss
+  - message envelope
+  - cloudmessage
+  - handshake
+  - authconfirm
+  - heartbeat
+  - time sync
+  - command execution
+  - binary transfer
+  - capability negotiation
+  - broadcast message
+  - fallback endpoint
+references:
+  - product:razor/blueprint/engine-technical-blueprint/cli-and-startup
+  - product:razor/blueprint/engine-technical-blueprint/security-and-anti-tampering
+  - product:razor/blueprint/product-model/licensing-subscriptions
+code_paths:
+  - core/src/Engine/Communication/**
 ---
 
-# 3. Communication Protocol
+# Communication Protocol
 
-## 3.1 WebSocket Transport
+The engine's contract with the Cloud. This is the wire specification; the message flow of a working
+session is the sum of the parts below.
 
-- **Protocol:** Secure WebSocket (WSS) over TLS.
-- **Endpoints:** Hardcoded in `AppConstants.cs`:
+## 1 Transport
+
+- **Protocol:** secure WebSocket (WSS) over TLS.
+- **Endpoints**, hardcoded in `AppConstants`:
   - `PrimaryEndpoint = "wss://cloud.Razor.io/engine"`
   - `FallbackEndpoint = "wss://cloud.Razor-fallback.io/engine"`
-- **Fallback Logic:** Engine always attempts primary first. If primary fails, switches to fallback. Once connected to fallback, periodically checks primary and switches back when available.
+- **Fallback logic:** the primary is always attempted first. If it fails the engine switches to the
+  fallback, and once on the fallback it periodically probes the primary and switches back when it
+  returns.
 
-## 3.2 Message Envelope
+## 2 Message envelope
 
-All messages are JSON (except binary chunks). Envelope structure (`CloudMessage` in `Razor.Core.Engine.Communication`):
+All messages are JSON except binary chunks. The envelope is `CloudMessage`:
 
 ```json
 {
   "MessageId": "uuid",
   "MessageType": "Command | Event | Heartbeat | Response | BinaryChunk | Auth",
-  "Version": "1.0",
+  "Version": "1.0.0",
   "Encrypted": true,
-  "Payload": { ... } | "base64..."
+  "Payload": { }
 }
 ```
 
-- `MessageId` – UUID for tracking and deduplication.
-- `MessageType` – discriminator for handling.
-- `Encrypted` – indicates if payload is encrypted (always true after handshake).
-- `Payload` – either a JSON object or base64‑encoded binary data.
+- `MessageId` - UUID used for tracking and deduplication.
+- `MessageType` - the discriminator.
+- `Encrypted` - whether the payload is encrypted; always true after the handshake.
+- `Payload` - a JSON object, or base64-encoded binary data.
 
-## 3.3 Authentication Handshake
+## 3 Authentication handshake
 
-1. Engine → Cloud: `Auth` with:
-   - `Username`, `Password`, `InstanceApiKey`
-   - `EngineVersion`, `ClientCapabilities` (list of supported feature IDs)
-   - `PublicKey` (ECDH ephemeral public key)
-2. Cloud validates credentials. If valid, returns `AuthResponse`:
-   - `Status` – `Success` or `Failure`
-   - `PublicKey` – Cloud's ephemeral public key
-   - `Nonce` – for deriving session key
-   - `SessionId` – for future reference
-   - `RequiredCapabilities` – features the Engine must support
-3. Engine derives shared secret from its private key and Cloud's public key.
-4. Engine → Cloud: `AuthConfirm` with a signed challenge (HMAC of nonce with session key).
-5. Cloud verifies and sends `AuthAck`.
-6. From this point, all messages are encrypted with AES‑256‑GCM using the derived session key. Each message includes a sequence number to prevent replay.
+1. Engine sends `Auth` with `Username`, `Password`, `InstanceApiKey`, `EngineVersion`,
+   `ClientCapabilities` (the feature IDs it supports) and `PublicKey` (an ephemeral ECDH key).
+2. The Cloud validates the credentials and replies `AuthResponse` with `Status` (`Success` or
+   `Failure`), `PublicKey` (the Cloud's ephemeral key), `Nonce`, `SessionId` and
+   `RequiredCapabilities`.
+3. The engine derives the shared secret from its private key and the Cloud's public key.
+4. Engine sends `AuthConfirm` carrying a signed challenge - an HMAC of the nonce under the session
+   key.
+5. The Cloud verifies and sends `AuthAck`.
+6. From here every message is encrypted with AES-256-GCM using the derived session key, and carries a
+   sequence number to prevent replay.
 
-## 3.4 Heartbeat & Time Sync
+**Capability negotiation** is part of this handshake, not a separate exchange: the engine declares
+what it supports in `Auth`, and the Cloud validates that against what the licence and the deployment
+require, rejecting an engine that lacks a required feature. The feature ID registry is the one in
+`product:razor/blueprint/product-model/licensing-subscriptions`.
 
-- Engine sends `Heartbeat` at intervals defined by Cloud in the previous `HeartbeatResponse`.
-- Heartbeat payload includes:
-  - `EngineId`
-  - `LocalTimestamp` (Engine's current UTC time)
-  - `Health` – CPU, memory, tasks running, live tick age, etc.
-- Cloud responds with `HeartbeatResponse` containing:
-  - `Status` – `OK`, `Stop`, `Pause`, `Lock`, `Exit`, `Ban`
-  - `NextIntervalSeconds`
-  - `ServerTime` – Cloud's current UTC time (for time sync)
-  - `Commands` – list of commands to execute immediately (if any)
-  - `AuthValid` – true/false (re‑validates credentials)
-  - `AdminMessage` – optional broadcast message (with style hints)
-  - **Self‑Update Metadata** – if a new Engine version is available, the response contains `NewVersion`, `DownloadUrl`, and `Checksum`.
-- Engine updates its internal clock with `ServerTime` and adjusts drift.
-- If `AuthValid` is false, Engine stops all user tasks (Live, Backtest, Optimisation) and prevents new user tasks until re‑authentication.
+## 4 Heartbeat and time sync
 
-## 3.5 Command Execution
+- The engine sends `Heartbeat` at the interval the Cloud last specified in `HeartbeatResponse`.
+- Heartbeat payload carries `EngineId`, `LocalTimestamp` and `Health` - CPU, memory, tasks running,
+  live tick age.
+- The Cloud replies `HeartbeatResponse` with:
+  - `Status` - `OK`, `Stop`, `Pause`, `Lock`, `Exit` or `Ban`;
+  - `NextIntervalSeconds`;
+  - `ServerTime` - the Cloud's UTC time, for drift correction;
+  - `Commands` - commands to execute immediately, if any;
+  - `AuthValid` - re-validates the credentials;
+  - `AdminMessage` - an optional broadcast, with style hints;
+  - **self-update metadata** - `NewVersion`, `DownloadUrl` and `Checksum` when a new engine version is
+    available.
+- The engine corrects its internal clock against `ServerTime`.
+- If `AuthValid` is false the engine stops all user tasks - live, backtest and optimisation - and
+  refuses new ones until re-authentication succeeds.
 
-- Cloud sends a `Command` message with:
-  - `CommandId` – numeric ID (from registry).
-  - `CommandType` – string name (for readability).
-  - `Parameters` – JSON object.
-  - `TimeoutSeconds` – optional; if elapsed, Engine may cancel.
-  - `CorrelationId` – to match responses.
-- Engine executes the command and sends `CommandProgress` events (optional) and a final `CommandCompleted` event with result or error.
-- Commands are executed asynchronously; concurrency is managed by the Task Manager.
+## 5 Command execution
 
-## 3.6 Binary Transfers (Chunked over WebSocket)
+- The Cloud sends `Command` with `CommandId` (the numeric registry ID), `CommandType` (the name, for
+  readability), `Parameters`, an optional `TimeoutSeconds` - if it elapses, the engine may cancel the
+  command - and `CorrelationId` to match the response.
+- The engine executes it and returns optional `CommandProgress` events followed by a final
+  `CommandResponse` carrying the result or the error.
+- Commands execute asynchronously; concurrency is managed by the task manager (see
+  `concurrency-and-task-management`).
 
-All large data transfers (logs, optimisation results, raw tick data, behaviour logs, extension DLLs) use a chunked binary transfer over the **same WebSocket** to avoid opening extra ports or managing HTTP sessions.
+## 6 Binary transfers
 
-**Protocol:**
+Every large transfer - logs, optimisation results, raw tick data, behaviour logs, extension DLLs -
+uses chunked transfer over the **same WebSocket**, so no extra ports or HTTP sessions are needed.
 
-1. **Sender** sends a `BinaryTransferStart` message (`BinaryTransferManager` in `Razor.Core.Engine.Communication`).
-2. **Sender** then sends one or more `BinaryChunk` messages (base64‑encoded data).
-3. **Sender** finalises with a `BinaryTransferEnd` message.
-4. **Receiver** can send `BinaryTransferAck` to confirm receipt or request retransmission.
-5. Checksum (SHA‑256) verification is performed on completion.
+1. The sender sends `BinaryTransferStart`.
+2. It then sends one or more `BinaryChunk` messages (base64-encoded).
+3. It finalises with `BinaryTransferEnd`.
+4. The receiver may answer `BinaryTransferAck` to confirm receipt or request retransmission.
+5. A SHA-256 checksum is verified on completion.
 
-**Performance:** The same WebSocket is reused, reducing latency and overhead. For extremely large files (multi‑gigabyte tick data), the engine streams directly from disk without loading the entire file into memory.
+Reusing the socket keeps latency and overhead low, and for very large files - multi-gigabyte tick
+data - the engine streams directly from disk rather than loading the file into memory.
 
----
+## 7 Admin broadcast
+
+The Cloud may send `BroadcastMessage` with `Text` and `Style` (`info`, `warning`, `error` or
+`success`). The engine displays it on the console with the matching styling. Display is
+presentational only: a broadcast that cannot be styled - because the process has no console - must
+still be printed, never dropped.

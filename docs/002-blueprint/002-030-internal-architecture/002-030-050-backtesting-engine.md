@@ -1,21 +1,31 @@
 ---
 id: product:razor/blueprint/internal-architecture/backtesting-engine
 parent: product:razor/blueprint/internal-architecture
-title: 6. Backtesting Engine
+title: Backtesting Engine
 level: product
 kind: blueprint
+domains: [backtesting]
+flows: [backtest-run]
+keywords:
+  - backtesting
+  - backtestrunner
+  - backtestinput
+  - execution flow
+  - gene injection
+code_paths:
+  - core/src/Kernel/Backtesting/**
 ---
 
-# 6. Backtesting Engine
+# Backtesting Engine
 
-## 6.1 Components
+## Components
 
 - **`BacktestInput`** – Immutable record containing all necessary data: tick streams, symbols, strategy, specs, calculator, optional genes and neural network, progress reporter, message bus.
 - **`BacktestRunner`** – The orchestrator implementing `IBacktestRunner`.
 - **`BacktestProgress` / `BacktestResult`** – Data transfer records.
 - **`MergedTickTimeline`** – Merges multiple tick streams into one chronological enumerator.
 
-## 6.2 Execution Flow
+## Execution Flow
 
 1. **Setup:**
    - Creates a `TickClock`.
@@ -34,13 +44,13 @@ kind: blueprint
    - Iterates over the merged enumerator.
    - For each event:
      - Sets `TickClock` to the tick's time.
-     - Invokes the `backtest.tick.received` filter hook chain.
+     - Invokes the `OnTickReceived` filter hook chain.
      - Calls `broker.OnTickAsync(symbol, tick)` (synchronous, lock‑protected).
-     - Invokes the `backtest.tick.strategy_before` filter hook chain.
+     - Invokes the `OnTickStrategyBefore` filter hook chain.
      - Pushes tick into `TickWindow`.
      - Calls `strategy.OnTick(symbol, tick)`.
-     - Invokes the `backtest.tick.strategy_after` action hook.
-     - Invokes the `backtest.tick.completed` action hook.
+     - Invokes the `OnTickStrategyAfter` action hook.
+     - Invokes the `OnTickCompleted` action hook.
 
 5. **Teardown:**
    - Closes all open positions per symbol.
@@ -51,7 +61,7 @@ kind: blueprint
    - Collects trade history from broker.
    - Calculates metrics via `MetricsCalculator`.
    - Publishes `BacktestCompletedEvent` with full statistics.
-   - Invokes the `backtest.completed` action hook.
+   - Invokes the `OnCompleted` action hook.
    - Records throughput telemetry.
 
 **Determinism:** The entire loop uses no wall‑clock time, no `Random`, and no mutable external state. All gene seeds are derived from the master seed. Given identical tick streams and seeds, the output is bit‑identical.

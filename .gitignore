@@ -1,3 +1,7 @@
 inliner.js
 *.bat
 /temp
+
+# Generated documentation graph cache (docs skill). Derived from doc frontmatter;
+# regenerate with: node <skill>/tools/docs-map/index.js generate
+.qwen/docs-index/

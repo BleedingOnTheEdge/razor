@@ -4,6 +4,14 @@ parent: product:razor/cross-cutting/principles
 title: 11. Code Quality & Documentation Mandates
 level: product
 kind: cross-cutting
+domains: [engine]
+keywords:
+  - principle 11
+  - code quality
+  - xml documentation
+  - cs1591
+  - editorconfig
+  - analyzers
 ---
 
 # 11. Code Quality & Documentation Mandates

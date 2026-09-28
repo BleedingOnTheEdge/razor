@@ -4,6 +4,13 @@ parent: product:razor/cross-cutting/principles
 title: 8. Sorted Tick Data Contract
 level: product
 kind: cross-cutting
+domains: [data, extensions]
+keywords:
+  - principle 8
+  - sorted ticks
+  - binary tick data
+  - binarydatamapper
+  - adapterexception
 ---
 
 # 8. Sorted Tick Data Contract

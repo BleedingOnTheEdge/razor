@@ -1,34 +1,47 @@
 ---
 id: product:razor/blueprint/engine-technical-blueprint
-title: Razor Engine – Finalised Technical Blueprint
+title: Engine Technical Blueprint
 level: product
 kind: blueprint
+domains: [engine, cloud]
+keywords:
+  - engine blueprint
+  - engine specification
+  - headless engine
+  - execution node
+references:
+  - product:razor/blueprint/internal-architecture
+  - product:razor/blueprint/product-model
+  - product:razor/contracts/configuration-reference
+code_paths:
+  - core/src/Engine/**
 ---
 
-# Razor Engine – Finalised Technical Blueprint — Index
+# Engine Technical Blueprint
 
-Complete engine specification: CLI and startup, communication protocol, commands, extensions, security, telemetry.
+The complete specification of the Razor Engine: how it starts, how it talks to the Cloud, the
+commands it exposes, how extensions load, and the operational guarantees it makes.
 
-| ID | File | Purpose |
-|---|---|---|
-| product:razor/blueprint/engine-technical-blueprint/overview-core-principles | 002-020-001-overview-core-principles.md | 1. Overview & Core Principles |
-| product:razor/blueprint/engine-technical-blueprint/cli-startup-no-bootstrap-file | 002-020-010-cli-startup-no-bootstrap-file.md | 2. CLI & Startup (No Bootstrap File) |
-| product:razor/blueprint/engine-technical-blueprint/communication-protocol | 002-020-020-communication-protocol.md | 3. Communication Protocol |
-| product:razor/blueprint/engine-technical-blueprint/command-system-id-based | 002-020-030-command-system-id-based.md | 4. Command System (ID‑Based) |
-| product:razor/blueprint/engine-technical-blueprint/extension-slot-management | 002-020-040-extension-slot-management.md | 5. Extension & Slot Management |
-| product:razor/blueprint/engine-technical-blueprint/concurrency-task-management | 002-020-050-concurrency-task-management.md | 6. Concurrency & Task Management |
-| product:razor/blueprint/engine-technical-blueprint/schedules-cronjobs-virtual-timers | 002-020-060-schedules-cronjobs-virtual-timers.md | 7. Schedules & Cronjobs (Virtual Timers) |
-| product:razor/blueprint/engine-technical-blueprint/offline-handling-infinite-retry | 002-020-070-offline-handling-infinite-retry.md | 8. Offline Handling & Infinite Retry |
-| product:razor/blueprint/engine-technical-blueprint/security-anti-tampering | 002-020-080-security-anti-tampering.md | 9. Security & Anti‑Tampering |
-| product:razor/blueprint/engine-technical-blueprint/logging-telemetry-performance-focused | 002-020-090-logging-telemetry-performance-focused.md | 10. Logging & Telemetry (Performance‑Focused) |
-| product:razor/blueprint/engine-technical-blueprint/behaviorrecorder-sparse-performance-optimised | 002-020-100-behaviorrecorder-sparse-performance-optimised.md | 11. BehaviorRecorder (Sparse, Performance‑Optimised) |
-| product:razor/blueprint/engine-technical-blueprint/self-update-via-heartbeat | 002-020-110-self-update-via-heartbeat.md | 12. Self‑Update (Via Heartbeat) |
-| product:razor/blueprint/engine-technical-blueprint/state-persistence-cloud-as-source-of-truth | 002-020-120-state-persistence-cloud-as-source-of-truth.md | 13. State Persistence (Cloud as Source of Truth) |
-| product:razor/blueprint/engine-technical-blueprint/error-handling-recovery | 002-020-130-error-handling-recovery.md | 14. Error Handling & Recovery |
-| product:razor/blueprint/engine-technical-blueprint/platform-specific-details | 002-020-140-platform-specific-details.md | 15. Platform‑Specific Details |
-| product:razor/blueprint/engine-technical-blueprint/testing-strategy | 002-020-150-testing-strategy.md | 16. Testing Strategy |
-| product:razor/blueprint/engine-technical-blueprint/id-system-for-features-capabilities | 002-020-160-id-system-for-features-capabilities.md | 17. ID System for Features & Capabilities |
-| product:razor/blueprint/engine-technical-blueprint/admin-broadcast-messages | 002-020-170-admin-broadcast-messages.md | 18. Admin Broadcast Messages |
-| product:razor/blueprint/engine-technical-blueprint/performance-considerations-summary | 002-020-180-performance-considerations-summary.md | 19. Performance Considerations (Summary) |
-| product:razor/blueprint/engine-technical-blueprint/implementation-status | 002-020-190-implementation-status.md | 20. Implementation Status |
-| product:razor/blueprint/engine-technical-blueprint/conclusion | 002-020-200-conclusion.md | 21. Conclusion |
+The blueprint specifies the engine's **contract with the Cloud**. The internals it delegates to -
+data flow, brokers, backtesting, optimisation, determinism - are in
+`product:razor/blueprint/internal-architecture`.
+
+| ID | Purpose | Domains | Flows | Code |
+|---|---|---|---|---|
+| product:razor/blueprint/engine-technical-blueprint/engine-overview | What the engine is, and how the product principles land in it. | engine | | core/src/Engine/** |
+| product:razor/blueprint/engine-technical-blueprint/cli-and-startup | Launch, authentication and the absence of a bootstrap file. | engine | | core/src/Engine/Program.cs, core/src/Engine/Core/Credentials.cs |
+| product:razor/blueprint/engine-technical-blueprint/communication-protocol | Transport, envelope, handshake, heartbeat, command execution, binary transfers, capability negotiation, broadcast. | engine, cloud, security | | core/src/Engine/Communication/** |
+| product:razor/blueprint/engine-technical-blueprint/command-system | The command ID registry and how handlers are dispatched. | engine | | core/src/Engine/Management/Commands/** |
+| product:razor/blueprint/engine-technical-blueprint/extension-and-slot-management | Discovery, double validation, lifecycle and safety of extensions. | extensions, engine | extension-deployment | core/src/Engine/Pluggability/**, core/src/Engine/Communication/** |
+| product:razor/blueprint/engine-technical-blueprint/concurrency-and-task-management | Task types, priorities and resource reservation. | engine, live-trading | live-trading-session | core/src/Engine/Management/Tasks/** |
+| product:razor/blueprint/engine-technical-blueprint/schedules-and-cronjobs | Virtual timers: cronjobs and one-off schedules. | engine, cloud | | core/src/Engine/Management/Scheduling/** |
+| product:razor/blueprint/engine-technical-blueprint/offline-handling-and-retry | Reconnection, infinite retry, and what keeps running while offline. | engine, cloud | | |
+| product:razor/blueprint/engine-technical-blueprint/security-and-anti-tampering | Authentication, transport encryption, binary protection, extension signing. | security, engine | | core/src/Engine/Core/SecurityManager.cs |
+| product:razor/blueprint/engine-technical-blueprint/logging-and-telemetry | Logging, log streaming and metrics. | engine, reporting | | core/src/Engine/Core/EngineTelemetry.cs |
+| product:razor/blueprint/engine-technical-blueprint/behavior-recorder | Sparse, batched decision recording for reinforcement learning. | engine, data | | core/src/Engine/Services/BehaviorRecorder/** |
+| product:razor/blueprint/engine-technical-blueprint/self-update | Remote update via heartbeat, with rollback. | engine | engine-update | core/src/Engine/Services/Update/** |
+| product:razor/blueprint/engine-technical-blueprint/state-persistence | The narrow set of things the engine persists locally. | engine, cloud | | core/src/Engine/Core/StateManager.cs |
+| product:razor/blueprint/engine-technical-blueprint/error-handling-and-recovery | Failure handling at every level, including the kill switch. | engine | | |
+| product:razor/blueprint/engine-technical-blueprint/platform-details | Windows and Linux operational differences. | engine, operations | | |
+| product:razor/blueprint/engine-technical-blueprint/testing-strategy | How the engine is verified. | engine | | core/tests/** |
+| product:razor/blueprint/engine-technical-blueprint/performance | The performance discipline the engine is built to. | engine | | |

@@ -3,23 +3,37 @@ id: product:razor/contracts/extension-developer-guide
 title: Razor Extension Developer Guide
 level: product
 kind: contract
+domains: [sdk, extensions]
+flows: [extension-development, extension-deployment, strategy-development]
+keywords:
+  - extension developer guide
+  - adapter
+  - strategy
+  - indicator
+  - hook plugin
+  - neural network model
+  - sdk package
+  - deployment
+  - compatibility
+references:
+  - product:razor/contracts/configuration-reference
 ---
 
-# Razor Extension Developer Guide — Index
+# Razor Extension Developer Guide
 
-How to build adapters, strategies, indicators, hook plugins, and NN models against the public Sdk.
+How to build adapters, strategies, indicators, hook plugins and neural-network models against the
+public `Sdk`. This section is the how-to; the exact interfaces, configuration objects and validation
+rules it works against are the contract in `product:razor/contracts/configuration-reference`.
 
-| ID | File | Purpose |
-|---|---|---|
-| product:razor/contracts/extension-developer-guide/introduction | 004-010-001-introduction.md | 1. Introduction |
-| product:razor/contracts/extension-developer-guide/extension-concepts | 004-010-010-extension-concepts.md | 2. Extension Concepts |
-| product:razor/contracts/extension-developer-guide/project-setup | 004-010-020-project-setup.md | 3. Project Setup |
-| product:razor/contracts/extension-developer-guide/developing-an-adapter | 004-010-030-developing-an-adapter/ | 4. Developing an Adapter |
-| product:razor/contracts/extension-developer-guide/developing-a-strategy | 004-010-040-developing-a-strategy.md | 5. Developing a Strategy |
-| product:razor/contracts/extension-developer-guide/developing-a-hook-plugin | 004-010-050-developing-a-hook-plugin/ | 6. Developing a Hook Plugin |
-| product:razor/contracts/extension-developer-guide/developing-a-neural-network-model | 004-010-060-developing-a-neural-network-model.md | 7. Developing a Neural Network Model |
-| product:razor/contracts/extension-developer-guide/best-practices | 004-010-070-best-practices.md | 8. Best Practices |
-| product:razor/contracts/extension-developer-guide/deployment | 004-010-080-deployment.md | 9. Deployment |
-| product:razor/contracts/extension-developer-guide/versioning-and-compatibility | 004-010-090-versioning-and-compatibility.md | 10. Versioning and Compatibility |
-| product:razor/contracts/extension-developer-guide/platform-specific-notes | 004-010-100-platform-specific-notes.md | 11. Platform‑Specific Notes |
-| product:razor/contracts/extension-developer-guide/further-resources | 004-010-110-further-resources.md | 12. Further Resources |
+| ID | Purpose | Domains | Flows | Code |
+|---|---|---|---|---|
+| product:razor/contracts/extension-developer-guide/introduction | Extension types, prerequisites, and where to look next. | sdk, extensions | extension-development | |
+| product:razor/contracts/extension-developer-guide/extension-concepts | Slots, indicators and hooks; what the `Sdk` package is. | sdk, extensions | extension-development | |
+| product:razor/contracts/extension-developer-guide/project-setup | Class library setup and the `SdkVersion` assembly attribute. | sdk, extensions | extension-development | |
+| product:razor/contracts/extension-developer-guide/developing-an-adapter | Building an adapter: the interface, data and execution providers, market calculator. | sdk, extensions | extension-development | |
+| product:razor/contracts/extension-developer-guide/developing-a-strategy | Building a strategy: lifecycle, `StrategyBase`, indicators, genes, `TickWindow`. | sdk, extensions | strategy-development | |
+| product:razor/contracts/extension-developer-guide/developing-a-hook-plugin | Hook plugin examples and the safe fire-and-forget async pattern. | extensions | extension-development | |
+| product:razor/contracts/extension-developer-guide/developing-a-neural-network-model | Building a custom `INeuralNetworkModel`. | sdk, extensions | extension-development | |
+| product:razor/contracts/extension-developer-guide/best-practices | Performance, thread-safety and determinism guidance. | sdk, extensions | extension-development | |
+| product:razor/contracts/extension-developer-guide/deployment | Directory placement, activation and local testing. | extensions | extension-deployment | |
+| product:razor/contracts/extension-developer-guide/compatibility | SDK version compatibility and platform constraints. | extensions | extension-deployment | |

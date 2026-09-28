@@ -4,6 +4,14 @@ parent: product:razor/cross-cutting/principles
 title: 5. Live‑Backtest Behavioural Parity
 level: product
 kind: cross-cutting
+domains: [live-trading, backtesting]
+keywords:
+  - principle 5
+  - behavioural parity
+  - live backtest parity
+  - simulatedbroker
+  - livebroker
+  - imarketcalculator
 ---
 
 # 5. Live‑Backtest Behavioural Parity

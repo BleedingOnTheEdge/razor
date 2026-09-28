@@ -4,6 +4,15 @@ parent: product:razor/cross-cutting/principles
 title: 12. Testing & Determinism Verification
 level: product
 kind: cross-cutting
+domains: [engine, backtesting]
+keywords:
+  - principle 12
+  - testing
+  - determinism verification
+  - golden file test
+  - integration tests
+references:
+  - product:razor/cross-cutting/principles/determinism-is-mandatory
 ---
 
 # 12. Testing & Determinism Verification
