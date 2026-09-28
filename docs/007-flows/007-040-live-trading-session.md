@@ -1,5 +1,6 @@
 ---
 id: product:razor/flows/live-trading-session
+parent: product:razor/flows
 title: Live Trading Session
 level: product
 kind: contract

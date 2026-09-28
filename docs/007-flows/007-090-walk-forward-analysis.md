@@ -1,5 +1,6 @@
 ---
 id: product:razor/flows/walk-forward-analysis
+parent: product:razor/flows
 title: Walk-Forward Analysis
 level: product
 kind: contract

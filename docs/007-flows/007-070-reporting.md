@@ -1,5 +1,6 @@
 ---
 id: product:razor/flows/reporting
+parent: product:razor/flows
 title: Reporting
 level: product
 kind: contract

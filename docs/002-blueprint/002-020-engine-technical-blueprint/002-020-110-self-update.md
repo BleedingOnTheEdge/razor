@@ -19,7 +19,7 @@ references:
   - product:razor/blueprint/engine-technical-blueprint/communication-protocol
   - product:razor/blueprint/engine-technical-blueprint/cli-and-startup
 code_paths:
-  - core/src/Engine/Core/SelfUpdateManager.cs
+  - core/src/Engine/Services/Update/**
 ---
 
 # Self-Update

@@ -38,8 +38,8 @@ data flow, brokers, backtesting, optimisation, determinism - are in
 | product:razor/blueprint/engine-technical-blueprint/offline-handling-and-retry | Reconnection, infinite retry, and what keeps running while offline. | engine | | core/src/Engine/Communication/CloudConnector.cs |
 | product:razor/blueprint/engine-technical-blueprint/security-and-anti-tampering | Authentication, transport encryption, binary protection, extension signing. | security, engine | | core/src/Engine/Core/SecurityManager.cs |
 | product:razor/blueprint/engine-technical-blueprint/logging-and-telemetry | Logging, log streaming and metrics. | engine, reporting | | core/src/Engine/Core/EngineTelemetry.cs |
-| product:razor/blueprint/engine-technical-blueprint/behavior-recorder | Sparse, batched decision recording for reinforcement learning. | engine, data | | core/src/Engine/Core/BehaviorRecorder.cs |
-| product:razor/blueprint/engine-technical-blueprint/self-update | Remote update via heartbeat, with rollback. | engine | engine-update | core/src/Engine/Core/SelfUpdateManager.cs |
+| product:razor/blueprint/engine-technical-blueprint/behavior-recorder | Sparse, batched decision recording for reinforcement learning. | engine, data | | core/src/Engine/Services/BehaviorRecorder/** |
+| product:razor/blueprint/engine-technical-blueprint/self-update | Remote update via heartbeat, with rollback. | engine | engine-update | core/src/Engine/Services/Update/** |
 | product:razor/blueprint/engine-technical-blueprint/state-persistence | The narrow set of things the engine persists locally. | engine | | core/src/Engine/Core/StateManager.cs |
 | product:razor/blueprint/engine-technical-blueprint/error-handling-and-recovery | Failure handling at every level, including the kill switch. | engine | | |
 | product:razor/blueprint/engine-technical-blueprint/platform-details | Windows and Linux operational differences. | operations, engine | | |

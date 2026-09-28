@@ -1,5 +1,6 @@
 ---
 id: product:razor/flows/optimisation-run
+parent: product:razor/flows
 title: Optimisation Run
 level: product
 kind: contract

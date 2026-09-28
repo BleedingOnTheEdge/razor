@@ -17,7 +17,7 @@ references:
   - product:razor/blueprint/engine-technical-blueprint/logging-and-telemetry
   - product:razor/blueprint/internal-architecture
 code_paths:
-  - core/src/Engine/Core/BehaviorRecorder.cs
+  - core/src/Engine/Services/BehaviorRecorder/**
 ---
 
 # Behavior Recorder

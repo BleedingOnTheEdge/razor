@@ -74,12 +74,12 @@ razor/                          <- repository root
 │   │   ├── Kernel/             <- core engine implementation
 │   │   ├── Engine/             <- headless executable
 │   │   │   ├── Communication/  <- Cloud transport, handshake, command dispatch
-│   │   │   ├── Core/           <- security, state, telemetry, recorder, self-update
+│   │   │   ├── Core/           <- security, credentials, state, telemetry, exceptions
 │   │   │   ├── Extensions/     <- extension discovery and lifecycle
 │   │   │   ├── Kernel/         <- kernel facade
 │   │   │   ├── Management/     <- tasks, scheduling, command handlers
 │   │   │   ├── Pluggability/   <- load contexts, activation, slot management
-│   │   │   └── Services/       <- host services
+│   │   │   └── Services/       <- behavior recorder and self-update services
 │   │   └── Cloud/              <- control plane web application
 │   ├── tests/
 │   │   ├── Sdk.UnitTests/

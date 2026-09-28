@@ -1,5 +1,6 @@
 ---
 id: product:razor/flows/onboarding
+parent: product:razor/flows
 title: Onboarding
 level: product
 kind: contract

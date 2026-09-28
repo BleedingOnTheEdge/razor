@@ -1,5 +1,6 @@
 ---
 id: product:razor/flows/strategy-development
+parent: product:razor/flows
 title: Strategy Development
 level: product
 kind: contract

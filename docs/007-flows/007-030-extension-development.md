@@ -1,5 +1,6 @@
 ---
 id: product:razor/flows/extension-development
+parent: product:razor/flows
 title: Extension Development
 level: product
 kind: contract

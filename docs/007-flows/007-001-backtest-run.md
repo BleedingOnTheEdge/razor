@@ -1,5 +1,6 @@
 ---
 id: product:razor/flows/backtest-run
+parent: product:razor/flows
 title: Backtest Run
 level: product
 kind: contract
