@@ -28,11 +28,12 @@ restart, never to hold authority.
 ## What is persisted locally
 
 The engine holds **no persistent database for configuration**. SQLite is used for a narrow set of
-runtime concerns:
+runtime concerns, held in the single database file `state/engine_state.db`:
 
 | Table | Holds |
 |---|---|
 | `Metadata` | The engine ID |
+| `Tasks` | Pending and running tasks |
 | `LiveState` | Live state snapshots |
 | `OptimizationStates` | Optimisation state snapshots |
 | `CronJobs` | Cron jobs |
@@ -42,8 +43,8 @@ runtime concerns:
 
 ## Synchronisation with the Cloud
 
-- The engine sends `StateUpdate` events for significant changes, and the Cloud stores them.
-- The Cloud may request the full state with `GetState`.
+- The engine publishes no state-change events of its own; the Cloud reads per-target snapshots on
+  demand, through the `GetLiveState`, `GetOptimizationState` and `GetBacktestResult` commands.
 
 Because configuration lives in the Cloud and travels with each command
 (`product:razor/blueprint/product-model/configuration-management`), a lost local database costs at

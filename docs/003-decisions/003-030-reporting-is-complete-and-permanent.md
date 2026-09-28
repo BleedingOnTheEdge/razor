@@ -48,8 +48,9 @@ reportable while a run is still in flight, not only once it completes.
   provenance"
   (`product:razor/blueprint/internal-architecture/cloud-control-plane`).
 - The engine's role is to stream raw result data - `BacktestCompletedEvent`, `OptimizationGenerationEvent`,
-  `OptimizationCycleCompletedEvent`, `LiveSessionEndedEvent`, `StateUpdate`, command progress - and it
-  never renders a formatted report
+  `OptimizationCycleCompletedEvent`, `LiveSessionEndedEvent` and command progress - and to expose
+  per-target snapshots on request (`GetLiveState`, `GetOptimizationState`, `GetBacktestResult`); it never
+  renders a formatted report
   (`product:razor/blueprint/internal-architecture/report-generation-engine-role`,
   `product:razor/blueprint/internal-architecture/messaging-events`).
 - Users generate reports on demand or configure periodic generation, from data the Cloud already holds, in

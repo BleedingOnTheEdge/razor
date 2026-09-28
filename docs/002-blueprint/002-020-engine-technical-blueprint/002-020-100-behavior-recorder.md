@@ -33,6 +33,7 @@ the action taken, and the resulting reward. Not a full trace - a decision log.
 |---|---|
 | `TimestampUtc` | When the decision was taken |
 | `SessionId` | The backtest or live session it belongs to |
+| `StrategyName` | The strategy that generated the record |
 | `State` | Indicator values, positions, equity, and similar |
 | `Action` | `Buy`, `Sell`, `Close`, `Modify` or `None` |
 | `Reward` | Change in equity since the previous recorded state |

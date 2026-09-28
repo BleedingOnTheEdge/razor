@@ -65,16 +65,30 @@ Override the virtual lifecycle methods and add your logic.
 ```csharp
 using Sdk.Shared;
 
+// Your own indicator: the SDK ships no concrete indicators, so declare one and implement Calculate.
+public sealed class SmaIndicator : Indicator
+{
+    public SmaIndicator(string symbol, TimeFrame timeframe, int period)
+    {
+        // Store the arguments and call Initialize(period) to size the circular buffer.
+    }
+
+    public override void Calculate(long index)
+    {
+        // Read Window for the symbol and store the moving average at the latest slot.
+    }
+}
+
 public class SimpleMaStrategy : StrategyBase
 {
-    [Gene(10, 200, Step = 1, Type = GeneType.Discrete)]
+    [Gene(10, 200, 1, GeneType.Discrete)]
     public int FastPeriod { get; set; } = 50;
 
-    [Gene(50, 500, Step = 1, Type = GeneType.Discrete)]
+    [Gene(50, 500, 1, GeneType.Discrete)]
     public int SlowPeriod { get; set; } = 200;
 
-    private Indicator _fastSma = null!;
-    private Indicator _slowSma = null!;
+    private SmaIndicator _fastSma = null!;
+    private SmaIndicator _slowSma = null!;
 
     public override async Task OnStartAsync(IIndicatorRegistry indicators)
     {
@@ -100,7 +114,7 @@ public class SimpleMaStrategy : StrategyBase
 
 Indicators are created via `IIndicatorRegistry.Get<T>(args)`. The registry caches them; use the same arguments to retrieve the same instance. Your strategy receives the registry in `OnStartAsync`.
 
-The base `Indicator` class manages a circular buffer. Override `Initialize` and `Calculate` to implement your own. For example, `SmaIndicator` updates on each tick using a lookback. Use the `TickWindow` for OHLC data if your indicator needs it.
+The base `Indicator` class manages a circular buffer. Override `Initialize` and `Calculate` to implement your own - for example, an SMA indicator updates on each tick using a lookback. Use the `TickWindow` for OHLC data if your indicator needs it.
 
 ## Using TickWindow for OHLC Data
 
@@ -124,7 +138,7 @@ if (isComplete) { /* use OHLC */ }
 To make your strategy optimizable, mark properties with `[Gene]`. The GA will automatically discover them via reflection.
 
 ```csharp
-[Gene(0.1, 5.0, Step = 0.1, Type = GeneType.Discrete)]
+[Gene(0.1, 5.0, 0.1, GeneType.Discrete)]
 public double RiskPercent { get; set; } = 1.0;
 ```
 

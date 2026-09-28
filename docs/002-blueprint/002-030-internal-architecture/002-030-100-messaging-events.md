@@ -32,11 +32,11 @@ All event records reside in `Kernel.Events`. They are internal infrastructure an
 | Event | Publisher | Payload |
 |-------|-----------|---------|
 | `BacktestStartedEvent` | BacktestRunner | (timestamp only) |
-| `BacktestCompletedEvent` | BacktestRunner | NetProfit, ReturnPct, MaxDrawdown, Sharpe, Sortino, etc. |
+| `BacktestCompletedEvent` | BacktestRunner | NetProfit, ReturnPct, MaxDrawdownPct, MaxDailyDrawdownPct, SharpeRatio, SortinoRatio, etc. |
 | `OrderExecutedEvent` | SimulatedBroker, LiveBroker | Symbol, OrderType, Volume, Price, IsOpen |
 | `ConnectionStateEvent` | LiveBroker | IsConnected, AdapterName |
 | `LiveReconnectEvent` | LiveBroker | Success, AttemptCount, AdapterName |
-| `LiveSessionEndedEvent` | LiveBroker | FinalBalance, FinalEquity, MaxDrawdown, TotalTrades |
+| `LiveSessionEndedEvent` | LiveBroker | FinalBalance, FinalEquity, MaxDrawdownPct, MaxDailyDrawdownPct, TotalTrades |
 | `OptimizationGenerationEvent` | OptimizationRunner | Generation, BestFitness, IsHyperMutation |
 | `OptimizationCycleCompletedEvent` | OptimizationRunner | CycleIndex, BestFitness, GenerationCount |
 

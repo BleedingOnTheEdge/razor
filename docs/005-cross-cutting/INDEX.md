@@ -19,5 +19,5 @@ Rules and vocabulary that apply to every part of the product rather than to one 
 
 | ID | Purpose | Domains | Flows | Code |
 |---|---|---|---|---|
-| product:razor/cross-cutting/principles | The immutable architectural rules every Razor component must respect, with their precedence and enforcement. | engine, cloud, sdk, extensions, optimisation, live-trading, backtesting, data | | |
-| product:razor/cross-cutting/glossary | Definitions of the domain-specific terms used across Razor documentation, code and user interfaces. | engine, cloud, sdk, extensions, optimisation, live-trading, backtesting, data | | |
+| product:razor/cross-cutting/principles | The immutable architectural rules every Razor component must respect, with their precedence and enforcement. | engine, data, extensions, sdk, live-trading, backtesting, optimisation, reporting, security, operations | | |
+| product:razor/cross-cutting/glossary | Definitions of the domain-specific terms used across Razor documentation, code and user interfaces. | engine, data, sdk, extensions, cloud | | |

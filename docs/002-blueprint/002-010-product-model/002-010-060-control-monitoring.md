@@ -36,7 +36,7 @@ and a payload. Representative commands:
 - `StartOptimization` / `CancelOptimization`
 - `InjectGenes`
 - `DeployExtension`
-- `UpdateEngine`
+- `PauseEngine` / `ResumeEngine`
 - `ReloadExtensions`
 - `GetStatus` / `GetLogs`
 

@@ -50,7 +50,7 @@ All messages are JSON except binary chunks. The envelope is `CloudMessage`:
 {
   "MessageId": "uuid",
   "MessageType": "Command | Event | Heartbeat | Response | BinaryChunk | Auth",
-  "Version": "1.0",
+  "Version": "1.0.0",
   "Encrypted": true,
   "Payload": { }
 }
@@ -101,9 +101,10 @@ require, rejecting an engine that lacks a required feature. The feature ID regis
 ## 5 Command execution
 
 - The Cloud sends `Command` with `CommandId` (the numeric registry ID), `CommandType` (the name, for
-  readability), `Parameters`, optional `TimeoutSeconds`, and `CorrelationId` to match the response.
+  readability), `Parameters`, an optional `TimeoutSeconds` - if it elapses, the engine may cancel the
+  command - and `CorrelationId` to match the response.
 - The engine executes it and returns optional `CommandProgress` events followed by a final
-  `CommandCompleted` carrying the result or the error.
+  `CommandResponse` carrying the result or the error.
 - Commands execute asynchronously; concurrency is managed by the task manager (see
   `concurrency-and-task-management`).
 

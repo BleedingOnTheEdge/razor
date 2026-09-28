@@ -39,8 +39,9 @@ it retries indefinitely. This behaviour is specified in the engine blueprint.
 
 ## Consequences
 
-- The engine reconnects with exponential backoff, starting at one second, doubling to sixty, and holding
-  there (`product:razor/blueprint/engine-technical-blueprint/offline-handling-and-retry`).
+- The engine reconnects with exponential backoff, starting at a one-second base and multiplying by 1.5
+  on each attempt (so the first delay is 1.5 seconds), held at a sixty-second cap
+  (`product:razor/blueprint/engine-technical-blueprint/offline-handling-and-retry`).
 - While offline, all user commands continue on the last known configuration, outgoing data is queued in
   memory and in the SQLite `QueuedMessages` table, and the engine accepts no new commands because the
   Cloud queues them (`product:razor/blueprint/engine-technical-blueprint/offline-handling-and-retry`,

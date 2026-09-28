@@ -42,9 +42,12 @@ be met on the declared assemblies; the gate fails the build when either rate is 
   `core/`. The declared scope is `Sdk Shared Cloud`; everything instrumented is merged, measured and
   printed, but the floors apply only to the declared assemblies, with out-of-scope assemblies named in the
   summary.
-- Two assemblies, `Kernel` and `Engine`, are currently outside the declared scope because they have no
-  test project of their own; issue #4 adds both. The declared scope is therefore a moving set, which is
-  why the ruling names a declared scope rather than "the solution".
+- Two assemblies, `Kernel` and `Engine`, are currently outside the declared scope because of a known,
+  tracked coverage shortfall (issue #4), not a missing test project: their test projects exist
+  (`Kernel.UnitTests`, `Engine.UnitTests` and `Engine.IntegrationTests`), but referencing them makes
+  coverlet instrument the two assemblies and drops the whole-solution figure to about 31%, which would
+  fail every unrelated change. Issue #4 adds both to the scope. The declared scope is therefore a moving
+  set, which is why the ruling names a declared scope rather than "the solution".
 - Enforcement is not only coverage: a static-analysis step in CI verifies adherence to the principles
   where it is automatable, and a golden determinism test is a CI gate
   (`product:razor/cross-cutting/principles/enforcement`).

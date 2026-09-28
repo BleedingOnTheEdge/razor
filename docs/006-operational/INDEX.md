@@ -18,4 +18,4 @@ Procedures for running the product in the field.
 
 | ID | Purpose | Domains | Flows | Code |
 |---|---|---|---|---|
-| product:razor/operational/installation-and-deployment | Install, authenticate, connect, verify, update, extend and troubleshoot the Razor Engine on Windows and Linux. | operations, engine, cloud, security, extensions | onboarding, engine-update, extension-deployment | |
+| product:razor/operational/installation-and-deployment | Install, authenticate, connect, verify, update, extend and troubleshoot the Razor Engine on Windows and Linux. | operations, cloud, security, extensions, engine | onboarding, engine-update, extension-deployment, live-trading-session | |

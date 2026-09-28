@@ -23,7 +23,8 @@ references:
 ## Connection monitoring
 
 The engine keeps a persistent WebSocket. If the connection drops it reconnects with exponential
-backoff: starting at one second, doubling to sixty seconds, and staying there.
+backoff: a one-second base multiplied by 1.5 on each attempt, so the first delay is 1.5 seconds and
+the delay is capped at sixty seconds and held there.
 
 ## No grace period: infinite retry
 

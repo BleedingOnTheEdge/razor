@@ -36,8 +36,9 @@ reached through a unified interface.
 A population-based optimisation method inspired by biological evolution. Thousands of strategy
 variations are generated, evaluated against historical data, and the strongest are bred together
 over successive generations. Mutation and crossover introduce diversity while elitism preserves the
-best solutions. Razor's implementation adds stagnation detection, hyper-mutation, and walk-forward
-analysis so that results are robust rather than curve-fitted.
+best solutions. Razor's implementation adds stagnation detection and hyper-mutation so that results
+are robust rather than curve-fitted; walk-forward analysis is Cloud-orchestrated from repeated
+backtest and optimisation commands, not an engine feature.
 
 ## Artificial neural networks
 
@@ -50,8 +51,8 @@ network's weights alongside the strategy's own parameters - co-evolving the whol
 ## Hooks
 
 A priority-based extensibility mechanism, modelled on WordPress. Hook plugins register filter
-callbacks that transform or reject data, and action callbacks that observe events, at more than fifty
-named hook points across the backtest, live, optimisation and reporting pipelines. Custom risk
+callbacks that transform or reject data, and action callbacks that observe events, at 42 named hook
+points across the backtest, live, optimisation and reporting pipelines. Custom risk
 management, notifications, metrics, reporting and trailing stops all become possible without
 modifying the engine.
 

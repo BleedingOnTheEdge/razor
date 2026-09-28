@@ -36,12 +36,11 @@ file:
 
 ```text
 EngineRoot/
-  Slots/
-    Adapters/
-    Strategies/
-    Indicators/
-    NeuralNetworks/
-  Hooks/
+  Adapters/
+  Strategies/
+  Indicators/
+  Plugins/
+  NeuralNetworks/
   logs/
   state/            SQLite state database
   downloads/        received binary files

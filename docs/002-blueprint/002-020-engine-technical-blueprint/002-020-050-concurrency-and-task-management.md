@@ -39,8 +39,9 @@ shares what remains.
 ## Task state
 
 - Task state is held **in memory**. The Cloud is the source of truth.
-- For recovery the engine emits `StateUpdate` events, which the Cloud stores. The Cloud may also ask
-  for the full state with `GetState`.
+- For recovery the engine exposes per-target snapshots on request, through the `GetLiveState`,
+  `GetOptimizationState` and `GetBacktestResult` commands; it publishes no state-change events of its
+  own.
 - On restart the engine restores live state from SQLite, as described in `state-persistence`.
 
 Task state is deliberately thin. The engine never treats its own memory as authoritative; if the

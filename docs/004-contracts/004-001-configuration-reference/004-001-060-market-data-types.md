@@ -32,7 +32,7 @@ The shared value types and enums that describe instruments, aggregation periods,
 **Type:** `SymbolProperties` (record)
 **Namespace:** `Sdk.Shared`
 
-Adapters return this object per symbol; it defines exchange-specific contract details. **All fields are required.** Adapters must explicitly set every property.
+Adapters return this object per symbol; it defines exchange-specific contract details. **All fields are required except `HoldingCostIntervalTicks`**, which defaults to 24 hours (`TimeSpan.TicksPerDay`); adapters must explicitly set every other property.
 
 | Field | Type | Description |
 |-------|------|-------------|
