@@ -22,7 +22,7 @@ references:
 
 ## Risk Management
 
-Instead of implementing a separate `IRiskManager`, register a filter on `backtest.order.validation`:
+Instead of implementing a separate `IRiskManager`, register a filter on `OnOrderValidation`:
 
 ```csharp
 public class DrawdownGuard : IHookManifest

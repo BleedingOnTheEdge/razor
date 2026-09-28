@@ -56,7 +56,7 @@ each chromosome with a full backtest, and streams generations back as they compl
 | Engine | Dispatches the command, admits the task, hosts the stepping GA, and streams progress. |
 | Kernel | `GeneticOptimizer`, `Chromosome`, `GeneInjector`, and the `BacktestRunner` used as the fitness evaluator. |
 | Strategy (extension) | Supplies the gene schema through `[Gene]` properties and applies injected genes. |
-| Hook plugin (extension, or Cloud policy) | Computes fitness at the `optimization.fitness.evaluate` hook. |
+| Hook plugin (extension, or Cloud policy) | Computes fitness at the `OnFitnessEvaluation` hook. |
 
 ## Steps
 
@@ -67,12 +67,12 @@ each chromosome with a full backtest, and streams generations back as they compl
 | 3 | Admit an optimisation task at Medium priority on the shared CPU budget, bounded by `MaxParallelThreads`. | Engine | `product:razor/blueprint/engine-technical-blueprint/concurrency-and-task-management`, `product:razor/contracts/configuration-reference/execution-specification` |
 | 4 | Build the chromosome schema from `[Gene]`-decorated properties plus the neural network's parameter count. | Kernel | `product:razor/blueprint/internal-architecture/genetic-optimisation-engine`, `product:razor/contracts/configuration-reference/gene-attributes` |
 | 5 | Initialise the population deterministically: master seed, per-individual seed derived without `HashCode`, the portable RNG, and random gene values inside each gene's constraints. | Kernel | `product:razor/blueprint/internal-architecture/genetic-optimisation-engine`, `product:razor/cross-cutting/principles/determinism-is-mandatory` |
-| 6 | Evaluate: run a full backtest per chromosome with its genes injected, in parallel, and let the `optimization.fitness.evaluate` hook set the fitness. | Kernel, Strategy, plugins | `product:razor/blueprint/internal-architecture/genetic-optimisation-engine`, `product:razor/blueprint/internal-architecture/backtesting-engine`, `product:razor/contracts/configuration-reference/hook-system` |
+| 6 | Evaluate: run a full backtest per chromosome with its genes injected, in parallel, and let the `OnFitnessEvaluation` hook set the fitness. | Kernel, Strategy, plugins | `product:razor/blueprint/internal-architecture/genetic-optimisation-engine`, `product:razor/blueprint/internal-architecture/backtesting-engine`, `product:razor/contracts/configuration-reference/hook-system` |
 | 7 | Evolve one generation: tournament selection, uniform crossover, mutation (tripled while hyper-mutation is active), elitism. | Kernel | `product:razor/blueprint/internal-architecture/genetic-optimisation-engine` |
 | 8 | Repeat evaluation and evolution for the configured generation count, detecting stagnation and activating hyper-mutation to escape local optima. | Kernel | `product:razor/blueprint/internal-architecture/genetic-optimisation-engine` |
 | 9 | Stream progress: generation and best fitness events, and `GetOptimizationState` on request; the dashboard shows generation and best fitness. | Engine, Cloud | `product:razor/blueprint/internal-architecture/messaging-events`, `product:razor/blueprint/product-model/control-monitoring` |
 | 10 | Pause and resume: serialise the whole population to a state snapshot and restore it; invalidate fitness if the evaluation data changed. | Kernel, Cloud | `product:razor/blueprint/internal-architecture/genetic-optimisation-engine`, `product:razor/blueprint/engine-technical-blueprint/command-system` |
-| 11 | Complete: fire the `optimization.completed` hook, stream the raw population and result data to the Cloud, and let the Cloud render anything user-facing. | Kernel, Engine, Cloud | `product:razor/contracts/configuration-reference/hook-system`, `product:razor/blueprint/internal-architecture/report-generation-engine-role` |
+| 11 | Complete: fire the `OnCompleted` hook, stream the raw population and result data to the Cloud, and let the Cloud render anything user-facing. | Kernel, Engine, Cloud | `product:razor/contracts/configuration-reference/hook-system`, `product:razor/blueprint/internal-architecture/report-generation-engine-role` |
 | 12 | Continue into the live loop: the Cloud pushes the winning genes to the running live engine with `InjectGenes` after user approval or an automatic timeout. | Cloud, Engine | `product:razor/blueprint/product-model/user-workflows`, `product:razor/contracts/configuration-reference/live-specification` |
 
 ## Persisted and Reported

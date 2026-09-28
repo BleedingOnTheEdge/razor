@@ -28,7 +28,7 @@ code_paths:
 **Type:** `OptimizationSpecification` (immutable record)
 **Namespace:** `Kernel.Configuration`
 
-The optimisation pipeline uses the hook system for fitness evaluation. No `FitnessModel` field is present in the specification; instead, the engine invokes the `optimization.fitness.evaluate` hook after each chromosome evaluation, and the Cloud or a hook plugin computes the fitness score (see `product:razor/contracts/configuration-reference/hook-system`).
+The optimisation pipeline uses the hook system for fitness evaluation. No `FitnessModel` field is present in the specification; instead, the engine invokes the `OnFitnessEvaluation` hook for each chromosome, and the Cloud or a hook plugin sets the fitness score (see `product:razor/contracts/configuration-reference/hook-system`).
 
 ## Fields
 

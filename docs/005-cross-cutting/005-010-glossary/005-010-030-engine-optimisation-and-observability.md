@@ -61,7 +61,7 @@ The closed‑source, headless executable that runs on the user's server. It exec
 Immutable configuration record for a backtest or optimisation run: date range, latency, warm‑up, etc. Located in `Kernel.Configuration`.
 
 **Fitness**
-A scalar score (higher = better) that rates a backtest result. Fitness evaluation is performed by hook plugins via the `optimization.chromosome.evaluated` action hook, not by a built‑in `IFitnessModel`.
+A scalar score (higher = better) that rates a backtest result. Fitness evaluation is performed by hook plugins via the `OnFitnessEvaluation` action hook, not by a built‑in `IFitnessModel`.
 
 **Gene**
 A single optimisable value within a strategy, marked with `[Gene]` attribute. Can be continuous, discrete, categorical, structural, or parametric.
@@ -91,7 +91,7 @@ The closed‑source core library containing all trading logic, brokers, GA, hook
 Immutable configuration for live trading: magic number and order guard timeout. Continuous optimisation fields have been removed (Cloud‑orchestrated). Located in `Kernel.Configuration`.
 
 **Metrics**
-Performance statistics: Net Profit, Return%, Win Rate, Sharpe Ratio, Sortino Ratio, Profit Factor, Calmar Ratio. Custom metrics are computed by hook plugins via the `backtest.completed` and `live.*` hooks.
+Performance statistics: Net Profit, Return%, Win Rate, Sharpe Ratio, Sortino Ratio, Profit Factor, Calmar Ratio. Custom metrics are computed by hook plugins via the `OnCompleted` backtest action hook and the live action hooks.
 
 **Observability**
 The ability to monitor the internal state of the engine through metrics, logs, and health checks.
@@ -109,7 +109,7 @@ The set of all chromosomes in a GA generation.
 Gross profit divided by gross loss. > 1 indicates profitability.
 
 **Report Generator**
-A class that invokes the `report.before_generate` and `report.after_generate` hooks. Report rendering is handled by Razor Cloud.
+A class that invokes the `OnBeforeGenerate` and `OnAfterGenerate` hooks. Report rendering is handled by Razor Cloud.
 
 **Seed**
 A number used to initialise a random number generator. Razor derives all randomness from a master seed.

@@ -51,7 +51,7 @@ The schema is extracted via `GeneInjector.BuildCompleteSchema()`. The total gene
 
 - Host calls `EvaluateAsync()` with a fitness function delegate.
 - Evaluation is parallelised using `Parallel.ForEachAsync` with configurable `MaxDegreeOfParallelism`.
-- A typical evaluator runs a full `BacktestRunner` with the chromosome's genes injected into the strategy, then invokes the `optimization.chromosome.evaluated` action hook for fitness computation.
+- A typical evaluator runs a full `BacktestRunner` with the chromosome's genes injected into the strategy. The engine invokes the `OnFitnessEvaluation` action hook for the chromosome (a plugin sets the fitness on the context), then the `OnChromosomeEvaluated` action hook once the fitness is known.
 - Fitness values are assigned directly to each chromosome.
 
 ## Evolution

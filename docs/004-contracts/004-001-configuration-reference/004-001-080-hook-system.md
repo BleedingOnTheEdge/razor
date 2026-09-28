@@ -35,7 +35,59 @@ plugin load time, passing the root `IHookRegistry`.
 - **Filter hooks** (`IFilterRegistration<T>`) transform or reject data flowing through a pipeline. Each callback receives the current value and the hook context, and returns a `FilterResult<T>` indicating whether to allow the value (possibly modified) or reject it.
 - **Action hooks** (`IActionRegistration<T>` or `IActionRegistration`) observe events without modifying data. Typed variants receive the event data; parameterless variants receive only the context.
 
-Registration order is deterministic: by `priority` (lower first), then by plugin name (alphabetical, case-insensitive ordinal), then by registration order within the plugin. Filter callbacks run in that order, each receiving the previous callback's result; the first callback that returns `IsAllowed = false` stops the chain and its rejection is returned. Action callbacks run in order and are all invoked; an exception in an action callback is caught and logged and never stops the chain.
+Registration order is deterministic: by `priority` (lower first), then by plugin name (ordinal, case-sensitive), then by registration order within the plugin. Filter callbacks run in that order, each receiving the previous callback's result; the first callback that returns `IsAllowed = false` stops the chain and its rejection is returned. Action callbacks run in order and are all invoked; an exception in an action callback is caught and logged and never stops the chain.
+
+## Hook Names
+
+Registration is always typed: a callback is registered on a member of a sub-registry (for example
+`registry.Backtest.OnOrderValidation`). There is no string-keyed registration API. Every hook point also
+has a runtime name - the string the engine writes to `IHookContext.HookName` when that hook fires. The
+table maps each registration member to its runtime name.
+
+| Registration member | Hook name |
+|---------------------|-----------|
+| `IBacktestHooks.OnStart` | `backtest.started` |
+| `IBacktestHooks.OnTickReceived` | `backtest.tick.received` |
+| `IBacktestHooks.OnTickStrategyBefore` | `backtest.tick.strategy_before` |
+| `IBacktestHooks.OnTickStrategyAfter` | `backtest.tick.strategy_after` |
+| `IBacktestHooks.OnTickCompleted` | `backtest.tick.completed` |
+| `IBacktestHooks.OnOrderValidation` | `backtest.order.validation` |
+| `IBacktestHooks.OnOrderBeforeExecute` | `backtest.order.before_execute` |
+| `IBacktestHooks.OnOrderAfterExecute` | `backtest.order.after_execute` |
+| `IBacktestHooks.OnPositionOpened` | `backtest.position.opened` |
+| `IBacktestHooks.OnPositionClosed` | `backtest.position.closed` |
+| `IBacktestHooks.OnPositionStopout` | `backtest.position.stopout` |
+| `IBacktestHooks.OnEquityUpdated` | `backtest.equity.updated` |
+| `IBacktestHooks.OnCompleted` | `backtest.completed` |
+| `ILiveHooks.OnStart` | `live.start` |
+| `ILiveHooks.OnTickReceived` | `live.tick.received` |
+| `ILiveHooks.OnTickProcessed` | `live.tick.processed` |
+| `ILiveHooks.OnOrderValidation` | `live.order.validation` |
+| `ILiveHooks.OnOrderBeforeSend` | `live.order.before_send` |
+| `ILiveHooks.OnOrderExecuted` | `live.order.executed` |
+| `ILiveHooks.OnOrderRejected` | `live.order.rejected` |
+| `ILiveHooks.OnPositionOpened` | `live.position.opened` |
+| `ILiveHooks.OnPositionClosed` | `live.position.closed` |
+| `ILiveHooks.OnPositionStopout` | `live.position.stopout` |
+| `ILiveHooks.OnSyncBefore` | `live.sync.before` |
+| `ILiveHooks.OnSyncAfter` | `live.sync.after` |
+| `ILiveHooks.OnReconnectAttempt` | `live.reconnect.attempt` |
+| `ILiveHooks.OnReconnectSuccess` | `live.reconnect.success` |
+| `ILiveHooks.OnStop` | `live.stop` |
+| `ILiveHooks.OnEquityChanged` | `live.equity.changed` |
+| `IOptimizationHooks.OnStart` | `optimization.started` |
+| `IOptimizationHooks.OnGenerationStart` | `optimization.generation.start` |
+| `IOptimizationHooks.OnChromosomeCreated` | `optimization.chromosome.created` |
+| `IOptimizationHooks.OnFitnessEvaluation` | `optimization.fitness.evaluate` |
+| `IOptimizationHooks.OnChromosomeEvaluated` | `optimization.chromosome.evaluated` |
+| `IOptimizationHooks.OnSelectionApplied` | `optimization.selection` |
+| `IOptimizationHooks.OnCrossoverApplied` | `optimization.crossover` |
+| `IOptimizationHooks.OnMutationApplied` | `optimization.mutation` |
+| `IOptimizationHooks.OnGenerationCompleted` | `optimization.generation.completed` |
+| `IOptimizationHooks.OnStagnationDetected` | `optimization.stagnation` |
+| `IOptimizationHooks.OnCompleted` | `optimization.completed` |
+| `IReportHooks.OnBeforeGenerate` | `report.before_generate` |
+| `IReportHooks.OnAfterGenerate` | `report.after_generate` |
 
 ## Registration Interfaces
 

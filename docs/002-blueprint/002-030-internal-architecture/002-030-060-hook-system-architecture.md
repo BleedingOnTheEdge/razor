@@ -24,9 +24,9 @@ code_paths:
 The hook system is the primary extensibility mechanism. Instead of many typed plugin interfaces (`IRiskManager`, `IFitnessModel`, `INotificationChannel`, etc.), the engine exposes named hook points. Extensions implement `IHookManifest` and register strongly‑typed callbacks on these points.
 
 This replaces the earlier, more rigid plugin interfaces:
-- **Risk management** – previously `IRiskManager`, now achieved via filter hooks on order validation (`backtest.order.validation`, `live.order.validation`).
-- **Fitness evaluation** – previously `IFitnessModel`, now achieved via the `optimization.fitness.evaluate` action hook.
-- **Execution algorithms** – previously `IExecutionAlgorithm`, now achieved via filter hooks on order before execution (`backtest.order.before_execute`, `live.order.before_send`).
+- **Risk management** – previously `IRiskManager`, now achieved via filter hooks on order validation (`OnOrderValidation` on `IBacktestHooks` and `ILiveHooks`).
+- **Fitness evaluation** – previously `IFitnessModel`, now achieved via the `OnFitnessEvaluation` action hook.
+- **Execution algorithms** – previously `IExecutionAlgorithm`, now achieved via filter hooks on order before execution (`OnOrderBeforeExecute` on `IBacktestHooks`, `OnOrderBeforeSend` on `ILiveHooks`).
 - **Simulation friction** – previously `ISimulationFriction`, now handled internally by the adapter's `IMarketCalculator` and order execution logic; slippage and commission are adapter‑owned.
 
 ## Hook Types
@@ -45,7 +45,7 @@ The engine creates an implementation of `IHookRegistry` at startup. Extension as
 | `IOptimizationHooks` | Genetic optimisation |
 | `IReportHooks` | Report generation |
 
-Each sub‑registry exposes typed registration properties for each hook point (e.g., `IBacktestHooks.OnOrderValidation`, `ILiveHooks.OnTickReceived`).
+Each sub‑registry exposes typed registration properties for each hook point (e.g., `IBacktestHooks.OnOrderValidation`, `ILiveHooks.OnTickReceived`). Callbacks are registered on these properties only; there is no string-keyed registration path.
 
 ## Hook Invocation
 
@@ -59,7 +59,7 @@ Hook invocations are synchronous and deterministic. For each hook point, the eng
 
 Callbacks are ordered deterministically:
 1. Priority (lower = earlier execution)
-2. Plugin name (alphabetical, case‑insensitive ordinal)
+2. Plugin name (alphabetical, case‑sensitive ordinal)
 3. Registration order within the plugin
 
 This guarantees bit‑identical hook execution order across runs.

@@ -58,7 +58,7 @@ runs.
   reason (`product:razor/blueprint/internal-architecture/configuration-specification-system`,
   `product:razor/contracts/configuration-reference/live-specification`).
 - Fitness is not an engine feature either: there is no `FitnessModel` field, and fitness is computed
-  through the `optimization.fitness.evaluate` hook
+  through the `OnFitnessEvaluation` hook
   (`product:razor/contracts/configuration-reference/optimization-specification`,
   `product:razor/blueprint/internal-architecture/genetic-optimisation-engine`).
 - The optimiser is a steppable component whose host controls the generation flow
