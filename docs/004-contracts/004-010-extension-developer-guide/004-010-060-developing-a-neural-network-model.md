@@ -1,38 +1,31 @@
 ---
 id: product:razor/contracts/extension-developer-guide/developing-a-neural-network-model
 parent: product:razor/contracts/extension-developer-guide
-title: 7. Developing a Neural Network Model
+title: Developing a Neural Network Model
 level: product
 kind: contract
+domains: [sdk, extensions]
+flows: [extension-development]
+keywords:
+  - developing a neural network model
+  - ineuralnetworkmodel
+  - feedforwardnetwork
+  - onnx
+  - reinforcement learning
+  - lstm
+references:
+  - product:razor/contracts/configuration-reference/slot-capability-interfaces
 ---
 
-# 7. Developing a Neural Network Model
+# Developing a Neural Network Model
 
-Neural network models are slot capabilities. Implement `INeuralNetworkModel` (in `Razor.Core.Sdk.Slots.NeuralNetwork`) and place the DLL in the `NeuralNetworks/` directory. The engine activates the model when the active strategy declares `RequiresNeuralNetwork = true`.
+Neural network models are slot capabilities. Implement `INeuralNetworkModel` (in `Sdk.Slots.NeuralNetwork`) and place the DLL in the `NeuralNetworks/` directory. The engine activates the model when the active strategy declares `RequiresNeuralNetwork = true`. The interface members are defined in `product:razor/contracts/configuration-reference/slot-capability-interfaces`.
 
-## 7.1 The `INeuralNetworkModel` Interface
+## Built-In Feed-Forward Network
 
-```csharp
-public interface INeuralNetworkModel
-{
-    string ModelType { get; }
-    int InputSize { get; }
-    int OutputSize { get; }
-    int ParameterCount { get; }
-    double[] Predict(double[] inputs);
-    void LoadParameters(double[] genes);
-    double[] ExportParameters();
-    void Reset();
-    byte[] SerializeState();
-    void DeserializeState(byte[] state);
-}
-```
+`Kernel` includes a built-in `FeedForwardNetwork` implementation. If no custom model is provided and the strategy requires a neural network, the engine uses the built-in feed-forward network. The topology is determined by the strategy's gene schema.
 
-## 7.2 Built‑In Feed‑Forward Network
-
-Razor Kernel includes a built‑in `FeedForwardNetwork` implementation. If no custom model is provided and the strategy requires a neural network, the engine uses the built‑in feed‑forward network. The topology is determined by the strategy's gene schema.
-
-## 7.3 Creating an ONNX Model
+## Creating an ONNX Model
 
 To use models trained in Python (PyTorch, TensorFlow), create an ONNX wrapper:
 
@@ -47,8 +40,6 @@ public class OnnxModel : INeuralNetworkModel
 }
 ```
 
-## 7.4 Creating an RL Model
+## Creating an RL Model
 
-For reinforcement learning, implement `INeuralNetworkModel` and use `Reset()` to start new episodes. The `Predict` method maps state observations to action Q‑values. The GA evolves the policy weights.
-
----
+For reinforcement learning, implement `INeuralNetworkModel` and use `Reset()` to start new episodes. The `Predict` method maps state observations to action Q-values. The GA evolves the policy weights.

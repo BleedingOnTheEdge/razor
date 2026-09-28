@@ -1,14 +1,26 @@
 ---
 id: product:razor/contracts/extension-developer-guide/extension-concepts
 parent: product:razor/contracts/extension-developer-guide
-title: 2. Extension Concepts
+title: Extension Concepts
 level: product
 kind: contract
+domains: [sdk, extensions]
+flows: [extension-development]
+keywords:
+  - slots
+  - indicators
+  - hooks
+  - sdk package
+  - architecture overview
+references:
+  - product:razor/contracts/configuration-reference/slot-capability-interfaces
+  - product:razor/contracts/configuration-reference/hook-system
+  - product:razor/contracts/extension-developer-guide/best-practices
 ---
 
-# 2. Extension Concepts
+# Extension Concepts
 
-## 2.1 Architecture Overview
+## Architecture Overview
 
 Razor extensions are organized into three concepts:
 
@@ -18,14 +30,12 @@ Razor extensions are organized into three concepts:
 | **Indicators** | Technical analysis computations | `Indicators/` |
 | **Hooks** | Intercept and observe engine events | `Plugins/` (any scanned directory) |
 
-**Slots** provide core functionality the engine needs to operate. The Cloud activates exactly one Adapter and one Strategy per engine instance, and optionally one NN Model if the strategy requires it.
+**Slots** provide core functionality the engine needs to operate. The Cloud activates exactly one Adapter and one Strategy per engine instance, and optionally one NN Model if the strategy requires it. The interfaces are in `product:razor/contracts/configuration-reference/slot-capability-interfaces`.
 
-**Hooks** are the primary extensibility mechanism. A hook plugin implements `IHookManifest` and registers callbacks on named hook points with priorities. Hook plugins are always active once loaded—they run whenever their registered hooks fire.
+**Hooks** are the primary extensibility mechanism. A hook plugin implements `IHookManifest` and registers callbacks on named hook points with priorities. Hook plugins are always active once loaded - they run whenever their registered hooks fire. The full hook contract is in `product:razor/contracts/configuration-reference/hook-system`.
 
-## 2.2 The Razor SDK
+## The Razor SDK
 
-The SDK is the `Razor.Core.Sdk` NuGet package. It contains **only** contracts (interfaces, abstract classes, records, enums, and utilities) – no runtime logic, no GA engine, no broker implementations. You can freely redistribute the package.
+The SDK is the `Sdk` NuGet package. It contains **only** contracts (interfaces, abstract classes, records, enums, and utilities) - no runtime logic, no GA engine, no broker implementations. You can freely redistribute the package.
 
-The SDK includes helper types like `CustomizedRandom` (portable RNG), `TickWindow`, `TickSynthesizer`, and `GeneInjector`. These are helpers for your extension code; you are free to use them or implement your own. However, any randomness that affects trading decisions must derive from the master seed (see §8.4).
-
----
+The SDK includes helper types like `CustomizedRandom` (portable RNG), `TickWindow`, `TickSynthesizer`, and `GeneInjector`. These are helpers for your extension code; you are free to use them or implement your own. However, any randomness that affects trading decisions must derive from the master seed (see `product:razor/contracts/extension-developer-guide/best-practices`).

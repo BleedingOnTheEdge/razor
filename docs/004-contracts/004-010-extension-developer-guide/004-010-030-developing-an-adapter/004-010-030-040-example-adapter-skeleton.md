@@ -1,16 +1,24 @@
 ---
 id: product:razor/contracts/extension-developer-guide/developing-an-adapter/example-adapter-skeleton
 parent: product:razor/contracts/extension-developer-guide/developing-an-adapter
-title: 4.8 Example Adapter Skeleton
+title: Example Adapter Skeleton
 level: product
 kind: contract
+domains: [sdk, extensions]
+flows: [extension-development]
+keywords:
+  - example adapter
+  - adapter skeleton
+  - adaptername attribute
+references:
+  - product:razor/contracts/configuration-reference/slot-capability-interfaces
 ---
 
-# 4.8 Example Adapter Skeleton
+# Example Adapter Skeleton
 
 ```csharp
-using Razor.Core.Sdk.Slots.Adapter;
-using Razor.Core.Sdk.Shared;
+using Sdk.Slots.Adapter;
+using Sdk.Shared;
 
 [AdapterName("MyExchange")]
 public class MyExchangeAdapter : IAdapterCapability
