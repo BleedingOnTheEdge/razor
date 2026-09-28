@@ -1,27 +1,50 @@
 ---
 id: product:razor/blueprint/engine-technical-blueprint/testing-strategy
 parent: product:razor/blueprint/engine-technical-blueprint
-title: 16. Testing Strategy
+title: Testing Strategy
 level: product
 kind: blueprint
+domains: [engine]
+keywords:
+  - testing
+  - unit tests
+  - integration tests
+  - cross-project tests
+  - performance tests
+  - load tests
+references:
+  - product:razor/cross-cutting/principles
+  - product:razor/blueprint/internal-architecture
+  - product:razor/blueprint/engine-technical-blueprint/communication-protocol
+code_paths:
+  - core/tests/**
 ---
 
-# 16. Testing Strategy
+# Testing Strategy
 
-## 16.1 Unit Tests
+Four levels, each answering a different question.
 
-- Test each component in isolation: command dispatcher, task manager, extension manager, state manager, cloud connector, schedule manager.
+## Unit tests
 
-## 16.2 Integration Tests
+Each component in isolation: command dispatcher, task manager, extension manager, state manager,
+cloud connector, schedule manager. These answer *does this component behave as specified*.
 
-- Test Engine as a whole: startup, authentication, full command flow, multi‑task concurrency, offline retry, extension reload.
+## Integration tests
 
-## 16.3 Cross‑Project Integration Tests
+The engine as a whole: startup, authentication, a full command flow, multi-task concurrency, offline
+retry, extension reload. These answer *do the parts work together*.
 
-- Engine + Kernel: run backtest via Engine, verify results; live trading with mock adapter.
+## Cross-project integration tests
 
-## 16.4 Performance/Load Tests
+Engine and Kernel together: run a backtest through the engine and verify the results; run live
+trading against a mock adapter. These answer *does the engine actually drive the Kernel correctly* -
+the boundary where a contract mismatch hides.
 
-- Simulate heavy optimisation while live trading; measure CPU/memory, task switching overhead.
+## Performance and load tests
 
----
+Simulate a heavy optimisation while live trading runs, and measure CPU, memory and task-switching
+overhead. These answer *does the live-first guarantee hold under load*.
+
+The determinism principle means the first three levels must be reproducible: the same inputs produce
+the same results, which is what makes a failure meaningful. See
+`product:razor/cross-cutting/principles`.
