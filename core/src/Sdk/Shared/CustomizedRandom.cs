@@ -51,6 +51,38 @@ public sealed class CustomizedRandom
         return z ^ (z >> 31);
     }
 
+    /// <summary>
+    /// Captures the generator's position so a sequence can be resumed exactly where it stopped.
+    /// </summary>
+    /// <returns>An opaque state value for <see cref="RestoreState"/>.</returns>
+    /// <remarks>
+    /// A generator seeded from a master seed alone cannot be resumed: the seed says where the
+    /// sequence began, not how far it has been consumed. Anything that pauses and resumes a
+    /// seeded computation -- a saved optimisation, a replayed backtest -- has to carry the
+    /// position with it, or the two runs diverge from the first draw after the resume.
+    /// </remarks>
+    public (ulong S0, ulong S1) CaptureState()
+    {
+        lock (_lock)
+        {
+            return (_s0, _s1);
+        }
+    }
+
+    /// <summary>
+    /// Restores a position previously obtained from <see cref="CaptureState"/>, so the sequence
+    /// continues from there.
+    /// </summary>
+    /// <param name="state">A value returned by <see cref="CaptureState"/>.</param>
+    public void RestoreState((ulong S0, ulong S1) state)
+    {
+        lock (_lock)
+        {
+            _s0 = state.S0;
+            _s1 = state.S1;
+        }
+    }
+
     /// <summary>Returns a uniformly distributed 64‑bit integer.</summary>
     public ulong NextUInt64()
     {
