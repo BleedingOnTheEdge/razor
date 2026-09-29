@@ -9,8 +9,6 @@ keywords:
   - state persistence
   - sqlite
   - source of truth
-  - stateupdate
-  - getstate
   - live state snapshot
   - queued messages
 references:

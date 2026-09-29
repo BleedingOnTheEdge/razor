@@ -35,7 +35,7 @@ the action taken, and the resulting reward. Not a full trace - a decision log.
 | `SessionId` | The backtest or live session it belongs to |
 | `StrategyName` | The strategy that generated the record |
 | `State` | Indicator values, positions, equity, and similar |
-| `Action` | `Buy`, `Sell`, `Close`, `Modify` or `None` |
+| `Action` | A free-form `string` describing what happened at the decision point. The engine's own snapshot hook emits `Snapshot`; the strategy sets the trading values, typically `Buy`, `Sell`, `Close` or `None`. Open-ended - not a closed enum. |
 | `Reward` | Change in equity since the previous recorded state |
 
 ## Storage and flush

@@ -35,7 +35,7 @@ data flow, brokers, backtesting, optimisation, determinism - are in
 | product:razor/blueprint/engine-technical-blueprint/extension-and-slot-management | Discovery, double validation, lifecycle and safety of extensions. | extensions, engine | extension-deployment | core/src/Engine/Pluggability/**, core/src/Engine/Communication/** |
 | product:razor/blueprint/engine-technical-blueprint/concurrency-and-task-management | Task types, priorities and resource reservation. | engine, live-trading | live-trading-session | core/src/Engine/Management/Tasks/** |
 | product:razor/blueprint/engine-technical-blueprint/schedules-and-cronjobs | Virtual timers: cronjobs and one-off schedules. | engine, cloud | | core/src/Engine/Management/Scheduling/** |
-| product:razor/blueprint/engine-technical-blueprint/offline-handling-and-retry | Reconnection, infinite retry, and what keeps running while offline. | engine, cloud | | |
+| product:razor/blueprint/engine-technical-blueprint/offline-handling-and-retry | Reconnection, infinite retry, and what keeps running while offline. | engine, cloud | | core/src/Engine/Communication/CloudConnector.cs |
 | product:razor/blueprint/engine-technical-blueprint/security-and-anti-tampering | Authentication, transport encryption, binary protection, extension signing. | security, engine | | core/src/Engine/Core/SecurityManager.cs |
 | product:razor/blueprint/engine-technical-blueprint/logging-and-telemetry | Logging, log streaming and metrics. | engine, reporting | | core/src/Engine/Core/EngineTelemetry.cs |
 | product:razor/blueprint/engine-technical-blueprint/behavior-recorder | Sparse, batched decision recording for reinforcement learning. | engine, data | | core/src/Engine/Services/BehaviorRecorder/** |

@@ -32,8 +32,11 @@ Place your compiled DLL in the appropriate directory:
 | Adapter | `Adapters/` |
 | Strategy | `Strategies/` |
 | Indicator | `Indicators/` |
-| Hook Plugin | `Plugins/` (or any directory - all are scanned) |
+| Hook Plugin | `Plugins/` (or any of the scanned directories) |
 | NN Model | `NeuralNetworks/` |
+
+The engine scans all of them - the five directories above and their immediate subdirectories. A DLL
+placed anywhere else is not discovered.
 
 ## Activation
 
