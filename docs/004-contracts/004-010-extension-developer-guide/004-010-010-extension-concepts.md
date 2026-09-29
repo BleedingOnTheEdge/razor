@@ -28,7 +28,9 @@ Razor extensions are organized into three concepts:
 |---------|-------------|-----------|
 | **Slots** | Required capabilities (Adapter, Strategy, NN Model) | `Adapters/`, `Strategies/`, `NeuralNetworks/` |
 | **Indicators** | Technical analysis computations | `Indicators/` |
-| **Hooks** | Intercept and observe engine events | `Plugins/` (any scanned directory) |
+| **Hooks** | Intercept and observe engine events | `Plugins/` (or any of the scanned directories) |
+
+The engine scans all of them - the five directories above and their immediate subdirectories.
 
 **Slots** provide core functionality the engine needs to operate. The Cloud activates exactly one Adapter and one Strategy per engine instance, and optionally one NN Model if the strategy requires it. The interfaces are in `product:razor/contracts/configuration-reference/slot-capability-interfaces`.
 

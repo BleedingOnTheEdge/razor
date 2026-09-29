@@ -17,6 +17,8 @@ keywords:
   - compatibility
 references:
   - product:razor/contracts/configuration-reference
+code_paths:
+  - core/src/Sdk/**
 ---
 
 # Razor Extension Developer Guide

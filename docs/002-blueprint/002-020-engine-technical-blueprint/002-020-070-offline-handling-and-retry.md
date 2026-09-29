@@ -16,6 +16,8 @@ keywords:
 references:
   - product:razor/blueprint/engine-technical-blueprint/communication-protocol
   - product:razor/blueprint/engine-technical-blueprint/state-persistence
+code_paths:
+  - core/src/Engine/Communication/CloudConnector.cs
 ---
 
 # Offline Handling and Retry
