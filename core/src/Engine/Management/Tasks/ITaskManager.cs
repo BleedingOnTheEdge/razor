@@ -52,8 +52,20 @@ internal interface ITaskManager
 
     /// <summary>Gets the state of a task.</summary>
     Task<object> GetTaskStateAsync(string taskId, CancellationToken cancellationToken);
-    /// <summary>Gets the result of an optimisation task.</summary>
-    Task<object> GetOptimizationResultAsync(string taskId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Gets the result of a task, or <c>null</c> if it has not produced one yet.
+    /// </summary>
+    /// <remarks>
+    /// Distinct from <see cref="GetTaskStateAsync"/> on purpose: state describes progress, the
+    /// result is the outcome. Callers that asked for a result used to receive the state, so the
+    /// task's actual output was never reachable. Null means "not finished", which is a different
+    /// answer from "finished with nothing".
+    /// </remarks>
+    Task<object?> GetTaskResultAsync(string taskId, CancellationToken cancellationToken);
+
+    /// <summary>Gets the result of an optimisation task, or <c>null</c> if it has not produced one yet.</summary>
+    Task<object?> GetOptimizationResultAsync(string taskId, CancellationToken cancellationToken);
 
     /// <summary>Stops all tasks.</summary>
     Task StopAllTasksAsync(CancellationToken cancellationToken);

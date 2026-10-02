@@ -166,8 +166,12 @@ internal sealed class BacktestTask : EngineTaskBase
         {
             while (!cancellationToken.IsCancellationRequested)
             {
+                // Null means the kernel has not finished. The previous test for completion was
+                // `_result != null && _result.TotalTrades >= 0`, and because a not-yet-finished run
+                // returned a zeroed result the condition was true on the very first poll -- so the
+                // task reported itself completed while the kernel was still running.
                 _result = await _kernelService.GetBacktestResultAsync(_kernelTaskId, cancellationToken).ConfigureAwait(false);
-                if (_result != null && _result.TotalTrades >= 0)
+                if (_result != null)
                 {
                     break;
                 }
@@ -194,9 +198,13 @@ internal sealed class BacktestTask : EngineTaskBase
         }
     }
 
-    public Task<object> GetResultAsync(CancellationToken cancellationToken)
+    /// <inheritdoc/>
+    public override Task<object?> GetResultAsync(CancellationToken cancellationToken)
     {
-        return Task.FromResult<object>(_result ?? new BacktestResult());
+        // Null when there is no result yet, rather than an empty BacktestResult: a placeholder is
+        // indistinguishable from a real zero-trade run, which is what let a caller treat an
+        // unfinished backtest as a completed one.
+        return Task.FromResult<object?>(_result);
     }
 }
 
@@ -272,8 +280,11 @@ internal sealed class OptimizationTask : EngineTaskBase
         }
     }
 
-    public Task<object> GetResultAsync(CancellationToken cancellationToken)
+    /// <inheritdoc/>
+    public override Task<object?> GetResultAsync(CancellationToken cancellationToken)
     {
-        return Task.FromResult<object>(_bestChromosome ?? new ChromosomeKernel(1) { Fitness = 0 });
+        // Null until the optimiser has produced a best chromosome, so "still running" cannot be
+        // mistaken for "finished with a placeholder solution".
+        return Task.FromResult<object?>(_bestChromosome);
     }
 }

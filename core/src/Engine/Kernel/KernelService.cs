@@ -320,14 +320,18 @@ internal sealed class KernelService : IKernelService, IDisposable
     }
 
     /// <inheritdoc/>
-    public Task<BacktestResult> GetBacktestResultAsync(string taskId, CancellationToken cancellationToken)
+    public Task<BacktestResult?> GetBacktestResultAsync(string taskId, CancellationToken cancellationToken)
     {
+        // Null means "not finished yet", which is a different answer from "finished with nothing".
+        // Returning a zeroed result here made the two indistinguishable: the caller polling for
+        // completion saw a result on its first poll and reported the task complete while the run
+        // was still going.
         if (_activeTasks.TryGetValue(taskId, out var state) && state.Result is BacktestResult result)
         {
-            return Task.FromResult(result);
+            return Task.FromResult<BacktestResult?>(result);
         }
 
-        return Task.FromResult(new BacktestResult { Balance = 0, Equity = 0, Drawdown = 0, DailyDrawdown = 0, TotalTrades = 0 });
+        return Task.FromResult<BacktestResult?>(null);
     }
 
     /// <inheritdoc/>

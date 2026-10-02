@@ -191,7 +191,10 @@ internal sealed class StubTaskManager : ITaskManager
     public Task<object> GetTaskStateAsync(string taskId, CancellationToken cancellationToken) => throw NotUsed(nameof(GetTaskStateAsync));
 
     /// <inheritdoc/>
-    public Task<object> GetOptimizationResultAsync(string taskId, CancellationToken cancellationToken) => throw NotUsed(nameof(GetOptimizationResultAsync));
+    public Task<object?> GetTaskResultAsync(string taskId, CancellationToken cancellationToken) => throw NotUsed(nameof(GetTaskResultAsync));
+
+    /// <inheritdoc/>
+    public Task<object?> GetOptimizationResultAsync(string taskId, CancellationToken cancellationToken) => throw NotUsed(nameof(GetOptimizationResultAsync));
 
     /// <inheritdoc/>
     public Task StopAllTasksAsync(CancellationToken cancellationToken) => throw NotUsed(nameof(StopAllTasksAsync));
