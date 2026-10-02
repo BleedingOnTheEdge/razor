@@ -20,8 +20,22 @@ internal interface IKernelService
     /// <summary>Starts a backtest using the given adapter and strategy.</summary>
     Task<string> StartBacktestAsync(IAdapterCapability adapter, IStrategyCapability strategy, BacktestConfiguration config, CancellationToken cancellationToken);
 
-    /// <summary>Gets the result of a completed backtest.</summary>
-    Task<BacktestResult> GetBacktestResultAsync(string taskId, CancellationToken cancellationToken);
+    /// <summary>
+    /// Gets the result of a completed backtest.
+    /// </summary>
+    /// <param name="taskId">The kernel task identifier returned when the backtest started.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>
+    /// The result once the run has finished, or <c>null</c> while it is still running or if the task
+    /// is unknown.
+    /// </returns>
+    /// <remarks>
+    /// Returns <c>null</c> rather than an empty result deliberately. A placeholder that looks like a
+    /// real result cannot be told apart from one, and a caller polling for completion reads the
+    /// placeholder as "finished" -- which is what made a backtest report itself complete while it
+    /// was still running.
+    /// </remarks>
+    Task<BacktestResult?> GetBacktestResultAsync(string taskId, CancellationToken cancellationToken);
 
     /// <summary>Starts a live trading session.</summary>
     Task<string> StartLiveAsync(LiveInput input, CancellationToken cancellationToken);

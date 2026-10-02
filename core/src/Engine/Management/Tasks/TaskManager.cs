@@ -576,7 +576,26 @@ internal sealed class TaskManager : ITaskManager, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<object> GetOptimizationResultAsync(string taskId, CancellationToken cancellationToken)
+    public async Task<object?> GetTaskResultAsync(string taskId, CancellationToken cancellationToken)
+    {
+        if (!_tasks.TryGetValue(taskId, out var task))
+        {
+            throw new EngineException($"Task {taskId} not found.");
+        }
+
+        // A task that has not finished has no result to give, and returning an empty one would be
+        // indistinguishable from a real outcome -- the caller cannot tell "still running" from
+        // "ran and produced nothing".
+        if (task.State != TaskState.Completed)
+        {
+            return null;
+        }
+
+        return await task.GetResultAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public async Task<object?> GetOptimizationResultAsync(string taskId, CancellationToken cancellationToken)
     {
         if (_tasks.TryGetValue(taskId, out var task) && task is OptimizationTask optTask)
         {

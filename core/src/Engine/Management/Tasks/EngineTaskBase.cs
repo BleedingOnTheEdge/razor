@@ -39,6 +39,19 @@ internal abstract class EngineTaskBase : IDisposable
         return Task.FromResult<object>(new { TaskId, TaskType, State = State.ToString(), StartTime, EndTime });
     }
 
+    /// <summary>
+    /// Gets the task's result, if it has produced one.
+    /// </summary>
+    /// <remarks>
+    /// Distinct from <see cref="GetStateAsync"/>, which reports progress. A task type that produces
+    /// an outcome overrides this; the default reports that there is none, so a caller can tell
+    /// "not finished" from "finished with nothing".
+    /// </remarks>
+    public virtual Task<object?> GetResultAsync(CancellationToken cancellationToken)
+    {
+        return Task.FromResult<object?>(null);
+    }
+
     /// <summary>Disposes the cancellation token source.</summary>
     public void Dispose()
     {
