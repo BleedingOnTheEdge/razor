@@ -53,6 +53,7 @@ An organisation-level anchor exists one directory up, at `../AGENTS.md` in the `
 
 ## Operating constraints (MUST)
 - **Scope of work is `core/` only.** Do not build UI or mobile. `samples/` is deferred by decision.
+- **Backend separation & frontend boundaries:** `Cloud` and `Marketplace` (future) are strictly backend services. No frontend lives in the core Razor solution (`core/`). All web frontends reside in `frontends/`, and mobile clients in `mobile/`.
 - **Stack:** FastEndpoints on ASP.NET, PostgreSQL for storage, with **EF Core** for data access and schema migrations. **Not in v1.0.0: no Docker, no Redis.** Keep cache logic behind an interface so Redis can be swapped in later without redesign. (A v1 scope constraint, not a permanent prohibition — the roadmap plans a Docker host, Docker Swarm/Kubernetes and a Redis message bus for a later release; see the infrastructure section of `product:razor/blueprint/future-features/catalog`.)
 - The **Cloud** backend project is named exactly **`Cloud`** in the solution — not `Razor.Cloud`, and not `Panel`. It is the backend the frontend will consume, and it is built last (see the Active directive in the `product-governance` skill).
 - Development runs through human-directed tasks and PR review cycles: follow `product-governance` and `engineering-rigor`.
@@ -108,7 +109,7 @@ For any non-trivial code change, this repository requires the following sequence
 Use the `docs-map` tool (see the `docs` skill's `USAGE.md`); invoke it from the repository root:
 
 ```bash
-node "$DOCS_SKILL/tools/docs-map/index.js" --root . generate        # rebuild .qwen/docs-index/
+node "$DOCS_SKILL/tools/docs-map/index.js" --root . generate        # rebuild .agent/docs-index/
 node "$DOCS_SKILL/tools/docs-map/index.js" --root . impact "<request>"   # seed, expand, resolve code + tests
 ```
 
@@ -120,7 +121,7 @@ The `/change` command runs this workflow end to end.
 ### Orchestrator
 
 - Own steps 1-5: seed from `docs/INDEX.md`, expand through `references` / `affects` / `implements`, and resolve `code_paths` and `test_paths` before any work is scheduled.
-- The graph cache in `.qwen/docs-index/` is derived — regenerate it, never commit it, and never hand-edit it.
+- The graph cache in `.agent/docs-index/` is derived — regenerate it, never commit it, and never hand-edit it.
 
 ### Coder
 
