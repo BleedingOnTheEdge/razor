@@ -4,4 +4,5 @@ inliner.js
 
 # Generated documentation graph cache (docs skill). Derived from doc frontmatter;
 # regenerate with: node <skill>/tools/docs-map/index.js generate
+.agent/docs-index/
 .qwen/docs-index/

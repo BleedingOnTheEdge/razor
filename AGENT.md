@@ -45,16 +45,17 @@ An organisation-level anchor exists one directory up, at `../AGENTS.md` in the `
 ## Agents and skills
 | Purpose | Invocation |
 |---|---|
-| Loop operating procedure | skill `product-loop` |
-| Gap analysis, triage, delegation, merge decision | agent `orchestrator` |
+| Product governance & architecture mandates | skill `product-governance` |
+| Engineering rigor, TDD, 95% coverage & verification | skill `engineering-rigor` |
+| Product documentation, impact graph & updates | skill `docs` (`docs-skill`) |
 | Implement one issue on one branch | agent `coder` |
 | Multi-aspect review of a PR | agent `reviewer` |
 
 ## Operating constraints (MUST)
 - **Scope of work is `core/` only.** Do not build UI or mobile. `samples/` is deferred by decision.
 - **Stack:** FastEndpoints on ASP.NET, PostgreSQL for storage, with **EF Core** for data access and schema migrations. **Not in v1.0.0: no Docker, no Redis.** Keep cache logic behind an interface so Redis can be swapped in later without redesign. (A v1 scope constraint, not a permanent prohibition — the roadmap plans a Docker host, Docker Swarm/Kubernetes and a Redis message bus for a later release; see the infrastructure section of `product:razor/blueprint/future-features/catalog`.)
-- The **Cloud** backend project is named exactly **`Cloud`** in the solution — not `Razor.Cloud`, and not `Panel`. It is the backend the frontend will consume, and it is built last (see the Active directive in the `product-loop` skill).
-- Development runs as a **continuous loop**: follow the `product-loop` skill.
+- The **Cloud** backend project is named exactly **`Cloud`** in the solution — not `Razor.Cloud`, and not `Panel`. It is the backend the frontend will consume, and it is built last (see the Active directive in the `product-governance` skill).
+- Development runs through human-directed tasks and PR review cycles: follow `product-governance` and `engineering-rigor`.
 - **Merge into `main` only** (protected, PRs only). **Never merge to `prod`** — that branch is human-only. Delete the source branch after merge and resynchronise checkouts.
 
 ## Continuous integration and coverage (MUST)
