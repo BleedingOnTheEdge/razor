@@ -36,6 +36,8 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
     private CancellationTokenSource? _receiveCts;
     private bool _isConnected;
     private string? _sessionId;
+    private int _heartbeatIntervalSeconds = AppConstants.DefaultHeartbeatIntervalSeconds;
+    private TimeSpan _clockDrift = TimeSpan.Zero;
     private int _reconnectAttempt;
     private bool _isDisposing;
     private int _connectionAttemptCounter;
@@ -173,11 +175,23 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
     private static readonly Action<ILogger, Exception?> _logCannotSendManifest =
         LoggerMessage.Define(LogLevel.Warning, 46, "Cannot send extension manifest: not connected.");
 
+    private static readonly Action<ILogger, double, Exception?> _logClockDriftWarning =
+        LoggerMessage.Define<double>(LogLevel.Warning, 47, "Clock drift detected between engine and cloud: {DriftSeconds:F2}s");
+
+    private static readonly Action<ILogger, int, Exception?> _logHeartbeatIntervalUpdated =
+        LoggerMessage.Define<int>(LogLevel.Debug, 48, "Heartbeat interval updated to {IntervalSeconds}s");
+
     /// <inheritdoc/>
     public bool IsConnected => _isConnected;
 
     /// <inheritdoc/>
     public string? SessionId => _sessionId;
+
+    /// <inheritdoc/>
+    public int HeartbeatIntervalSeconds => _heartbeatIntervalSeconds;
+
+    /// <inheritdoc/>
+    public TimeSpan ClockDrift => _clockDrift;
 
     /// <summary>Event raised when a command is received.</summary>
     public event Func<CloudCommand, Task>? CommandReceived;
@@ -990,7 +1004,7 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
         }
     }
 
-    private async Task HandleHeartbeatResponseAsync(CloudMessage message, CancellationToken cancellationToken)
+    internal async Task HandleHeartbeatResponseAsync(CloudMessage message, CancellationToken cancellationToken)
     {
         if (message.Payload is not Dictionary<string, object> payload)
         {
@@ -1028,6 +1042,31 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
                 _logHeartbeatResponseStatus(_logger, status ?? "unknown", null);
             }
         }
+
+        // 002-020-020 §4: NextIntervalSeconds dynamically paces the heartbeat loop
+        if (payload.TryGetValue("NextIntervalSeconds", out object? intervalObj) && intervalObj != null)
+        {
+            if (TryReadPositiveInt(intervalObj, out int nextInterval))
+            {
+                _heartbeatIntervalSeconds = nextInterval;
+                _logHeartbeatIntervalUpdated(_logger, nextInterval, null);
+            }
+        }
+
+        // 002-020-020 §4: ServerTime enables clock drift detection and synchronization
+        if (payload.TryGetValue("ServerTime", out object? serverTimeObj) && serverTimeObj != null)
+        {
+            if (TryReadDateTimeOffset(serverTimeObj, out DateTimeOffset serverTime))
+            {
+                TimeSpan drift = serverTime - DateTimeOffset.UtcNow;
+                _clockDrift = drift;
+                if (Math.Abs(drift.TotalSeconds) > 2.0)
+                {
+                    _logClockDriftWarning(_logger, drift.TotalSeconds, null);
+                }
+            }
+        }
+
 
         if (payload.TryGetValue("Commands", out object? commandsObj) && commandsObj is object[] commands)
         {
@@ -1224,7 +1263,8 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
         {
             try
             {
-                await Task.Delay(TimeSpan.FromSeconds(AppConstants.DefaultHeartbeatIntervalSeconds), cancellationToken)
+                int delaySeconds = Math.Max(1, _heartbeatIntervalSeconds);
+                await Task.Delay(TimeSpan.FromSeconds(delaySeconds), cancellationToken)
                     .ConfigureAwait(false);
                 await this.SendHeartbeatAsync(cancellationToken).ConfigureAwait(false);
             }
@@ -1323,6 +1363,101 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
         _reconnectAttempt++;
         double delay = Math.Min(AppConstants.MaxRetryDelaySeconds, AppConstants.DefaultRetryDelaySeconds * Math.Pow(1.5, _reconnectAttempt));
         return TimeSpan.FromSeconds(delay);
+    }
+
+    /// <summary>Attempts to read a strictly positive integer from a loosely typed payload object.</summary>
+    /// <param name="value">The object value to parse.</param>
+    /// <param name="result">The parsed positive integer, or 0 if parsing fails.</param>
+    /// <returns><see langword="true"/> if a valid positive integer was read; otherwise, <see langword="false"/>.</returns>
+    private static bool TryReadPositiveInt(object value, out int result)
+    {
+        result = 0;
+        if (value is int i)
+        {
+            if (i > 0)
+            {
+                result = i;
+                return true;
+            }
+
+            return false;
+        }
+
+        if (value is long l)
+        {
+            if (l > 0 && l <= int.MaxValue)
+            {
+                result = (int)l;
+                return true;
+            }
+
+            return false;
+        }
+
+        if (value is JsonElement je)
+        {
+            if (je.ValueKind == JsonValueKind.Number && je.TryGetInt32(out int jeInt) && jeInt > 0)
+            {
+                result = jeInt;
+                return true;
+            }
+
+            if (je.ValueKind == JsonValueKind.String && int.TryParse(je.GetString(), CultureInfo.InvariantCulture, out int jeStrInt) && jeStrInt > 0)
+            {
+                result = jeStrInt;
+                return true;
+            }
+
+            return false;
+        }
+
+        if (int.TryParse(value.ToString(), CultureInfo.InvariantCulture, out int parsed) && parsed > 0)
+        {
+            result = parsed;
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>Attempts to read a <see cref="DateTimeOffset"/> from a loosely typed payload object.</summary>
+    /// <param name="value">The object value to parse.</param>
+    /// <param name="result">The parsed UTC <see cref="DateTimeOffset"/>.</param>
+    /// <returns><see langword="true"/> if a valid timestamp was read; otherwise, <see langword="false"/>.</returns>
+    private static bool TryReadDateTimeOffset(object value, out DateTimeOffset result)
+    {
+        result = default;
+        if (value is DateTime dt)
+        {
+            result = dt.Kind == DateTimeKind.Utc ? dt : DateTime.SpecifyKind(dt, DateTimeKind.Utc);
+            return true;
+        }
+
+        if (value is DateTimeOffset dto)
+        {
+            result = dto.ToUniversalTime();
+            return true;
+        }
+
+        if (value is JsonElement je)
+        {
+            if (je.ValueKind == JsonValueKind.String && je.TryGetDateTimeOffset(out DateTimeOffset jeDto))
+            {
+                result = jeDto.ToUniversalTime();
+                return true;
+            }
+
+            return false;
+        }
+
+        string? str = value.ToString();
+        if (!string.IsNullOrWhiteSpace(str) && DateTimeOffset.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset parsed))
+        {
+            result = parsed.ToUniversalTime();
+            return true;
+        }
+
+        return false;
     }
 
     /// <inheritdoc/>
