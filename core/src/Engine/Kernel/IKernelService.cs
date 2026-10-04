@@ -8,6 +8,7 @@ namespace Engine.Kernel;
 
 using Engine.Management.Tasks;
 using global::Kernel.Backtesting;
+using global::Kernel.Optimization;
 using Sdk.Slots.Adapter;
 using Sdk.Slots.Strategy;
 using ChromosomeKernel = global::Kernel.Optimization.Chromosome;
@@ -60,6 +61,21 @@ internal interface IKernelService
 
     /// <summary>Gets the best chromosome from a completed optimisation.</summary>
     Task<ChromosomeKernel> GetOptimizationResultAsync(string taskId, CancellationToken cancellationToken);
+
+    /// <summary>Advances the optimization run by exactly one generation step and returns the resulting state.</summary>
+    Task<GeneticOptimizerState> StepOptimizationAsync(string taskId, CancellationToken cancellationToken);
+
+    /// <summary>Gets the current optimization checkpoint state, or null if task is not found.</summary>
+    Task<GeneticOptimizerState?> GetOptimizationCheckpointAsync(string taskId, CancellationToken cancellationToken);
+
+    /// <summary>Sets/restores the optimization state from a checkpoint, optionally invalidating cached fitness values.</summary>
+    Task SetOptimizationCheckpointAsync(string taskId, GeneticOptimizerState state, bool invalidateFitness, CancellationToken cancellationToken);
+
+    /// <summary>Pauses an active optimization task.</summary>
+    Task PauseOptimizationAsync(string taskId, CancellationToken cancellationToken);
+
+    /// <summary>Resumes a paused optimization task.</summary>
+    Task ResumeOptimizationAsync(string taskId, CancellationToken cancellationToken);
 }
 
 /// <summary>Input for starting a live trading session.</summary>
@@ -103,6 +119,8 @@ internal sealed record OptimizationInput
     public required DateTime EndDate { get; init; }
     public required string[] Timeframes { get; init; }
     public required string AccountCurrency { get; init; }    // base account currency
+    public bool IsSteppable { get; init; }
+    public GeneticOptimizerState? InitialState { get; init; }
 }
 
 /// <summary>Snapshot of live trading state.</summary>

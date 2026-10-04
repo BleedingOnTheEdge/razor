@@ -30,7 +30,7 @@ an inbound command by its `CommandId`.
 | System management | `GetStatus`, `PauseEngine`, `ResumeEngine`, `Shutdown`, `Restart`, `SetConfig`, `GetConfig`, `GetCapabilities` | 1003-1010 |
 | Live trading | `StartLive`, `StopLive`, `InjectGenes`, `PauseLive`, `ResumeLive`, `GetLiveState`, `SyncLive`, `SetLiveConfig`, `GetLiveMetrics` | 1100-1108 |
 | Backtesting | `RunBacktest`, `CancelBacktest`, `GetBacktestResult`, `ListBacktests` | 1200-1203 |
-| Optimisation | `StartOptimization`, `CancelOptimization`, `PauseOptimization`, `ResumeOptimization`, `GetOptimizationState`, `GetOptimizationResult`, `ListOptimizations` | 1300-1306 |
+| Optimisation | `StartOptimization`, `CancelOptimization`, `PauseOptimization`, `ResumeOptimization`, `GetOptimizationState`, `GetOptimizationResult`, `ListOptimizations`, `StepComputation`, `GetCheckpoint`, `SetCheckpoint` | 1300-1309 |
 | Extensions | `ReloadExtensions`, `DeployExtension`, `RemoveExtension`, `ListExtensions`, `ActivateExtensions` | 1400-1404 |
 | Reports | `GenerateReport`, `GetReport` | 1500-1501 |
 | Logs and telemetry | `GetLogs`, `DeleteLogsAll`, `DeleteLogsExpired`, `SetLogLevel`, `GetMetrics`, `ExportMetrics` | 1600-1605 |

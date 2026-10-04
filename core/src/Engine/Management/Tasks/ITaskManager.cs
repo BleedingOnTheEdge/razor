@@ -45,6 +45,18 @@ internal interface ITaskManager
     /// <summary>Cancels an optimisation task.</summary>
     Task CancelOptimizationTaskAsync(string taskId, CancellationToken cancellationToken);
 
+    /// <summary>Advances the optimization task by the specified number of generations.</summary>
+    Task<global::Kernel.Optimization.ComputationCheckpoint> StepComputationAsync(string taskId, int generations, CancellationToken cancellationToken);
+
+    /// <summary>Gets the current computation checkpoint of an optimization task.</summary>
+    Task<global::Kernel.Optimization.ComputationCheckpoint> GetCheckpointAsync(string taskId, CancellationToken cancellationToken);
+
+    /// <summary>Updates or overrides the computation checkpoint of an optimization task with an audit rationale.</summary>
+    Task<global::Kernel.Optimization.ComputationCheckpoint> SetCheckpointAsync(string taskId, global::Kernel.Optimization.ComputationCheckpoint checkpoint, string? reason, CancellationToken cancellationToken);
+
+    /// <summary>Restores an optimization task from persisted state.</summary>
+    Task<string?> RestoreOptimizationTaskAsync(OptimizationState state, CancellationToken cancellationToken);
+
     /// <summary>Pauses a task.</summary>
     Task PauseTaskAsync(string taskId, CancellationToken cancellationToken);
     /// <summary>Resumes a task.</summary>

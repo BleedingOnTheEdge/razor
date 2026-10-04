@@ -214,6 +214,18 @@ internal sealed class StubTaskManager : ITaskManager
     /// <inheritdoc/>
     public Task<string?> RestoreLiveTaskAsync(LiveState state, CancellationToken cancellationToken) => throw NotUsed(nameof(RestoreLiveTaskAsync));
 
+    /// <inheritdoc/>
+    public Task<global::Kernel.Optimization.ComputationCheckpoint> StepComputationAsync(string taskId, int generations, CancellationToken cancellationToken) => throw NotUsed(nameof(StepComputationAsync));
+
+    /// <inheritdoc/>
+    public Task<global::Kernel.Optimization.ComputationCheckpoint> GetCheckpointAsync(string taskId, CancellationToken cancellationToken) => throw NotUsed(nameof(GetCheckpointAsync));
+
+    /// <inheritdoc/>
+    public Task<global::Kernel.Optimization.ComputationCheckpoint> SetCheckpointAsync(string taskId, global::Kernel.Optimization.ComputationCheckpoint checkpoint, string? reason, CancellationToken cancellationToken) => throw NotUsed(nameof(SetCheckpointAsync));
+
+    /// <inheritdoc/>
+    public Task<string?> RestoreOptimizationTaskAsync(OptimizationState state, CancellationToken cancellationToken) => throw NotUsed(nameof(RestoreOptimizationTaskAsync));
+
     /// <summary>Builds the failure for a member the connector's inbound path never reaches.</summary>
     /// <param name="member">The member name.</param>
     /// <returns>The exception to throw.</returns>

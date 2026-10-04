@@ -62,8 +62,18 @@ The schema is extracted via `GeneInjector.BuildCompleteSchema()`. The total gene
 - **Elitism:** The best `ElitismPct * PopulationSize` individuals are copied unchanged to the next generation.
 - **Stagnation detection:** If the best fitness does not improve for `StagnationGenerationsBeforeHyper` consecutive generations, hyper‑mutation is activated to escape local optima.
 
-## State Serialization
+## State Serialization and Checkpoints
 
 `SaveState()` produces a `GeneticOptimizerState` record containing a deep clone of the entire population. `LoadState()` restores it. After loading, call `InvalidateFitness()` if the evaluation data has changed.
+
+## Stepping, Checkpoints, and Interventions
+
+The engine exposes fine-grained step-by-step control over optimization runs:
+
+- **Stepping:** `StepComputation` advances the optimization by exactly one generation step and returns the resulting `ComputationCheckpoint`.
+- **Checkpoint Inspection:** `GetCheckpoint` retrieves the checkpoint and complete population chromosome data at a given step.
+- **State Modification:** `SetCheckpoint` replaces the optimizer state, invalidating fitness across modified chromosomes so they are re-evaluated on the next step or resume.
+- **Fingerprinting:** Each checkpoint carries a deterministic SHA-256 fingerprint (and its parent's fingerprint), computed over the generation index, RNG states, individual indices, seeds, genes, and fitness values, enabling verification of pure determinism across runs.
+- **Intervention Tracking:** Any external modification via `SetCheckpoint` requires a reason, marks the run as `Diverged = true`, and appends an immutable `InterventionRecord` tracking the step index, previous/new fingerprints, actor, timestamp, and rationale.
 
 ---

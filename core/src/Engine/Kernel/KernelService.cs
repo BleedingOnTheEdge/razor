@@ -87,13 +87,18 @@ internal sealed class KernelService : IKernelService, IDisposable
         OptimizationRunner? Runner = null,
         IIndicatorRegistry? IndicatorRegistry = null,
         TickWindow? TickWindow = null,
-        List<MemoryMappedTickList>? MappedTickLists = null)
+        List<MemoryMappedTickList>? MappedTickLists = null,
+        Func<ChromosomeKernel, CancellationToken, Task<double>>? Evaluator = null,
+        ManualResetEventSlim? PauseGate = null,
+        bool IsSteppable = false)
     {
         public void DisposeCts()
         {
             Cts?.Cancel();
             Cts?.Dispose();
         }
+
+        public void DisposePauseGate() => PauseGate?.Dispose();
 
         public void DisposeIndicatorRegistry()
         {
@@ -730,11 +735,23 @@ internal sealed class KernelService : IKernelService, IDisposable
                 }
             }
 
+            if (input.InitialState != null)
+            {
+                runner.LoadState(input.InitialState);
+            }
+
             CancellationTokenSource cts;
 #pragma warning disable CA2000
             cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var pauseGate = new ManualResetEventSlim(!input.IsSteppable);
 #pragma warning restore CA2000
-            var taskState = new TaskState(cts, Runner: runner, MappedTickLists: mappedLists);
+            var taskState = new TaskState(
+                cts,
+                Runner: runner,
+                MappedTickLists: mappedLists,
+                Evaluator: EvaluateChromosome,
+                PauseGate: pauseGate,
+                IsSteppable: input.IsSteppable);
 
             try
             {
@@ -743,10 +760,13 @@ internal sealed class KernelService : IKernelService, IDisposable
             catch
             {
                 cts.Dispose();
+                pauseGate.Dispose();
                 throw;
             }
 
-            _ = Task.Run(async () =>
+            if (!input.IsSteppable)
+            {
+                _ = Task.Run(async () =>
             {
                 try
                 {
@@ -759,6 +779,7 @@ internal sealed class KernelService : IKernelService, IDisposable
                     if (_activeTasks.TryRemove(taskId, out var state))
                     {
                         state.DisposeCts();
+                        state.DisposePauseGate();
                         state.DisposeMappedTickLists();
                     }
                     _logOptimizationCancelled(_logger, taskId, null);
@@ -768,6 +789,7 @@ internal sealed class KernelService : IKernelService, IDisposable
                     if (_activeTasks.TryRemove(taskId, out var state))
                     {
                         state.DisposeCts();
+                        state.DisposePauseGate();
                         state.DisposeMappedTickLists();
                     }
                     _logOptimizationFailed(_logger, taskId, ex);
@@ -780,6 +802,7 @@ internal sealed class KernelService : IKernelService, IDisposable
                     }
                 }
             }, cts.Token);
+            }
 
             return taskId;
         }
@@ -809,6 +832,108 @@ internal sealed class KernelService : IKernelService, IDisposable
         dummy.IndividualIndex = 0;
         dummy.Seed = 0;
         return Task.FromResult(dummy);
+    }
+
+    /// <inheritdoc/>
+    public async Task<GeneticOptimizerState> StepOptimizationAsync(string taskId, CancellationToken cancellationToken)
+    {
+        if (!_activeTasks.TryGetValue(taskId, out var state) || state.Runner == null || state.Evaluator == null)
+        {
+            throw new KeyNotFoundException($"Active optimization task '{taskId}' not found.");
+        }
+
+        var nextState = await state.Runner.StepAsync(state.Evaluator, cancellationToken).ConfigureAwait(false);
+        if (state.Runner.BestSolution != null)
+        {
+            _activeTasks[taskId] = state with { Result = state.Runner.BestSolution };
+        }
+
+        return nextState;
+    }
+
+    /// <inheritdoc/>
+    public Task<GeneticOptimizerState?> GetOptimizationCheckpointAsync(string taskId, CancellationToken cancellationToken)
+    {
+        if (_activeTasks.TryGetValue(taskId, out var state) && state.Runner != null)
+        {
+            return Task.FromResult<GeneticOptimizerState?>(state.Runner.SaveState());
+        }
+
+        return Task.FromResult<GeneticOptimizerState?>(null);
+    }
+
+    /// <inheritdoc/>
+    public Task SetOptimizationCheckpointAsync(string taskId, GeneticOptimizerState state, bool invalidateFitness, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        if (!_activeTasks.TryGetValue(taskId, out var taskState) || taskState.Runner == null)
+        {
+            throw new KeyNotFoundException($"Active optimization task '{taskId}' not found.");
+        }
+
+        taskState.Runner.LoadState(state);
+        if (invalidateFitness)
+        {
+            taskState.Runner.InvalidateFitness();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public Task PauseOptimizationAsync(string taskId, CancellationToken cancellationToken)
+    {
+        if (_activeTasks.TryGetValue(taskId, out var state))
+        {
+            state.PauseGate?.Reset();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public Task ResumeOptimizationAsync(string taskId, CancellationToken cancellationToken)
+    {
+        if (_activeTasks.TryGetValue(taskId, out var state) && state.Runner != null)
+        {
+            state.PauseGate?.Set();
+            if (state.IsSteppable && state.Result == null)
+            {
+                // Transition to continuous execution
+                _activeTasks[taskId] = state with { IsSteppable = false };
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        var best = await state.Runner.RunAsync(state.Evaluator!, state.Cts.Token).ConfigureAwait(false);
+                        _activeTasks[taskId] = _activeTasks[taskId] with { Result = best };
+                        _logOptimizationCompleted(_logger, taskId, null);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        if (_activeTasks.TryRemove(taskId, out var s))
+                        {
+                            s.DisposeCts();
+                            s.DisposePauseGate();
+                            s.DisposeMappedTickLists();
+                        }
+                        _logOptimizationCancelled(_logger, taskId, null);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (_activeTasks.TryRemove(taskId, out var s))
+                        {
+                            s.DisposeCts();
+                            s.DisposePauseGate();
+                            s.DisposeMappedTickLists();
+                        }
+                        _logOptimizationFailed(_logger, taskId, ex);
+                    }
+                }, state.Cts.Token);
+            }
+        }
+
+        return Task.CompletedTask;
     }
 
     private static TimeFrame ParseTimeFrame(string tf)
@@ -847,6 +972,7 @@ internal sealed class KernelService : IKernelService, IDisposable
         foreach (var kv in _activeTasks)
         {
             kv.Value.DisposeCts();
+            kv.Value.DisposePauseGate();
             kv.Value.DisposeIndicatorRegistry();
             kv.Value.DisposeTickWindow();
             kv.Value.DisposeMappedTickLists();

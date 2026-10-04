@@ -58,8 +58,20 @@ public sealed class OptimizationRunner
             hooks);
     }
 
+    /// <summary>Gets the current generation index of the underlying optimizer.</summary>
+    public int CurrentGeneration => _ga.CurrentGeneration;
+
+    /// <summary>Gets the current population of candidate solutions.</summary>
+    public IReadOnlyList<Chromosome> Population => _ga.Population;
+
+    /// <summary>Gets the best solution found so far.</summary>
+    public Chromosome? BestSolution => _ga.BestSolution;
+
+    /// <summary>Marks all chromosomes in the current population as unevaluated.</summary>
+    public void InvalidateFitness() => _ga.InvalidateFitness();
+
     /// <summary>
-    /// Runs the optimization loop.
+    /// Runs the optimization loop until completion. Resumes from the current generation if previously stepped.
     /// </summary>
     public async Task<Chromosome> RunAsync(
         Func<Chromosome, CancellationToken, Task<double>> fitnessEvaluator,
@@ -68,93 +80,36 @@ public sealed class OptimizationRunner
         ArgumentNullException.ThrowIfNull(fitnessEvaluator);
 
         var systemClock = new Clock.SystemClock(); // single clock for all hooks
-        _ga.Initialize();
+        if (!_ga.IsInitialized)
+        {
+            _ga.Initialize();
 
-        // optimisation.started hook
-        _hooks?.OnStart.InvokeActionChain(
-            new OptimizationContext(systemClock, 0, _spec.Generations, _spec.PopulationSize,
-                Chromosome.NotEvaluated, false, "optimization.started"));
+            // optimisation.started hook
+            _hooks?.OnStart.InvokeActionChain(
+                new OptimizationContext(systemClock, 0, _spec.Generations, _spec.PopulationSize,
+                    Chromosome.NotEvaluated, false, "optimization.started"));
+        }
 
-        for (int gen = 0; gen < _spec.Generations; gen++)
+        while (true)
         {
             ct.ThrowIfCancellationRequested();
 
-            _hooks?.OnGenerationStart.InvokeActionChain(
-                gen,
-                new OptimizationContext(systemClock, gen, _spec.Generations, _spec.PopulationSize,
-                    _ga.BestSolution?.Fitness ?? Chromosome.NotEvaluated, _ga.IsHyperMutation,
-                    "optimization.generation.start"));
-
-            // Evaluate population
-            await _ga.EvaluateAsync(async (chromo, innerCt) =>
+            if (_ga.Evaluated)
             {
-                double defaultFitness = await fitnessEvaluator(chromo, innerCt).ConfigureAwait(false);
+                if (_ga.CurrentGeneration >= _spec.Generations - 1)
+                {
+                    break;
+                }
 
-                // Build fitness evaluation context and fire hook
-                var fitnessCtx = new FitnessEvaluationContext(
-                    systemClock,
-                    new Sdk.Hooks.Chromosome
-                    {
-                        Genes = chromo.Genes,
-                        Fitness = double.NaN,
-                        Generation = chromo.Generation,
-                        IndividualIndex = chromo.IndividualIndex,
-                        Seed = chromo.Seed
-                    },
-                    "optimization.fitness.evaluate");
-
-                // Use the interface directly now that it's available
-                _hooks?.OnFitnessEvaluation.InvokeActionChain(
-                    (IFitnessEvaluationContext)fitnessCtx,
-                    new OptimizationContext(systemClock, gen, _spec.Generations, _spec.PopulationSize,
-                        _ga.BestSolution?.Fitness ?? defaultFitness, _ga.IsHyperMutation,
-                        "optimization.fitness.evaluate"));
-
-                double finalFitness = double.IsNaN(fitnessCtx.Fitness) ? defaultFitness : fitnessCtx.Fitness;
-
-                // Notify evaluators (post‑fitness)
-                _hooks?.OnChromosomeEvaluated.InvokeActionChain(
-                    (new Sdk.Hooks.Chromosome
-                    {
-                        Genes = chromo.Genes,
-                        Fitness = finalFitness,
-                        Generation = chromo.Generation,
-                        IndividualIndex = chromo.IndividualIndex,
-                        Seed = chromo.Seed
-                    }, finalFitness),
-                    new OptimizationContext(systemClock, gen, _spec.Generations, _spec.PopulationSize,
-                        _ga.BestSolution?.Fitness ?? finalFitness, _ga.IsHyperMutation,
-                        "optimization.chromosome.evaluated"));
-
-                return finalFitness;
-            }, ct).ConfigureAwait(false);
-
-            if (_ga.IsHyperMutation)
-            {
-                _hooks?.OnStagnationDetected.InvokeActionChain(
-                    gen,
-                    new OptimizationContext(systemClock, gen, _spec.Generations, _spec.PopulationSize,
-                        _ga.BestSolution!.Fitness, true, "optimization.stagnation"));
+                _ga.Evolve();
             }
 
-            _hooks?.OnGenerationCompleted.InvokeActionChain(
-                (gen, _ga.BestSolution!.Fitness, _ga.IsHyperMutation),
-                new OptimizationContext(systemClock, gen, _spec.Generations, _spec.PopulationSize,
-                    _ga.BestSolution!.Fitness, _ga.IsHyperMutation, "optimization.generation.completed"));
+            int gen = _ga.CurrentGeneration;
+            await StepGenerationInternalAsync(gen, fitnessEvaluator, systemClock, ct).ConfigureAwait(false);
 
-            // Publish generation event
-            _messageBus?.Publish(new OptimizationGenerationEvent
+            if (gen == _spec.Generations - 1)
             {
-                Timestamp = systemClock.GetUtcNow(),
-                Generation = gen,
-                BestFitness = _ga.BestSolution!.Fitness,
-                IsHyperMutation = _ga.IsHyperMutation,
-                EventId = $"opt-gen-{gen}-{Guid.NewGuid():N}"
-            });
-
-            if (gen < _spec.Generations - 1)
-            {
-                _ga.Evolve();
+                break;
             }
         }
 
@@ -180,9 +135,147 @@ public sealed class OptimizationRunner
             EventId = $"opt-cycle-{Guid.NewGuid():N}"
         });
 
-        // IMP-02: Removed ReportGenerator usage – report rendering is handled by Cloud.
-
         return best;
+    }
+
+    /// <summary>
+    /// Executes exactly one generation step and returns the resulting state snapshot.
+    /// </summary>
+    /// <param name="fitnessEvaluator">Function that returns a fitness value for a chromosome.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The snapshot of the optimizer state after advancing one generation.</returns>
+    public async Task<GeneticOptimizerState> StepAsync(
+        Func<Chromosome, CancellationToken, Task<double>> fitnessEvaluator,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(fitnessEvaluator);
+        var systemClock = new Clock.SystemClock();
+
+        if (!_ga.IsInitialized)
+        {
+            _ga.Initialize();
+            _hooks?.OnStart.InvokeActionChain(
+                new OptimizationContext(systemClock, 0, _spec.Generations, _spec.PopulationSize,
+                    Chromosome.NotEvaluated, false, "optimization.started"));
+        }
+
+        if (_ga.Evaluated)
+        {
+            if (_ga.CurrentGeneration >= _spec.Generations - 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(fitnessEvaluator), "Computation has already reached the maximum configured generations.");
+            }
+
+            _ga.Evolve();
+        }
+
+        int gen = _ga.CurrentGeneration;
+        await StepGenerationInternalAsync(gen, fitnessEvaluator, systemClock, ct).ConfigureAwait(false);
+
+        if (gen == _spec.Generations - 1)
+        {
+            var best = _ga.BestSolution!;
+            _hooks?.OnCompleted.InvokeActionChain(
+                new Sdk.Hooks.Chromosome
+                {
+                    Genes = best.Genes,
+                    Fitness = best.Fitness,
+                    Generation = best.Generation,
+                    IndividualIndex = best.IndividualIndex,
+                    Seed = best.Seed
+                },
+                new OptimizationContext(systemClock, _spec.Generations - 1, _spec.Generations, _spec.PopulationSize,
+                    best.Fitness, _ga.IsHyperMutation, "optimization.completed"));
+
+            _messageBus?.Publish(new OptimizationCycleCompletedEvent(0, best.Fitness, _spec.Generations)
+            {
+                Timestamp = systemClock.GetUtcNow(),
+                CorrelationId = Guid.NewGuid(),
+                EventId = $"opt-cycle-{Guid.NewGuid():N}"
+            });
+        }
+
+        return SaveState();
+    }
+
+    private async Task StepGenerationInternalAsync(
+        int gen,
+        Func<Chromosome, CancellationToken, Task<double>> fitnessEvaluator,
+        Clock.SystemClock systemClock,
+        CancellationToken ct)
+    {
+        _hooks?.OnGenerationStart.InvokeActionChain(
+            gen,
+            new OptimizationContext(systemClock, gen, _spec.Generations, _spec.PopulationSize,
+                _ga.BestSolution?.Fitness ?? Chromosome.NotEvaluated, _ga.IsHyperMutation,
+                "optimization.generation.start"));
+
+        // Evaluate population
+        await _ga.EvaluateAsync(async (chromo, innerCt) =>
+        {
+            double defaultFitness = await fitnessEvaluator(chromo, innerCt).ConfigureAwait(false);
+
+            // Build fitness evaluation context and fire hook
+            var fitnessCtx = new FitnessEvaluationContext(
+                systemClock,
+                new Sdk.Hooks.Chromosome
+                {
+                    Genes = chromo.Genes,
+                    Fitness = double.NaN,
+                    Generation = chromo.Generation,
+                    IndividualIndex = chromo.IndividualIndex,
+                    Seed = chromo.Seed
+                },
+                "optimization.fitness.evaluate");
+
+            // Use the interface directly now that it's available
+            _hooks?.OnFitnessEvaluation.InvokeActionChain(
+                (IFitnessEvaluationContext)fitnessCtx,
+                new OptimizationContext(systemClock, gen, _spec.Generations, _spec.PopulationSize,
+                    _ga.BestSolution?.Fitness ?? defaultFitness, _ga.IsHyperMutation,
+                    "optimization.fitness.evaluate"));
+
+            double finalFitness = double.IsNaN(fitnessCtx.Fitness) ? defaultFitness : fitnessCtx.Fitness;
+
+            // Notify evaluators (post‑fitness)
+            _hooks?.OnChromosomeEvaluated.InvokeActionChain(
+                (new Sdk.Hooks.Chromosome
+                {
+                    Genes = chromo.Genes,
+                    Fitness = finalFitness,
+                    Generation = chromo.Generation,
+                    IndividualIndex = chromo.IndividualIndex,
+                    Seed = chromo.Seed
+                }, finalFitness),
+                new OptimizationContext(systemClock, gen, _spec.Generations, _spec.PopulationSize,
+                    _ga.BestSolution?.Fitness ?? finalFitness, _ga.IsHyperMutation,
+                    "optimization.chromosome.evaluated"));
+
+            return finalFitness;
+        }, ct).ConfigureAwait(false);
+
+        if (_ga.IsHyperMutation)
+        {
+            _hooks?.OnStagnationDetected.InvokeActionChain(
+                gen,
+                new OptimizationContext(systemClock, gen, _spec.Generations, _spec.PopulationSize,
+                    _ga.BestSolution!.Fitness, true, "optimization.stagnation"));
+        }
+
+        _hooks?.OnGenerationCompleted.InvokeActionChain(
+            (gen, _ga.BestSolution!.Fitness, _ga.IsHyperMutation),
+            new OptimizationContext(systemClock, gen, _spec.Generations, _spec.PopulationSize,
+                _ga.BestSolution!.Fitness, _ga.IsHyperMutation, "optimization.generation.completed"));
+
+        // Publish generation event
+        _messageBus?.Publish(new OptimizationGenerationEvent
+        {
+            Timestamp = systemClock.GetUtcNow(),
+            Generation = gen,
+            BestFitness = _ga.BestSolution!.Fitness,
+            IsHyperMutation = _ga.IsHyperMutation,
+            EventId = $"opt-gen-{gen}-{Guid.NewGuid():N}"
+        });
     }
 
     /// <summary>

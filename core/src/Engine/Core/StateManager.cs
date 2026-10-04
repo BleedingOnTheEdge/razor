@@ -99,14 +99,26 @@ internal sealed class StateManager : IStateManager, IDisposable
     /// <inheritdoc/>
     public string EngineId => _engineId;
 
-    /// <summary>Initializes a new instance.</summary>
-    public StateManager()
+    /// <summary>Initializes a new instance of the <see cref="StateManager"/> class.</summary>
+    /// <param name="databasePath">Optional custom path for the SQLite database file (e.g. for testing).</param>
+    public StateManager(string? databasePath = null)
     {
-        // RUN‑01: Use absolute path based on engine base directory.
-        var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        var stateDir = Path.Combine(baseDirectory, "state");
-        Directory.CreateDirectory(stateDir);
-        _databasePath = Path.Combine(stateDir, "engine_state.db");
+        if (!string.IsNullOrWhiteSpace(databasePath))
+        {
+            var dir = Path.GetDirectoryName(databasePath);
+            if (!string.IsNullOrEmpty(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            _databasePath = databasePath;
+        }
+        else
+        {
+            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            var stateDir = Path.Combine(baseDirectory, "state");
+            Directory.CreateDirectory(stateDir);
+            _databasePath = Path.Combine(stateDir, "engine_state.db");
+        }
 
         if (!File.Exists(_databasePath))
         {
