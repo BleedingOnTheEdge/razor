@@ -34,6 +34,13 @@ public sealed class GeneticOptimizer : IGeneticOptimizer
     private readonly int _stagnationGenerationsBeforeHyper;
     private const double RelativeFitnessTolerance = 1e-6;
     private readonly SystemClock _systemClock = new();
+    private bool _isInitialized;
+
+    /// <inheritdoc/>
+    public bool IsInitialized => _isInitialized;
+
+    /// <inheritdoc/>
+    public bool Evaluated => _evaluated;
 
     /// <inheritdoc/>
     public int CurrentGeneration => _currentGeneration;
@@ -105,6 +112,7 @@ public sealed class GeneticOptimizer : IGeneticOptimizer
     /// <inheritdoc/>
     public void Initialize()
     {
+        _isInitialized = true;
         _currentGeneration = 0;
         _hyperMutation = false;
         _stagnationCount = 0;
@@ -358,6 +366,7 @@ public sealed class GeneticOptimizer : IGeneticOptimizer
     public void LoadState(GeneticOptimizerState state)
     {
         ArgumentNullException.ThrowIfNull(state);
+        _isInitialized = true;
         _population = [.. state.Population.Select(c => c.Clone())];
         _currentGeneration = state.CurrentGeneration;
         _evaluated = state.Evaluated;

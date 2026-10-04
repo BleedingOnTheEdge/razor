@@ -8,6 +8,7 @@ namespace Engine.Management.Tasks;
 
 using Engine.Kernel;
 using global::Kernel.Backtesting;
+using global::Kernel.Optimization;
 using Microsoft.Extensions.Logging;
 using ChromosomeKernel = global::Kernel.Optimization.Chromosome;
 
@@ -208,7 +209,7 @@ internal sealed class BacktestTask : EngineTaskBase
     }
 }
 
-/// <summary>Optimization task.</summary>
+/// <summary>Optimization task supporting continuous execution and step-by-step checkpointing.</summary>
 internal sealed class OptimizationTask : EngineTaskBase
 {
     private readonly object _config;
@@ -216,10 +217,24 @@ internal sealed class OptimizationTask : EngineTaskBase
     private readonly ITaskManager _taskManager;
     private readonly IKernelService _kernelService;
     private readonly string _kernelTaskId;
+    private readonly bool _isSteppable;
+    private readonly List<InterventionRecord> _interventions = new();
     private ChromosomeKernel? _bestChromosome;
+    private string? _lastFingerprint;
+    private ComputationCheckpoint? _currentCheckpoint;
+    private bool _diverged;
 
     /// <summary>Gets the configuration object used to start this task.</summary>
     public object Config => _config;
+
+    /// <summary>Gets the kernel task identifier.</summary>
+    public string KernelTaskId => _kernelTaskId;
+
+    /// <summary>Gets whether this optimization run has diverged due to interventions.</summary>
+    public bool Diverged => _diverged;
+
+    /// <summary>Gets the list of external interventions applied.</summary>
+    public IReadOnlyList<InterventionRecord> Interventions => _interventions.AsReadOnly();
 
     private static readonly Action<ILogger, string, Exception?> _logOptimizationTaskStarted =
         LoggerMessage.Define<string>(LogLevel.Information, 0, "Optimization task {TaskId} started.");
@@ -230,8 +245,18 @@ internal sealed class OptimizationTask : EngineTaskBase
     private static readonly Action<ILogger, string, Exception?> _logOptimizationTaskFaulted =
         LoggerMessage.Define<string>(LogLevel.Error, 3, "Optimization task {TaskId} faulted.");
 
-    public OptimizationTask(string taskId, object config, ILogger<OptimizationTask> logger, ITaskManager taskManager,
-                            IKernelService kernelService, string kernelTaskId)
+    /// <summary>Initialises a new instance of the <see cref="OptimizationTask"/> class.</summary>
+    public OptimizationTask(
+        string taskId,
+        object config,
+        ILogger<OptimizationTask> logger,
+        ITaskManager taskManager,
+        IKernelService kernelService,
+        string kernelTaskId,
+        bool isSteppable = false,
+        string? initialFingerprint = null,
+        bool diverged = false,
+        IEnumerable<InterventionRecord>? existingInterventions = null)
     {
         TaskId = taskId;
         TaskType = "Optimization";
@@ -240,28 +265,48 @@ internal sealed class OptimizationTask : EngineTaskBase
         _taskManager = taskManager;
         _kernelService = kernelService;
         _kernelTaskId = kernelTaskId;
+        _isSteppable = isSteppable;
+        _lastFingerprint = initialFingerprint;
+        _diverged = diverged;
+        if (existingInterventions != null)
+        {
+            _interventions.AddRange(existingInterventions);
+        }
+
         StartTime = DateTime.UtcNow;
         State = TaskState.Initializing;
     }
 
+    /// <inheritdoc/>
     public override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         State = TaskState.Running;
         _logOptimizationTaskStarted(_logger, TaskId, null);
         try
         {
-            while (!cancellationToken.IsCancellationRequested)
+            if (_isSteppable)
             {
-                _bestChromosome = await _kernelService.GetOptimizationResultAsync(_kernelTaskId, cancellationToken).ConfigureAwait(false);
-                if (_bestChromosome != null && _bestChromosome.Fitness > ChromosomeKernel.NotEvaluated)
+                var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                using (cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken)))
                 {
-                    break;
+                    await tcs.Task.ConfigureAwait(false);
                 }
-
-                await Task.Delay(500, cancellationToken).ConfigureAwait(false);
             }
-            State = TaskState.Completed;
-            _logOptimizationTaskCompleted(_logger, TaskId, null);
+            else
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    _bestChromosome = await _kernelService.GetOptimizationResultAsync(_kernelTaskId, cancellationToken).ConfigureAwait(false);
+                    if (_bestChromosome != null && _bestChromosome.Fitness > ChromosomeKernel.NotEvaluated)
+                    {
+                        break;
+                    }
+
+                    await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+                }
+                State = TaskState.Completed;
+                _logOptimizationTaskCompleted(_logger, TaskId, null);
+            }
         }
         catch (OperationCanceledException)
         {
@@ -278,6 +323,132 @@ internal sealed class OptimizationTask : EngineTaskBase
         {
             EndTime = DateTime.UtcNow;
         }
+    }
+
+    /// <summary>Advances the optimization run by a given number of generations.</summary>
+    public async Task<ComputationCheckpoint> StepAsync(int generations, CancellationToken cancellationToken)
+    {
+        if (generations <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(generations), "Generations to step must be greater than zero.");
+        }
+
+        GeneticOptimizerState? lastState = null;
+        for (int i = 0; i < generations; i++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            lastState = await _kernelService.StepOptimizationAsync(_kernelTaskId, cancellationToken).ConfigureAwait(false);
+
+            var newFingerprint = CheckpointFingerprint.Compute(lastState);
+            _currentCheckpoint = new ComputationCheckpoint
+            {
+                ComputationId = TaskId,
+                StepIndex = lastState.CurrentGeneration,
+                Fingerprint = newFingerprint,
+                ParentFingerprint = _lastFingerprint,
+                State = lastState,
+                Diverged = _diverged,
+                Interventions = _interventions.ToArray()
+            };
+            _lastFingerprint = newFingerprint;
+        }
+
+        if (lastState != null)
+        {
+            var best = await _kernelService.GetOptimizationResultAsync(_kernelTaskId, cancellationToken).ConfigureAwait(false);
+            if (best != null && best.Fitness > ChromosomeKernel.NotEvaluated)
+            {
+                _bestChromosome = best;
+            }
+        }
+
+        return _currentCheckpoint!;
+    }
+
+    /// <summary>Gets the current computation checkpoint.</summary>
+    public async Task<ComputationCheckpoint> GetCheckpointAsync(CancellationToken cancellationToken)
+    {
+        if (_currentCheckpoint != null)
+        {
+            return _currentCheckpoint;
+        }
+
+        var state = await _kernelService.GetOptimizationCheckpointAsync(_kernelTaskId, cancellationToken).ConfigureAwait(false);
+        if (state == null)
+        {
+            throw new InvalidOperationException($"No checkpoint state available for task {TaskId}.");
+        }
+
+        var fingerprint = CheckpointFingerprint.Compute(state);
+        _lastFingerprint = fingerprint;
+        _currentCheckpoint = new ComputationCheckpoint
+        {
+            ComputationId = TaskId,
+            StepIndex = state.CurrentGeneration,
+            Fingerprint = fingerprint,
+            ParentFingerprint = null,
+            State = state,
+            Diverged = _diverged,
+            Interventions = _interventions.ToArray()
+        };
+        return _currentCheckpoint;
+    }
+
+    /// <summary>Modifies or restores the computation checkpoint with an audit rationale.</summary>
+    public async Task<ComputationCheckpoint> SetCheckpointAsync(ComputationCheckpoint checkpoint, string? reason, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(checkpoint);
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            throw new ArgumentException("An explicit audit reason is mandatory for checkpoint modification or intervention.", nameof(reason));
+        }
+
+        await _kernelService.SetOptimizationCheckpointAsync(_kernelTaskId, checkpoint.State, invalidateFitness: true, cancellationToken).ConfigureAwait(false);
+
+        var newFingerprint = CheckpointFingerprint.Compute(checkpoint.State);
+        var intervention = new InterventionRecord
+        {
+            StepIndex = checkpoint.State.CurrentGeneration,
+            PreviousFingerprint = _lastFingerprint,
+            NewFingerprint = newFingerprint,
+            Actor = "User",
+            TimestampUtc = DateTime.UtcNow,
+            Reason = reason
+        };
+
+        _diverged = true;
+        _interventions.Add(intervention);
+
+        _currentCheckpoint = new ComputationCheckpoint
+        {
+            ComputationId = TaskId,
+            StepIndex = checkpoint.State.CurrentGeneration,
+            Fingerprint = newFingerprint,
+            ParentFingerprint = _lastFingerprint,
+            State = checkpoint.State,
+            Diverged = true,
+            Interventions = _interventions.ToArray()
+        };
+        _lastFingerprint = newFingerprint;
+
+        return _currentCheckpoint;
+    }
+
+    /// <inheritdoc/>
+    public override Task<object> GetStateAsync(CancellationToken cancellationToken)
+    {
+        return Task.FromResult<object>(new
+        {
+            TaskId,
+            TaskType,
+            State = State.ToString(),
+            StartTime,
+            EndTime,
+            StepIndex = _currentCheckpoint?.StepIndex ?? 0,
+            Fingerprint = _lastFingerprint,
+            Diverged = _diverged,
+            InterventionCount = _interventions.Count
+        });
     }
 
     /// <inheritdoc/>

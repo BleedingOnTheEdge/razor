@@ -10,8 +10,10 @@ using Engine.Core;
 using Engine.Core.Exceptions;
 using Engine.Extensions;
 using Engine.Kernel;
+using global::Kernel.Optimization;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using System.Text.Json;
 using LiveState = Engine.Core.LiveState;
 
 /// <summary>Default implementation of <see cref="ITaskManager"/>.</summary>
@@ -352,6 +354,13 @@ internal sealed class TaskManager : ITaskManager, IDisposable
                 throw new ArgumentException("Configuration must be a dictionary.", nameof(config));
             }
 
+            bool isSteppable = GetBool(dict, "IsSteppable", false);
+            GeneticOptimizerState? initialState = null;
+            if (dict.TryGetValue("InitialState", out object? initStateObj) && initStateObj is GeneticOptimizerState st)
+            {
+                initialState = st;
+            }
+
             var optInput = new OptimizationInput
             {
                 AdapterName = GetString(dict, "AdapterName"),
@@ -373,7 +382,9 @@ internal sealed class TaskManager : ITaskManager, IDisposable
                 StartDate = GetDateTime(dict, "StartDate", DateTime.UtcNow.AddDays(-30)),
                 EndDate = GetDateTime(dict, "EndDate", DateTime.UtcNow),
                 Timeframes = GetStringArray(dict, "Timeframes", ["M1"]),
-                AccountCurrency = GetString(dict, "AccountCurrency", "USD")
+                AccountCurrency = GetString(dict, "AccountCurrency", "USD"),
+                IsSteppable = isSteppable,
+                InitialState = initialState
             };
 
             // Get active adapter and strategy
@@ -385,7 +396,16 @@ internal sealed class TaskManager : ITaskManager, IDisposable
             // Start via kernel service
             string kernelTaskId = await _kernelService.StartOptimizationAsync(optInput, cancellationToken).ConfigureAwait(false);
 
-            var task = new OptimizationTask(taskId, config ?? new object(), _loggerFactory.CreateLogger<OptimizationTask>(), this, _kernelService, kernelTaskId);
+            string? initialFingerprint = initialState != null ? CheckpointFingerprint.Compute(initialState) : null;
+            var task = new OptimizationTask(
+                taskId,
+                config ?? new object(),
+                _loggerFactory.CreateLogger<OptimizationTask>(),
+                this,
+                _kernelService,
+                kernelTaskId,
+                isSteppable: isSteppable,
+                initialFingerprint: initialFingerprint);
             _tasks[taskId] = task;
             _ = Task.Run(() => ExecuteTaskAsync(task, cancellationToken), cancellationToken);
 
@@ -394,10 +414,14 @@ internal sealed class TaskManager : ITaskManager, IDisposable
             {
                 TaskId = taskId,
                 Config = config ?? new object(),
-                Population = new object(),
-                CurrentGeneration = 0,
-                BestFitness = 0.0,
-                StartTime = task.StartTime
+                OptimizerState = initialState,
+                Population = initialState?.Population ?? new object(),
+                CurrentGeneration = initialState?.CurrentGeneration ?? 0,
+                BestFitness = initialState?.BestOverallFitness ?? 0.0,
+                StartTime = task.StartTime,
+                CheckpointFingerprint = initialFingerprint,
+                Diverged = false,
+                Interventions = Array.Empty<InterventionRecord>()
             };
             await _stateManager.SaveOptimizationStateAsync(taskId, state, cancellationToken).ConfigureAwait(false);
             return taskId;
@@ -501,6 +525,28 @@ internal sealed class TaskManager : ITaskManager, IDisposable
         return fallback;
     }
 
+    private static bool GetBool(Dictionary<string, object> dict, string key, bool fallback = false)
+    {
+        if (dict.TryGetValue(key, out object? value))
+        {
+            if (value is bool b)
+            {
+                return b;
+            }
+
+            if (value is string s && bool.TryParse(s, out var parsed))
+            {
+                return parsed;
+            }
+
+            if (value is System.Text.Json.JsonElement element && (element.ValueKind == System.Text.Json.JsonValueKind.True || element.ValueKind == System.Text.Json.JsonValueKind.False))
+            {
+                return element.GetBoolean();
+            }
+        }
+        return fallback;
+    }
+
     /// <inheritdoc/>
     public async Task CancelOptimizationTaskAsync(string taskId, CancellationToken cancellationToken)
     {
@@ -534,7 +580,10 @@ internal sealed class TaskManager : ITaskManager, IDisposable
                 {
                     await _kernelService.PauseLiveAsync(liveTask.KernelTaskId, cancellationToken).ConfigureAwait(false);
                 }
-                // For optimisation, we could also pause, but stub doesn't support.
+                else if (task is OptimizationTask optTask)
+                {
+                    await _kernelService.PauseOptimizationAsync(optTask.KernelTaskId, cancellationToken).ConfigureAwait(false);
+                }
             }
         }
         finally
@@ -555,6 +604,10 @@ internal sealed class TaskManager : ITaskManager, IDisposable
                 if (task is LiveTask liveTask)
                 {
                     await _kernelService.ResumeLiveAsync(liveTask.KernelTaskId, cancellationToken).ConfigureAwait(false);
+                }
+                else if (task is OptimizationTask optTask)
+                {
+                    await _kernelService.ResumeOptimizationAsync(optTask.KernelTaskId, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
@@ -603,6 +656,191 @@ internal sealed class TaskManager : ITaskManager, IDisposable
         }
 
         throw new EngineException($"Optimization task {taskId} not found.");
+    }
+
+    /// <inheritdoc/>
+    public async Task<ComputationCheckpoint> StepComputationAsync(string taskId, int generations, CancellationToken cancellationToken)
+    {
+        await _lock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (_tasks.TryGetValue(taskId, out var task) && task is OptimizationTask optTask)
+            {
+                var cp = await optTask.StepAsync(generations, cancellationToken).ConfigureAwait(false);
+
+                var optState = new OptimizationState
+                {
+                    TaskId = taskId,
+                    Config = optTask.Config,
+                    OptimizerState = cp.State,
+                    Population = cp.State.Population,
+                    CurrentGeneration = cp.StepIndex,
+                    BestFitness = cp.State.BestOverallFitness,
+                    StartTime = optTask.StartTime,
+                    CheckpointFingerprint = cp.Fingerprint,
+                    ParentCheckpointFingerprint = cp.ParentFingerprint,
+                    Diverged = cp.Diverged,
+                    Interventions = cp.Interventions
+                };
+                await _stateManager.SaveOptimizationStateAsync(taskId, optState, cancellationToken).ConfigureAwait(false);
+                return cp;
+            }
+
+            throw new EngineException($"Optimization task {taskId} not found.");
+        }
+        finally
+        {
+            _lock.Release();
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<ComputationCheckpoint> GetCheckpointAsync(string taskId, CancellationToken cancellationToken)
+    {
+        if (_tasks.TryGetValue(taskId, out var task) && task is OptimizationTask optTask)
+        {
+            return await optTask.GetCheckpointAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        var persistedState = await _stateManager.LoadOptimizationStateAsync(taskId, cancellationToken).ConfigureAwait(false);
+        if (persistedState?.OptimizerState != null)
+        {
+            return new ComputationCheckpoint
+            {
+                ComputationId = taskId,
+                StepIndex = persistedState.CurrentGeneration,
+                Fingerprint = persistedState.CheckpointFingerprint ?? CheckpointFingerprint.Compute(persistedState.OptimizerState),
+                ParentFingerprint = persistedState.ParentCheckpointFingerprint,
+                State = persistedState.OptimizerState,
+                Diverged = persistedState.Diverged,
+                Interventions = persistedState.Interventions
+            };
+        }
+
+        throw new EngineException($"Optimization task {taskId} not found.");
+    }
+
+    /// <inheritdoc/>
+    public async Task<ComputationCheckpoint> SetCheckpointAsync(string taskId, ComputationCheckpoint checkpoint, string? reason, CancellationToken cancellationToken)
+    {
+        await _lock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (_tasks.TryGetValue(taskId, out var task) && task is OptimizationTask optTask)
+            {
+                var updatedCp = await optTask.SetCheckpointAsync(checkpoint, reason, cancellationToken).ConfigureAwait(false);
+
+                var optState = new OptimizationState
+                {
+                    TaskId = taskId,
+                    Config = optTask.Config,
+                    OptimizerState = updatedCp.State,
+                    Population = updatedCp.State.Population,
+                    CurrentGeneration = updatedCp.StepIndex,
+                    BestFitness = updatedCp.State.BestOverallFitness,
+                    StartTime = optTask.StartTime,
+                    CheckpointFingerprint = updatedCp.Fingerprint,
+                    ParentCheckpointFingerprint = updatedCp.ParentFingerprint,
+                    Diverged = updatedCp.Diverged,
+                    Interventions = updatedCp.Interventions
+                };
+                await _stateManager.SaveOptimizationStateAsync(taskId, optState, cancellationToken).ConfigureAwait(false);
+                return updatedCp;
+            }
+
+            throw new EngineException($"Optimization task {taskId} not found.");
+        }
+        finally
+        {
+            _lock.Release();
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<string?> RestoreOptimizationTaskAsync(OptimizationState state, CancellationToken cancellationToken)
+    {
+        if (state == null)
+        {
+            return null;
+        }
+
+        if (_tasks.ContainsKey(state.TaskId))
+        {
+            return state.TaskId;
+        }
+
+        await _lock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            Dictionary<string, object>? dict = null;
+            if (state.Config is Dictionary<string, object> d)
+            {
+                dict = d;
+            }
+            else if (state.Config is JsonElement je && je.ValueKind == JsonValueKind.Object)
+            {
+                dict = JsonSerializer.Deserialize<Dictionary<string, object>>(je.GetRawText());
+            }
+
+            if (dict == null)
+            {
+                return null;
+            }
+
+            var optInput = new OptimizationInput
+            {
+                AdapterName = GetString(dict, "AdapterName"),
+                StrategyName = GetString(dict, "StrategyName"),
+                StrategyConfig = state.Config,
+                Leverage = GetDouble(dict, "Leverage", 100),
+                InitialBalance = GetDouble(dict, "InitialBalance", 10000),
+                Symbols = GetStringArray(dict, "Symbols", ["EURUSD"]),
+                MasterSeed = GetInt(dict, "MasterSeed", 42),
+                Generations = GetInt(dict, "Generations", 10),
+                PopulationSize = GetInt(dict, "PopulationSize", 50),
+                MutationRate = GetDouble(dict, "MutationRate", 0.1),
+                CrossoverRate = GetDouble(dict, "CrossoverRate", 0.5),
+                ElitismPct = GetDouble(dict, "ElitismPct", 0.05),
+                TournamentSize = GetInt(dict, "TournamentSize", 3),
+                StagnationGenerationsBeforeHyper = GetInt(dict, "StagnationGenerationsBeforeHyper", 3),
+                MaxParallelThreads = GetInt(dict, "MaxParallelThreads", 0),
+                NeuralNetworkName = GetString(dict, "NeuralNetworkName", string.Empty),
+                StartDate = GetDateTime(dict, "StartDate", DateTime.UtcNow.AddDays(-30)),
+                EndDate = GetDateTime(dict, "EndDate", DateTime.UtcNow),
+                Timeframes = GetStringArray(dict, "Timeframes", ["M1"]),
+                AccountCurrency = GetString(dict, "AccountCurrency", "USD"),
+                IsSteppable = true,
+                InitialState = state.OptimizerState
+            };
+
+            var adapter = _extensionManager.ActiveAdapter
+                ?? throw new InvalidOperationException("No active adapter found.");
+            var strategy = _extensionManager.ActiveStrategy
+                ?? throw new InvalidOperationException("No active strategy found.");
+
+            string kernelTaskId = await _kernelService.StartOptimizationAsync(optInput, cancellationToken).ConfigureAwait(false);
+
+            var task = new OptimizationTask(
+                state.TaskId,
+                state.Config,
+                _loggerFactory.CreateLogger<OptimizationTask>(),
+                this,
+                _kernelService,
+                kernelTaskId,
+                isSteppable: true,
+                initialFingerprint: state.CheckpointFingerprint,
+                diverged: state.Diverged,
+                existingInterventions: state.Interventions);
+
+            _tasks[state.TaskId] = task;
+            _ = Task.Run(() => ExecuteTaskAsync(task, cancellationToken), cancellationToken);
+
+            return state.TaskId;
+        }
+        finally
+        {
+            _lock.Release();
+        }
     }
 
     /// <inheritdoc/>

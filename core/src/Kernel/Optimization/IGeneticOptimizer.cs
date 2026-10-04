@@ -31,9 +31,24 @@ public interface IGeneticOptimizer : IOptimizer
     /// <param name="ct">Cancellation token.</param>
     Task EvaluateAsync(Func<Chromosome, CancellationToken, Task<double>> evaluator, CancellationToken ct);
 
+    /// <summary>Whether the population has been initialized or loaded.</summary>
+    bool IsInitialized { get; }
+
+    /// <summary>Whether the current generation population has been evaluated.</summary>
+    bool Evaluated { get; }
+
     /// <summary>
     /// Advances the population by one generation (selection, crossover, mutation).
     /// Call <see cref="EvaluateAsync"/> after each evolution step.
     /// </summary>
     void Evolve();
+
+    /// <summary>Saves current state to a snapshot for pause/resume.</summary>
+    GeneticOptimizerState SaveState();
+
+    /// <summary>Restores state from a previously saved snapshot.</summary>
+    void LoadState(GeneticOptimizerState state);
+
+    /// <summary>Marks all chromosomes as unevaluated.</summary>
+    void InvalidateFitness();
 }

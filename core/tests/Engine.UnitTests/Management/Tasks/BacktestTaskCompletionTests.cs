@@ -133,5 +133,15 @@ public sealed class BacktestTaskCompletionTests
         public Task<string> StartOptimizationAsync(OptimizationInput input, CancellationToken cancellationToken) => throw new NotSupportedException();
 
         public Task<ChromosomeKernel> GetOptimizationResultAsync(string taskId, CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<global::Kernel.Optimization.GeneticOptimizerState> StepOptimizationAsync(string taskId, CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task<global::Kernel.Optimization.GeneticOptimizerState?> GetOptimizationCheckpointAsync(string taskId, CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task SetOptimizationCheckpointAsync(string taskId, global::Kernel.Optimization.GeneticOptimizerState state, bool invalidateFitness, CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task PauseOptimizationAsync(string taskId, CancellationToken cancellationToken) => throw new NotSupportedException();
+
+        public Task ResumeOptimizationAsync(string taskId, CancellationToken cancellationToken) => throw new NotSupportedException();
     }
 }

@@ -33,6 +33,17 @@ public sealed class Chromosome
         Genes = new double[geneCount];
     }
 
+    /// <summary>Constructs a new Chromosome instance from genes and metadata for deserialization.</summary>
+    [System.Text.Json.Serialization.JsonConstructor]
+    public Chromosome(double[] genes, double fitness = NotEvaluated, int generation = 0, int individualIndex = 0, int seed = 0)
+    {
+        Genes = genes ?? Array.Empty<double>();
+        Fitness = fitness;
+        Generation = generation;
+        IndividualIndex = individualIndex;
+        Seed = seed;
+    }
+
     /// <summary>Deep clones the current chromosome.</summary>
     public Chromosome Clone()
     {

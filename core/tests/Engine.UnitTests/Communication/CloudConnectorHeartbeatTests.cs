@@ -350,6 +350,10 @@ public sealed class CloudConnectorHeartbeatTests : IAsyncDisposable
         public Task<object> GetLiveStateAsync(string taskId, CancellationToken cancellationToken) => Task.FromResult<object>(new());
         public Task StopAllLiveTasksAsync(CancellationToken cancellationToken) => Task.CompletedTask;
         public Task<string?> RestoreLiveTaskAsync(LiveState state, CancellationToken cancellationToken) => Task.FromResult<string?>("live-restored");
+        public Task<global::Kernel.Optimization.ComputationCheckpoint> StepComputationAsync(string taskId, int generations, CancellationToken cancellationToken) => throw new NotSupportedException();
+        public Task<global::Kernel.Optimization.ComputationCheckpoint> GetCheckpointAsync(string taskId, CancellationToken cancellationToken) => throw new NotSupportedException();
+        public Task<global::Kernel.Optimization.ComputationCheckpoint> SetCheckpointAsync(string taskId, global::Kernel.Optimization.ComputationCheckpoint checkpoint, string? reason, CancellationToken cancellationToken) => throw new NotSupportedException();
+        public Task<string?> RestoreOptimizationTaskAsync(OptimizationState state, CancellationToken cancellationToken) => Task.FromResult<string?>("opt-restored");
     }
 
     private sealed class FakeSecurityManager : ISecurityManager

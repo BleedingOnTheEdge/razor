@@ -35,7 +35,7 @@ v1.0.0 LTS is the authoritative table in
 | System management | 1000-1099 | Auth, heartbeat, shutdown, restart |
 | Live trading | 1100-1199 | `StartLive`, `StopLive`, `InjectGenes`, `PauseLive`, `ResumeLive`, `GetLiveState`, `SyncLive` |
 | Backtesting | 1200-1299 | `RunBacktest`, `CancelBacktest`, `GetBacktestResult` |
-| Optimisation | 1300-1399 | `StartOptimization`, `CancelOptimization`, `PauseOptimization`, `ResumeOptimization`, `GetOptimizationState`, `GetOptimizationResult` |
+| Optimisation | 1300-1399 | `StartOptimization`, `CancelOptimization`, `PauseOptimization`, `ResumeOptimization`, `GetOptimizationState`, `GetOptimizationResult`, `StepComputation`, `GetCheckpoint`, `SetCheckpoint` |
 | Extensions | 1400-1499 | `ReloadExtensions`, `DeployExtension`, `RemoveExtension`, `ListExtensions`, `ActivateExtensions` |
 | Reports | 1500-1599 | `GenerateReport`, `GetReport` |
 | Logs and telemetry | 1600-1699 | `GetLogs`, `DeleteLogs*`, `SetLogLevel`, `GetMetrics`, `ExportMetrics` |
