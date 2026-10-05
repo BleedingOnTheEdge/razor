@@ -85,6 +85,11 @@ internal static class CloudApplication
         services.AddSingleton<ProfileService>();
         services.AddSingleton<HeartbeatService>();
         services.AddSingleton<EngineSessionRegistry>();
+        services.AddSingleton<LineageService>();
+        services.AddSingleton<RunReportService>();
+        services.AddSingleton<RunRankingService>();
+        services.AddSingleton<FlowOrchestrator>();
+
 
         // FastEndpoints marks every route it registers with authorization metadata, and ASP.NET Core refuses
         // to run a route whose metadata no middleware can act on — so the pipeline needs the authentication

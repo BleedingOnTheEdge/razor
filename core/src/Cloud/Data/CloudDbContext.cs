@@ -59,6 +59,15 @@ internal sealed class CloudDbContext : DbContext
     /// <summary>Gets the received progress reports.</summary>
     public DbSet<CommandProgressReport> CommandProgressReports => Set<CommandProgressReport>();
 
+    /// <summary>Gets the persistent flow runs and their lineage.</summary>
+    public DbSet<FlowRun> FlowRuns => Set<FlowRun>();
+
+    /// <summary>Gets the recorded interventions across flow runs.</summary>
+    public DbSet<RunIntervention> RunInterventions => Set<RunIntervention>();
+
+    /// <summary>Gets the recorded coverage and execution gaps across flow runs.</summary>
+    public DbSet<RunGap> RunGaps => Set<RunGap>();
+
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -71,7 +80,11 @@ internal sealed class CloudDbContext : DbContext
         ConfigureEngineProfile(modelBuilder);
         ConfigureExtensionManifestEntry(modelBuilder);
         ConfigureEngineCommand(modelBuilder);
+        ConfigureFlowRun(modelBuilder);
+        ConfigureRunIntervention(modelBuilder);
+        ConfigureRunGap(modelBuilder);
     }
+
 
     private static void ConfigureAccount(ModelBuilder modelBuilder)
     {
@@ -122,6 +135,7 @@ internal sealed class CloudDbContext : DbContext
             instance.HasOne(i => i.Profile).WithOne(p => p!.EngineInstance!).HasForeignKey<EngineProfile>(p => p.EngineInstanceId).OnDelete(DeleteBehavior.Cascade);
             instance.HasMany(i => i.ManifestEntries).WithOne(m => m!.EngineInstance!).HasForeignKey(m => m.EngineInstanceId).OnDelete(DeleteBehavior.Cascade);
             instance.HasMany(i => i.Commands).WithOne(c => c!.EngineInstance!).HasForeignKey(c => c.EngineInstanceId).OnDelete(DeleteBehavior.Cascade);
+            instance.HasMany(i => i.FlowRuns).WithOne(r => r!.EngineInstance!).HasForeignKey(r => r.EngineInstanceId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 
@@ -176,4 +190,49 @@ internal sealed class CloudDbContext : DbContext
             report.HasIndex(r => r.EngineCommandId);
         });
     }
+
+    private static void ConfigureFlowRun(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<FlowRun>(run =>
+        {
+            run.HasKey(r => r.Id);
+            run.Property(r => r.Kind).HasConversion<string>().HasMaxLength(32);
+            run.Property(r => r.Status).HasConversion<string>().HasMaxLength(32);
+            run.Property(r => r.Relation).HasConversion<string>().HasMaxLength(32);
+            run.Property(r => r.Continuity).HasConversion<string>().HasMaxLength(32);
+            run.Property(r => r.RandomPosition).HasMaxLength(4096);
+            run.HasIndex(r => r.EngineInstanceId);
+            run.HasIndex(r => r.ParentRunId);
+            run.HasOne(r => r.ParentRun).WithMany(p => p!.ChildRuns).HasForeignKey(r => r.ParentRunId).OnDelete(DeleteBehavior.Restrict);
+            run.HasMany(r => r.Interventions).WithOne(i => i!.FlowRun!).HasForeignKey(i => i.FlowRunId).OnDelete(DeleteBehavior.Cascade);
+            run.HasMany(r => r.Gaps).WithOne(g => g!.FlowRun!).HasForeignKey(g => g.FlowRunId).OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureRunIntervention(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<RunIntervention>(intervention =>
+        {
+            intervention.HasKey(i => i.Id);
+            intervention.Property(i => i.PreviousFingerprint).IsRequired().HasMaxLength(64);
+            intervention.Property(i => i.NewFingerprint).IsRequired().HasMaxLength(64);
+            intervention.Property(i => i.Actor).IsRequired().HasMaxLength(128);
+            intervention.Property(i => i.Reason).IsRequired().HasMaxLength(1024);
+            intervention.Property(i => i.ModificationsSummary).HasMaxLength(2048);
+            intervention.Property(i => i.BeforePayloadJson).HasMaxLength(8192);
+            intervention.Property(i => i.AfterPayloadJson).HasMaxLength(8192);
+            intervention.HasIndex(i => i.FlowRunId);
+        });
+    }
+
+    private static void ConfigureRunGap(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<RunGap>(gap =>
+        {
+            gap.HasKey(g => g.Id);
+            gap.Property(g => g.Reason).IsRequired().HasMaxLength(1024);
+            gap.HasIndex(g => g.FlowRunId);
+        });
+    }
 }
+

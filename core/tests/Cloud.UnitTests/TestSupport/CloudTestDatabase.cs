@@ -98,6 +98,32 @@ internal sealed class CloudTestDatabase : IDbContextFactory<CloudDbContext>, IDi
         return new SeededAccount(account.Id, license.Id, user.Id, userName);
     }
 
+    /// <summary>
+    /// Creates an active Engine instance.
+    /// </summary>
+    internal async Task<EngineInstance> SeedEngineInstanceAsync(
+        Guid accountId,
+        Guid licenseId,
+        CancellationToken cancellationToken = default)
+    {
+        using CloudDbContext context = CreateDbContext();
+        var instance = new EngineInstance
+        {
+            Id = Guid.NewGuid(),
+            AccountId = accountId,
+            LicenseId = licenseId,
+            EngineId = $"engine-{Guid.NewGuid():N}",
+            Name = "Test Engine",
+            ApiKeyHash = "fake-hash",
+            Status = EngineInstanceStatus.Active,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+
+        context.EngineInstances.Add(instance);
+        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return instance;
+    }
+
     /// <inheritdoc/>
     public void Dispose()
     {

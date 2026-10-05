@@ -43,4 +43,13 @@ No trading logic accesses `DateTime.UtcNow` or `Environment.TickCount64`. The on
 
 A separate test suite (CI gate) executes a full backtest twice with identical inputs and compares the hash of the serialised trade history. Any difference fails the build. This validates determinism across code changes and .NET updates.
 
+## Reproduction Contract for Diverged Runs
+
+A diverged run (where values were altered mid-flight, or branched from an earlier checkpoint) is not deterministic in the original sense. Its determinism guarantee is:
+
+> **Reproducible by replaying the recorded interventions from the identified base.**
+
+`replay(baseRunId, forkPoint, interventions, childSeed, randomPosition)` reproduces the run exactly. Each segment is deterministic given its own inputs; the composite execution is deterministic given the append-only intervention log and the restored random-sequence position (`CustomizedRandom.CaptureState` / `RestoreState`).
+
 ---
+

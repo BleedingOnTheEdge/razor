@@ -59,4 +59,8 @@ internal sealed class EngineInstance
 
     /// <summary>Gets the commands submitted for the instance.</summary>
     public ICollection<EngineCommand> Commands { get; } = [];
+
+    /// <summary>Gets the flow runs executed on this instance.</summary>
+    public ICollection<FlowRun> FlowRuns { get; } = [];
 }
+
