@@ -133,6 +133,11 @@ internal sealed class EngineHostedService : IHostedService, IDisposable
                     "Credentials not provided. Use --auth=username,password,apikey when running as a service.");
             }
 
+            if (sp.GetRequiredService<Management.Commands.ICommandDispatcher>() is Management.Commands.CommandDispatcher cd)
+            {
+                cd.Initialize();
+            }
+
             var cloudConnectorServices = sp.GetRequiredService<ICloudConnector>();
             await cloudConnectorServices.RunAsync(cancellationToken).ConfigureAwait(false);
         }

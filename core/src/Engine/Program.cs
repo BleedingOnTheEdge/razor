@@ -138,10 +138,12 @@ internal sealed class Program
         catch (OperationCanceledException)
         {
             Log.Information("Engine shutdown requested.");
+            Console.WriteLine("Engine shutdown requested.");
         }
         catch (Exception ex)
         {
             Log.Fatal(ex, "Unhandled exception in Main.");
+            Console.WriteLine($"[FATAL] Unhandled exception in Main: {ex}");
             exitCode = 1;
         }
         finally
@@ -259,6 +261,12 @@ internal sealed class Program
         if (!Credentials.IsAvailable)
         {
             Credentials.PromptForCredentials();
+        }
+
+        // Initialize command dispatcher before running the connector
+        if (serviceProvider.GetRequiredService<Management.Commands.ICommandDispatcher>() is Management.Commands.CommandDispatcher dispatcher)
+        {
+            dispatcher.Initialize();
         }
 
         // Reuse the same cloud connector instance

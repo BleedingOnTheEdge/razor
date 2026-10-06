@@ -22,4 +22,4 @@
         </PackageReference>
     </ItemGroup>
 
-</Project>
+<ItemGroup><InternalsVisibleTo Include="EndToEndTests" /></ItemGroup></Project>
