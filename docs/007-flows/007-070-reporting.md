@@ -75,6 +75,11 @@ renders a formatted report, and that split is deliberate.
 - Progress is reportable while a run is in flight, not only at the end: percent complete for a backtest,
   generation and best fitness for an optimisation, equity and drawdown for live
   (`product:razor/blueprint/product-model/control-monitoring`).
+- **Lineage and Provenance Integrity:**
+  - Every run is reportable with full lineage (`parentRunId`, `relation`, `continuity`, `forkPoint`, `baseSeed`, random sequence position, and intervention log).
+  - **A gapped run must never emit whole-looking numbers.** Aggregates over a run with known gaps are marked `partial`, and gap ranges and reasons are explicitly named in the report.
+  - Headline figures (net profit, return, Sharpe, drawdown) are suppressed or flagged as partial over known gaps, never whole.
+  - Diverged runs (`Branched`, `Spliced`) and `Gapped` runs are flagged in rankings, benchmarks, and "best result" selection; a spliced outcome is never silently ranked against a clean run as equivalent.
 
 ## Failure Modes
 

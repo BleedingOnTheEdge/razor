@@ -81,13 +81,43 @@ is recorded rather than hidden. **A gapped run must never emit whole-looking num
 - `product:razor/blueprint/product-model/user-workflows` shows mid-flight gene injection to a live
   strategy is an intended workflow, which is why an intervened run cannot be treated as an anomaly.
 
-**Not recorded in `docs/`:** the recording rule itself. No document in the tree states that a gap or an
-override must be *recorded rather than hidden*, and no document states that a gapped run must not emit
-whole-looking numbers. Provenance is documented as something the Cloud stores; what an intervention must
-do to a report is not. The specific provenance of a mid-flight `InjectGenes` - what is recorded, and how a
-user sees that a run was overridden - is likewise undocumented.
+## Lineage Model and Recording Rules
+
+### Two Orthogonal Axes
+
+The relationship between a child run and its parent is recorded on two orthogonal axes:
+
+1. **Relation** — how the child relates to the parent:
+   - `Appended`: The child continues the parent without change. The parent's results stand.
+   - `Branched`: The child starts afresh from a point in the past; the parent is preserved in full and both remain reportable.
+   - `Spliced`: The child replaces the parent's suffix from the fork point. The timeline is the join of the two.
+2. **Continuity** — whether the resulting timeline has holes:
+   - `Contiguous`: No gap; the child picks up where the parent was interrupted.
+   - `Gapped`: A known period is not covered. The gap range and its required reason are recorded.
+
+An original run records `parentRunId = null` and no lineage relation/continuity/fork/seed fields. A child run records `parentRunId`, `relation`, `continuity`, `forkPoint` (step/generation and window index where relevant), `baseSeed`, the random-sequence position at the fork, and intervention references.
+
+### Intervention Log
+
+Append-only. Setting a checkpoint requires a reason and records:
+- the step or generation affected;
+- what changed (before and after payloads or diffs);
+- who made the change (actor) and when (timestamp);
+- why (the required reason).
+
+### Reproduction Contract
+
+A diverged run is reproducible by replaying the recorded interventions from the identified base:
+`replay(baseRunId, forkPoint, interventions, childSeed, randomPosition)`.
+Given its own inputs, each segment is deterministic; given the intervention log, the composite run reproduces identically.
+
+### Reporting and Comparability Rules
+
+1. **A gapped run must never emit whole-looking numbers.** Aggregates computed over a run with a known gap are marked **partial**, and the gap range and reason are explicitly named in the report.
+2. **Headline figures** (net profit, return, Sharpe ratio, maximum drawdown) over a known gap are suppressed or explicitly flagged as partial, never presented as whole.
+3. **Reportable is not the same as comparable.** A diverged run is always reportable with its provenance shown, but `Branched`/`Spliced` runs — and any `Gapped` run — are **flagged in rankings, benchmarks and "best result" selection**, so a spliced outcome is never silently ranked against a clean run as if equivalent.
 
 ## Alternatives Considered
 
-Not recorded. No document weighs hiding an intervention, restarting a run instead of resuming it, or
-reporting a gapped run as if it were whole.
+Not recorded. No document weighs hiding an intervention, restarting a run instead of resuming it, or reporting a gapped run as if it were whole.
+
