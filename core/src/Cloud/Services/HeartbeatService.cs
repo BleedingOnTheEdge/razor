@@ -53,10 +53,8 @@ internal sealed class HeartbeatService(
             .FirstOrDefaultAsync(i => i.Id == instanceId, cancellationToken)
             .ConfigureAwait(false);
 
-        string debugFile = @"d:\Work\Projects\BleedingOnTheEdge\razor\debug_heartbeat.txt";
         if (instance is null)
         {
-            await System.IO.File.AppendAllTextAsync(debugFile, $"[TRACE] null instance\n", cancellationToken).ConfigureAwait(false);
             return new HeartbeatOutcome(
                 CloudProtocol.HeartbeatStatus.Lock,
                 AuthValid: false,
@@ -66,7 +64,6 @@ internal sealed class HeartbeatService(
 
         if (!string.Equals(instance.EngineId, reportedEngineId, StringComparison.Ordinal))
         {
-            await System.IO.File.AppendAllTextAsync(debugFile, $"[TRACE] mismatch: '{instance.EngineId}' vs '{reportedEngineId}'\n", cancellationToken).ConfigureAwait(false);
             return new HeartbeatOutcome(
                 CloudProtocol.HeartbeatStatus.Lock,
                 AuthValid: false,
@@ -79,7 +76,6 @@ internal sealed class HeartbeatService(
         instance.LastSeenAt = now;
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-        await System.IO.File.AppendAllTextAsync(debugFile, $"[TRACE] returning true\n", cancellationToken).ConfigureAwait(false);
         return new HeartbeatOutcome(
             InstanceHealthPolicy.Evaluate(instance, instance.License, now),
             AuthValid: true,
