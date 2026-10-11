@@ -265,8 +265,12 @@ internal sealed class CloudDbContext : DbContext
         {
             acq.HasKey(a => a.Id);
             acq.Property(a => a.LicenseKey).IsRequired().HasMaxLength(128);
+            acq.HasIndex(a => a.LicenseKey).IsUnique();
+            acq.HasIndex(a => a.AccountId);
+            acq.HasIndex(a => a.EngineInstanceId);
             acq.HasIndex(a => new { a.MarketplaceItemId, a.AccountId }).IsUnique();
             acq.HasOne(a => a.Account).WithMany().HasForeignKey(a => a.AccountId).OnDelete(DeleteBehavior.Cascade);
+            acq.HasOne(a => a.EngineInstance).WithMany().HasForeignKey(a => a.EngineInstanceId).OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

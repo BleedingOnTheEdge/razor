@@ -656,6 +656,14 @@ public sealed class CloudExtendedEndpointsTests
         Assert.Single(list);
         Assert.Equal(acq.Id, list[0].Id);
 
+        // Acquire item bound to an engine instance
+        SeededAccount account2 = await factory.Database.SeedAccountAsync("operator2").ConfigureAwait(true);
+        EngineInstance seededEngine = await factory.Database.SeedEngineInstanceAsync(account2.AccountId, account2.LicenseId).ConfigureAwait(true);
+        MarketplaceAcquisition? acqWithInstance = await marketplace.AcquireItemAsync(item.Id, account2.AccountId, seededEngine.Id).ConfigureAwait(true);
+        Assert.NotNull(acqWithInstance);
+        Assert.Equal(seededEngine.Id, acqWithInstance.EngineInstanceId);
+        Assert.False(string.IsNullOrEmpty(acqWithInstance.LicenseKey));
+
         // Filter queries
         IReadOnlyList<MarketplaceItem> curated = await marketplace.SearchItemsAsync(kind: ExtensionKind.Strategy, isCurated: true).ConfigureAwait(true);
         Assert.Empty(curated);

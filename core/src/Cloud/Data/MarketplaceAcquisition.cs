@@ -29,6 +29,9 @@ internal sealed class MarketplaceAcquisition
     /// <summary>Gets or sets the optional target instance to which the extension is deployed.</summary>
     public Guid? EngineInstanceId { get; set; }
 
+    /// <summary>Gets or sets the optional target engine instance.</summary>
+    public EngineInstance? EngineInstance { get; set; }
+
     /// <summary>Gets or sets the issued licence key or permission token.</summary>
     public string LicenseKey { get; set; } = string.Empty;
 

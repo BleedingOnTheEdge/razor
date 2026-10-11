@@ -57,6 +57,12 @@ internal static class ManagementApiKeyMiddleware
         {
             ArgumentNullException.ThrowIfNull(context);
 
+            if (HttpMethods.IsOptions(context.Request.Method))
+            {
+                await next(context).ConfigureAwait(false);
+                return;
+            }
+
             if (!context.Request.Path.StartsWithSegments(ProtectedPrefix, StringComparison.Ordinal) || IsAuthorised(context, expectedKey))
             {
                 await next(context).ConfigureAwait(false);

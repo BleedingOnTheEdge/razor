@@ -621,6 +621,22 @@ public sealed class CloudApiEndpointTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    [Fact]
+    public async Task OptionsPreflightRequestSucceedsWithCorsHeadersWithoutApiKey()
+    {
+        using var factory = new CloudWebApplicationFactory();
+        using HttpClient client = factory.CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Options, Relative("/api/instances"));
+        request.Headers.Add("Origin", "http://localhost:5173");
+        request.Headers.Add("Access-Control-Request-Method", "GET");
+
+        using HttpResponseMessage response = await client.SendAsync(request).ConfigureAwait(true);
+
+        Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.True(response.Headers.Contains("Access-Control-Allow-Origin"));
+    }
+
     private static CloudOptions TestOptions()
     {
         return new CloudOptions { ConnectionString = "unused", ManagementApiKey = "test-key" };
