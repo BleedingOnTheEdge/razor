@@ -405,6 +405,11 @@ internal sealed class EngineSession : IDisposable
 
         CloudLog.HeartbeatReceived(_logger, reportedEngineId ?? string.Empty, outcome.Status);
 
+        if (outcome.AuthValid)
+        {
+            await SendPendingCommandsAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         // A false AuthValid tells the Engine to stop its user tasks; the session is then closed so that the
         // Engine's retry loop re-authenticates instead of continuing on a session Cloud no longer trusts.
         return outcome.AuthValid ? EngineSessionSignal.Continue : EngineSessionSignal.Close;

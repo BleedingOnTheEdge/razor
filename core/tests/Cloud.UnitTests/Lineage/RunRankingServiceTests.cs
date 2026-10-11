@@ -65,7 +65,7 @@ public sealed class RunRankingServiceTests
         var branched = new FlowRun { Id = Guid.NewGuid(), NetProfit = 500m, Relation = RunRelation.Branched };
         var gappedOnly = new FlowRun { Id = Guid.NewGuid(), NetProfit = 800m, Continuity = RunContinuity.Gapped, Relation = null };
         var branchedAndGapped = new FlowRun { Id = Guid.NewGuid(), NetProfit = 900m, Continuity = RunContinuity.Gapped, Relation = RunRelation.Spliced };
-        
+
         var runs = new[] { clean, branched, gappedOnly, branchedAndGapped };
 
         // Act
@@ -73,7 +73,7 @@ public sealed class RunRankingServiceTests
 
         // Assert
         Assert.Equal(4, rankings.Count);
-        
+
         // 900
         Assert.Equal(branchedAndGapped.Id, rankings[0].RunId);
         Assert.True(rankings[0].IsDiverged);
@@ -134,5 +134,15 @@ public sealed class RunRankingServiceTests
         Assert.Equal(branched.Id, bestOverall.RunId);
         Assert.True(bestOverall.IsDiverged);
         Assert.Equal("Branched", bestOverall.DivergenceFlag);
+
+        // Empty runs returns null
+        Assert.Null(_sut.SelectBestResult([], RankingMetric.SharpeRatio));
+
+        // Pure gapped run without relation returns "Gapped" flag
+        var gappedOnly = new FlowRun { Id = Guid.NewGuid(), Relation = null, Continuity = RunContinuity.Gapped, SharpeRatio = 3.0 };
+        var bestGapped = _sut.SelectBestResult([gappedOnly], RankingMetric.SharpeRatio, allowDiverged: true);
+        Assert.NotNull(bestGapped);
+        Assert.Equal("Gapped", bestGapped.DivergenceFlag);
     }
 }
+

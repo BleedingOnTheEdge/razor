@@ -338,4 +338,4 @@ Tests for Kernel and Engine components will be added in future releases.
 
 ---
 
-*This README is intended for Razor core developers and system administrators. For extension development, see the [Sdk README](src/Sdk/README.md).*
+*This README is intended for Razor core developers and system administrators. For extension development, see the [Sdk README](../Sdk/README.md).*

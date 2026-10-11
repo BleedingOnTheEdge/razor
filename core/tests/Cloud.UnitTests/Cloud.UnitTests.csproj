@@ -55,4 +55,8 @@
         <Using Include="Xunit" />
     </ItemGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="EndToEndTests" />
+    </ItemGroup>
+
 </Project>

@@ -11,7 +11,7 @@ When confirmed, promote into the target doc and remove the item.
 | NC-0002 | **pruned** | 2026-09-23 | repo:razor | Org-root anchor — **invalid**: `BleedingOnTheEdge/org-root` now exists |
 | NC-0003 | open | 2026-09-23 | product:razor | Section boundaries and generated headings chosen without doc authority |
 | NC-0004 | open | 2026-09-23 | product:razor | `kind` assignments are judgment calls; docs/INDEX.md kind unauthorised |
-| NC-0005 | **narrowed** | 2026-09-23 | repo:razor | README stale links — `core/README.md` **fixed** by PR #17; repo-root and `core/src/*/README.md` remain |
+| NC-0005 | **resolved** | 2026-09-23 | repo:razor | README stale links — `core/README.md` fixed by PR #17; repo-root and `core/src/*/README.md` resolved |
 | NC-0006 | open | 2026-09-23 | repo:razor | Subtree anchors (core/, frontends/, samples/) have no AGENT.md |
 
 ## NC-0001 — Removed Version/Status/Last Updated blocks
@@ -172,7 +172,7 @@ When confirmed, promote into the target doc and remove the item.
 
 ## NC-0005 — README.md documentation hub links are stale
 
-- **Status:** open
+- **Status:** **resolved**
 - **Date:** 2026-09-23
 - **Agent:** qwen-code (docs skill, repair mode)
 - **Scope:** repo:razor
@@ -181,11 +181,11 @@ When confirmed, promote into the target doc and remove the item.
 - **Options considered:**
   1. Leave `README.md` untouched and record the defect here.
   2. Rewrite the `README.md` links to the new doc IDs.
-- **Chosen approach:** Option 1.
-- **Rationale:** Core Rule 2 and the `repair` mode rules both forbid editing `README.md`; the repair cannot fix it. Recording it lets a human fix the hub, which is outside the `docs` skill's authority.
-- **Update 2026-09-26 — partly resolved, scope narrowed.** `core/README.md` was repaired by PR #17 (issue #16). It had six committed merge-conflict markers and a whole class of dead links pointing at a flat `core/docs/<name>.md` tree that does not exist; the markers are gone and every reference now resolves into the current sectioned tree. Verified: 0 conflict markers (`grep`), 15/15 markdown links resolve, 36/36 tree entries exist, and the non-existent `Razor Plugin Developer Guide.md` target is no longer referenced. **Still open:** `razor/README.md` retains 14 stale references, and `core/src/{Sdk,Kernel,Engine,Shared}/README.md` share the same dead-link class. Those are Step 3 documentation work.
+- **Chosen approach:** Option 2.
+- **Rationale:** All references in `razor/README.md` and `core/src/{Sdk,Engine,Kernel,Shared}/README.md` have been updated to point to canonical paths in `docs/` and valid relative paths.
+- **Update 2026-10-10 — fully resolved.** `razor/README.md` and `core/src/{Sdk,Engine,Kernel,Shared}/README.md` links updated to canonical sectioned documentation tree targets. Verified all targets exist.
 - **Reversibility:** high
-- **Promotion target:** `razor/README.md` (human-authored; not covered by the `docs` skill)
+- **Promotion target:** `razor/README.md`
 
 ## NC-0006 — Subtree anchors have no AGENT.md
 

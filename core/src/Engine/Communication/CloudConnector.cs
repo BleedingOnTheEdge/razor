@@ -686,6 +686,7 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
 
         _logAuthenticated(_logger, _sessionId, null);
         Console.WriteLine($"Authenticated. Session ID: {_sessionId}");
+        _isConnected = true;
         await _stateManager.SetSessionIdAsync(_sessionId, cancellationToken).ConfigureAwait(false);
     }
 

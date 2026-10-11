@@ -67,7 +67,7 @@ public sealed class RunReportServiceTests
         Assert.False(report.IsComparable);
         Assert.True(report.IsDiverged);
         Assert.Equal("Branched", report.DivergenceFlag);
-        
+
         // Headline figures are NOT suppressed for diverged-but-contiguous runs
         Assert.False(report.HeadlineFiguresSuppressed);
         Assert.NotNull(report.Aggregates);
@@ -107,7 +107,7 @@ public sealed class RunReportServiceTests
         Assert.NotNull(report.Aggregates);
         Assert.Null(report.Aggregates.NetProfit);
         Assert.Equal(10, report.Aggregates.TradeCount);
-        
+
         Assert.NotNull(report.WarningMessage);
         Assert.Contains("suppressed because the run contains known gaps", report.WarningMessage, StringComparison.Ordinal);
         Assert.Contains("Data feed failure", report.WarningMessage, StringComparison.Ordinal);
@@ -166,4 +166,25 @@ public sealed class RunReportServiceTests
         Assert.Equal("manual fix", report.Interventions[0].Reason);
         Assert.Equal("{}", report.Interventions[0].BeforePayloadJson);
     }
+
+    [Fact]
+    public void GenerateReport_BoundaryPath_NullGapsAndInterventions_DoesNotThrow()
+    {
+        var run = new FlowRun
+        {
+            Id = Guid.NewGuid(),
+            Relation = RunRelation.Spliced,
+            Continuity = RunContinuity.Contiguous,
+            IsPartial = false,
+            Gaps = null!,
+            Interventions = null!
+        };
+
+        RunReport report = _sut.GenerateReport(run);
+        Assert.True(report.IsDiverged);
+        Assert.Equal("Spliced", report.DivergenceFlag);
+        Assert.Empty(report.Gaps);
+        Assert.Empty(report.Interventions);
+    }
 }
+
