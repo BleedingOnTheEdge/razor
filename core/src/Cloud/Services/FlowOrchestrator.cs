@@ -7,6 +7,7 @@
 namespace Cloud.Services;
 
 using Cloud.Data;
+using Cloud.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -22,7 +23,8 @@ internal sealed partial class FlowOrchestrator(
     IDbContextFactory<CloudDbContext> contextFactory,
     LineageService lineageService,
     TimeProvider timeProvider,
-    ILogger<FlowOrchestrator> logger)
+    ILogger<FlowOrchestrator> logger,
+    IClientEventBroadcaster? eventBroadcaster = null)
 {
     /// <summary>
     /// Starts a new original flow run.
@@ -53,6 +55,13 @@ internal sealed partial class FlowOrchestrator(
             run.BaseSeed = baseSeed;
         }
 
+        if (eventBroadcaster is not null)
+        {
+            await eventBroadcaster.PublishAsync(
+                new ClientEvent("run_status", instanceId, run.Id, null, timeProvider.GetUtcNow(), new { Status = run.Status, Kind = run.Kind }),
+                cancellationToken).ConfigureAwait(false);
+        }
+
         return run;
     }
 
@@ -76,6 +85,14 @@ internal sealed partial class FlowOrchestrator(
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         LogPausedRun(runId);
+
+        if (eventBroadcaster is not null)
+        {
+            await eventBroadcaster.PublishAsync(
+                new ClientEvent("run_status", run.EngineInstanceId, run.Id, null, timeProvider.GetUtcNow(), new { Status = run.Status }),
+                cancellationToken).ConfigureAwait(false);
+        }
+
         return run;
     }
 
@@ -141,6 +158,13 @@ internal sealed partial class FlowOrchestrator(
 
         LogResumedWithIntervention(runId, child.Id, intervention.Reason);
 
+        if (eventBroadcaster is not null)
+        {
+            await eventBroadcaster.PublishAsync(
+                new ClientEvent("run_status", child.EngineInstanceId, child.Id, null, timeProvider.GetUtcNow(), new { Status = child.Status, Relation = child.Relation, Continuity = child.Continuity }),
+                cancellationToken).ConfigureAwait(false);
+        }
+
         return child;
     }
 
@@ -200,6 +224,14 @@ internal sealed partial class FlowOrchestrator(
         }
 
         LogBranchedFromCheckpoint(parentRunId, child.Id);
+
+        if (eventBroadcaster is not null)
+        {
+            await eventBroadcaster.PublishAsync(
+                new ClientEvent("run_status", child.EngineInstanceId, child.Id, null, timeProvider.GetUtcNow(), new { Status = child.Status, Relation = child.Relation, Continuity = child.Continuity }),
+                cancellationToken).ConfigureAwait(false);
+        }
+
         return child;
     }
 
@@ -236,6 +268,14 @@ internal sealed partial class FlowOrchestrator(
 
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         LogCompletedRun(runId);
+
+        if (eventBroadcaster is not null)
+        {
+            await eventBroadcaster.PublishAsync(
+                new ClientEvent("run_status", run.EngineInstanceId, run.Id, null, now, new { Status = run.Status, Metrics = metrics }),
+                cancellationToken).ConfigureAwait(false);
+        }
+
         return run;
     }
 

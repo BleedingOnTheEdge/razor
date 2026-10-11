@@ -334,6 +334,33 @@ internal sealed class CommandService(
             .ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Lists all commands submitted for an instance.
+    /// </summary>
+    /// <param name="instanceId">The instance identifier.</param>
+    /// <param name="status">Optional status filter.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The commands for the instance.</returns>
+    internal async Task<IReadOnlyList<EngineCommand>> ListForInstanceAsync(
+        Guid instanceId,
+        CommandStatus? status = null,
+        CancellationToken cancellationToken = default)
+    {
+        using CloudDbContext db = contextFactory.CreateDbContext();
+
+        IQueryable<EngineCommand> query = db.EngineCommands
+            .Include(c => c.ProgressReports)
+            .Where(c => c.EngineInstanceId == instanceId);
+
+        if (status is CommandStatus s)
+        {
+            query = query.Where(c => c.Status == s);
+        }
+
+        List<EngineCommand> commands = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
+        return [.. commands.OrderByDescending(c => c.SubmittedAt)];
+    }
+
     private static bool IsJsonObject(string json)
     {
         try

@@ -8,6 +8,7 @@ namespace Cloud.Engine;
 
 using System.Security.Cryptography;
 using System.Text.Json;
+using Cloud.Events;
 using Cloud.Protocol;
 using Cloud.Services;
 using Microsoft.Extensions.Logging;
@@ -56,6 +57,7 @@ internal sealed class EngineSession : IDisposable
     private readonly CommandService _commands;
     private readonly CloudOptions _options;
     private readonly TimeProvider _timeProvider;
+    private readonly IClientEventBroadcaster? _eventBroadcaster;
     private readonly ILogger<EngineSession> _logger;
 
     private SessionCipher? _cipher;
@@ -75,6 +77,7 @@ internal sealed class EngineSession : IDisposable
     /// <param name="options">The Cloud options.</param>
     /// <param name="timeProvider">The clock.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="eventBroadcaster">Optional client event broadcaster for real-time frontend streaming.</param>
     /// <remarks>
     /// The constructor is <c>public</c> because <c>EngineSocketHandler</c> builds a session per connection
     /// through <c>ActivatorUtilities</c>, which — like the service container — only considers public
@@ -90,7 +93,8 @@ internal sealed class EngineSession : IDisposable
         CommandService commands,
         CloudOptions options,
         TimeProvider timeProvider,
-        ILogger<EngineSession> logger)
+        ILogger<EngineSession> logger,
+        IClientEventBroadcaster? eventBroadcaster = null)
     {
         _channel = channel;
         _authentication = authentication;
@@ -101,6 +105,7 @@ internal sealed class EngineSession : IDisposable
         _options = options;
         _timeProvider = timeProvider;
         _logger = logger;
+        _eventBroadcaster = eventBroadcaster;
     }
 
     /// <summary>Gets the Cloud-side identifier of the authenticated instance.</summary>
@@ -405,6 +410,19 @@ internal sealed class EngineSession : IDisposable
 
         CloudLog.HeartbeatReceived(_logger, reportedEngineId ?? string.Empty, outcome.Status);
 
+        if (_eventBroadcaster is not null)
+        {
+            await _eventBroadcaster.PublishAsync(
+                new ClientEvent(
+                    "engine_heartbeat",
+                    instanceId,
+                    null,
+                    null,
+                    outcome.ServerTime,
+                    new { EngineId = reportedEngineId, Status = outcome.Status, AuthValid = outcome.AuthValid }),
+                cancellationToken).ConfigureAwait(false);
+        }
+
         if (outcome.AuthValid)
         {
             await SendPendingCommandsAsync(cancellationToken).ConfigureAwait(false);
@@ -433,6 +451,19 @@ internal sealed class EngineSession : IDisposable
         if (!recorded)
         {
             CloudLog.ReportNotApplied(_logger, correlationId, message.MessageType);
+        }
+
+        if (_eventBroadcaster is not null)
+        {
+            await _eventBroadcaster.PublishAsync(
+                new ClientEvent(
+                    "command_progress",
+                    InstanceId!.Value,
+                    null,
+                    correlationId,
+                    _timeProvider.GetUtcNow(),
+                    payload),
+                cancellationToken).ConfigureAwait(false);
         }
 
         return EngineSessionSignal.Continue;
@@ -472,6 +503,19 @@ internal sealed class EngineSession : IDisposable
             CloudLog.ReportNotApplied(_logger, correlationId, message.MessageType);
         }
 
+        if (_eventBroadcaster is not null)
+        {
+            await _eventBroadcaster.PublishAsync(
+                new ClientEvent(
+                    "command_completed",
+                    InstanceId!.Value,
+                    null,
+                    correlationId,
+                    _timeProvider.GetUtcNow(),
+                    new { Status = status, Succeeded = succeeded, Payload = payload }),
+                cancellationToken).ConfigureAwait(false);
+        }
+
         return EngineSessionSignal.Continue;
     }
 
@@ -495,6 +539,19 @@ internal sealed class EngineSession : IDisposable
         }
 
         CloudLog.ManifestApplied(_logger, instanceId, stored.Value);
+
+        if (_eventBroadcaster is not null)
+        {
+            await _eventBroadcaster.PublishAsync(
+                new ClientEvent(
+                    "manifest_updated",
+                    instanceId,
+                    null,
+                    null,
+                    _timeProvider.GetUtcNow(),
+                    report),
+                cancellationToken).ConfigureAwait(false);
+        }
 
         // 002-030-090 §10.3 step 10: the manifest arrives, and Cloud answers with the user's active set. That
         // set is applied by an ActivateExtensions command, which is queued here and written immediately.

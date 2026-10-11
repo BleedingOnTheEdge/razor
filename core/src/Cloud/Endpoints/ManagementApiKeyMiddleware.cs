@@ -74,14 +74,26 @@ internal static class ManagementApiKeyMiddleware
             return false;
         }
 
-        if (!context.Request.Headers.TryGetValue(HeaderName, out Microsoft.Extensions.Primitives.StringValues provided)
-            || provided.Count == 0
-            || provided[0] is not string providedKey
-            || providedKey.Length == 0)
+        string? candidateKey = null;
+
+        if (context.Request.Headers.TryGetValue(HeaderName, out Microsoft.Extensions.Primitives.StringValues headerVal)
+            && headerVal.Count > 0
+            && !string.IsNullOrEmpty(headerVal[0]))
+        {
+            candidateKey = headerVal[0];
+        }
+        else if (context.Request.Query.TryGetValue("apiKey", out Microsoft.Extensions.Primitives.StringValues queryVal)
+                 && queryVal.Count > 0
+                 && !string.IsNullOrEmpty(queryVal[0]))
+        {
+            candidateKey = queryVal[0];
+        }
+
+        if (candidateKey is null)
         {
             return false;
         }
 
-        return CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(providedKey), expectedKey);
+        return CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(candidateKey), expectedKey);
     }
 }

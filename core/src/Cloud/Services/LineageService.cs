@@ -314,6 +314,148 @@ internal sealed partial class LineageService(
             .ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Lists all flow runs for an engine instance.
+    /// </summary>
+    /// <param name="instanceId">The engine instance identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The flow runs for the instance.</returns>
+    public async Task<IReadOnlyList<FlowRun>> GetRunsForInstanceAsync(Guid instanceId, CancellationToken cancellationToken = default)
+    {
+        using CloudDbContext db = contextFactory.CreateDbContext();
+        List<FlowRun> runs = await db.FlowRuns
+            .Include(r => r.Interventions)
+            .Include(r => r.Gaps)
+            .Where(r => r.EngineInstanceId == instanceId)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return [.. runs.OrderByDescending(r => r.CreatedAt)];
+    }
+
+    /// <summary>
+    /// Retrieves the ordered intervention log for a flow run.
+    /// </summary>
+    /// <param name="runId">The flow run identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The interventions recorded for the run.</returns>
+    public async Task<IReadOnlyList<RunIntervention>> GetInterventionsAsync(Guid runId, CancellationToken cancellationToken = default)
+    {
+        using CloudDbContext db = contextFactory.CreateDbContext();
+        List<RunIntervention> list = await db.RunInterventions
+            .Where(i => i.FlowRunId == runId)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return [.. list.OrderBy(i => i.StepIndex).ThenBy(i => i.Timestamp)];
+    }
+
+    /// <summary>
+    /// Retrieves the known gaps for a flow run.
+    /// </summary>
+    /// <param name="runId">The flow run identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The gaps recorded for the run.</returns>
+    public async Task<IReadOnlyList<RunGap>> GetGapsAsync(Guid runId, CancellationToken cancellationToken = default)
+    {
+        using CloudDbContext db = contextFactory.CreateDbContext();
+        return await db.RunGaps
+            .Where(g => g.FlowRunId == runId)
+            .OrderBy(g => g.StartStep)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Reconstructs the complete lineage hierarchy tree rooted at or containing the specified run.
+    /// </summary>
+    /// <param name="runId">The flow run identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The root node of the lineage tree, or <see langword="null"/> if the run was not found.</returns>
+    public async Task<LineageNode?> GetLineageTreeAsync(Guid runId, CancellationToken cancellationToken = default)
+    {
+        using CloudDbContext db = contextFactory.CreateDbContext();
+
+        FlowRun? current = await db.FlowRuns
+            .Include(r => r.Interventions)
+            .Include(r => r.Gaps)
+            .FirstOrDefaultAsync(r => r.Id == runId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (current == null)
+        {
+            return null;
+        }
+
+        // Trace to root run
+        FlowRun root = current;
+        while (root.ParentRunId is Guid parentId)
+        {
+            FlowRun? parent = await db.FlowRuns
+                .Include(r => r.Interventions)
+                .Include(r => r.Gaps)
+                .FirstOrDefaultAsync(r => r.Id == parentId, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (parent == null)
+            {
+                break;
+            }
+
+            root = parent;
+        }
+
+        List<FlowRun> allRuns = await db.FlowRuns
+            .Include(r => r.Interventions)
+            .Include(r => r.Gaps)
+            .Where(r => r.EngineInstanceId == root.EngineInstanceId)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return BuildNode(root, allRuns);
+    }
+
+    private static LineageNode BuildNode(FlowRun run, List<FlowRun> allRuns)
+    {
+        var childRuns = allRuns.Where(r => r.ParentRunId == run.Id).ToList();
+        var childNodes = childRuns.Select(c => BuildNode(c, allRuns)).ToList();
+
+        var interventions = run.Interventions?
+            .Select(i => new InterventionSpecification(
+                i.StepIndex,
+                i.PreviousFingerprint,
+                i.NewFingerprint,
+                i.Actor,
+                i.Reason,
+                i.ModificationsSummary,
+                i.BeforePayloadJson,
+                i.AfterPayloadJson))
+            .ToList() ?? [];
+
+        var gaps = run.Gaps?
+            .Select(g => new ReportGapDetail(g.StartStep, g.EndStep, g.Reason))
+            .ToList() ?? [];
+
+        var forkPoint = (run.ForkPointStep.HasValue || run.ForkPointGeneration.HasValue || run.ForkPointWindowIndex.HasValue)
+            ? new ForkPoint(run.ForkPointStep, run.ForkPointGeneration, run.ForkPointWindowIndex)
+            : null;
+
+        return new LineageNode(
+            run.Id,
+            run.ParentRunId,
+            run.Kind,
+            run.Status,
+            run.Relation,
+            run.Continuity,
+            forkPoint,
+            run.BaseSeed,
+            run.RandomPosition,
+            run.IsPartial,
+            interventions,
+            gaps,
+            childNodes);
+    }
+
     [LoggerMessage(Level = LogLevel.Information, Message = "Created original flow run {RunId} of kind {Kind}")]
     private partial void LogCreatedOriginalRun(Guid runId, RunKind kind);
 

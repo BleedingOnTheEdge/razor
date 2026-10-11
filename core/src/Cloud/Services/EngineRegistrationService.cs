@@ -128,4 +128,30 @@ internal sealed class EngineRegistrationService(
 
         return new RegistrationOutcome(ServiceStatus.Succeeded, null, instance, apiKey);
     }
+
+    /// <summary>
+    /// Lists registered instances, optionally filtered by account.
+    /// </summary>
+    /// <param name="accountId">Optional account filter.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The registered instances.</returns>
+    internal async Task<IReadOnlyList<EngineInstance>> ListAsync(
+        Guid? accountId = null,
+        CancellationToken cancellationToken = default)
+    {
+        using CloudDbContext db = contextFactory.CreateDbContext();
+
+        IQueryable<EngineInstance> query = db.EngineInstances
+            .Include(i => i.Profile)
+                .ThenInclude(p => p!.Selections)
+            .Include(i => i.ManifestEntries);
+
+        if (accountId is Guid accId)
+        {
+            query = query.Where(i => i.AccountId == accId);
+        }
+
+        List<EngineInstance> instances = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
+        return [.. instances.OrderBy(i => i.Name)];
+    }
 }
