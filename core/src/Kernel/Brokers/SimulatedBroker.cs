@@ -127,6 +127,11 @@ public sealed class SimulatedBroker : IBroker
             {
                 UpdatePositions(symbol, tick.Bid, tick.Ask);
             }
+            else
+            {
+                _marginUsed = 0;
+                _equity = _balance;
+            }
 
             InvokeEquityUpdatedHook();
         }
@@ -687,6 +692,18 @@ public sealed class SimulatedBroker : IBroker
         historyRecord.ReturnPct = marginReq > 0 ? historyRecord.Profit / marginReq : 0;
         _history.Add(historyRecord);
 
+        double releasedMargin = marginReq * conversionRate;
+        _marginUsed = Math.Max(0, _marginUsed - releasedMargin);
+        if (_positions.Count == 0)
+        {
+            _marginUsed = 0;
+            _equity = _balance;
+        }
+        else
+        {
+            _equity = _balance + _positions.Sum(pos => pos.Profit);
+        }
+
         _messageBus?.Publish(new OrderExecutedEvent
         {
             Symbol = historyRecord.Symbol,
@@ -882,7 +899,14 @@ public sealed class SimulatedBroker : IBroker
 
     private bool InvokeOrderValidationFilter(AdapterOrderRequest request, out AdapterOrderRequest filtered, out string? reason)
     {
-        var entries = ((FilterRegistration<AdapterOrderRequest>)_hooks!.OnOrderValidation).Entries;
+        if (_hooks?.OnOrderValidation == null)
+        {
+            filtered = request;
+            reason = null;
+            return true;
+        }
+
+        var entries = ((FilterRegistration<AdapterOrderRequest>)_hooks.OnOrderValidation).Entries;
         var ctx = new BacktestContext(_clock, new Tick(), 0, 0, _equity, _balance, 0, this, null!, new List<Position>(),
             "backtest.order.validation");
         var result = HookInvoker.InvokeFilterChain(entries, request, ctx);
@@ -893,7 +917,14 @@ public sealed class SimulatedBroker : IBroker
 
     private bool InvokeOrderBeforeExecuteFilter(AdapterOrderRequest request, out AdapterOrderRequest filtered, out string? reason)
     {
-        var entries = ((FilterRegistration<AdapterOrderRequest>)_hooks!.OnOrderBeforeExecute).Entries;
+        if (_hooks?.OnOrderBeforeExecute == null)
+        {
+            filtered = request;
+            reason = null;
+            return true;
+        }
+
+        var entries = ((FilterRegistration<AdapterOrderRequest>)_hooks.OnOrderBeforeExecute).Entries;
         var ctx = new BacktestContext(_clock, new Tick(), 0, 0, _equity, _balance, 0, this, null!, new List<Position>(),
             "backtest.order.before_execute");
         var result = HookInvoker.InvokeFilterChain(entries, request, ctx);
@@ -904,7 +935,12 @@ public sealed class SimulatedBroker : IBroker
 
     private void InvokeOrderAfterExecuteHook(AdapterOrderRequest request, AdapterOrderResponse response)
     {
-        var entries = ((ActionRegistration<(AdapterOrderRequest, AdapterOrderResponse)>)_hooks!.OnOrderAfterExecute).Entries;
+        if (_hooks?.OnOrderAfterExecute == null)
+        {
+            return;
+        }
+
+        var entries = ((ActionRegistration<(AdapterOrderRequest, AdapterOrderResponse)>)_hooks.OnOrderAfterExecute).Entries;
         var ctx = new BacktestContext(_clock, new Tick(), 0, 0, _equity, _balance, 0, this, null!, new List<Position>(),
             "backtest.order.after_execute");
         HookInvoker.InvokeActionChain(entries, (request, response), ctx);

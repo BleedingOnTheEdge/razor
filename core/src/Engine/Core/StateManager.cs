@@ -93,7 +93,11 @@ internal sealed class StateManager : IStateManager, IDisposable
 {
     private readonly string _databasePath;
     private readonly SemaphoreSlim _lock = new(1, 1);
-    private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
+    private readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        WriteIndented = true,
+        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals
+    };
     private string _engineId = string.Empty;
 
     /// <inheritdoc/>
