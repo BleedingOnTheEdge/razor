@@ -10,14 +10,17 @@ keywords:
   - specification schema
   - extension developer guide
   - public API
+  - lineage
+  - reproduction
 ---
 
 # Razor Contracts
 
-The interfaces Razor exposes and depends on: the configuration data contract and the public
-extension API.
+The interfaces Razor exposes and depends on: the configuration data contract, the public
+extension API, and the lineage and reproduction contract.
 
 | ID | Purpose | Domains | Flows | Code |
 |---|---|---|---|---|
 | product:razor/contracts/configuration-reference | Every configuration object, enum and data contract that controls engine behaviour, with its validation rules. | engine, sdk | strategy-development, backtest-run, optimisation-run, live-trading-session, extension-development | core/src/Sdk/Shared/**, core/src/Sdk/Hooks/**, core/src/Sdk/Slots/**, core/src/Kernel/Configuration/** |
 | product:razor/contracts/extension-developer-guide | How to build adapters, strategies, indicators, hook plugins and neural-network models against the public Sdk. | sdk, extensions | extension-development, extension-deployment, strategy-development | core/src/Sdk/** |
+| product:razor/contracts/lineage-and-reproduction | Data contracts, intervention specifications, gap models, and replay integrity invariants for flow execution. | cloud, engine, reporting | backtest-run, optimisation-run, reporting | core/src/Cloud/Data/LineageEnums.cs, core/src/Cloud/Services/LineageContracts.cs, core/src/Cloud/Services/LineageService.cs |

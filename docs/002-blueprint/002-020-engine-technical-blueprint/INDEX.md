@@ -43,5 +43,5 @@ data flow, brokers, backtesting, optimisation, determinism - are in
 | product:razor/blueprint/engine-technical-blueprint/state-persistence | The narrow set of things the engine persists locally. | engine, cloud | | core/src/Engine/Core/StateManager.cs |
 | product:razor/blueprint/engine-technical-blueprint/error-handling-and-recovery | Failure handling at every level, including the kill switch. | engine | | |
 | product:razor/blueprint/engine-technical-blueprint/platform-details | Windows and Linux operational differences. | engine, operations | | |
-| product:razor/blueprint/engine-technical-blueprint/testing-strategy | How the engine is verified. | engine | | core/tests/** |
+| product:razor/blueprint/engine-technical-blueprint/testing-strategy | How the engine is verified across five levels from unit tests to live E2E verification. | engine | | core/tests/** |
 | product:razor/blueprint/engine-technical-blueprint/performance | The performance discipline the engine is built to. | engine | | |

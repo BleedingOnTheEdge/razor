@@ -25,6 +25,20 @@ references:
   - product:razor/flows/optimisation-run
   - product:razor/flows/live-trading-session
   - product:razor/flows/reporting
+  - product:razor/contracts/lineage-and-reproduction
+code_paths:
+  - core/src/Cloud/Data/FlowRun.cs
+  - core/src/Cloud/Data/LineageEnums.cs
+  - core/src/Cloud/Data/RunIntervention.cs
+  - core/src/Cloud/Data/RunGap.cs
+  - core/src/Cloud/Services/LineageContracts.cs
+  - core/src/Cloud/Services/LineageService.cs
+  - core/src/Cloud/Services/FlowOrchestrator.cs
+  - core/src/Cloud/Services/RunReportService.cs
+  - core/src/Cloud/Services/RunRankingService.cs
+test_paths:
+  - core/tests/Cloud.UnitTests/Lineage/**
+  - core/tests/EndToEndTests/EngineE2ETests.cs
 ---
 
 # Intervened and Resumed Runs Stay Reportable with Provenance

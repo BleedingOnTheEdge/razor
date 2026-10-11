@@ -18,6 +18,8 @@ references:
   - product:razor/blueprint/engine-technical-blueprint/state-persistence
 code_paths:
   - core/src/Engine/Communication/CloudConnector.cs
+test_paths:
+  - core/tests/EndToEndTests/EngineE2ETests.cs
 ---
 
 # Offline Handling and Retry
@@ -42,6 +44,18 @@ While offline:
 
 This is the deliberate trade of the architecture: the Cloud is the source of truth, but it is not in
 the critical path of a running live strategy. An outage degrades control, not execution.
+
+## Reconnection recovery
+
+When the Cloud endpoint returns:
+
+- the engine executes the full authentication handshake (`Auth` -> `AuthResponse` -> `AuthConfirm` -> `AuthAck`)
+  and derives a fresh session key;
+- buffered messages in the SQLite `QueuedMessages` table are drained and transmitted to the Cloud in FIFO order;
+- pending commands queued by the Cloud are accepted and dispatched.
+
+This automated infinite-retry and reconnect resilience path is verified end-to-end in
+`core/tests/EndToEndTests/EngineE2ETests.cs` (`Engine_And_Cloud_Reconnect_Path_Is_Exercised`).
 
 ## User notification
 
