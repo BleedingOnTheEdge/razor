@@ -29,10 +29,10 @@ public sealed class OptimizationReplayTests
         using var metrics = new CoreMetrics("test-instance");
 
         // 1. Create Base Optimizer and run to Generation 5 (Fork Point)
-        var spec = new OptimizationSpecification 
-        { 
-            Generations = 10, 
-            PopulationSize = 10, 
+        var spec = new OptimizationSpecification
+        {
+            Generations = 10,
+            PopulationSize = 10,
             MasterSeed = 42,
             MutationRate = 0.1,
             CrossoverRate = 0.5,
@@ -52,7 +52,7 @@ public sealed class OptimizationReplayTests
         // 2. Child A (The Diverged Run)
         // We simulate a user intervention: manually changing a gene of the best solution.
         var childARunner = new OptimizationRunner(spec, schema, metrics);
-        
+
         // Ensure state is loaded with random position
         childARunner.LoadState(forkState);
 
@@ -73,7 +73,7 @@ public sealed class OptimizationReplayTests
         // 3. Child B (The Replayed Run)
         // We prove the reproduction contract by replaying the fork point and intervention.
         var childBRunner = new OptimizationRunner(spec, schema, metrics);
-        
+
         // Load the exact same fork state
         childBRunner.LoadState(forkState);
 

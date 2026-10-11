@@ -94,7 +94,7 @@ public sealed class FlowOrchestratorTests : IDisposable
         Assert.Equal(RunStatus.Running, child.Status);
         Assert.Equal(100, child.BaseSeed); // Inherited
         Assert.Equal("S1", child.RandomPosition);
-        
+
         FlowRun fetchedParent = (await _lineageService.GetRunAsync(parent.Id))!;
         Assert.Equal(RunStatus.Paused, fetchedParent.Status); // Parent must be paused
     }

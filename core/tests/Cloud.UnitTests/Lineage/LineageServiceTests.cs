@@ -97,7 +97,7 @@ public sealed class LineageServiceTests : IDisposable
         Assert.Equal(12345, child.BaseSeed);
         Assert.Equal("S1_S2", child.RandomPosition);
         Assert.False(child.IsPartial);
-        
+
         // Assert interventions
         FlowRun fetched = (await _sut.GetRunAsync(child.Id))!;
         Assert.Single(fetched.Interventions);

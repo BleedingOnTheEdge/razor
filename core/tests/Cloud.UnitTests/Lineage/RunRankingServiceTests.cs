@@ -65,7 +65,7 @@ public sealed class RunRankingServiceTests
         var branched = new FlowRun { Id = Guid.NewGuid(), NetProfit = 500m, Relation = RunRelation.Branched };
         var gappedOnly = new FlowRun { Id = Guid.NewGuid(), NetProfit = 800m, Continuity = RunContinuity.Gapped, Relation = null };
         var branchedAndGapped = new FlowRun { Id = Guid.NewGuid(), NetProfit = 900m, Continuity = RunContinuity.Gapped, Relation = RunRelation.Spliced };
-        
+
         var runs = new[] { clean, branched, gappedOnly, branchedAndGapped };
 
         // Act
@@ -73,7 +73,7 @@ public sealed class RunRankingServiceTests
 
         // Assert
         Assert.Equal(4, rankings.Count);
-        
+
         // 900
         Assert.Equal(branchedAndGapped.Id, rankings[0].RunId);
         Assert.True(rankings[0].IsDiverged);
