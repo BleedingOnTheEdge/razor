@@ -52,6 +52,9 @@ internal sealed record LiveState
     /// <summary>Gets the gene array currently injected into the strategy.</summary>
     public double[] Genes { get; init; } = Array.Empty<double>();
 
+    /// <summary>Gets the account currency.</summary>
+    public string AccountCurrency { get; init; } = "USD";
+
     /// <summary>Gets the timestamp of the last tick received, or null if none.</summary>
     public DateTime? LastTickTime { get; init; }
 

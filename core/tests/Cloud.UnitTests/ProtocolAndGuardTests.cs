@@ -237,6 +237,20 @@ public sealed class ProtocolAndGuardTests
     }
 
     [Fact]
+    public async Task TheKeyFilterAllowsOptionsPreflightRequestsWithoutApiKey()
+    {
+        var options = new CloudOptions { ManagementApiKey = "the-key" };
+        RequestDelegate pipeline = BuildPipeline(options);
+
+        HttpContext optionsContext = Context("/api/instances");
+        optionsContext.Request.Method = HttpMethods.Options;
+        await pipeline(optionsContext).ConfigureAwait(true);
+
+        Assert.True(optionsContext.Items.ContainsKey("reached"));
+        Assert.NotEqual(StatusCodes.Status401Unauthorized, optionsContext.Response.StatusCode);
+    }
+
+    [Fact]
     public async Task TheKeyFilterFailsClosedWhenNoKeyIsConfigured()
     {
         // CloudOptions refuses to start without a key, so this cannot happen through the composition root;

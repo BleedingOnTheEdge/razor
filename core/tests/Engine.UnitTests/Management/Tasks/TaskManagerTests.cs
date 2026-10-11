@@ -154,6 +154,9 @@ public sealed class TaskManagerTests : IDisposable
         Assert.Equal("TestStrategy", persisted.StrategyName);
         Assert.Equal("TestAdapter", persisted.AdapterName);
         Assert.Equal(10000.0, persisted.InitialBalance);
+        Assert.Equal("USD", persisted.AccountCurrency);
+        Assert.NotNull(_kernelService.LastLiveInput);
+        Assert.Equal("USD", _kernelService.LastLiveInput.AccountCurrency);
 
         await _taskManager.StopLiveTaskAsync(taskId, CancellationToken.None);
     }
@@ -201,7 +204,8 @@ public sealed class TaskManagerTests : IDisposable
             StrategyName = "TestStrategy",
             InitialBalance = 7500.0,
             Symbols = ["EURUSD"],
-            Genes = [1.0, 2.0]
+            Genes = [1.0, 2.0],
+            AccountCurrency = "GBP"
         };
 
         string? restoredId = await _taskManager.RestoreLiveTaskAsync(stateToRestore, CancellationToken.None);
@@ -209,6 +213,8 @@ public sealed class TaskManagerTests : IDisposable
         Assert.Equal("live_restored_1", restoredId);
         Assert.NotNull(_taskManager.GetTask("live_restored_1"));
         Assert.Equal(1, _kernelService.StartLiveCallCount);
+        Assert.NotNull(_kernelService.LastLiveInput);
+        Assert.Equal("GBP", _kernelService.LastLiveInput.AccountCurrency);
 
         await _taskManager.StopLiveTaskAsync("live_restored_1", CancellationToken.None);
     }
@@ -710,9 +716,15 @@ public sealed class TaskManagerTests : IDisposable
             get; private set;
         }
 
+        public LiveInput? LastLiveInput
+        {
+            get; private set;
+        }
+
         public Task<string> StartLiveAsync(LiveInput input, CancellationToken cancellationToken)
         {
             StartLiveCallCount++;
+            LastLiveInput = input;
             return Task.FromResult($"kernel_live_{Guid.NewGuid():N}");
         }
 

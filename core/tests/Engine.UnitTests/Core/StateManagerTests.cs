@@ -108,6 +108,7 @@ public sealed class StateManagerTests : IDisposable
             StopOutLevel = 0.5,
             MaxOpenPositions = 10,
             Genes = [1.5, 2.5],
+            AccountCurrency = "EUR",
             StartTime = DateTime.UtcNow
         };
 
@@ -125,6 +126,7 @@ public sealed class StateManagerTests : IDisposable
         Assert.Equal(10000, loaded.InitialBalance);
         Assert.Equal(["EURUSD", "GBPUSD"], loaded.Symbols);
         Assert.Equal([1.5, 2.5], loaded.Genes);
+        Assert.Equal("EUR", loaded.AccountCurrency);
 
         // Delete
         await manager.DeleteLiveStateAsync(CancellationToken.None);

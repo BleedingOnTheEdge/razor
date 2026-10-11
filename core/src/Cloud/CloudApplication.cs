@@ -94,6 +94,7 @@ internal static class CloudApplication
         services.AddSingleton<FlowOrchestrator>();
         services.AddSingleton<MarketplaceService>();
 
+        services.AddCors();
 
         // FastEndpoints marks every route it registers with authorization metadata, and ASP.NET Core refuses
         // to run a route whose metadata no middleware can act on — so the pipeline needs the authentication
@@ -128,6 +129,11 @@ internal static class CloudApplication
         // The Engine WebSocket authenticates through the protocol handshake, so it is mounted before the
         // management API key filter and is never subject to it.
         app.Map(EngineSocketHandler.Path, EngineSocketHandler.HandleAsync);
+
+        app.UseCors(policy => policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod());
 
         app.UseSwaggerGen();
         app.UseManagementApiKey(options);

@@ -124,14 +124,7 @@ internal sealed partial class FlowOrchestrator(
         }
 
         // Pause parent run first
-        await PauseRunAsync(runId, cancellationToken).ConfigureAwait(false);
-
-        using CloudDbContext db = contextFactory.CreateDbContext();
-        FlowRun? parent = await db.FlowRuns.FirstOrDefaultAsync(r => r.Id == runId, cancellationToken).ConfigureAwait(false);
-        if (parent == null)
-        {
-            throw new KeyNotFoundException($"No parent flow run found with ID {runId}.");
-        }
+        FlowRun parent = await PauseRunAsync(runId, cancellationToken).ConfigureAwait(false);
 
         long? baseSeed = childSeed ?? parent.BaseSeed;
 
@@ -146,6 +139,8 @@ internal sealed partial class FlowOrchestrator(
             interventions: [intervention],
             gaps: null,
             cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        using CloudDbContext db = contextFactory.CreateDbContext();
 
         // Transition child to Running
         FlowRun? trackedChild = await db.FlowRuns.FirstOrDefaultAsync(r => r.Id == child.Id, cancellationToken).ConfigureAwait(false);
