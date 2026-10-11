@@ -134,5 +134,15 @@ public sealed class RunRankingServiceTests
         Assert.Equal(branched.Id, bestOverall.RunId);
         Assert.True(bestOverall.IsDiverged);
         Assert.Equal("Branched", bestOverall.DivergenceFlag);
+
+        // Empty runs returns null
+        Assert.Null(_sut.SelectBestResult([], RankingMetric.SharpeRatio));
+
+        // Pure gapped run without relation returns "Gapped" flag
+        var gappedOnly = new FlowRun { Id = Guid.NewGuid(), Relation = null, Continuity = RunContinuity.Gapped, SharpeRatio = 3.0 };
+        var bestGapped = _sut.SelectBestResult([gappedOnly], RankingMetric.SharpeRatio, allowDiverged: true);
+        Assert.NotNull(bestGapped);
+        Assert.Equal("Gapped", bestGapped.DivergenceFlag);
     }
 }
+

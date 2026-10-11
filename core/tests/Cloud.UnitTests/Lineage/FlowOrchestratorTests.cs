@@ -173,4 +173,75 @@ public sealed class FlowOrchestratorTests : IDisposable
         Assert.Equal(RunRelation.Spliced, replay.Relation);
         Assert.Equal(RunStatus.Pending, replay.Status);
     }
+
+    [Fact]
+    public async Task ResumeWithIntervention_NegativePath_ThrowsForInvalidReasonOrMissingParent()
+    {
+        // Arrange
+        SeededAccount account = await _db.SeedAccountAsync();
+        EngineInstance instance = await _db.SeedEngineInstanceAsync(account.AccountId, account.LicenseId);
+        FlowRun parent = await _sut.StartOriginalRunAsync(instance.Id, RunKind.Optimization, baseSeed: 100);
+
+        var emptyIntervention = new InterventionSpecification(1, "h1", "h2", "op", "   ");
+        var validIntervention = new InterventionSpecification(1, "h1", "h2", "op", "Valid reason");
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _sut.ResumeWithInterventionAsync(parent.Id, new ForkPoint { Step = 1 }, emptyIntervention, null));
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _sut.ResumeWithInterventionAsync(Guid.NewGuid(), new ForkPoint { Step = 1 }, validIntervention, null));
+
+        // Explicit child seed
+        FlowRun child = await _sut.ResumeWithInterventionAsync(parent.Id, new ForkPoint { Step = 1 }, validIntervention, null, childSeed: 777);
+        Assert.Equal(777, child.BaseSeed);
+    }
+
+    [Fact]
+    public async Task BranchFromCheckpoint_NegativePath_ThrowsForInvalidReasonOrMissingParent()
+    {
+        // Arrange
+        SeededAccount account = await _db.SeedAccountAsync();
+        EngineInstance instance = await _db.SeedEngineInstanceAsync(account.AccountId, account.LicenseId);
+        FlowRun parent = await _sut.StartOriginalRunAsync(instance.Id, RunKind.Optimization, baseSeed: 222);
+
+        var emptyIntervention = new InterventionSpecification(1, "h1", "h2", "op", "");
+        var validIntervention = new InterventionSpecification(1, "h1", "h2", "op", "Alternative branch");
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _sut.BranchFromCheckpointAsync(parent.Id, new ForkPoint { Step = 1 }, emptyIntervention, null));
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _sut.BranchFromCheckpointAsync(Guid.NewGuid(), new ForkPoint { Step = 1 }, validIntervention, null));
+
+        // Inherit parent seed when childSeed is null
+        FlowRun child = await _sut.BranchFromCheckpointAsync(parent.Id, new ForkPoint { Step = 1 }, validIntervention, null, childSeed: null);
+        Assert.Equal(222, child.BaseSeed);
+    }
+
+    [Fact]
+    public async Task CompleteRun_NegativePath_ThrowsForMissingRun()
+    {
+        var metrics = new ReportAggregateMetrics(100m, 1m, 1.0, -1.0, 10, 1.0);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _sut.CompleteRunAsync(Guid.NewGuid(), metrics));
+    }
+
+    [Fact]
+    public async Task ReplayAsync_NegativeAndSeedPath_HandlesMissingParentAndExplicitSeed()
+    {
+        // Arrange
+        SeededAccount account = await _db.SeedAccountAsync();
+        EngineInstance instance = await _db.SeedEngineInstanceAsync(account.AccountId, account.LicenseId);
+        FlowRun parent = await _sut.StartOriginalRunAsync(instance.Id, RunKind.Optimization, baseSeed: 123);
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _sut.ReplayAsync(new ReplaySpecification(Guid.NewGuid(), new ForkPoint { Step = 1 }, [], null, null)));
+
+        var specWithSeed = new ReplaySpecification(parent.Id, new ForkPoint { Step = 1 }, [], 999, "R1");
+        FlowRun replayed = await _sut.ReplayAsync(specWithSeed);
+        Assert.Equal(999, replayed.BaseSeed);
+    }
 }
+

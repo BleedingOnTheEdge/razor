@@ -215,4 +215,37 @@ public sealed class LineageServiceTests : IDisposable
         Assert.Single(fetched.Interventions);
         Assert.Equal("fix", fetched.Interventions.First().Reason);
     }
+
+    [Fact]
+    public async Task RecordGapAsync_NegativePath_ThrowsForInvalidReasonOrMissingRun()
+    {
+        // Arrange
+        SeededAccount account = await _db.SeedAccountAsync();
+        EngineInstance instance = await _db.SeedEngineInstanceAsync(account.AccountId, account.LicenseId);
+        FlowRun run = await _sut.CreateOriginalRunAsync(instance.Id, RunKind.Optimization);
+
+        var emptyGap = new GapSpecification(1, 2, "   ");
+        var validGap = new GapSpecification(1, 2, "Valid gap");
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => _sut.RecordGapAsync(run.Id, emptyGap));
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => _sut.RecordGapAsync(Guid.NewGuid(), validGap));
+    }
+
+    [Fact]
+    public async Task RecordInterventionAsync_NegativePath_ThrowsForInvalidReasonOrMissingRun()
+    {
+        // Arrange
+        SeededAccount account = await _db.SeedAccountAsync();
+        EngineInstance instance = await _db.SeedEngineInstanceAsync(account.AccountId, account.LicenseId);
+        FlowRun run = await _sut.CreateOriginalRunAsync(instance.Id, RunKind.Optimization);
+
+        var emptyIntervention = new InterventionSpecification(1, "o", "n", "u", "");
+        var validIntervention = new InterventionSpecification(1, "o", "n", "u", "Valid intervention");
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => _sut.RecordInterventionAsync(run.Id, emptyIntervention));
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => _sut.RecordInterventionAsync(Guid.NewGuid(), validIntervention));
+    }
 }
+

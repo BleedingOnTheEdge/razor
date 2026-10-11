@@ -166,4 +166,25 @@ public sealed class RunReportServiceTests
         Assert.Equal("manual fix", report.Interventions[0].Reason);
         Assert.Equal("{}", report.Interventions[0].BeforePayloadJson);
     }
+
+    [Fact]
+    public void GenerateReport_BoundaryPath_NullGapsAndInterventions_DoesNotThrow()
+    {
+        var run = new FlowRun
+        {
+            Id = Guid.NewGuid(),
+            Relation = RunRelation.Spliced,
+            Continuity = RunContinuity.Contiguous,
+            IsPartial = false,
+            Gaps = null!,
+            Interventions = null!
+        };
+
+        RunReport report = _sut.GenerateReport(run);
+        Assert.True(report.IsDiverged);
+        Assert.Equal("Spliced", report.DivergenceFlag);
+        Assert.Empty(report.Gaps);
+        Assert.Empty(report.Interventions);
+    }
 }
+
