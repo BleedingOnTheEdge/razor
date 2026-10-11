@@ -6,3 +6,16 @@ inliner.js
 # regenerate with: node <skill>/tools/docs-map/index.js generate
 .agent/docs-index/
 .qwen/docs-index/
+
+# Node, pnpm & Nx
+node_modules/
+.pnpm-store/
+.nx/cache/
+.nx/workspace-data/
+
+# Next, Nuxt & build outputs
+.next/
+.nuxt/
+.output/
+dist/
+coverage/
