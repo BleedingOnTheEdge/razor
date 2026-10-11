@@ -1,0 +1,21 @@
+{
+  "name": "razor-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "nx": "nx",
+    "dev:dashboard": "nx dev cloud-dashboard",
+    "dev:marketplace": "nx dev marketplace",
+    "build": "nx run-many -t build",
+    "test": "nx run-many -t test",
+    "lint": "nx run-many -t lint",
+    "codegen": "nx run api-client:generate"
+  },
+  "devDependencies": {
+    "nx": "^20.4.0",
+    "@nx/devkit": "^20.4.0",
+    "@nx/js": "^20.4.0",
+    "prettier": "^3.5.0",
+    "typescript": "^5.7.3"
+  }
+}
