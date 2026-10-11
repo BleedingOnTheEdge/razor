@@ -367,6 +367,8 @@ namespace EndToEndTests
             };
 
             processInfo.EnvironmentVariables["Razor_PRIMARY_ENDPOINT"] = wsEndpoint;
+            processInfo.EnvironmentVariables["DOTNET_ENVIRONMENT"] = "Development";
+            processInfo.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "Development";
 
             var process = new Process { StartInfo = processInfo };
             process.OutputDataReceived += (s, e) =>
