@@ -25,6 +25,10 @@ references:
   - product:razor/blueprint/product-model/licensing-subscriptions
 code_paths:
   - core/src/Engine/Communication/**
+test_paths:
+  - core/tests/Engine.UnitTests/Communication/**
+  - core/tests/Cloud.UnitTests/EngineSessionProtocolTests.cs
+  - core/tests/EndToEndTests/EngineE2ETests.cs
 ---
 
 # Communication Protocol
@@ -72,7 +76,11 @@ All messages are JSON except binary chunks. The envelope is `CloudMessage`:
 4. Engine sends `AuthConfirm` carrying a signed challenge - an HMAC of the nonce under the session
    key.
 5. The Cloud verifies and sends `AuthAck`.
-6. From here every message is encrypted with AES-256-GCM using the derived session key, and carries a
+6. **Session confirmation:** Immediately upon receiving and verifying `AuthAck`, the engine transitions
+   to connected status (`_isConnected = true`) and records `SessionId`. This immediate confirmation ensures
+   that early incoming frames and pending commands dispatched by the Cloud are received and acknowledged
+   without race conditions before background heartbeat and queue tasks spin up.
+7. From here every message is encrypted with AES-256-GCM using the derived session key, and carries a
    sequence number to prevent replay.
 
 **Capability negotiation** is part of this handshake, not a separate exchange: the engine declares
@@ -83,18 +91,21 @@ require, rejecting an engine that lacks a required feature. The feature ID regis
 ## 4 Heartbeat and time sync
 
 - The engine sends `Heartbeat` at the interval the Cloud last specified in `HeartbeatResponse`.
+- The engine dynamically adjusts its timer to match `NextIntervalSeconds` from each Cloud response.
 - Heartbeat payload carries `EngineId`, `LocalTimestamp` and `Health` - CPU, memory, tasks running,
   live tick age.
 - The Cloud replies `HeartbeatResponse` with:
   - `Status` - `OK`, `Stop`, `Pause`, `Lock`, `Exit` or `Ban`;
-  - `NextIntervalSeconds`;
+  - `NextIntervalSeconds` - dynamically adjusts engine heartbeat frequency;
   - `ServerTime` - the Cloud's UTC time, for drift correction;
   - `Commands` - commands to execute immediately, if any;
   - `AuthValid` - re-validates the credentials;
   - `AdminMessage` - an optional broadcast, with style hints;
   - **self-update metadata** - `NewVersion`, `DownloadUrl` and `Checksum` when a new engine version is
     available.
-- The engine corrects its internal clock against `ServerTime`.
+- **Clock drift compensation:** The engine computes the difference between `LocalTimestamp` and
+  `ServerTime`, adjusting its internal clock offset so trading events and timestamps remain aligned
+  with Cloud UTC.
 - If `AuthValid` is false the engine stops all user tasks - live, backtest and optimisation - and
   refuses new ones until re-authentication succeeds.
 

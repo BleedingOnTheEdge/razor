@@ -37,8 +37,16 @@ references:
   - product:razor/contracts/configuration-reference/market-data-types
   - product:razor/contracts/configuration-reference/validation-and-exceptions
   - product:razor/contracts/configuration-reference/hook-system
+  - product:razor/contracts/lineage-and-reproduction
   - product:razor/operational/installation-and-deployment/verifying-the-installation
 implements: [backtest-run]
+code_paths:
+  - core/src/Kernel/Backtesting/**
+  - core/src/Engine/Commands/RunBacktest*
+  - core/src/Cloud/Services/FlowOrchestrator.cs
+test_paths:
+  - core/tests/Kernel.UnitTests/Backtesting/**
+  - core/tests/EndToEndTests/EngineE2ETests.cs
 ---
 
 # Backtest Run
@@ -89,6 +97,11 @@ not an engine feature.
   (`product:razor/blueprint/product-model/control-monitoring`).
 - A test backtest is also the operator's end-to-end connectivity check
   (`product:razor/operational/installation-and-deployment/verifying-the-installation`).
+- **Lineage tracking:** Every backtest run is registered with `RunKind.Backtest` and initialized with an
+  explicit `baseSeed`. If paused, resumed, or altered with an intervention, child runs record their `ForkPoint`
+  and `InterventionSpecification`, maintaining provenance integrity under
+  `product:razor/decisions/intervened-runs-remain-reportable` and
+  `product:razor/contracts/lineage-and-reproduction`.
 
 ## Failure Modes
 

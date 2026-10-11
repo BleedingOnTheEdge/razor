@@ -122,7 +122,7 @@ When confirmed, promote into the target doc and remove the item.
 - **Affected repos:** razor
 - **Situation:** ~~`templates/agent.md` expects a repo `AGENT.md` to name an `org_root` and an `org_docs_fallback`. No org-root docs anchor exists in this workspace: the workspace root is a non-git container, and `razor/` is the organisation's only repository. The anchor above `repo:razor` is therefore unknown.~~ **Superseded:** `BleedingOnTheEdge/org-root` now exists — a git repository at the workspace root carrying the organisation-level `AGENT.md`, the agent personas, the skills, the durable loop memory and `CONTRIBUTING_AGENTS.md`. So the workspace root **is** a git repository and `razor/` is **not** the organisation's only repository. Both halves of this item's premise are false, so it is pruned rather than answered.
 
-  **Follow-up it leaves behind:** `razor/AGENT.md` still cites NC-0002 and states that no org-root anchor is reachable, setting `org_docs_fallback: notify`. That statement is now stale — the org anchor exists — so the router should be revisited and the citation removed. Not done here, because this change is scoped to pruning the clarification list.
+  **Follow-up resolved:** `razor/AGENT.md` was revisited: references to NC-0002 were removed, and the router now explicitly documents the organization-level anchor at `../AGENTS.md` in the `org-root` repository.
 - **Options considered:**
   1. Treat the razor repo root as the org root (`is_org_root: true`, `level: org`).
   2. Anchor razor at `level: repo` with `requires_org_docs: true` and `org_docs_fallback: notify`, omitting `org_root`.

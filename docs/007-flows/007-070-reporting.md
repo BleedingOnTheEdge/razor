@@ -29,7 +29,17 @@ references:
   - product:razor/blueprint/product-model/appendix-a-supported-commands
   - product:razor/blueprint/engine-technical-blueprint/command-system
   - product:razor/contracts/configuration-reference/hook-system
+  - product:razor/contracts/lineage-and-reproduction
 implements: [reporting]
+code_paths:
+  - core/src/Cloud/Services/RunReportService.cs
+  - core/src/Cloud/Services/RunRankingService.cs
+  - core/src/Cloud/Services/LineageService.cs
+  - core/src/Engine/Reporting/**
+test_paths:
+  - core/tests/Cloud.UnitTests/Lineage/RunReportServiceTests.cs
+  - core/tests/Cloud.UnitTests/Lineage/RunRankingServiceTests.cs
+  - core/tests/Cloud.UnitTests/Lineage/LineageServiceTests.cs
 ---
 
 # Reporting

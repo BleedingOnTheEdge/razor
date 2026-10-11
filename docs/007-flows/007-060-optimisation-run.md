@@ -38,7 +38,16 @@ references:
   - product:razor/contracts/configuration-reference/hook-system
   - product:razor/contracts/configuration-reference/validation-and-exceptions
   - product:razor/cross-cutting/principles/determinism-is-mandatory
+  - product:razor/contracts/lineage-and-reproduction
 implements: [optimisation-run]
+code_paths:
+  - core/src/Kernel/Optimization/**
+  - core/src/Engine/Commands/StartOptimization*
+  - core/src/Cloud/Services/FlowOrchestrator.cs
+test_paths:
+  - core/tests/Kernel.UnitTests/Optimization/**
+  - core/tests/Cloud.UnitTests/Lineage/FlowOrchestratorTests.cs
+  - core/tests/EndToEndTests/EngineE2ETests.cs
 ---
 
 # Optimisation Run

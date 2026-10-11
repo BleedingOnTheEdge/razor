@@ -33,7 +33,7 @@ The six documentation roots are:
 | Root | Covers |
 |---|---|
 | product:razor/blueprint | What Razor is, the product model, the engine specification, the internal architecture, and planned features. |
-| product:razor/contracts | The configuration data contract and the public extension API. |
+| product:razor/contracts | The configuration data contract, the public extension API, and the lineage and reproduction contract. |
 | product:razor/cross-cutting | The principles and the glossary that apply to every part of the product. |
 | product:razor/operational | Procedures for running the product in the field. |
 | product:razor/decisions | The binding product and architecture rulings, and the documents that carry each one's consequences. |
