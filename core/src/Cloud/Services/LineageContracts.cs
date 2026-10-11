@@ -148,3 +148,34 @@ internal sealed record RankedRunResult(
     double Score,
     bool IsDiverged,
     string? DivergenceFlag);
+
+/// <summary>
+/// A node in the hierarchical lineage graph.
+/// </summary>
+/// <param name="RunId">The run identifier.</param>
+/// <param name="ParentRunId">The parent run identifier, if any.</param>
+/// <param name="Kind">The run kind.</param>
+/// <param name="Status">The run status.</param>
+/// <param name="Relation">The relationship to the parent.</param>
+/// <param name="Continuity">The continuity state.</param>
+/// <param name="ForkPoint">Where divergence occurred.</param>
+/// <param name="BaseSeed">The base seed at the fork point.</param>
+/// <param name="RandomPosition">The random sequence position.</param>
+/// <param name="IsPartial">Whether the run contains gaps.</param>
+/// <param name="Interventions">The recorded intervention history.</param>
+/// <param name="Gaps">The recorded gaps.</param>
+/// <param name="Children">The child runs derived from this run.</param>
+internal sealed record LineageNode(
+    Guid RunId,
+    Guid? ParentRunId,
+    RunKind Kind,
+    RunStatus Status,
+    RunRelation? Relation,
+    RunContinuity? Continuity,
+    ForkPoint? ForkPoint,
+    long? BaseSeed,
+    string? RandomPosition,
+    bool IsPartial,
+    IReadOnlyList<InterventionSpecification> Interventions,
+    IReadOnlyList<ReportGapDetail> Gaps,
+    IReadOnlyList<LineageNode> Children);

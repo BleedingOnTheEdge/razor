@@ -10,8 +10,10 @@ using System.Text.Json.Serialization;
 using Cloud.Data;
 using Cloud.Endpoints;
 using Cloud.Engine;
+using Cloud.Events;
 using Cloud.Services;
 using FastEndpoints;
+using FastEndpoints.Swagger;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -85,10 +87,12 @@ internal static class CloudApplication
         services.AddSingleton<ProfileService>();
         services.AddSingleton<HeartbeatService>();
         services.AddSingleton<EngineSessionRegistry>();
+        services.AddSingleton<IClientEventBroadcaster, ClientEventBroadcaster>();
         services.AddSingleton<LineageService>();
         services.AddSingleton<RunReportService>();
         services.AddSingleton<RunRankingService>();
         services.AddSingleton<FlowOrchestrator>();
+        services.AddSingleton<MarketplaceService>();
 
 
         // FastEndpoints marks every route it registers with authorization metadata, and ASP.NET Core refuses
@@ -101,6 +105,15 @@ internal static class CloudApplication
         services.AddAuthorization();
 
         services.AddFastEndpoints();
+        services.SwaggerDocument(options =>
+        {
+            options.DocumentSettings = settings =>
+            {
+                settings.Title = "Razor Cloud Control Plane API";
+                settings.Version = "v1.0.0";
+                settings.Description = "OpenAPI specification for Razor Cloud REST endpoints, real-time events, and marketplace.";
+            };
+        });
     }
 
     /// <summary>
@@ -116,6 +129,7 @@ internal static class CloudApplication
         // management API key filter and is never subject to it.
         app.Map(EngineSocketHandler.Path, EngineSocketHandler.HandleAsync);
 
+        app.UseSwaggerGen();
         app.UseManagementApiKey(options);
 
         // FastEndpoints attaches authorization metadata to every route it registers, and ASP.NET Core

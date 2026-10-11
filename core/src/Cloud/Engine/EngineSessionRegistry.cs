@@ -97,6 +97,19 @@ internal sealed class EngineSessionRegistry : IDisposable
         return true;
     }
 
+    /// <summary>
+    /// Checks whether an instance currently has an active connected session.
+    /// </summary>
+    /// <param name="instanceId">The instance identifier.</param>
+    /// <returns><see langword="true"/> if connected; otherwise <see langword="false"/>.</returns>
+    internal bool IsConnected(Guid instanceId) => _sessions.ContainsKey(instanceId);
+
+    /// <summary>
+    /// Gets all currently connected instance identifiers.
+    /// </summary>
+    /// <returns>A read-only collection of instance IDs.</returns>
+    internal IReadOnlyCollection<Guid> GetConnectedInstanceIds() => _sessions.Keys.ToList();
+
     /// <inheritdoc/>
     public void Dispose()
     {

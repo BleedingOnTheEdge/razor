@@ -68,6 +68,12 @@ internal sealed class CloudDbContext : DbContext
     /// <summary>Gets the recorded coverage and execution gaps across flow runs.</summary>
     public DbSet<RunGap> RunGaps => Set<RunGap>();
 
+    /// <summary>Gets the marketplace extension catalogue items.</summary>
+    public DbSet<MarketplaceItem> MarketplaceItems => Set<MarketplaceItem>();
+
+    /// <summary>Gets the marketplace acquisitions and licences.</summary>
+    public DbSet<MarketplaceAcquisition> MarketplaceAcquisitions => Set<MarketplaceAcquisition>();
+
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -83,6 +89,8 @@ internal sealed class CloudDbContext : DbContext
         ConfigureFlowRun(modelBuilder);
         ConfigureRunIntervention(modelBuilder);
         ConfigureRunGap(modelBuilder);
+        ConfigureMarketplaceItem(modelBuilder);
+        ConfigureMarketplaceAcquisition(modelBuilder);
     }
 
 
@@ -232,6 +240,33 @@ internal sealed class CloudDbContext : DbContext
             gap.HasKey(g => g.Id);
             gap.Property(g => g.Reason).IsRequired().HasMaxLength(1024);
             gap.HasIndex(g => g.FlowRunId);
+        });
+    }
+
+    private static void ConfigureMarketplaceItem(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<MarketplaceItem>(item =>
+        {
+            item.HasKey(m => m.Id);
+            item.Property(m => m.Name).IsRequired().HasMaxLength(128);
+            item.Property(m => m.Kind).HasConversion<string>().HasMaxLength(32);
+            item.Property(m => m.Version).IsRequired().HasMaxLength(32);
+            item.Property(m => m.Author).IsRequired().HasMaxLength(128);
+            item.Property(m => m.Description).HasMaxLength(2048);
+            item.Property(m => m.SdkVersion).IsRequired().HasMaxLength(32);
+            item.HasIndex(m => new { m.Kind, m.Name }).IsUnique();
+            item.HasMany(m => m.Acquisitions).WithOne(a => a!.MarketplaceItem!).HasForeignKey(a => a.MarketplaceItemId).OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureMarketplaceAcquisition(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<MarketplaceAcquisition>(acq =>
+        {
+            acq.HasKey(a => a.Id);
+            acq.Property(a => a.LicenseKey).IsRequired().HasMaxLength(128);
+            acq.HasIndex(a => new { a.MarketplaceItemId, a.AccountId }).IsUnique();
+            acq.HasOne(a => a.Account).WithMany().HasForeignKey(a => a.AccountId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

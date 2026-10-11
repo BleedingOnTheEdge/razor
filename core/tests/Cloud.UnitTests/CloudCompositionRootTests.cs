@@ -49,10 +49,12 @@ public sealed class CloudCompositionRootTests
         Assert.NotNull(services.GetRequiredService<ProfileService>());
         Assert.NotNull(services.GetRequiredService<HeartbeatService>());
         Assert.NotNull(services.GetRequiredService<EngineSessionRegistry>());
+        Assert.NotNull(services.GetRequiredService<Cloud.Events.IClientEventBroadcaster>());
         Assert.NotNull(services.GetRequiredService<LineageService>());
         Assert.NotNull(services.GetRequiredService<RunReportService>());
         Assert.NotNull(services.GetRequiredService<RunRankingService>());
         Assert.NotNull(services.GetRequiredService<FlowOrchestrator>());
+        Assert.NotNull(services.GetRequiredService<MarketplaceService>());
     }
 
 
