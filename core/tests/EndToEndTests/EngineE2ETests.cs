@@ -30,7 +30,18 @@ namespace EndToEndTests
         public EngineE2ETests(ITestOutputHelper output)
         {
             _output = output;
-            _engineDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Engine", "bin", "Debug", "net10.0"));
+            var config = new DirectoryInfo(AppContext.BaseDirectory).Parent?.Name ?? "Debug";
+            var candidateDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Engine", "bin", config, "net10.0"));
+            if (File.Exists(Path.Combine(candidateDir, "Engine.dll")))
+            {
+                _engineDir = candidateDir;
+            }
+            else
+            {
+                var debugDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Engine", "bin", "Debug", "net10.0"));
+                var releaseDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Engine", "bin", "Release", "net10.0"));
+                _engineDir = File.Exists(Path.Combine(debugDir, "Engine.dll")) ? debugDir : releaseDir;
+            }
             _engineDll = Path.Combine(_engineDir, "Engine.dll");
         }
 
@@ -385,7 +396,7 @@ namespace EndToEndTests
             {
                 if (!process.HasExited)
                 {
-                    process.Kill();
+                    process.Kill(entireProcessTree: true);
                     process.WaitForExit(3000);
                 }
             }
