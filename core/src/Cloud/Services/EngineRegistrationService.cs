@@ -49,6 +49,17 @@ internal sealed class EngineRegistrationService(
 
         using CloudDbContext db = contextFactory.CreateDbContext();
 
+        if (accountId == Guid.Empty)
+        {
+            Account? defaultAccount = await db.Accounts
+                .FirstOrDefaultAsync(cancellationToken)
+                .ConfigureAwait(false);
+            if (defaultAccount is not null)
+            {
+                accountId = defaultAccount.Id;
+            }
+        }
+
         bool accountExists = await db.Accounts
             .AnyAsync(a => a.Id == accountId, cancellationToken)
             .ConfigureAwait(false);
@@ -57,21 +68,45 @@ internal sealed class EngineRegistrationService(
             return new RegistrationOutcome(ServiceStatus.NotFound, "No account with that identifier.", null, null);
         }
 
-        License? license = await db.Licenses
-            .FirstOrDefaultAsync(l => l.Id == licenseId, cancellationToken)
-            .ConfigureAwait(false);
-        if (license is null)
+        License? license;
+        if (licenseId != Guid.Empty)
         {
-            return new RegistrationOutcome(ServiceStatus.NotFound, "No licence with that identifier.", null, null);
-        }
+            license = await db.Licenses
+                .FirstOrDefaultAsync(l => l.Id == licenseId, cancellationToken)
+                .ConfigureAwait(false);
+            if (license is null)
+            {
+                return new RegistrationOutcome(ServiceStatus.NotFound, "No licence with that identifier.", null, null);
+            }
 
-        if (license.AccountId != accountId)
+            if (license.AccountId != accountId)
+            {
+                return new RegistrationOutcome(
+                    ServiceStatus.Rejected,
+                    "The licence belongs to a different account.",
+                    null,
+                    null);
+            }
+        }
+        else
         {
-            return new RegistrationOutcome(
-                ServiceStatus.Rejected,
-                "The licence belongs to a different account.",
-                null,
-                null);
+            license = await db.Licenses
+                .FirstOrDefaultAsync(l => l.AccountId == accountId && l.Status == LicenseStatus.Active, cancellationToken)
+                .ConfigureAwait(false);
+            if (license is null)
+            {
+                license = new License
+                {
+                    Id = Guid.NewGuid(),
+                    AccountId = accountId,
+                    LicenseKey = $"LIC-{Guid.NewGuid():N}",
+                    Status = LicenseStatus.Active,
+                    IssuedAt = timeProvider.GetUtcNow(),
+                    MaxInstances = 10
+                };
+                db.Licenses.Add(license);
+                await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            }
         }
 
         DateTimeOffset now = timeProvider.GetUtcNow();
@@ -98,7 +133,7 @@ internal sealed class EngineRegistrationService(
         }
 
         int registeredCount = await db.EngineInstances
-            .CountAsync(i => i.LicenseId == licenseId, cancellationToken)
+            .CountAsync(i => i.LicenseId == license.Id, cancellationToken)
             .ConfigureAwait(false);
         if (registeredCount >= license.MaxInstances)
         {
@@ -114,7 +149,7 @@ internal sealed class EngineRegistrationService(
         {
             Id = Guid.NewGuid(),
             AccountId = accountId,
-            LicenseId = licenseId,
+            LicenseId = license.Id,
             EngineId = trimmedEngineId,
             Name = name.Trim(),
             ApiKeyHash = ApiKeyHasher.Hash(apiKey),

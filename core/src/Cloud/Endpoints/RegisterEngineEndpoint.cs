@@ -4,10 +4,42 @@
 // </copyright>
 // -----------------------------------------------------------------------------
 
-namespace Cloud.Endpoints;
-
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Cloud.Services;
 using FastEndpoints;
+
+/// <summary>
+/// Deserializes GUID strings flexibly, falling back to Guid.Empty on invalid formats or placeholders.
+/// </summary>
+internal sealed class FlexibleGuidConverter : JsonConverter<Guid>
+{
+    public override Guid Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.String)
+        {
+            string? value = reader.GetString();
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return Guid.Empty;
+            }
+
+            if (Guid.TryParse(value, out Guid parsed))
+            {
+                return parsed;
+            }
+
+            return Guid.Empty;
+        }
+
+        return Guid.Empty;
+    }
+
+    public override void Write(Utf8JsonWriter writer, Guid value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.ToString());
+    }
+}
 
 /// <summary>
 /// The body of a registration request.
@@ -15,9 +47,11 @@ using FastEndpoints;
 internal sealed class RegisterEngineRequest
 {
     /// <summary>Gets or sets the account the instance belongs to.</summary>
+    [JsonConverter(typeof(FlexibleGuidConverter))]
     public Guid AccountId { get; set; }
 
     /// <summary>Gets or sets the licence to register the instance against.</summary>
+    [JsonConverter(typeof(FlexibleGuidConverter))]
     public Guid LicenseId { get; set; }
 
     /// <summary>Gets or sets the stable identifier the Engine reports for itself.</summary>
@@ -56,7 +90,7 @@ internal sealed class RegisterEngineEndpoint(EngineRegistrationService registrat
     /// <inheritdoc/>
     public override void Configure()
     {
-        Post("/api/engines");
+        Post("/api/engines", "/api/instances");
         Summary(summary =>
         {
             summary.Summary = "Register an Engine instance";
