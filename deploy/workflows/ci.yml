@@ -1,0 +1,96 @@
+name: Razor Continuous Integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (.NET 10 Solution)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Verify SDK Pin
+        working-directory: core
+        run: |
+          resolved="$(dotnet --version)"
+          echo "Resolved .NET SDK: $resolved"
+          case "$resolved" in
+            10.0.*) ;;
+            *)
+              echo "::error::Expected .NET 10.0.x SDK, got $resolved"
+              exit 1
+              ;;
+          esac
+
+      - name: Restore Dependencies
+        working-directory: core
+        run: dotnet restore Razor.sln
+
+      - name: Build Solution
+        working-directory: core
+        run: dotnet build Razor.sln -c Release --no-incremental
+
+      - name: Execute Automated Test Suite
+        working-directory: core
+        run: dotnet test Razor.sln -c Release --no-build --settings coverlet.runsettings
+
+      - name: Enforce Code Formatting
+        working-directory: core
+        run: dotnet format --verify-no-changes
+
+  frontends:
+    name: Frontends (Next.js & Nx Monorepo)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Static Analysis & Lint
+        run: pnpm lint
+
+      - name: Vitest Unit & Integration Tests
+        run: pnpm test
+
+      - name: Production Next.js Builds
+        run: pnpm build
+
+  documentation:
+    name: Documentation & Graph Integrity
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Validate Docs Graph (docs-map)
+        run: node .github/scripts/docs-map.js validate

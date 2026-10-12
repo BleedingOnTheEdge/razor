@@ -21,6 +21,9 @@ internal sealed class Account
     /// <summary>Gets or sets the creation timestamp.</summary>
     public DateTimeOffset CreatedAt { get; set; }
 
+    /// <summary>Gets or sets the subscription tier of the account.</summary>
+    public SubscriptionTier SubscriptionTier { get; set; } = SubscriptionTier.Free;
+
     /// <summary>Gets the users that may sign in to the account.</summary>
     public ICollection<User> Users { get; } = [];
 

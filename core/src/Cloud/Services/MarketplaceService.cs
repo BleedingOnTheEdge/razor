@@ -34,6 +34,11 @@ internal sealed class MarketplaceService(
     {
         using CloudDbContext db = contextFactory.CreateDbContext();
 
+        if (!await db.MarketplaceItems.AnyAsync(cancellationToken).ConfigureAwait(false))
+        {
+            await SeedDefaultItemsAsync(db, cancellationToken).ConfigureAwait(false);
+        }
+
         IQueryable<MarketplaceItem> q = db.MarketplaceItems;
 
         if (kind.HasValue)
@@ -255,5 +260,133 @@ internal sealed class MarketplaceService(
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return item;
+    }
+
+    private async Task SeedDefaultItemsAsync(CloudDbContext db, CancellationToken cancellationToken)
+    {
+        DateTimeOffset now = timeProvider.GetUtcNow();
+
+        var items = new List<MarketplaceItem>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "MockPaperTradingAdapter",
+                Kind = ExtensionKind.Adapter,
+                Version = "1.0.0",
+                Author = "Razor Core Team",
+                Description = "Zero-dependency simulated broker and exchange adapter with synthetic Brownian motion market ticks and execution simulation for algorithm development.",
+                Price = 0,
+                SdkVersion = "1.0.0",
+                IsCurated = true,
+                Downloads = 1420,
+                Rating = 5.0,
+                CreatedAt = now.AddDays(-30)
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "AdaptiveVolatilityBreakout",
+                Kind = ExtensionKind.Strategy,
+                Version = "1.2.0",
+                Author = "Razor Quantitative Labs",
+                Description = "Dynamic ATR volatility band expansion algorithm designed for high-frequency breakout capture across crypto and equity indices.",
+                Price = 0,
+                SdkVersion = "1.0.0",
+                Downloads = 680,
+                Rating = 4.9,
+                CreatedAt = now.AddDays(-20)
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "KalmanFilterTrend",
+                Kind = ExtensionKind.Strategy,
+                Version = "2.0.1",
+                Author = "MacroDesk Quant",
+                Description = "State-space Kalman filter estimating hidden price velocity and trend persistence in noisy market tick regimes.",
+                Price = 49.99m,
+                SdkVersion = "1.0.0",
+                Downloads = 310,
+                Rating = 4.8,
+                CreatedAt = now.AddDays(-15)
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "SuperTrendIndicator",
+                Kind = ExtensionKind.Indicator,
+                Version = "1.0.4",
+                Author = "Community Alpha",
+                Description = "Ultra-low latency SIMD-accelerated SuperTrend indicator computing dynamic ATR trailing stops.",
+                Price = 0,
+                SdkVersion = "1.0.0",
+                Downloads = 540,
+                Rating = 4.7,
+                CreatedAt = now.AddDays(-14)
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "OrderFlowImbalance",
+                Kind = ExtensionKind.Indicator,
+                Version = "1.1.0",
+                Author = "Microstructure Research",
+                Description = "Level-2 limit order book imbalance index calculating delta pressure across bid/ask depth tiers.",
+                Price = 29.99m,
+                SdkVersion = "1.0.0",
+                Downloads = 220,
+                Rating = 4.8,
+                CreatedAt = now.AddDays(-10)
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "VolArbNeuralModel",
+                Kind = ExtensionKind.NeuralNetwork,
+                Version = "2.0.1",
+                Author = "DeepQuant",
+                Description = "Deep ONNX inference network optimizing statistical arbitrage execution and volatility surface forecasting.",
+                Price = 199.99m,
+                SdkVersion = "2.0.1",
+                IsCurated = true,
+                Downloads = 88,
+                Rating = 4.9,
+                CreatedAt = now.AddDays(-7)
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "LatencyMonitorHook",
+                Kind = ExtensionKind.HookPlugin,
+                Version = "1.0.0",
+                Author = "Razor Core Team",
+                Description = "Telemetry interceptor recording hardware-clock timestamps across slot lifecycle stages for sub-microsecond latency profiling.",
+                Price = 0,
+                SdkVersion = "1.0.0",
+                IsCurated = true,
+                Downloads = 940,
+                Rating = 5.0,
+                CreatedAt = now.AddDays(-5)
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "SlackAuditLoggerHook",
+                Kind = ExtensionKind.HookPlugin,
+                Version = "1.0.2",
+                Author = "DevOps Trader",
+                Description = "Operational webhook dispatcher forwarding critical order rejections, risk limits breaches, and hot-swap events to team Slack channels.",
+                Price = 14.99m,
+                SdkVersion = "1.0.0",
+                IsCurated = false,
+                Downloads = 195,
+                Rating = 4.6,
+                CreatedAt = now.AddDays(-3)
+            }
+        };
+
+        db.MarketplaceItems.AddRange(items);
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 }

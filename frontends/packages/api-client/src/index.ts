@@ -484,6 +484,188 @@ export interface RazorPaths {
       };
     };
   };
+  '/api/users/me': {
+    get: {
+      parameters?: {
+        query?: { userName?: string };
+      };
+      responses: {
+        200: { content: { 'application/json': UserProfilePayload } };
+      };
+    };
+  };
+  '/api/accounts/{accountId}/subscription': {
+    post: {
+      parameters: {
+        path: { accountId: string };
+      };
+      requestBody: {
+        content: {
+          'application/json': { tier: 'Free' | 'Pro' | 'Enterprise' };
+        };
+      };
+      responses: {
+        200: { content: { 'application/json': UserProfilePayload } };
+        404: { content: { 'application/json': unknown } };
+      };
+    };
+  };
+  '/api/tickets': {
+    get: {
+      parameters?: {
+        query?: {
+          targetType?: 'SystemManager' | 'AdditiveDeveloper';
+          status?: 'Open' | 'InProgress' | 'Resolved' | 'Closed';
+          targetItemId?: string;
+          accountId?: string;
+        };
+      };
+      responses: {
+        200: { content: { 'application/json': TicketPayload[] } };
+      };
+    };
+    post: {
+      requestBody: {
+        content: {
+          'application/json': {
+            accountId: string;
+            userId: string;
+            authorName: string;
+            targetType: 'SystemManager' | 'AdditiveDeveloper';
+            targetItemId?: string;
+            targetItemName?: string;
+            title: string;
+            description: string;
+            category: 'Bug' | 'FeatureRequest' | 'Billing' | 'Incident' | 'General';
+            priority: 'Low' | 'Medium' | 'High' | 'Critical';
+          };
+        };
+      };
+      responses: {
+        201: { content: { 'application/json': TicketPayload } };
+        400: { content: { 'application/json': { errors: Record<string, string[]> } } };
+      };
+    };
+  };
+  '/api/tickets/{ticketId}': {
+    get: {
+      parameters: {
+        path: { ticketId: string };
+      };
+      responses: {
+        200: { content: { 'application/json': TicketPayload } };
+        404: { content: { 'application/json': unknown } };
+      };
+    };
+  };
+  '/api/tickets/{ticketId}/messages': {
+    post: {
+      parameters: {
+        path: { ticketId: string };
+      };
+      requestBody: {
+        content: {
+          'application/json': {
+            authorName: string;
+            authorRole?: string;
+            message: string;
+            newStatus?: 'Open' | 'InProgress' | 'Resolved' | 'Closed';
+          };
+        };
+      };
+      responses: {
+        200: { content: { 'application/json': TicketMessagePayload } };
+        404: { content: { 'application/json': unknown } };
+      };
+    };
+  };
+  '/api/tickets/{ticketId}/status': {
+    patch: {
+      parameters: {
+        path: { ticketId: string };
+      };
+      requestBody: {
+        content: {
+          'application/json': {
+            status: 'Open' | 'InProgress' | 'Resolved' | 'Closed';
+          };
+        };
+      };
+      responses: {
+        204: { content: { 'application/json': unknown } };
+        404: { content: { 'application/json': unknown } };
+      };
+    };
+  };
+  '/api/community/threads': {
+    get: {
+      parameters?: {
+        query?: { category?: string };
+      };
+      responses: {
+        200: { content: { 'application/json': CommunityThreadPayload[] } };
+      };
+    };
+    post: {
+      requestBody: {
+        content: {
+          'application/json': {
+            title: string;
+            category?: string;
+            authorName: string;
+            authorBadge?: string;
+            content: string;
+          };
+        };
+      };
+      responses: {
+        201: { content: { 'application/json': CommunityThreadPayload } };
+        400: { content: { 'application/json': { errors: Record<string, string[]> } } };
+      };
+    };
+  };
+  '/api/community/threads/{threadId}': {
+    get: {
+      parameters: {
+        path: { threadId: string };
+      };
+      responses: {
+        200: { content: { 'application/json': CommunityThreadPayload } };
+        404: { content: { 'application/json': unknown } };
+      };
+    };
+  };
+  '/api/community/threads/{threadId}/replies': {
+    post: {
+      parameters: {
+        path: { threadId: string };
+      };
+      requestBody: {
+        content: {
+          'application/json': {
+            authorName: string;
+            authorBadge?: string;
+            content: string;
+          };
+        };
+      };
+      responses: {
+        200: { content: { 'application/json': CommunityReplyPayload } };
+        404: { content: { 'application/json': unknown } };
+      };
+    };
+  };
+  '/api/community/threads/{threadId}/upvote': {
+    post: {
+      parameters: {
+        path: { threadId: string };
+      };
+      responses: {
+        200: { content: { 'application/json': { upvotes: number } } };
+        404: { content: { 'application/json': unknown } };
+      };
+    };
+  };
 }
 
 export interface FlowRunPayload {
@@ -610,6 +792,70 @@ export function createRazorClient(config: RazorClientConfig) {
     headers,
     fetch: config.fetch,
   });
+}
+
+export interface UserProfilePayload {
+  userId: string;
+  accountId: string;
+  userName: string;
+  accountName: string;
+  role: 'Admin' | 'Operator' | 'Developer' | 'Trader';
+  subscriptionTier: 'Free' | 'Pro' | 'Enterprise';
+  maxInstances: number;
+  canManageFleet: boolean;
+  canExecuteLive: boolean;
+  canPublishMarketplace: boolean;
+  createdAt: string;
+}
+
+export interface TicketMessagePayload {
+  id: string;
+  ticketId: string;
+  authorName: string;
+  authorRole: string;
+  message: string;
+  createdAt: string;
+}
+
+export interface TicketPayload {
+  id: string;
+  accountId: string;
+  userId: string;
+  authorName: string;
+  targetType: 'SystemManager' | 'AdditiveDeveloper';
+  targetItemId?: string | null;
+  targetItemName?: string | null;
+  title: string;
+  description: string;
+  category: 'Bug' | 'FeatureRequest' | 'Billing' | 'Incident' | 'General';
+  priority: 'Low' | 'Medium' | 'High' | 'Critical';
+  status: 'Open' | 'InProgress' | 'Resolved' | 'Closed';
+  createdAt: string;
+  updatedAt: string;
+  messages: TicketMessagePayload[];
+}
+
+export interface CommunityReplyPayload {
+  id: string;
+  threadId: string;
+  authorName: string;
+  authorBadge: string;
+  content: string;
+  upvotes: number;
+  createdAt: string;
+}
+
+export interface CommunityThreadPayload {
+  id: string;
+  title: string;
+  category: string;
+  authorName: string;
+  authorBadge: string;
+  content: string;
+  upvotes: number;
+  repliesCount: number;
+  createdAt: string;
+  replies: CommunityReplyPayload[];
 }
 
 export type RazorClient = ReturnType<typeof createRazorClient>;

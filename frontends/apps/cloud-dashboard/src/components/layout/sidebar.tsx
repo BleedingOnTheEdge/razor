@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Server, Activity, ShoppingBag, ShieldCheck, LayoutDashboard } from 'lucide-react';
+import { Server, Activity, ShoppingBag, ShieldCheck, LayoutDashboard, LifeBuoy } from 'lucide-react';
 import clsx from 'clsx';
 
 export function Sidebar() {
@@ -26,6 +26,12 @@ export function Sidebar() {
       label: 'Flow Runs & Lineage',
       icon: Activity,
       active: pathname.startsWith('/runs') || pathname.startsWith('/reports'),
+    },
+    {
+      href: '/tickets',
+      label: 'Support & Triage',
+      icon: LifeBuoy,
+      active: pathname.startsWith('/tickets'),
     },
   ];
 

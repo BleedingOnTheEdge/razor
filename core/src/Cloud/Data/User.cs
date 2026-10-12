@@ -37,4 +37,7 @@ internal sealed class User
 
     /// <summary>Gets or sets a value indicating whether the user may authenticate.</summary>
     public bool IsActive { get; set; } = true;
+
+    /// <summary>Gets or sets the user's role and permission level.</summary>
+    public UserRole Role { get; set; } = UserRole.Developer;
 }
