@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Server, Activity, ShoppingBag, ShieldCheck } from 'lucide-react';
+import { Server, Activity, ShoppingBag, ShieldCheck, LayoutDashboard } from 'lucide-react';
 import clsx from 'clsx';
 
 export function Sidebar() {
@@ -10,16 +10,22 @@ export function Sidebar() {
 
   const links = [
     {
+      href: '/',
+      label: 'System Overview',
+      icon: LayoutDashboard,
+      active: pathname === '/',
+    },
+    {
       href: '/instances',
       label: 'Engine Fleet',
       icon: Server,
-      active: pathname === '/' || pathname.startsWith('/instances'),
+      active: pathname.startsWith('/instances'),
     },
     {
       href: '/runs',
       label: 'Flow Runs & Lineage',
       icon: Activity,
-      active: pathname.startsWith('/runs'),
+      active: pathname.startsWith('/runs') || pathname.startsWith('/reports'),
     },
   ];
 
