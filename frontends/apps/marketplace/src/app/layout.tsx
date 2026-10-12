@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Navbar } from '@/components/layout/navbar';
+import { ToastProvider } from '@/components/ui/toast';
 
 export const metadata: Metadata = {
   title: 'Razor Marketplace — Curated Extensions & Plugins',
@@ -15,19 +16,21 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="min-h-screen bg-zinc-950 text-zinc-100 font-sans antialiased selection:bg-indigo-500/30 selection:text-indigo-200 flex flex-col justify-between">
-        <div>
-          <Navbar />
-          <main className="max-w-7xl mx-auto px-6 py-8" role="main">
-            {children}
-          </main>
-        </div>
-
-        <footer className="border-t border-zinc-800/80 py-8 text-center text-xs text-zinc-400 font-mono">
-          <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-            <span>Razor Marketplace • Curated Trading Ecosystem</span>
-            <span>Compatible with Razor Engine v1.0.0 LTS</span>
+        <ToastProvider>
+          <div>
+            <Navbar />
+            <main className="max-w-7xl mx-auto px-6 py-8" role="main">
+              {children}
+            </main>
           </div>
-        </footer>
+
+          <footer className="border-t border-zinc-800/80 py-8 text-center text-xs text-zinc-400 font-mono">
+            <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <span>Razor Marketplace • Curated Trading Ecosystem</span>
+              <span>Compatible with Razor Engine v1.0.0 LTS</span>
+            </div>
+          </footer>
+        </ToastProvider>
       </body>
     </html>
   );

@@ -1,0 +1,6 @@
+# Razor Marketplace robots.txt
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://marketplace.razor.trading/sitemap.xml
