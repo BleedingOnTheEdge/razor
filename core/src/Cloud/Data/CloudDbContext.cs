@@ -27,7 +27,7 @@ internal sealed class CloudDbContext : DbContext
 {
     /// <summary>Initialises a new instance of the <see cref="CloudDbContext"/> class.</summary>
     /// <param name="options">The context options, supplied by the factory or the test harness.</param>
-    internal CloudDbContext(DbContextOptions<CloudDbContext> options)
+    public CloudDbContext(DbContextOptions<CloudDbContext> options)
         : base(options)
     {
     }

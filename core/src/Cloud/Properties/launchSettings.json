@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "Cloud": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:5000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "CLOUD_DB_CONNECTION": "Host=localhost;Port=5432;Database=razor_cloud;Username=root;Password=lerd",
+        "CLOUD_MANAGEMENT_API_KEY": "dev-cloud-management-key-3000"
+      }
+    }
+  }
+}

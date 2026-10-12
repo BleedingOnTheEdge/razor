@@ -62,6 +62,16 @@ internal static class CloudApplication
     internal static async Task RunAsync(string[] args)
     {
         WebApplication app = Build(args);
+        using (IServiceScope scope = app.Services.CreateScope())
+        {
+            IDbContextFactory<CloudDbContext> factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<CloudDbContext>>();
+            CloudDbContext db = await factory.CreateDbContextAsync().ConfigureAwait(false);
+            await using (db.ConfigureAwait(false))
+            {
+                await db.Database.EnsureCreatedAsync().ConfigureAwait(false);
+            }
+        }
+
         await app.RunAsync().ConfigureAwait(false);
     }
 
