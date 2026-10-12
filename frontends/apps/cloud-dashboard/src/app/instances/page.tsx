@@ -3,8 +3,19 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getApiClient } from '@/lib/api-client';
+import { useToast } from '@/components/ui/toast';
 import { getInstanceStatusBadge, formatTimestamp, formatHash } from '@razor/ui-kit';
-import { Server, RefreshCw, ArrowRight } from 'lucide-react';
+import {
+  Server,
+  RefreshCw,
+  ArrowRight,
+  Plus,
+  Search,
+  CheckCircle2,
+  Copy,
+  Key,
+  Filter,
+} from 'lucide-react';
 
 interface InstanceItem {
   instanceId: string;
@@ -20,9 +31,30 @@ interface InstanceItem {
 }
 
 export default function InstancesPage() {
+  const toast = useToast();
+
   const [instances, setInstances] = useState<InstanceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Filters & search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+
+  // Register Engine modal state
+  const [registerModalOpen, setRegisterModalOpen] = useState(false);
+  const [regAccountId, setRegAccountId] = useState('acc-operator-01');
+  const [regLicenseId, setRegLicenseId] = useState('lic-enterprise-01');
+  const [regEngineId, setRegEngineId] = useState('engine-worker-01');
+  const [regName, setRegName] = useState('Primary Execution Engine');
+  const [registering, setRegistering] = useState(false);
+
+  // Credentials dialog after registration
+  const [createdCredentials, setCreatedCredentials] = useState<{
+    instanceId: string;
+    engineId: string;
+    apiKey: string;
+  } | null>(null);
 
   async function loadInstances() {
     setLoading(true);
@@ -46,25 +78,141 @@ export default function InstancesPage() {
     loadInstances();
   }, []);
 
+  async function handleRegisterSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setRegistering(true);
+    try {
+      const client = getApiClient();
+      const { data, error: err } = await client.POST('/api/engines', {
+        body: {
+          accountId: regAccountId,
+          licenseId: regLicenseId,
+          engineId: regEngineId,
+          name: regName,
+        },
+      });
+
+      if (err) {
+        toast.error('Registration Failed', 'Backend rejected engine registration.');
+      } else if (data) {
+        setCreatedCredentials(data);
+        setRegisterModalOpen(false);
+        toast.success('Engine Registered', `Instance ${formatHash(data.instanceId, 6)} provisioned.`);
+        await loadInstances();
+      }
+    } catch (e: any) {
+      toast.error('Registration Error', e?.message || 'Network communication error.');
+    } finally {
+      setRegistering(false);
+    }
+  }
+
+  const filteredInstances = instances.filter((inst) => {
+    const matchesSearch =
+      inst.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      inst.instanceId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      inst.engineId?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === 'ALL' ||
+      (statusFilter === 'CONNECTED' && inst.isConnected) ||
+      inst.status.toUpperCase() === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
+
+  const totalConnected = instances.filter((i) => i.isConnected).length;
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between pb-6 border-b border-zinc-800">
+    <div className="space-y-6 max-w-7xl">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-zinc-800">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-white">Engine Fleet</h2>
-          <p className="text-sm text-zinc-400 mt-1">Manage, inspect, and dispatch control commands to connected Razor Engines</p>
+          <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            <Server className="w-6 h-6 text-cyan-400" />
+            <span>Engine Fleet Directory</span>
+          </h2>
+          <p className="text-sm text-zinc-400 mt-1">
+            Supervise distributed runtime engines, inspect active TCP socket connections, and register new nodes.
+          </p>
         </div>
 
-        <button
-          onClick={loadInstances}
-          className="px-3 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-mono text-zinc-300 transition-colors flex items-center gap-2"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Refresh Fleet</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setRegisterModalOpen(true)}
+            className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-zinc-950 font-bold rounded-lg text-xs font-mono transition-colors flex items-center gap-2 shadow-lg shadow-cyan-950/20"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Register New Engine</span>
+          </button>
+
+          <button
+            onClick={loadInstances}
+            className="px-3 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-mono text-zinc-300 transition-colors flex items-center gap-2"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Summary Metrics Bar */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80 font-mono">
+          <span className="text-xs text-zinc-400 uppercase tracking-wider block">Total Fleet</span>
+          <span className="text-2xl font-bold text-white mt-1 block">{instances.length} engines</span>
+        </div>
+
+        <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80 font-mono">
+          <span className="text-xs text-zinc-400 uppercase tracking-wider block">Connected via TCP</span>
+          <span className="text-2xl font-bold text-emerald-400 mt-1 block flex items-center gap-2">
+            <span>{totalConnected} active</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          </span>
+        </div>
+
+        <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80 font-mono">
+          <span className="text-xs text-zinc-400 uppercase tracking-wider block">Manifest Extensions</span>
+          <span className="text-2xl font-bold text-cyan-400 mt-1 block">
+            {instances.reduce((acc, i) => acc + (i.manifestExtensionCount || 0), 0)} loaded
+          </span>
+        </div>
+      </div>
+
+      {/* Search & Filter Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80">
+        <div className="relative flex-1 min-w-[240px] max-w-md">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+          <input
+            type="text"
+            placeholder="Search by engine name, ID, or instance hash..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-xs font-mono text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 text-xs font-mono">
+          <Filter className="w-3.5 h-3.5 text-zinc-400" />
+          <span className="text-zinc-400">Filter Status:</span>
+          {['ALL', 'CONNECTED', 'ACTIVE', 'DRAINING', 'DECOMMISSIONED'].map((st) => (
+            <button
+              key={st}
+              onClick={() => setStatusFilter(st)}
+              className={`px-2.5 py-1 rounded-md text-[11px] transition-colors ${
+                statusFilter === st
+                  ? 'bg-zinc-800 text-white font-bold border border-zinc-700'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              {st}
+            </button>
+          ))}
+        </div>
       </div>
 
       {loading && (
-        <div className="py-12 text-center text-sm font-mono text-zinc-400">
+        <div className="py-16 text-center text-sm font-mono text-zinc-400">
           Fetching engine fleet from Cloud API...
         </div>
       )}
@@ -75,19 +223,23 @@ export default function InstancesPage() {
         </div>
       )}
 
-      {!loading && !error && instances.length === 0 && (
+      {!loading && !error && filteredInstances.length === 0 && (
         <div className="py-16 text-center rounded-xl border border-dashed border-zinc-800 bg-zinc-900/20">
           <div className="w-12 h-12 mx-auto rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400">
             <Server className="w-6 h-6" />
           </div>
-          <h3 className="mt-4 text-base font-semibold text-zinc-200">No Engine Instances Registered</h3>
-          <p className="mt-1 text-sm text-zinc-400">Register an engine instance via POST /api/engines or start a local worker.</p>
+          <h3 className="mt-4 text-base font-semibold text-zinc-200 font-mono">No Matching Engines Found</h3>
+          <p className="mt-1 text-sm text-zinc-400">
+            {searchQuery || statusFilter !== 'ALL'
+              ? 'Try adjusting your search criteria or status filter.'
+              : 'Register an engine instance to begin connecting algorithmic workers.'}
+          </p>
         </div>
       )}
 
-      {!loading && instances.length > 0 && (
+      {!loading && filteredInstances.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {instances.map((instance) => {
+          {filteredInstances.map((instance) => {
             const badge = getInstanceStatusBadge(instance.status);
             return (
               <div
@@ -152,13 +304,168 @@ export default function InstancesPage() {
                     href={`/instances/${instance.instanceId}`}
                     className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1.5"
                   >
-                    <span>Manage Engine</span>
+                    <span>Manage Engine & Slots</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Modal: Register New Engine */}
+      {registerModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reg-modal-title"
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+              <h3 id="reg-modal-title" className="text-base font-bold text-white font-mono flex items-center gap-2">
+                <Server className="w-4 h-4 text-cyan-400" />
+                <span>Register Engine Instance</span>
+              </h3>
+              <button
+                onClick={() => setRegisterModalOpen(false)}
+                className="text-zinc-400 hover:text-zinc-200 text-xs font-mono"
+              >
+                ✕ Cancel
+              </button>
+            </div>
+
+            <form onSubmit={handleRegisterSubmit} className="space-y-4 text-xs font-mono">
+              <div>
+                <label htmlFor="regAccountId" className="block text-zinc-300 mb-1 font-semibold">Account ID</label>
+                <input
+                  id="regAccountId"
+                  type="text"
+                  value={regAccountId}
+                  onChange={(e) => setRegAccountId(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="regLicenseId" className="block text-zinc-300 mb-1 font-semibold">License ID</label>
+                <input
+                  id="regLicenseId"
+                  type="text"
+                  value={regLicenseId}
+                  onChange={(e) => setRegLicenseId(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="regEngineId" className="block text-zinc-300 mb-1 font-semibold">Engine ID (Hostname/Pod)</label>
+                <input
+                  id="regEngineId"
+                  type="text"
+                  value={regEngineId}
+                  onChange={(e) => setRegEngineId(e.target.value)}
+                  placeholder="engine-prod-01"
+                  required
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="regName" className="block text-zinc-300 mb-1 font-semibold">Human-Readable Name</label>
+                <input
+                  id="regName"
+                  type="text"
+                  value={regName}
+                  onChange={(e) => setRegName(e.target.value)}
+                  placeholder="Primary NY4 Execution Node"
+                  required
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setRegisterModalOpen(false)}
+                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={registering}
+                  className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-zinc-950 font-bold rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{registering ? 'Registering...' : 'Provision Engine'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Newly Created Credentials */}
+      {createdCredentials && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div className="bg-zinc-900 border border-emerald-500/30 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+              <h3 className="text-base font-bold text-white font-mono flex items-center gap-2">
+                <Key className="w-4 h-4 text-emerald-400" />
+                <span>Engine Credentials Issued</span>
+              </h3>
+            </div>
+
+            <div className="space-y-3 text-xs font-mono">
+              <p className="text-emerald-300 font-sans">
+                Engine successfully registered with the Cloud Control Plane. Copy the generated API key below to configure the engine daemon.
+              </p>
+
+              <div className="p-3 rounded-lg bg-zinc-950 border border-zinc-800 space-y-2">
+                <div>
+                  <span className="text-zinc-500 block">Instance ID:</span>
+                  <span className="text-white font-bold block">{createdCredentials.instanceId}</span>
+                </div>
+                <div>
+                  <span className="text-zinc-500 block">Engine ID:</span>
+                  <span className="text-white block">{createdCredentials.engineId}</span>
+                </div>
+                <div>
+                  <span className="text-zinc-500 block">Engine API Key:</span>
+                  <div className="flex items-center justify-between gap-2 mt-1 bg-zinc-900 p-2 rounded border border-zinc-700">
+                    <span className="text-emerald-400 font-bold break-all">{createdCredentials.apiKey}</span>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(createdCredentials.apiKey);
+                        toast.success('Copied', 'API key copied to clipboard');
+                      }}
+                      className="shrink-0 p-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+                      title="Copy API key"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                onClick={() => setCreatedCredentials(null)}
+                className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-xs font-mono font-bold transition-colors"
+              >
+                Close & Proceed
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

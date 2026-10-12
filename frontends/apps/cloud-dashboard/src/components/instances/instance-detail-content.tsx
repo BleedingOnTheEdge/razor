@@ -1,0 +1,695 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { getApiClient } from '@/lib/api-client';
+import { useToast } from '@/components/ui/toast';
+import {
+  getInstanceStatusBadge,
+  getExtensionKindBadge,
+  getCommandStatusBadge,
+  formatTimestamp,
+  formatHash,
+} from '@razor/ui-kit';
+import {
+  ArrowLeft,
+  RefreshCw,
+  Send,
+  CheckCircle2,
+  SlidersHorizontal,
+  Server,
+  Zap,
+  RotateCcw,
+  PauseCircle,
+  PlayCircle,
+  Trash2,
+  Plus,
+} from 'lucide-react';
+
+const COMMAND_PRESETS = [
+  {
+    label: 'Ping (1001)',
+    id: 1001,
+    type: 'Ping',
+    params: '{}',
+    icon: Zap,
+    description: 'Verify round-trip latency & TCP socket liveness',
+  },
+  {
+    label: 'Soft Reload (1002)',
+    id: 1002,
+    type: 'SoftReload',
+    params: '{\n  "graceful": true\n}',
+    icon: RotateCcw,
+    description: 'Hot-reload plugins without dropping open orders',
+  },
+  {
+    label: 'Pause Trading (1003)',
+    id: 1003,
+    type: 'PauseTrading',
+    params: '{\n  "reason": "operator_pause"\n}',
+    icon: PauseCircle,
+    description: 'Halt new order generation across all strategies',
+  },
+  {
+    label: 'Resume Trading (1004)',
+    id: 1004,
+    type: 'ResumeTrading',
+    params: '{}',
+    icon: PlayCircle,
+    description: 'Resume normal trading lifecycle',
+  },
+  {
+    label: 'Drain (1005)',
+    id: 1005,
+    type: 'Drain',
+    params: '{\n  "drainTimeoutSeconds": 60\n}',
+    icon: Trash2,
+    description: 'Cancel open quotes and transition to Draining',
+  },
+];
+
+export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
+  const toast = useToast();
+
+  const [instance, setInstance] = useState<any>(null);
+  const [commands, setCommands] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Command dispatch state
+  const [cmdId, setCmdId] = useState(1001);
+  const [cmdType, setCmdType] = useState('Ping');
+  const [cmdParams, setCmdParams] = useState('{}');
+  const [dispatching, setDispatching] = useState(false);
+
+  // Slot assignment modal state
+  const [slotModalOpen, setSlotModalOpen] = useState(false);
+  const [selectedSlotKind, setSelectedSlotKind] = useState<'Adapter' | 'Strategy' | 'NeuralNetwork' | 'HookPlugin'>('Strategy');
+  const [selectedExtensionName, setSelectedExtensionName] = useState('');
+  const [isSlotActive, setIsSlotActive] = useState(true);
+  const [updatingSlot, setUpdatingSlot] = useState(false);
+
+  async function loadDetails() {
+    setLoading(true);
+    setError(null);
+    try {
+      const client = getApiClient();
+      const [instRes, cmdsRes] = await Promise.all([
+        client.GET('/api/instances/{instanceId}', {
+          params: { path: { instanceId } },
+        }),
+        client.GET('/api/instances/{instanceId}/commands', {
+          params: { path: { instanceId } },
+        }),
+      ]);
+
+      if (instRes.data) {
+        setInstance(instRes.data);
+      } else {
+        setError('Engine instance not found or decommissioned.');
+      }
+
+      if (cmdsRes.data) {
+        setCommands(cmdsRes.data);
+      }
+    } catch (e: any) {
+      setError(e?.message || 'Error communicating with Cloud API backend.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadDetails();
+  }, [instanceId]);
+
+  function applyPreset(preset: typeof COMMAND_PRESETS[number]) {
+    setCmdId(preset.id);
+    setCmdType(preset.type);
+    setCmdParams(preset.params);
+    toast.info('Preset Loaded', `Populated ${preset.type} parameters`);
+  }
+
+  async function handleDispatch(e: React.FormEvent) {
+    e.preventDefault();
+    // Validate JSON parameters
+    try {
+      if (cmdParams.trim()) {
+        JSON.parse(cmdParams);
+      }
+    } catch {
+      toast.error('Invalid JSON', 'Command parameters must be valid JSON');
+      return;
+    }
+
+    setDispatching(true);
+    try {
+      const client = getApiClient();
+      const { data, error: err } = await client.POST('/api/instances/{instanceId}/commands', {
+        params: { path: { instanceId } },
+        body: {
+          commandId: Number(cmdId),
+          commandType: cmdType,
+          parameters: cmdParams,
+          timeoutSeconds: 30,
+        },
+      });
+
+      if (err) {
+        toast.error('Dispatch Failed', 'The backend rejected the engine command.');
+      } else if (data) {
+        toast.success(
+          'Command Dispatched',
+          `Dispatched #${cmdId} (${cmdType}). Correlation: ${formatHash(data.correlationId, 6)}`
+        );
+        await loadDetails();
+      }
+    } catch (e: any) {
+      toast.error('Dispatch Error', e?.message || 'Network communication error.');
+    } finally {
+      setDispatching(false);
+    }
+  }
+
+  async function handleSlotSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedExtensionName.trim()) {
+      toast.error('Missing Extension Name', 'Please select or type an extension name.');
+      return;
+    }
+
+    setUpdatingSlot(true);
+    try {
+      const client = getApiClient();
+      const { data, error: err } = await client.PUT('/api/instances/{instanceId}/profile/selections', {
+        params: { path: { instanceId } },
+        body: {
+          kind: selectedSlotKind,
+          name: selectedExtensionName.trim(),
+          isActive: isSlotActive,
+        },
+      });
+
+      if (err) {
+        toast.error('Slot Update Failed', 'Engine profile rejected selection.');
+      } else if (data) {
+        toast.success('Slot Configured', `Updated ${selectedSlotKind} slot to ${selectedExtensionName}`);
+        setSlotModalOpen(false);
+        await loadDetails();
+      }
+    } catch (e: any) {
+      toast.error('Slot Update Error', e?.message || 'Network error.');
+    } finally {
+      setUpdatingSlot(false);
+    }
+  }
+
+  function openSlotModal(kind: 'Adapter' | 'Strategy' | 'NeuralNetwork' | 'HookPlugin', defaultName?: string) {
+    setSelectedSlotKind(kind);
+    setSelectedExtensionName(defaultName || '');
+    setIsSlotActive(true);
+    setSlotModalOpen(true);
+  }
+
+  const badge = instance ? getInstanceStatusBadge(instance.status) : null;
+
+  return (
+    <div className="space-y-6 max-w-6xl">
+      {/* Back Link */}
+      <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
+        <Link href="/instances" className="hover:text-zinc-200 flex items-center gap-1">
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Fleet</span>
+        </Link>
+        <span>/</span>
+        <span className="text-zinc-300">Engine {instance?.name || formatHash(instanceId, 6)}</span>
+      </div>
+
+      {/* Header */}
+      <div className="flex items-start justify-between pb-6 border-b border-zinc-800">
+        <div>
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+              <Server className="w-6 h-6 text-cyan-400" />
+              <span>{instance?.name || instance?.engineId || 'Engine Instance'}</span>
+            </h2>
+            {badge && (
+              <span className={`px-2.5 py-1 rounded-full text-xs font-mono font-medium ${badge.className}`}>
+                {badge.label}
+              </span>
+            )}
+            <span
+              className={`px-2.5 py-1 rounded-full text-xs font-mono font-medium flex items-center gap-1.5 ${
+                instance?.isConnected
+                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                  : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  instance?.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'
+                }`}
+              />
+              {instance?.isConnected ? 'Connected' : 'Offline'}
+            </span>
+          </div>
+          <p className="text-xs font-mono text-zinc-400 mt-1">Instance ID: {instanceId}</p>
+        </div>
+
+        <button
+          onClick={loadDetails}
+          className="px-3 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-mono text-zinc-300 transition-colors flex items-center gap-2"
+        >
+          <RefreshCw className="w-3.5 h-3.5" />
+          <span>Refresh</span>
+        </button>
+      </div>
+
+      {loading && (
+        <div className="py-12 text-center text-sm font-mono text-zinc-400">
+          Loading engine configuration & state...
+        </div>
+      )}
+
+      {error && (
+        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm font-mono">
+          {error}
+        </div>
+      )}
+
+      {instance && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column: Active Selections & Manifest */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Active Slots Card */}
+            <div className="p-6 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider font-mono flex items-center gap-2">
+                    <SlidersHorizontal className="w-4 h-4 text-cyan-400" />
+                    <span>Active Extension Profile Slots</span>
+                  </h3>
+                  <p className="text-xs text-zinc-400 mt-0.5 font-sans">
+                    Zero-downtime hot-swappable slots currently occupied on this running engine.
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => openSlotModal('Strategy')}
+                  className="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-zinc-950 font-bold text-xs font-mono transition-colors flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Configure Slot</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Adapter Slot */}
+                <div className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800/50 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono text-zinc-400">Adapter Slot</span>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-blue-500/10 text-blue-400">
+                        Feed / Broker
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold text-white mt-2 block font-mono">
+                      {instance.activeSelections?.adapter || 'None (Dormant)'}
+                    </span>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-zinc-800/50 flex justify-end">
+                    <button
+                      onClick={() => openSlotModal('Adapter', instance.activeSelections?.adapter)}
+                      className="text-xs font-mono text-cyan-400 hover:text-cyan-300 transition-colors"
+                    >
+                      Hot-Swap Adapter →
+                    </button>
+                  </div>
+                </div>
+
+                {/* Strategy Slot */}
+                <div className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800/50 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono text-zinc-400">Strategy Slot</span>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400">
+                        Order Logic
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold text-white mt-2 block font-mono">
+                      {instance.activeSelections?.strategy || 'None (Dormant)'}
+                    </span>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-zinc-800/50 flex justify-end">
+                    <button
+                      onClick={() => openSlotModal('Strategy', instance.activeSelections?.strategy)}
+                      className="text-xs font-mono text-cyan-400 hover:text-cyan-300 transition-colors"
+                    >
+                      Hot-Swap Strategy →
+                    </button>
+                  </div>
+                </div>
+
+                {/* Neural Network Slot */}
+                <div className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800/50 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono text-zinc-400">Neural Network Slot</span>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-purple-500/10 text-purple-400">
+                        Inference
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold text-white mt-2 block font-mono">
+                      {instance.activeSelections?.neuralNetwork || 'None'}
+                    </span>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-zinc-800/50 flex justify-end">
+                    <button
+                      onClick={() => openSlotModal('NeuralNetwork', instance.activeSelections?.neuralNetwork)}
+                      className="text-xs font-mono text-cyan-400 hover:text-cyan-300 transition-colors"
+                    >
+                      Hot-Swap Model →
+                    </button>
+                  </div>
+                </div>
+
+                {/* Hook Plugins Slot */}
+                <div className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800/50 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono text-zinc-400">Hook Plugins</span>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-rose-500/10 text-rose-400">
+                        Interceptors
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold text-white mt-2 block font-mono">
+                      {instance.activeSelections?.hookPlugins?.length || 0} loaded
+                    </span>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-zinc-800/50 flex justify-end">
+                    <button
+                      onClick={() => openSlotModal('HookPlugin')}
+                      className="text-xs font-mono text-cyan-400 hover:text-cyan-300 transition-colors"
+                    >
+                      Add Hook Plugin →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Manifest Extensions Card */}
+            <div className="p-6 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider font-mono">
+                    Reported Extension Manifest
+                  </h3>
+                  <p className="text-xs text-zinc-400 mt-0.5 font-sans">
+                    All binaries and scripts discovered and registered by the engine during bootstrap.
+                  </p>
+                </div>
+                <span className="text-xs text-zinc-400 font-mono">
+                  {instance.manifest?.length || 0} registered
+                </span>
+              </div>
+
+              {!instance.manifest || instance.manifest.length === 0 ? (
+                <div className="py-8 text-center text-xs font-mono text-zinc-400">
+                  No extensions reported in engine manifest yet.
+                </div>
+              ) : (
+                <div className="divide-y divide-zinc-800/50">
+                  {instance.manifest.map((ext: any, idx: number) => {
+                    const kindBadge = getExtensionKindBadge(ext.kind);
+                    return (
+                      <div
+                        key={idx}
+                        className="py-3 flex items-center justify-between text-xs font-mono"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${kindBadge.className}`}>
+                            {kindBadge.label}
+                          </span>
+                          <span className="text-zinc-200 font-semibold">{ext.name}</span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className="text-zinc-400">{formatTimestamp(ext.reportedAt)}</span>
+                          <button
+                            onClick={() => openSlotModal(ext.kind, ext.name)}
+                            className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-cyan-400 text-[11px] transition-colors"
+                          >
+                            Assign Slot
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Column: Command Dispatch & History */}
+          <div className="space-y-6">
+            {/* Dispatch Command Form */}
+            <div className="p-6 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-4">
+              <div>
+                <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider font-mono flex items-center gap-2">
+                  <Send className="w-4 h-4 text-cyan-400" />
+                  <span>Dispatch Engine Command</span>
+                </h3>
+                <p className="text-xs text-zinc-400 mt-0.5 font-sans">
+                  Issue control instructions directly across the secure TCP/WebSocket channel.
+                </p>
+              </div>
+
+              {/* Presets Grid */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider block">
+                  Quick Presets
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  {COMMAND_PRESETS.map((preset) => {
+                    const Icon = preset.icon;
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() => applyPreset(preset)}
+                        className={`p-2 rounded-lg border text-left text-xs font-mono transition-colors flex items-center gap-2 ${
+                          cmdId === preset.id
+                            ? 'bg-cyan-500/10 border-cyan-500/40 text-cyan-300'
+                            : 'bg-zinc-950/60 border-zinc-800 hover:border-zinc-700 text-zinc-300'
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5 shrink-0 text-cyan-400" />
+                        <span className="truncate">{preset.type}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <form onSubmit={handleDispatch} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-mono text-zinc-400 mb-1">
+                    Numeric Command ID
+                  </label>
+                  <input
+                    value={cmdId}
+                    onChange={(e) => setCmdId(Number(e.target.value))}
+                    type="number"
+                    className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-cyan-500"
+                    placeholder="1001"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-zinc-400 mb-1">
+                    Command Type
+                  </label>
+                  <input
+                    value={cmdType}
+                    onChange={(e) => setCmdType(e.target.value)}
+                    type="text"
+                    className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-cyan-500"
+                    placeholder="Ping / SoftReload"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-zinc-400 mb-1">
+                    Parameters (JSON)
+                  </label>
+                  <textarea
+                    value={cmdParams}
+                    onChange={(e) => setCmdParams(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-cyan-500"
+                    placeholder="{}"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={dispatching}
+                  className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-zinc-950 font-semibold rounded-lg text-xs font-mono transition-colors flex items-center justify-center gap-2"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{dispatching ? 'Dispatching...' : 'Dispatch to Engine'}</span>
+                </button>
+              </form>
+            </div>
+
+            {/* Dispatched Commands History */}
+            <div className="p-6 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-4">
+              <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider font-mono">
+                Recent Commands ({commands.length})
+              </h3>
+
+              {commands.length === 0 ? (
+                <div className="py-4 text-center text-xs font-mono text-zinc-400">
+                  No commands dispatched to this engine yet.
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                  {commands.map((cmd) => {
+                    const cmdBadge = getCommandStatusBadge(cmd.status);
+                    return (
+                      <div
+                        key={cmd.commandId}
+                        className="p-3 rounded-lg bg-zinc-950/60 border border-zinc-800/50 space-y-1 text-xs font-mono"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-zinc-200 font-bold">
+                            #{cmd.numericCommandId} {cmd.commandType}
+                          </span>
+                          <span className={`px-2 py-0.5 rounded text-[10px] ${cmdBadge.className}`}>
+                            {cmdBadge.label}
+                          </span>
+                        </div>
+                        <div className="text-zinc-400 text-[11px] flex items-center justify-between">
+                          <span>Correlation: {formatHash(cmd.correlationId, 4)}</span>
+                          <span>{formatTimestamp(cmd.submittedAt)}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Slot Assignment */}
+      {slotModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="slot-modal-title"
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+              <h3 id="slot-modal-title" className="text-base font-bold text-white font-mono flex items-center gap-2">
+                <SlidersHorizontal className="w-4 h-4 text-cyan-400" />
+                <span>Configure Extension Slot</span>
+              </h3>
+              <button
+                onClick={() => setSlotModalOpen(false)}
+                className="text-zinc-400 hover:text-zinc-200 text-xs font-mono"
+              >
+                ✕ Cancel
+              </button>
+            </div>
+
+            <form onSubmit={handleSlotSubmit} className="space-y-4 text-xs font-mono">
+              <div>
+                <label className="block text-zinc-300 mb-1 font-semibold">Slot Kind</label>
+                <select
+                  value={selectedSlotKind}
+                  onChange={(e) => setSelectedSlotKind(e.target.value as any)}
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-cyan-500"
+                >
+                  <option value="Adapter">Adapter (Feed / Broker)</option>
+                  <option value="Strategy">Strategy (Order Logic)</option>
+                  <option value="NeuralNetwork">Neural Network (ONNX Model)</option>
+                  <option value="HookPlugin">Hook Plugin</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-zinc-300 mb-1 font-semibold">Extension Name</label>
+                <input
+                  type="text"
+                  value={selectedExtensionName}
+                  onChange={(e) => setSelectedExtensionName(e.target.value)}
+                  placeholder="e.g. BinanceFuturesAdapter, TrendFollower"
+                  required
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-cyan-500"
+                />
+
+                {/* Suggestions from manifest */}
+                {instance?.manifest && instance.manifest.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    <span className="text-[11px] text-zinc-500">From Manifest:</span>
+                    <div className="flex flex-wrap gap-1">
+                      {instance.manifest
+                        .filter((m: any) => m.kind === selectedSlotKind || selectedSlotKind === 'HookPlugin')
+                        .map((m: any, idx: number) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setSelectedExtensionName(m.name)}
+                            className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-[10px] transition-colors"
+                          >
+                            {m.name}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="isActiveCheck"
+                  checked={isSlotActive}
+                  onChange={(e) => setIsSlotActive(e.target.checked)}
+                  className="rounded border-zinc-800 bg-zinc-950 text-cyan-600 focus:ring-0"
+                />
+                <label htmlFor="isActiveCheck" className="text-zinc-300 font-sans cursor-pointer">
+                  Activate slot immediately on engine
+                </label>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSlotModalOpen(false)}
+                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={updatingSlot}
+                  className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-zinc-950 font-bold rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>{updatingSlot ? 'Saving...' : 'Apply Slot Selection'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

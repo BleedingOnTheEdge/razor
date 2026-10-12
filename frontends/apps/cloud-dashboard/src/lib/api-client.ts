@@ -1,5 +1,7 @@
 import { createRazorClient, type RazorClient } from '@razor/api-client';
 
+export type * from '@razor/api-client';
+
 let clientInstance: RazorClient | null = null;
 
 export function getApiClient(): RazorClient {
