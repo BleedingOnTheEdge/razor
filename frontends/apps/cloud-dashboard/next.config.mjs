@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   reactStrictMode: true,
   transpilePackages: ['@razor/contracts', '@razor/api-client', '@razor/ui-kit'],
   env: {
