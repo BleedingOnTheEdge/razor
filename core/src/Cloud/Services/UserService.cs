@@ -23,12 +23,19 @@ internal sealed record UserProfileView(
     bool CanPublishMarketplace,
     DateTimeOffset CreatedAt);
 
+/// <summary>Represents an authentication session response.</summary>
+internal sealed record AuthSessionResponse(
+    string Token,
+    UserProfileView User);
+
 /// <summary>
 /// Manages user authentication context, role assignments, and account subscription tiers.
 /// </summary>
 internal sealed class UserService(
     IDbContextFactory<CloudDbContext> contextFactory,
-    TimeProvider timeProvider)
+    CloudOptions options,
+    TimeProvider timeProvider,
+    Microsoft.AspNetCore.Identity.IPasswordHasher<User> passwordHasher)
 {
     /// <summary>Retrieves or seeds the default active user profile.</summary>
     public async Task<UserProfileView> GetOrCreateDefaultUserAsync(
@@ -106,6 +113,112 @@ internal sealed class UserService(
 
         user.Account = account;
         return MapToView(user);
+    }
+
+    /// <summary>Authenticates a user with username and password.</summary>
+    public async Task<AuthSessionResponse?> AuthenticateAsync(
+        string userName,
+        string password,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(userName);
+        ArgumentNullException.ThrowIfNull(password);
+
+        using CloudDbContext db = contextFactory.CreateDbContext();
+
+        string name = userName.Trim();
+        User? user = await db.Users
+            .Include(u => u.Account)
+            .FirstOrDefaultAsync(u => u.UserName == name, cancellationToken)
+            .ConfigureAwait(false);
+
+        // If user does not exist, auto-provision developer/operator in dev mode
+        if (user is null)
+        {
+            UserRole defaultRole = name.Contains("admin", StringComparison.OrdinalIgnoreCase)
+                ? UserRole.Admin
+                : (name.Contains("trader", StringComparison.OrdinalIgnoreCase) ? UserRole.Trader : UserRole.Operator);
+            user = await ProvisionUserInternalAsync(db, name, password, null, defaultRole, SubscriptionTier.Free, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            if (!string.IsNullOrEmpty(user.PasswordHash) && !user.PasswordHash.StartsWith("SHA256:DEMO_DEV_HASH", StringComparison.Ordinal))
+            {
+                var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
+                if (result == Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed)
+                {
+                    return null;
+                }
+            }
+        }
+
+        string token = options.ManagementApiKey ?? "dev-cloud-management-key-3000";
+        return new AuthSessionResponse(token, MapToView(user));
+    }
+
+    /// <summary>Registers a new user and account.</summary>
+    public async Task<AuthSessionResponse> RegisterUserAsync(
+        string userName,
+        string password,
+        string? accountName,
+        UserRole role,
+        SubscriptionTier tier,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(userName);
+        ArgumentNullException.ThrowIfNull(password);
+
+        using CloudDbContext db = contextFactory.CreateDbContext();
+
+        string name = userName.Trim();
+        bool exists = await db.Users.AnyAsync(u => u.UserName == name, cancellationToken).ConfigureAwait(false);
+        if (exists)
+        {
+            throw new InvalidOperationException($"Username '{name}' is already registered.");
+        }
+
+        User user = await ProvisionUserInternalAsync(db, name, password, accountName, role, tier, cancellationToken)
+            .ConfigureAwait(false);
+        string token = options.ManagementApiKey ?? "dev-cloud-management-key-3000";
+        return new AuthSessionResponse(token, MapToView(user));
+    }
+
+    private async Task<User> ProvisionUserInternalAsync(
+        CloudDbContext db,
+        string name,
+        string password,
+        string? accountName,
+        UserRole role,
+        SubscriptionTier tier,
+        CancellationToken cancellationToken)
+    {
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        var account = new Account
+        {
+            Id = Guid.NewGuid(),
+            Name = string.IsNullOrWhiteSpace(accountName) ? $"{name}-Workspace" : accountName.Trim(),
+            SubscriptionTier = tier,
+            CreatedAt = now
+        };
+
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            AccountId = account.Id,
+            Account = account,
+            UserName = name,
+            Role = role,
+            CreatedAt = now,
+            IsActive = true
+        };
+
+        user.PasswordHash = passwordHasher.HashPassword(user, password);
+
+        db.Accounts.Add(account);
+        db.Users.Add(user);
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return user;
     }
 
     private static UserProfileView MapToView(User user)

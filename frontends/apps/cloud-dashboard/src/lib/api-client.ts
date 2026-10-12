@@ -2,17 +2,23 @@ import { createRazorClient, type RazorClient } from '@razor/api-client';
 
 export type * from '@razor/api-client';
 
-let clientInstance: RazorClient | null = null;
-
 export function getApiClient(): RazorClient {
-  if (!clientInstance) {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
-    const apiKey = process.env.NEXT_PUBLIC_MANAGEMENT_API_KEY || undefined;
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+  let apiKey = process.env.NEXT_PUBLIC_MANAGEMENT_API_KEY;
 
-    clientInstance = createRazorClient({
-      baseUrl,
-      apiKey,
-    });
+  if (typeof window !== 'undefined') {
+    const savedToken = localStorage.getItem('razor_auth_token');
+    if (savedToken) {
+      apiKey = savedToken;
+    }
   }
-  return clientInstance;
+
+  if (!apiKey && process.env.NODE_ENV !== 'production') {
+    apiKey = 'dev-cloud-management-key-3000';
+  }
+
+  return createRazorClient({
+    baseUrl,
+    apiKey,
+  });
 }
