@@ -395,6 +395,26 @@ export interface RazorPaths {
         200: { content: { 'application/json': MarketplaceItemPayload[] } };
       };
     };
+    post: {
+      requestBody: {
+        content: {
+          'application/json': {
+            name: string;
+            kind: string;
+            version?: string;
+            author: string;
+            description?: string;
+            price?: number;
+            sdkVersion?: string;
+            isCurated?: boolean;
+          };
+        };
+      };
+      responses: {
+        201: { content: { 'application/json': MarketplaceItemPayload } };
+        400: { content: { 'application/json': { errors: Record<string, string[]> } } };
+      };
+    };
   };
   '/api/marketplace/items/{itemId}': {
     get: {
@@ -403,6 +423,34 @@ export interface RazorPaths {
       };
       responses: {
         200: { content: { 'application/json': MarketplaceItemPayload } };
+        404: { content: { 'application/json': unknown } };
+      };
+    };
+  };
+  '/api/marketplace/items/{itemId}/reviews': {
+    post: {
+      parameters: {
+        path: { itemId: string };
+      };
+      requestBody: {
+        content: {
+          'application/json': {
+            author: string;
+            rating: number;
+            comment?: string;
+          };
+        };
+      };
+      responses: {
+        200: {
+          content: {
+            'application/json': {
+              itemId: string;
+              newRating: number;
+              message: string;
+            };
+          };
+        };
         404: { content: { 'application/json': unknown } };
       };
     };
@@ -520,6 +568,8 @@ export interface RankedRunResultPayload {
   comparable: boolean;
 }
 
+export type EngineInstancePayload = RazorPaths['/api/instances']['get']['responses'][200]['content']['application/json'][number];
+
 export interface MarketplaceItemPayload {
   id: string;
   name: string;
@@ -530,8 +580,14 @@ export interface MarketplaceItemPayload {
   price: number;
   sdkVersion: string;
   isCurated: boolean;
+  downloads?: number;
   downloadsCount: number;
+  rating?: number;
   createdAt: string;
+  tags?: string[];
+  permissions?: string[];
+  readmeMarkdown?: string;
+  changelog?: Array<{ version: string; date: string; changes: string[] }>;
 }
 
 export interface RazorClientConfig {

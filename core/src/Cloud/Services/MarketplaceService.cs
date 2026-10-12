@@ -226,4 +226,34 @@ internal sealed class MarketplaceService(
 
         return [.. acquisitions.OrderByDescending(a => a.AcquiredAt)];
     }
+
+    /// <summary>
+    /// Submits a user rating for a marketplace item, updating the cumulative score.
+    /// </summary>
+    /// <param name="itemId">The item identifier.</param>
+    /// <param name="rating">The rating score (1.0 to 5.0).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The updated marketplace item, or <see langword="null"/> if not found.</returns>
+    public async Task<MarketplaceItem?> SubmitRatingAsync(
+        Guid itemId,
+        double rating,
+        CancellationToken cancellationToken = default)
+    {
+        using CloudDbContext db = contextFactory.CreateDbContext();
+
+        MarketplaceItem? item = await db.MarketplaceItems
+            .FirstOrDefaultAsync(i => i.Id == itemId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (item is null)
+        {
+            return null;
+        }
+
+        double clamped = Math.Clamp(rating, 1.0, 5.0);
+        item.Rating = Math.Round(((item.Rating * 4.0) + clamped) / 5.0, 1);
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        return item;
+    }
 }

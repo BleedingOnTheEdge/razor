@@ -697,6 +697,52 @@ public sealed class CloudExtendedEndpointsTests
         var badAcqReq = new AcquireMarketplaceItemRequest { ItemId = Guid.NewGuid(), AccountId = account.AccountId };
         using HttpResponseMessage badAcqResp = await PostJsonRelativeAsync(client, $"/api/marketplace/items/{Guid.NewGuid()}/acquire", badAcqReq).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.NotFound, badAcqResp.StatusCode);
+
+        // Publish via endpoint succeeds (201 Created)
+        var publishReq = new PublishMarketplaceItemRequest
+        {
+            Name = "DeepLstmAlpha",
+            Kind = ExtensionKind.NeuralNetwork,
+            Version = "1.2.0",
+            Author = "QuantLab",
+            Description = "LSTM price prediction model",
+            Price = 49.99m,
+            SdkVersion = "1.0.0",
+            IsCurated = true
+        };
+        using HttpResponseMessage pubResp = await PostJsonRelativeAsync(client, "/api/marketplace/items", publishReq).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.Created, pubResp.StatusCode);
+        MarketplaceItemView? pubItem = await ReadJsonAsync<MarketplaceItemView>(pubResp).ConfigureAwait(true);
+        Assert.NotNull(pubItem);
+        Assert.Equal("DeepLstmAlpha", pubItem.Name);
+        Assert.Equal(ExtensionKind.NeuralNetwork, pubItem.Kind);
+        Assert.Equal(49.99m, pubItem.Price);
+        Assert.True(pubItem.IsCurated);
+        Assert.Equal(0, pubItem.DownloadsCount);
+
+        // Invalid publish missing name returns 400 Bad Request
+        var badPublishReq = new PublishMarketplaceItemRequest { Name = "  ", Author = "Auth" };
+        using HttpResponseMessage badPubResp = await PostJsonRelativeAsync(client, "/api/marketplace/items", badPublishReq).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.BadRequest, badPubResp.StatusCode);
+
+        // Review endpoint updates rating (200 OK)
+        var reviewReq = new SubmitMarketplaceReviewRequest
+        {
+            ItemId = pubItem.Id,
+            Author = "HeadOfTrading",
+            Rating = 4.0,
+            Comment = "Excellent zero-alloc latency in production."
+        };
+        using HttpResponseMessage reviewResp = await PostJsonRelativeAsync(client, $"/api/marketplace/items/{pubItem.Id}/reviews", reviewReq).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.OK, reviewResp.StatusCode);
+        SubmitMarketplaceReviewResponseView? reviewResult = await ReadJsonAsync<SubmitMarketplaceReviewResponseView>(reviewResp).ConfigureAwait(true);
+        Assert.NotNull(reviewResult);
+        Assert.Equal(pubItem.Id, reviewResult.ItemId);
+        Assert.True(reviewResult.NewRating <= 5.0 && reviewResult.NewRating >= 1.0);
+
+        // Review non-existent item returns 404
+        using HttpResponseMessage badReviewResp = await PostJsonRelativeAsync(client, $"/api/marketplace/items/{Guid.NewGuid()}/reviews", reviewReq).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.NotFound, badReviewResp.StatusCode);
     }
 
     [Fact]

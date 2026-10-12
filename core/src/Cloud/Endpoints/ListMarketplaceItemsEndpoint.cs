@@ -60,6 +60,9 @@ internal sealed class MarketplaceItemView
     /// <summary>Gets or sets the download count.</summary>
     public int Downloads { get; set; }
 
+    /// <summary>Gets the download count alias for frontend compatibility.</summary>
+    public int DownloadsCount => Downloads;
+
     /// <summary>Gets or sets the average rating.</summary>
     public double Rating { get; set; }
 
