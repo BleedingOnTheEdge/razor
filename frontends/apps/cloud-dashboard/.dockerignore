@@ -1,0 +1,8 @@
+node_modules
+.next
+.git
+.nx
+dist
+coverage
+*.log
+.env.local
