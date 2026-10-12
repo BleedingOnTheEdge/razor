@@ -489,11 +489,11 @@ export default function InstancesPage() {
                   <span className="text-zinc-500 block">Launch Command:</span>
                   <div className="flex items-center justify-between gap-2 mt-1 bg-zinc-900 p-2 rounded border border-zinc-700">
                     <span className="text-cyan-300 font-mono text-[11px] break-all">
-                      dotnet run --project core/src/Engine -- --instance {createdCredentials.instanceId} --key {createdCredentials.apiKey}
+                      dotnet run --project core/src/Engine -- --instance {createdCredentials.instanceId} --engine-id {createdCredentials.engineId} --key &quot;{createdCredentials.apiKey}&quot; --username {user?.userName || 'pro-trader'} --password trader123 --endpoint ws://localhost:5000/engine
                     </span>
                     <button
                       onClick={() => {
-                        const cmd = `dotnet run --project core/src/Engine -- --instance ${createdCredentials.instanceId} --key ${createdCredentials.apiKey}`;
+                        const cmd = `dotnet run --project core/src/Engine -- --instance ${createdCredentials.instanceId} --engine-id ${createdCredentials.engineId} --key "${createdCredentials.apiKey}" --username ${user?.userName || 'pro-trader'} --password trader123 --endpoint ws://localhost:5000/engine`;
                         navigator.clipboard.writeText(cmd);
                         toast.success('Copied', 'Launch command copied to clipboard');
                       }}
