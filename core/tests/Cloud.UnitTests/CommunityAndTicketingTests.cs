@@ -294,12 +294,19 @@ public sealed class CommunityAndTicketingTests
         Assert.Equal(HttpStatusCode.NotFound, ticket404.StatusCode);
 
         // 2. AddTicketMessage non-existent returns 404
-        var replyPayload = new { AuthorName = "Operator", Message = "Hello" };
+        var replyPayload = new
+        {
+            AuthorName = "Operator",
+            Message = "Hello"
+        };
         using HttpResponseMessage ticketMsg404 = await PostJsonRelativeAsync(client, $"/api/tickets/{nonExistent}/messages", replyPayload).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.NotFound, ticketMsg404.StatusCode);
 
         // 3. UpdateTicketStatus non-existent returns 404
-        var statusPayload = new { Status = "Resolved" };
+        var statusPayload = new
+        {
+            Status = "Resolved"
+        };
         using HttpResponseMessage ticketStatus404 = await PatchJsonRelativeAsync(client, $"/api/tickets/{nonExistent}/status", statusPayload).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.NotFound, ticketStatus404.StatusCode);
 
@@ -323,17 +330,29 @@ public sealed class CommunityAndTicketingTests
         Assert.Equal(HttpStatusCode.NotFound, thread404.StatusCode);
 
         // 6. AddCommunityReply non-existent returns 404
-        var commReply = new { AuthorName = "Dev", Content = "Test reply" };
+        var commReply = new
+        {
+            AuthorName = "Dev",
+            Content = "Test reply"
+        };
         using HttpResponseMessage commReply404 = await PostJsonRelativeAsync(client, $"/api/community/threads/{nonExistent}/replies", commReply).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.NotFound, commReply404.StatusCode);
 
         // 7. UpgradeSubscription non-existent returns 404
-        var upgradeReq = new { Tier = "Enterprise" };
+        var upgradeReq = new
+        {
+            Tier = "Enterprise"
+        };
         using HttpResponseMessage upgrade404 = await PostJsonRelativeAsync(client, $"/api/accounts/{nonExistent}/subscription", upgradeReq).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.NotFound, upgrade404.StatusCode);
 
         // 8. SubmitCommand non-existent returns 404
-        var cmdReq = new { InstanceId = nonExistent, CommandId = 1, CommandType = "Ping" };
+        var cmdReq = new
+        {
+            InstanceId = nonExistent,
+            CommandId = 1,
+            CommandType = "Ping"
+        };
         using HttpResponseMessage cmd404 = await PostJsonRelativeAsync(client, $"/api/instances/{nonExistent}/commands", cmdReq).ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.NotFound, cmd404.StatusCode);
     }

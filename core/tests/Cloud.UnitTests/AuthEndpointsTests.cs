@@ -132,14 +132,22 @@ public sealed class AuthEndpointsTests
         using HttpClient client = factory.CreateClient();
 
         // 1. Missing username/password in register -> 400
-        var emptyRegister = new { UserName = "", Password = "" };
+        var emptyRegister = new
+        {
+            UserName = "",
+            Password = ""
+        };
         using HttpResponseMessage badRegister = await client
             .PostAsJsonAsync(Relative("/api/auth/register"), emptyRegister, JsonOptions)
             .ConfigureAwait(true);
         Assert.Equal(HttpStatusCode.BadRequest, badRegister.StatusCode);
 
         // 2. Duplicate username registration -> 400 (InvalidOperationException)
-        var reg1 = new { UserName = "unique_tester", Password = "password123" };
+        var reg1 = new
+        {
+            UserName = "unique_tester",
+            Password = "password123"
+        };
         using HttpResponseMessage okReg = await client
             .PostAsJsonAsync(Relative("/api/auth/register"), reg1, JsonOptions)
             .ConfigureAwait(true);
@@ -151,7 +159,11 @@ public sealed class AuthEndpointsTests
         Assert.Equal(HttpStatusCode.BadRequest, dupReg.StatusCode);
 
         // 3. Missing username/password in login -> 400
-        var emptyLogin = new { UserName = "", Password = "" };
+        var emptyLogin = new
+        {
+            UserName = "",
+            Password = ""
+        };
         using HttpResponseMessage badLogin = await client
             .PostAsJsonAsync(Relative("/api/auth/login"), emptyLogin, JsonOptions)
             .ConfigureAwait(true);

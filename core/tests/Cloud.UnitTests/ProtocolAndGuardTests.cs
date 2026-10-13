@@ -308,7 +308,10 @@ public sealed class ProtocolAndGuardTests
     public void FlexibleGuidConverter_HandlesAllTokenTypesAndFormats()
     {
         var validId = Guid.NewGuid();
-        string json = JsonSerializer.Serialize(new { AccountId = validId });
+        string json = JsonSerializer.Serialize(new
+        {
+            AccountId = validId
+        });
         var parsed = JsonSerializer.Deserialize<RegisterEngineRequest>(json);
         Assert.NotNull(parsed);
         Assert.Equal(validId, parsed.AccountId);
