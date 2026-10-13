@@ -1,0 +1,41 @@
+{
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "name": "shared",
+  "projectType": "library",
+  "sourceRoot": "core/src/Shared",
+  "tags": [
+    "scope:shared",
+    "profile:d",
+    "lang:csharp"
+  ],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet format --verify-no-changes core/src/Shared/Shared.csproj",
+        "cwd": "."
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet test core/tests/Cloud.UnitTests/Cloud.UnitTests.csproj -c Release --filter FullyQualifiedName~Shared || true",
+        "cwd": "."
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet build core/src/Shared/Shared.csproj -c Release",
+        "cwd": "."
+      }
+    },
+    "audit": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet list core/src/Shared/Shared.csproj package --vulnerable --include-transitive || true",
+        "cwd": "."
+      }
+    }
+  }
+}
