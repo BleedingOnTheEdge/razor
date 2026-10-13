@@ -819,7 +819,10 @@ public sealed class CloudExtendedEndpointsTests
         {
             await consumeTask.ConfigureAwait(true);
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Expected cancellation when broadcast consumption completes
+        }
 
         Assert.Single(received);
         Assert.Equal("target", received[0].EventType);

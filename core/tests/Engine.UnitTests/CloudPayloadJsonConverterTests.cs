@@ -65,7 +65,7 @@ public sealed class CloudPayloadJsonConverterTests
         var parameters = Assert.IsType<Dictionary<string, object>>(payload["Parameters"]);
         Assert.Equal("ctrader", parameters["Adapter"]);
         Assert.IsType<bool>(parameters["Enabled"]);
-        Assert.Equal(true, parameters["Enabled"]);
+        Assert.True((bool)parameters["Enabled"]);
         Assert.IsType<double>(parameters["Confidence"]);
         Assert.Null(parameters["NeuralNetwork"]);
 
