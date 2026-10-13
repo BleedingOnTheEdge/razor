@@ -69,6 +69,31 @@ internal static class CloudApplication
             await using (db.ConfigureAwait(false))
             {
                 await db.Database.EnsureCreatedAsync().ConfigureAwait(false);
+
+                DateTimeOffset now = DateTimeOffset.UtcNow;
+                var accounts = await db.Accounts
+                    .Include(a => a.Licenses)
+                    .ToListAsync()
+                    .ConfigureAwait(false);
+
+                foreach (Account account in accounts)
+                {
+                    if (!account.Licenses.Any(l => l.Status == LicenseStatus.Active))
+                    {
+                        var lic = new License
+                        {
+                            Id = Guid.NewGuid(),
+                            AccountId = account.Id,
+                            LicenseKey = $"LIC-{Guid.NewGuid():N}",
+                            Status = LicenseStatus.Active,
+                            IssuedAt = now,
+                            MaxInstances = 10
+                        };
+                        db.Licenses.Add(lic);
+                    }
+                }
+
+                await db.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getApiClient } from '@/lib/api-client';
+import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/components/ui/toast';
 import { getInstanceStatusBadge, formatTimestamp, formatHash } from '@razor/ui-kit';
 import {
@@ -35,6 +36,7 @@ interface InstanceItem {
 
 export default function InstancesPage() {
   const toast = useToast();
+  const { user } = useAuth();
 
   const [instances, setInstances] = useState<InstanceItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,8 +48,8 @@ export default function InstancesPage() {
 
   // Register Engine modal state
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
-  const [regAccountId, setRegAccountId] = useState('acc-operator-01');
-  const [regLicenseId, setRegLicenseId] = useState('lic-enterprise-01');
+  const [regAccountId, setRegAccountId] = useState('');
+  const [regLicenseId, setRegLicenseId] = useState('');
   const [regEngineId, setRegEngineId] = useState('engine-worker-01');
   const [regName, setRegName] = useState('Primary Execution Engine');
   const [registering, setRegistering] = useState(false);
@@ -89,17 +91,27 @@ export default function InstancesPage() {
     setRegistering(true);
     try {
       const client = getApiClient();
+      const accountId = (regAccountId || user?.accountId || '').trim();
+      const licenseId = regLicenseId.trim();
+
+      const bodyPayload: any = {
+        engineId: regEngineId.trim(),
+        name: regName.trim(),
+      };
+      if (accountId) {
+        bodyPayload.accountId = accountId;
+      }
+      if (licenseId) {
+        bodyPayload.licenseId = licenseId;
+      }
+
       const { data, error: err } = await client.POST('/api/engines', {
-        body: {
-          accountId: regAccountId,
-          licenseId: regLicenseId,
-          engineId: regEngineId,
-          name: regName,
-        },
+        body: bodyPayload,
       });
 
       if (err) {
-        toast.error('Registration Failed', 'Backend rejected engine registration.');
+        const errorDetail = typeof err === 'object' && err !== null ? JSON.stringify(err) : String(err);
+        toast.error('Registration Failed', errorDetail || 'Backend rejected engine registration.');
       } else if (data) {
         setCreatedCredentials(data);
         setRegisterModalOpen(false);
@@ -356,23 +368,27 @@ export default function InstancesPage() {
                 <input
                   id="regAccountId"
                   type="text"
-                  value={regAccountId}
+                  value={regAccountId || user?.accountId || ''}
                   onChange={(e) => setRegAccountId(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-cyan-500"
+                  placeholder={user?.accountId || 'Account UUID (leave blank for default)'}
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white font-mono focus:outline-none focus:border-cyan-500"
                 />
+                <span className="text-[10px] text-zinc-500 mt-1 block">Defaults to your active workspace account.</span>
               </div>
 
               <div>
-                <label htmlFor="regLicenseId" className="block text-zinc-300 mb-1 font-semibold">License ID</label>
+                <label htmlFor="regLicenseId" className="block text-zinc-300 mb-1 font-semibold">
+                  License ID <span className="text-zinc-500 font-normal">(Optional)</span>
+                </label>
                 <input
                   id="regLicenseId"
                   type="text"
                   value={regLicenseId}
                   onChange={(e) => setRegLicenseId(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-cyan-500"
+                  placeholder="Auto-provisioned active fleet license"
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white font-mono focus:outline-none focus:border-cyan-500"
                 />
+                <span className="text-[10px] text-zinc-500 mt-1 block">Leave blank to use your account's fleet license automatically.</span>
               </div>
 
               <div>

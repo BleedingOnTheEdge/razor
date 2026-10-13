@@ -74,8 +74,19 @@ internal sealed class UserService(
                 IsActive = true
             };
 
+            var license = new License
+            {
+                Id = Guid.NewGuid(),
+                AccountId = account.Id,
+                LicenseKey = $"LIC-{Guid.NewGuid():N}",
+                Status = LicenseStatus.Active,
+                IssuedAt = now,
+                MaxInstances = 10
+            };
+
             db.Accounts.Add(account);
             db.Users.Add(user);
+            db.Licenses.Add(license);
             await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
@@ -215,8 +226,25 @@ internal sealed class UserService(
 
         user.PasswordHash = passwordHasher.HashPassword(user, password);
 
+        var license = new License
+        {
+            Id = Guid.NewGuid(),
+            AccountId = account.Id,
+            LicenseKey = $"LIC-{Guid.NewGuid():N}",
+            Status = LicenseStatus.Active,
+            IssuedAt = now,
+            MaxInstances = tier switch
+            {
+                SubscriptionTier.Free => 1,
+                SubscriptionTier.Pro => 5,
+                SubscriptionTier.Enterprise => 999,
+                _ => 1
+            }
+        };
+
         db.Accounts.Add(account);
         db.Users.Add(user);
+        db.Licenses.Add(license);
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return user;
     }
