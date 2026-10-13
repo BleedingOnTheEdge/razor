@@ -85,7 +85,7 @@ internal sealed class EngineAuthenticationService(
             .FirstOrDefaultAsync(u => u.UserName == credentials.UserName, cancellationToken)
             .ConfigureAwait(false);
 
-        if (user is null && instance is not null)
+        if (string.IsNullOrWhiteSpace(credentials.UserName) && instance is not null)
         {
             user = await db.Users
                 .FirstOrDefaultAsync(u => u.AccountId == instance.AccountId, cancellationToken)

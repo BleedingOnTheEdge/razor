@@ -64,9 +64,9 @@ internal sealed class HeartbeatService(
 
         if (!string.Equals(instance.EngineId, reportedEngineId, StringComparison.Ordinal))
         {
-            if (string.IsNullOrWhiteSpace(instance.EngineId) || instance.LastSeenAt is null)
+            if (string.IsNullOrWhiteSpace(instance.EngineId) && !string.IsNullOrWhiteSpace(reportedEngineId))
             {
-                instance.EngineId = reportedEngineId ?? instance.EngineId;
+                instance.EngineId = reportedEngineId;
                 await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             }
             else
