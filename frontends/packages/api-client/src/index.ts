@@ -5,9 +5,9 @@
 // -----------------------------------------------------------------------------
 
 import createClient from 'openapi-fetch';
-import type { RazorPaths } from './schema/paths.js';
+import type { RazorPaths } from './schema/paths';
 
-export * from './schema/index.js';
+export * from './schema';
 
 export interface RazorClientConfig {
   baseUrl: string;

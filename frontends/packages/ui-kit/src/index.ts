@@ -235,3 +235,18 @@ export function getExtensionKindBadge(kind: ExtensionKind | string): {
       };
   }
 }
+
+// -----------------------------------------------------------------------------
+// Presentation Components (Apple Design Foundations)
+// -----------------------------------------------------------------------------
+export { Button, type ButtonProps, type ButtonVariant, type ButtonSize } from './components/Button';
+export { Card, type CardProps } from './components/Card';
+export { StatCard, type StatCardProps } from './components/StatCard';
+export { Badge, type BadgeProps, type BadgeVariant } from './components/Badge';
+export { ModalSheet, type ModalSheetProps } from './components/ModalSheet';
+export {
+  SegmentedControl,
+  type SegmentedControlProps,
+  type SegmentedControlOption,
+  type SegmentedControlOption as SegmentedOption,
+} from './components/SegmentedControl';

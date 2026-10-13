@@ -12,14 +12,14 @@ import {
   ArrowRight,
   Plus,
   Search,
-  CheckCircle2,
-  Copy,
-  Key,
   Filter,
   Terminal,
   BookOpen,
   Cpu,
 } from 'lucide-react';
+import { RegisterEngineModal } from '@/components/instances/RegisterEngineModal';
+import { CreatedCredentialsDialog } from '@/components/instances/CreatedCredentialsDialog';
+import { RunnerGuideModal } from '@/components/instances/RunnerGuideModal';
 
 interface InstanceItem {
   instanceId: string;
@@ -337,260 +337,33 @@ export default function InstancesPage() {
       )}
 
       {/* Modal: Register New Engine */}
-      {registerModalOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="reg-modal-title"
-          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
-        >
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <h3 id="reg-modal-title" className="text-base font-bold text-white font-mono flex items-center gap-2">
-                <Server className="w-4 h-4 text-cyan-400" />
-                <span>Register Engine Instance</span>
-              </h3>
-              <button
-                onClick={() => setRegisterModalOpen(false)}
-                className="text-zinc-400 hover:text-zinc-200 text-xs font-mono"
-              >
-                ✕ Cancel
-              </button>
-            </div>
-
-            <form onSubmit={handleRegisterSubmit} className="space-y-4 text-xs font-mono">
-              <div>
-                <label htmlFor="regAccountId" className="block text-zinc-300 mb-1 font-semibold">Account ID</label>
-                <input
-                  id="regAccountId"
-                  type="text"
-                  value={regAccountId || user?.accountId || ''}
-                  onChange={(e) => setRegAccountId(e.target.value)}
-                  placeholder={user?.accountId || 'Account UUID (leave blank for default)'}
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white font-mono focus:outline-none focus:border-cyan-500"
-                />
-                <span className="text-[10px] text-zinc-500 mt-1 block">Defaults to your active workspace account.</span>
-              </div>
-
-              <div>
-                <label htmlFor="regLicenseId" className="block text-zinc-300 mb-1 font-semibold">
-                  License ID <span className="text-zinc-500 font-normal">(Optional)</span>
-                </label>
-                <input
-                  id="regLicenseId"
-                  type="text"
-                  value={regLicenseId}
-                  onChange={(e) => setRegLicenseId(e.target.value)}
-                  placeholder="Auto-provisioned active fleet license"
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white font-mono focus:outline-none focus:border-cyan-500"
-                />
-                <span className="text-[10px] text-zinc-500 mt-1 block">Leave blank to use your account's fleet license automatically.</span>
-              </div>
-
-              <div>
-                <label htmlFor="regEngineId" className="block text-zinc-300 mb-1 font-semibold">Engine ID (Hostname/Pod)</label>
-                <input
-                  id="regEngineId"
-                  type="text"
-                  value={regEngineId}
-                  onChange={(e) => setRegEngineId(e.target.value)}
-                  placeholder="engine-prod-01"
-                  required
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-cyan-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="regName" className="block text-zinc-300 mb-1 font-semibold">Human-Readable Name</label>
-                <input
-                  id="regName"
-                  type="text"
-                  value={regName}
-                  onChange={(e) => setRegName(e.target.value)}
-                  placeholder="Primary NY4 Execution Node"
-                  required
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-cyan-500"
-                />
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setRegisterModalOpen(false)}
-                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={registering}
-                  className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-zinc-950 font-bold rounded-lg transition-colors flex items-center gap-2"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>{registering ? 'Registering...' : 'Provision Engine'}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <RegisterEngineModal
+        isOpen={registerModalOpen}
+        onClose={() => setRegisterModalOpen(false)}
+        regAccountId={regAccountId}
+        setRegAccountId={setRegAccountId}
+        regLicenseId={regLicenseId}
+        setRegLicenseId={setRegLicenseId}
+        regEngineId={regEngineId}
+        setRegEngineId={setRegEngineId}
+        regName={regName}
+        setRegName={setRegName}
+        registering={registering}
+        onSubmit={handleRegisterSubmit}
+      />
 
       {/* Modal: Newly Created Credentials */}
-      {createdCredentials && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
-        >
-          <div className="bg-zinc-900 border border-emerald-500/30 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <h3 className="text-base font-bold text-white font-mono flex items-center gap-2">
-                <Key className="w-4 h-4 text-emerald-400" />
-                <span>Engine Credentials Issued</span>
-              </h3>
-            </div>
-
-            <div className="space-y-3 text-xs font-mono">
-              <p className="text-emerald-300 font-sans">
-                Engine successfully registered with the Cloud Control Plane. Copy the generated API key below to configure the engine daemon.
-              </p>
-
-              <div className="p-3 rounded-lg bg-zinc-950 border border-zinc-800 space-y-2">
-                <div>
-                  <span className="text-zinc-500 block">Instance ID:</span>
-                  <span className="text-white font-bold block">{createdCredentials.instanceId}</span>
-                </div>
-                <div>
-                  <span className="text-zinc-500 block">Engine ID:</span>
-                  <span className="text-white block">{createdCredentials.engineId}</span>
-                </div>
-                <div>
-                  <span className="text-zinc-500 block">Engine API Key:</span>
-                  <div className="flex items-center justify-between gap-2 mt-1 bg-zinc-900 p-2 rounded border border-zinc-700">
-                    <span className="text-emerald-400 font-bold break-all">{createdCredentials.apiKey}</span>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(createdCredentials.apiKey);
-                        toast.success('Copied', 'API key copied to clipboard');
-                      }}
-                      className="shrink-0 p-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
-                      title="Copy API key"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <span className="text-zinc-500 block">Launch Command:</span>
-                  <div className="flex items-center justify-between gap-2 mt-1 bg-zinc-900 p-2 rounded border border-zinc-700">
-                    <span className="text-cyan-300 font-mono text-[11px] break-all">
-                      dotnet run --project core/src/Engine -- --instance {createdCredentials.instanceId} --engine-id {createdCredentials.engineId} --key &quot;{createdCredentials.apiKey}&quot; --username {user?.userName || 'pro-trader'} --password trader123 --endpoint ws://localhost:5000/engine
-                    </span>
-                    <button
-                      onClick={() => {
-                        const cmd = `dotnet run --project core/src/Engine -- --instance ${createdCredentials.instanceId} --engine-id ${createdCredentials.engineId} --key "${createdCredentials.apiKey}" --username ${user?.userName || 'pro-trader'} --password trader123 --endpoint ws://localhost:5000/engine`;
-                        navigator.clipboard.writeText(cmd);
-                        toast.success('Copied', 'Launch command copied to clipboard');
-                      }}
-                      className="shrink-0 p-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
-                      title="Copy launch command"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="p-2.5 rounded bg-zinc-900/60 border border-zinc-800 text-[11px] text-zinc-400 font-sans">
-                  <span className="text-emerald-400 font-semibold font-mono block mb-0.5">✓ Zero-Broker Paper Trading Ready</span>
-                  Engine defaults to <code className="text-cyan-300">MockPaperTradingAdapter</code>. Generates synthetic brownian motion ticks and simulates zero-dependency order execution.
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2 flex justify-end">
-              <button
-                onClick={() => setCreatedCredentials(null)}
-                className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-xs font-mono font-bold transition-colors"
-              >
-                Close & Proceed
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CreatedCredentialsDialog
+        credentials={createdCredentials}
+        onClose={() => setCreatedCredentials(null)}
+        userName={user?.userName}
+      />
 
       {/* Modal: Local Engine Runner Guide */}
-      {runnerGuideOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
-        >
-          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <h3 className="text-base font-bold text-white font-mono flex items-center gap-2">
-                <Terminal className="w-5 h-5 text-cyan-400" />
-                <span>Local Engine Runner & Instancing Guide</span>
-              </h3>
-              <button
-                onClick={() => setRunnerGuideOpen(false)}
-                className="text-zinc-400 hover:text-white text-xs font-mono"
-              >
-                ✕ Close
-              </button>
-            </div>
-
-            <div className="space-y-4 text-xs font-mono">
-              <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 space-y-2">
-                <span className="text-cyan-400 font-bold block">1. Architecture & Instancing Model</span>
-                <p className="text-zinc-300 font-sans leading-relaxed">
-                  Razor Engine nodes run as high-performance autonomous C#/.NET daemons. Each engine node connects over a persistent, duplex WebSocket transport to the Cloud Control Plane at <code className="text-white">ws://localhost:5000/engine</code>, automatically sending heartbeats, reporting manifest capabilities, and executing dispatched commands.
-                </p>
-              </div>
-
-              <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 space-y-2">
-                <span className="text-cyan-400 font-bold block">2. Built-in Mock Paper Trading Adapter</span>
-                <p className="text-zinc-300 font-sans leading-relaxed">
-                  Developers on the <strong>Free Tier</strong> do not need live broker credentials or exchanges. Razor ships with <code className="text-emerald-400">MockPaperTradingAdapter</code> in the SDK. It simulates realistic Brownian motion tick streaming, order matching, position keeping, and account balances completely in-memory.
-                </p>
-              </div>
-
-              <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 space-y-2">
-                <span className="text-cyan-400 font-bold block">3. Launching Engine Locally via CLI</span>
-                <pre className="p-3 rounded bg-zinc-900 text-zinc-300 overflow-x-auto text-[11px] leading-relaxed border border-zinc-800">
-{`# From repository root:
-dotnet run --project core/src/Engine -- \\
-  --instance <INSTANCE_GUID> \\
-  --key <GENERATED_API_KEY> \\
-  --cloud http://localhost:5000`}
-                </pre>
-              </div>
-
-              <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 space-y-2">
-                <span className="text-cyan-400 font-bold block">4. Launching with Lerd / Podman Quadlets</span>
-                <pre className="p-3 rounded bg-zinc-900 text-zinc-300 overflow-x-auto text-[11px] leading-relaxed border border-zinc-800">
-{`# Containerized runner:
-podman run --network host \\
-  -e RAZOR_INSTANCE_ID="<INSTANCE_GUID>" \\
-  -e RAZOR_API_KEY="<GENERATED_API_KEY>" \\
-  -e RAZOR_CLOUD_URL="http://localhost:5000" \\
-  razor-engine:latest`}
-                </pre>
-              </div>
-            </div>
-
-            <div className="pt-2 flex justify-end">
-              <button
-                onClick={() => setRunnerGuideOpen(false)}
-                className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-xs font-mono font-bold transition-colors"
-              >
-                Got It
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <RunnerGuideModal
+        isOpen={runnerGuideOpen}
+        onClose={() => setRunnerGuideOpen(false)}
+      />
     </div>
   );
 }

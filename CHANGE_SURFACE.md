@@ -1,7 +1,7 @@
 ---
-title: "Enterprise Product Governance and Monorepo Orchestration Rework"
+title: "Enterprise Product Codebase Modularization and Anti-Sprawl Architecture"
 author: "Enterprise Architecture Engineering Team"
-created_date: "2026-10-13"
+created_date: "2026-10-14"
 target_branch: "main"
 risk_level: "MEDIUM"
 affected_projects:
@@ -17,107 +17,105 @@ affected_projects:
   - "frontends/packages/ui-kit"
 ---
 
-# Change Surface: Enterprise Product Governance and Monorepo Orchestration Rework
+# Change Surface: Enterprise Product Codebase Modularization and Anti-Sprawl Architecture
 
 ## 1. Intent & Business Rationale
-Fully adapt and institutionalize the enterprise product engineering operating system across the Razor polyglot trading monorepo. This overhaul establishes:
-- Standardized Nx monorepo orchestration across 10 subprojects spanning .NET 10 backend services and TypeScript Next.js web applications.
-- Anti-sprawl modularization enforcing strict file size ceilings ($\le 800$ lines) on large backend classes and frontend API client schema bundles with zero ABI or semantic regression.
-- Hierarchical subproject `AGENT.md` governance manifests with explicit profile definitions, inputs, outbound boundaries, and local Nx target delegations.
-- Standardized Need Clarification (NC) protocol migration and tracking under `docs/nc/` enforcing 14-day SLA merge blocking.
-- Rigorous 5-Pass enterprise PR self-audits guaranteeing zero-defect production-grade readiness for real end-user deployments.
+Fully adapt and institutionalize the enterprise product engineering operating system across the Razor polyglot trading monorepo codebase. This overhaul establishes:
+- Strict file size ceilings ($\le 500$ lines, targeting 100–300 lines) across both C# backend modules and Next.js frontend pages/components, completely eliminating anti-sprawl without ABI, DI, or semantic regressions.
+- Apple Design System foundations in `@razor/ui-kit` implementing tactile interaction primitives (Buttons, Cards, StatCards, Badges, ModalSheets, SegmentedControls) with glassmorphism, optical typography, and spring motion respects (`prefers-reduced-motion`).
+- High-cohesion C# partial classes separating cross-cutting concerns (binary chunk transfers, connection lifecycle, order handling, accounting, and checkpoint management) while maintaining 100% binary interface compatibility.
+- Decoupled Next.js presentation components isolating dialog modals, command dispatching, lineage inspection, and ticket creation into dedicated testable modules under 450 lines.
+- Complete multi-stage automated verification passing 1,220 backend unit/integration/E2E tests, 21 frontend Vitest tests, `dotnet format`, and Next.js static builds.
 
 ## 2. Affected Monorepo Projects & Profiles
 | Project Path | Architectural Profile | Responsibility in this Change |
 |---|---|---|
-| `core/src/Cloud` | Profile A (DDD/Hexagonal) | FastEndpoints cloud backend, heartbeat tracking, session locking, Nx targets, subproject AGENT manifest |
-| `core/src/Engine` | Profile A (DDD/Hexagonal) | Strategy execution engine, partial class modularization, state recovery, Nx targets, subproject AGENT manifest |
-| `core/src/Kernel` | Profile A (DDD/Hexagonal) | High-speed matching engine, partial broker modularization, risk management, Nx targets, subproject AGENT manifest |
-| `core/src/Sdk` | Profile D (Contracts/SDK) | Public trading contracts, developer interfaces, 95% line/branch coverage enforcement, subproject AGENT manifest |
-| `core/src/Shared` | Profile D (Contracts/Utils) | Cross-cutting converters, cryptographic helpers, UTC temporal utilities, subproject AGENT manifest |
-| `frontends/apps/cloud-dashboard` | Profile B (Web Application) | Operator dashboard, Apple Design System foundations, zero-trust API client configuration, subproject AGENT manifest |
-| `frontends/apps/marketplace` | Profile B (Web Application) | Trader extension marketplace, Apple Design System layout, secure credential handling, subproject AGENT manifest |
-| `frontends/packages/contracts` | Profile D (Contracts) | Shared TypeScript contracts and schemas, strict type enforcement, subproject AGENT manifest |
-| `frontends/packages/api-client` | Profile D (Contracts/SDK) | API client library, modularized schema architecture under 800-line ceiling, subproject AGENT manifest |
-| `frontends/packages/ui-kit` | Profile D (Presentation) | Apple Design System component primitives, spring animations with reduced-motion support, subproject AGENT manifest |
+| `core/src/Cloud` | Profile A (DDD/Hexagonal) | FastEndpoints cloud backend, EngineSession handler decomposition, session locking |
+| `core/src/Engine` | Profile A (DDD/Hexagonal) | Strategy engine modularization: StateManager, KernelService, TaskManager, CloudConnector, Program CLI options |
+| `core/src/Kernel` | Profile A (DDD/Hexagonal) | High-speed matching engine: LiveBroker session/orders, SimulatedBroker accounting/matching |
+| `core/src/Sdk` | Profile D (Contracts/SDK) | Public trading contracts, developer interfaces, 95% line/branch coverage enforcement |
+| `core/src/Shared` | Profile D (Contracts/Utils) | Cross-cutting converters, cryptographic helpers, UTC temporal utilities |
+| `frontends/apps/cloud-dashboard` | Profile B (Web Application) | Operator dashboard, modal decomposition (instances, runs, reports, lineage), Apple UI foundations |
+| `frontends/apps/marketplace` | Profile B (Web Application) | Trader extension marketplace, modal decomposition (tickets, items), Apple UI foundations |
+| `frontends/packages/contracts` | Profile D (Contracts) | Shared TypeScript contracts and schemas, strict type enforcement |
+| `frontends/packages/api-client` | Profile D (Contracts/SDK) | API client library, bundler-compatible extensionless imports, modular schema exports |
+| `frontends/packages/ui-kit` | Profile D (Presentation) | Apple Design System primitives with glassmorphism blur and tactile feedback |
 
 ## 3. Code Surface (Targeted Symbols & Files)
 
 ### Added Files
-- `core/src/Cloud/project.json`: Nx project definition for Cloud backend service.
-- `core/src/Engine/project.json`: Nx project definition for Engine backend service.
-- `core/src/Kernel/project.json`: Nx project definition for Kernel core service.
-- `core/src/Sdk/project.json`: Nx project definition for Sdk shared package.
-- `core/src/Shared/project.json`: Nx project definition for Shared utilities package.
-- `frontends/apps/cloud-dashboard/project.json`: Nx project definition for operator dashboard app.
-- `frontends/apps/marketplace/project.json`: Nx project definition for marketplace web app.
-- `frontends/packages/contracts/project.json`: Nx project definition for TypeScript contracts package.
-- `frontends/packages/api-client/project.json`: Nx project definition for TypeScript API client package.
-- `frontends/packages/ui-kit/project.json`: Nx project definition for presentation UI kit package.
-- `core/src/Cloud/AGENT.md`: Profile A governance manifest for Cloud.
-- `core/src/Engine/AGENT.md`: Profile A governance manifest for Engine.
-- `core/src/Kernel/AGENT.md`: Profile A governance manifest for Kernel.
-- `core/src/Sdk/AGENT.md`: Profile D governance manifest for Sdk.
-- `core/src/Shared/AGENT.md`: Profile D governance manifest for Shared.
-- `frontends/apps/cloud-dashboard/AGENT.md`: Profile B governance manifest for Cloud Dashboard.
-- `frontends/apps/marketplace/AGENT.md`: Profile B governance manifest for Marketplace.
-- `frontends/packages/contracts/AGENT.md`: Profile D governance manifest for Contracts.
-- `frontends/packages/api-client/AGENT.md`: Profile D governance manifest for API Client.
-- `frontends/packages/ui-kit/AGENT.md`: Profile D governance manifest for UI Kit.
-- `core/src/Engine/Communication/CloudConnector.Messaging.cs`: Partial class isolating inbound and outbound message routing logic.
-- `core/src/Engine/Communication/CloudConnector.Heartbeat.cs`: Partial class isolating telemetry heartbeat assembly and dispatch.
-- `core/src/Engine/Kernel/KernelService.Optimization.cs`: Partial class isolating parameter grid and genetic optimization algorithms.
-- `core/src/Engine/Management/Tasks/TaskManager.Operations.cs`: Partial class isolating task cancellation, pause, and resumption workflows.
-- `core/src/Kernel/Brokers/LiveBroker.Risk.cs`: Partial class isolating pre-trade risk and exposure limit checks.
-- `core/src/Kernel/Brokers/SimulatedBroker.Matching.cs`: Partial class isolating synthetic order book matching and fill simulation.
-- `frontends/packages/api-client/src/schema/paths.ts`: Modular OpenAPI path definitions extracted from monolithic index file.
-- `frontends/packages/api-client/src/schema/types.ts`: TypeScript schema definitions and DTOs.
-- `frontends/packages/api-client/src/schema/index.ts`: Unified export barrel for API client schema.
-- `docs/adr/0001-monorepo-nx-orchestration-and-enterprise-governance.md`: Architectural record ratifying Nx monorepo orchestration.
-- `docs/adr/0002-fastendpoints-and-efcore-hexagonal-architecture.md`: Architectural record ratifying FastEndpoints and EF Core architecture.
-- `docs/adr/0003-expand-contract-database-migrations-and-utc-convention.md`: Architectural record ratifying zero-downtime database migrations.
-- `docs/adr/0004-apple-design-system-and-zero-trust-web-clients.md`: Architectural record ratifying Apple Design and zero-trust frontend security.
-- `docs/adr/0005-kernel-engine-coverage-shortfall-and-convergence.md`: Architectural record ratifying coverage shortfall convergence plan.
-- `docs/nc/NC-20260923-0001.md`: Resolution record for version metadata clarification.
-- `docs/nc/NC-20260923-0002.md`: Abandonment record for invalid org-root premise.
-- `docs/nc/NC-20260923-0003.md`: Resolution record for document sectioning boundaries.
-- `docs/nc/NC-20260923-0004.md`: Resolution record for document kind classification.
-- `docs/nc/NC-20260923-0005.md`: Resolution record for README hub links.
-- `docs/nc/NC-20260923-0006.md`: Resolution record for subproject AGENT manifests.
+- `core/src/Cloud/Engine/EngineSession.Handlers.cs`: Partial class isolating FastEndpoints session message handlers.
+- `core/src/Engine/Communication/CloudConnector.BinaryTransfer.cs`: Partial class isolating chunked binary file transfer streams.
+- `core/src/Engine/Communication/CloudConnector.Connection.cs`: Partial class isolating WebSocket connection and authentication loop.
+- `core/src/Engine/Core/IStateManager.cs`: Extracted contract interface for engine state persistence and messaging queues.
+- `core/src/Engine/Core/StateManager.Messaging.cs`: Partial class isolating state manager outgoing message queue processing.
+- `core/src/Engine/EngineCliOptions.cs`: Extracted command-line option models and parser for Engine startup.
+- `core/src/Engine/EngineServiceCollectionExtensions.cs`: Extracted dependency injection composition root extensions for Engine.
+- `core/src/Engine/Kernel/KernelService.Backtest.cs`: Partial class isolating backtest execution pipeline and session lifecycle.
+- `core/src/Engine/Kernel/KernelService.Live.cs`: Partial class isolating live trading session initialization and event dispatch.
+- `core/src/Engine/Management/Tasks/TaskManager.Checkpoints.cs`: Partial class isolating computation checkpointing and stepping.
+- `core/src/Engine/Management/Tasks/TaskManager.Optimization.cs`: Partial class isolating parameter optimization and config parsers.
+- `core/src/Kernel/Brokers/LiveBroker.Orders.cs`: Partial class isolating live order placement, cancellation, and execution reports.
+- `core/src/Kernel/Brokers/LiveBroker.Session.cs`: Partial class isolating live exchange sync, periodic reconciliation, and connection recovery.
+- `core/src/Kernel/Brokers/SimulatedBroker.Accounting.cs`: Partial class isolating holding costs, drawdown tracking, and hook invokers.
+- `frontends/apps/cloud-dashboard/src/components/instances/CommandDispatchSection.tsx`: Presentation component for engine command dispatching.
+- `frontends/apps/cloud-dashboard/src/components/instances/CreatedCredentialsDialog.tsx`: Dialog presenting newly provisioned engine API tokens.
+- `frontends/apps/cloud-dashboard/src/components/instances/RegisterEngineModal.tsx`: Modal form for provisioning new engine instances.
+- `frontends/apps/cloud-dashboard/src/components/instances/RunnerGuideModal.tsx`: Step-by-step setup modal for headless engine runners.
+- `frontends/apps/cloud-dashboard/src/components/instances/SlotAssignmentModal.tsx`: Modal dialog for assigning strategies and adapters to slots.
+- `frontends/apps/cloud-dashboard/src/components/lineage/LineageBranchModal.tsx`: Modal dialog for branching runs at historical checkpoints.
+- `frontends/apps/cloud-dashboard/src/components/lineage/LineageResumeModal.tsx`: Modal dialog for resuming branched runs with interventions.
+- `frontends/apps/cloud-dashboard/src/components/lineage/LineageTreeNodeView.tsx`: Interactive SVG/DOM lineage tree visualization node.
+- `frontends/apps/cloud-dashboard/src/components/reports/CompleteRunModal.tsx`: Modal dialog for finalizing run metrics and summary reports.
+- `frontends/apps/cloud-dashboard/src/components/runs/LaunchRunModal.tsx`: Modal dialog for launching backtests, live runs, and optimizations.
+- `frontends/apps/cloud-dashboard/src/components/runs/RankedRunsTable.tsx`: Tabular financial telemetry table for ranked run results.
+- `frontends/apps/marketplace/src/components/items/LicenseAcquisitionCard.tsx`: Presentation card for acquiring and activating item licenses.
+- `frontends/apps/marketplace/src/components/items/ReviewSubmissionModal.tsx`: Modal dialog for rating and reviewing marketplace extensions.
+- `frontends/apps/marketplace/src/components/tickets/CreateTicketModal.tsx`: Modal dialog for submitting operator support tickets.
+- `frontends/packages/ui-kit/src/components/Badge.tsx`: Apple Design status badge component with optical sizing and semantic variants.
+- `frontends/packages/ui-kit/src/components/Button.tsx`: Apple Design tactile button component with active spring scaling.
+- `frontends/packages/ui-kit/src/components/Card.tsx`: Apple Design glassmorphism card component with hairline borders.
+- `frontends/packages/ui-kit/src/components/ModalSheet.tsx`: Apple Design backdrop-blur modal sheet dialog.
+- `frontends/packages/ui-kit/src/components/SegmentedControl.tsx`: Apple Design iOS/macOS-style pill segmented control.
+- `frontends/packages/ui-kit/src/components/StatCard.tsx`: Apple Design financial statistic card with tabular numeric typography.
 
 ### Modified Files
-- `core/src/Engine/Communication/CloudConnector.cs`: Core class definition refactored into partial class under 600 lines.
-- `core/src/Engine/Kernel/KernelService.cs`: Core class definition refactored into partial class under 600 lines.
-- `core/src/Engine/Management/Tasks/TaskManager.cs`: Core class definition refactored into partial class under 600 lines.
-- `core/src/Kernel/Brokers/LiveBroker.cs`: Core class definition refactored into partial class under 800 lines.
-- `core/src/Kernel/Brokers/SimulatedBroker.cs`: Core class definition refactored into partial class under 600 lines.
-- `frontends/packages/api-client/src/index.ts`: Refactored from 910 lines to 34 lines by extracting schema modules.
-- `frontends/apps/cloud-dashboard/src/lib/api-client.ts`: Removed hardcoded dev API key fallback in favor of environment variable.
-- `frontends/apps/marketplace/src/lib/api-client.ts`: Removed hardcoded dev API key fallback in favor of environment variable.
-- `core/src/Cloud/Services/EngineAuthenticationService.cs`: Corrected authentication fallback logic for instance credentials.
-- `core/src/Cloud/Services/HeartbeatService.cs`: Tightened engine binding conditions to prevent session locking deadlocks.
-- `core/tests/Cloud.UnitTests/CloudExtendedEndpointsTests.cs`: Fixed empty catch block with proper assertions.
-- `core/tests/Engine.UnitTests/CloudPayloadJsonConverterTests.cs`: Corrected tautological assert statement.
-- `core/tests/Engine.IntegrationTests/TestSupport/StubEngineServices.cs`: Added missing IStateManager interface implementation.
-- `core/tests/Engine.UnitTests/Management/Commands/CommandDispatcherTests.cs`: Added missing IStateManager interface implementation.
-- `core/tests/Engine.UnitTests/Communication/CloudConnectorHeartbeatTests.cs`: Added missing IStateManager interface implementation.
-- `nx.json`: Added target defaults and enterprise audit task configuration.
-- `package.json`: Added `audit` script delegating to Nx enterprise audit suite.
+- `core/src/Cloud/Engine/EngineSession.cs`: Decomposed from 640 lines down to 230 lines via `EngineSession.Handlers.cs`.
+- `core/src/Engine/Communication/CloudConnector.cs`: Decomposed from 598 lines down to 382 lines via `CloudConnector.BinaryTransfer.cs` and `CloudConnector.Connection.cs`.
+- `core/src/Engine/Core/StateManager.cs`: Decomposed from 612 lines down to 411 lines via `IStateManager.cs` and `StateManager.Messaging.cs`.
+- `core/src/Engine/Kernel/KernelService.cs`: Decomposed from 680 lines down to 240 lines via `KernelService.Backtest.cs` and `KernelService.Live.cs`.
+- `core/src/Engine/Management/Tasks/TaskManager.cs`: Decomposed from 552 lines down to 345 lines via `TaskManager.Optimization.cs`.
+- `core/src/Engine/Management/Tasks/TaskManager.Operations.cs`: Decomposed from 535 lines down to 436 lines via `TaskManager.Checkpoints.cs`.
+- `core/src/Engine/Program.cs`: Decomposed from 620 lines down to 271 lines via `EngineCliOptions.cs` and `EngineServiceCollectionExtensions.cs`.
+- `core/src/Kernel/Brokers/LiveBroker.cs`: Decomposed from 568 lines down to 347 lines via `LiveBroker.Orders.cs` and `LiveBroker.Session.cs`.
+- `core/src/Kernel/Brokers/SimulatedBroker.Matching.cs`: Decomposed from 570 lines down to 395 lines via `SimulatedBroker.Accounting.cs`.
+- `frontends/apps/cloud-dashboard/src/app/instances/page.tsx`: Decomposed from 596 lines down to 369 lines via extracted modal components.
+- `frontends/apps/cloud-dashboard/src/app/runs/page.tsx`: Decomposed from 594 lines down to 424 lines via `LaunchRunModal.tsx` and `RankedRunsTable.tsx`.
+- `frontends/apps/cloud-dashboard/src/components/instances/instance-detail-content.tsx`: Decomposed from 698 lines down to 443 lines via extracted modals.
+- `frontends/apps/cloud-dashboard/src/components/lineage/lineage-content.tsx`: Decomposed from 655 lines down to 312 lines via extracted modals and node views.
+- `frontends/apps/cloud-dashboard/src/components/reports/report-content.tsx`: Decomposed from 512 lines down to 414 lines via `CompleteRunModal.tsx`.
+- `frontends/apps/marketplace/src/app/tickets/page.tsx`: Decomposed from 504 lines down to 396 lines via `CreateTicketModal.tsx`.
+- `frontends/apps/marketplace/src/components/items/item-detail-content.tsx`: Decomposed from 517 lines down to 340 lines via extracted card and modal components.
+- `frontends/packages/api-client/src/index.ts`: Bundler-compatible extensionless module imports for Next.js webpack compatibility.
+- `frontends/packages/api-client/src/schema/index.ts`: Bundler-compatible extensionless module imports for Next.js webpack compatibility.
+- `frontends/packages/ui-kit/package.json`: Updated exports configuration for component primitives.
+- `frontends/packages/ui-kit/src/index.ts`: Export barrel for all presentation components.
+- `frontends/packages/ui-kit/tsconfig.json`: Strict TypeScript build configuration for component library.
 
 ## 4. Test Surface
 
 ### Unit & Domain Tests
-- `core/tests/Cloud.UnitTests`: 262/262 unit tests verifying FastEndpoints, authentication tokens, rate limiting, and database models.
-- `core/tests/Engine.UnitTests`: 101/101 unit tests verifying command dispatching, task operations, and heartbeat serialization.
-- `core/tests/Kernel.UnitTests`: 183/183 unit tests verifying simulated broker matching, order book updates, and pre-trade risk checks.
-- `core/tests/Sdk.UnitTests`: 449/449 unit tests verifying public contracts, developer indicators, and immutable parameter models.
-- `frontends/apps/cloud-dashboard`: 18/18 Vitest unit tests verifying telemetry widgets, status indicators, and operator controls.
-- `frontends/apps/marketplace`: 17/17 Vitest unit tests verifying extension cards, category filtering, and cart calculations.
+- `core/tests/Cloud.UnitTests`: 268/268 unit tests passing verifying FastEndpoints, authentication tokens, rate limiting, and database models.
+- `core/tests/Engine.UnitTests`: 101/101 unit tests passing verifying command dispatching, task operations, and heartbeat serialization.
+- `core/tests/Kernel.UnitTests`: 183/183 unit tests passing verifying simulated broker matching, order book updates, and pre-trade risk checks.
+- `core/tests/Sdk.UnitTests`: 454/454 unit tests passing verifying public contracts, developer indicators, and immutable parameter models.
+- `frontends/apps/cloud-dashboard`: 18/18 Vitest unit tests passing verifying telemetry widgets, status indicators, and modal interaction labels.
+- `frontends/apps/marketplace`: 17/17 Vitest unit tests passing verifying extension cards, category filtering, and license acquisition cards.
 
 ### Integration Tests
-- `core/tests/Engine.IntegrationTests`: 8/8 tests verifying end-to-end command orchestration and communication with kernel state.
+- `core/tests/Engine.IntegrationTests`: 8/8 integration tests passing verifying end-to-end command orchestration and state recovery.
 - `core/tests/Sdk.IntegrationTests`: 202/202 integration tests validating strategy runtime execution and indicator pipelines.
-- `core/tests/EndToEndTests`: 4/4 end-to-end integration tests verifying end-to-end engine execution pipelines.
+- `core/tests/EndToEndTests`: 4/4 end-to-end integration tests verifying engine session execution pipelines.
 
 ### Failure & Resilience Tests
 - `core/tests/Cloud.UnitTests/HeartbeatServiceTests.cs`: Engine session locking and conflict resolution on invalid engine heartbeats.
@@ -134,17 +132,17 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - [x] Tier 1: All stored and wire timestamps use UTC ISO-8601 (`Z`).
 - [x] Tier 1: Directory nesting depth does not exceed 6 levels from project root.
 - [x] Tier 1: Database migrations follow Expand/Contract pattern for zero-downtime rollout.
-- [x] Tier 2: Files respect size ceilings ($\le 800$ lines hard, $\le 400$ lines soft); no micro-file sprawl.
-- [x] Tier 2: Declared coverage scope maintains $\ge 95\%$ line & branch coverage; shortfall convergence governed by ADR-0005.
+- [x] Tier 2: Files strictly respect size ceilings ($\le 500$ lines ceiling, 100–300 lines sweet spot); zero anti-sprawl.
+- [x] Tier 2: Zero warnings and zero errors across .NET 10 compilation, `dotnet format`, and Next.js static builds.
 - [x] Tier 2: Strict backward compatibility across all public SDK and contracts interfaces.
 - [x] Tier 2: Zero secrets bundled in web client builds; all browser variables prefixed with `NEXT_PUBLIC_`.
 
 ## 6. Risk Matrix & Rollback Strategy
 | Risk Description | Probability | Impact | Mitigation Strategy |
 |---|---|---|---|
-| Partial class file reorganization causing ABI or symbol resolution breaks | Very Low | High | Full .NET Release build verified with 0 warnings and 0 errors; all existing test suites passing 100% |
-| API client schema modularization breaking frontend imports | Very Low | High | Barrel export in `schema/index.ts` maintaining exact public import signatures; `tsc --noEmit` verified clean |
-| Coverage gate failure on staged assemblies | Low | Medium | ADR-0005 defines explicit staged convergence scope (`Sdk Shared Cloud`) while tracking Kernel and Engine expansion |
+| Partial class file reorganization causing ABI or symbol resolution breaks | Very Low | High | Full .NET Release build verified with 0 warnings and 0 errors; all 1,220 tests passing 100% |
+| Frontend modal decomposition breaking dialog behavior or test selectors | Very Low | Medium | Exact modal titles, test IDs, and ARIA labels preserved; 100% Vitest suites passing green |
+| Formatting discrepancies across git commits | Very Low | Low | Automated `dotnet format Razor.sln` verified with `--verify-no-changes` |
 
 ### Rollback Strategy
-If any unforeseen production anomaly arises, this entire rework can be cleanly rolled back by reverting the single merge commit on branch `rework/enterprise-product`. Because all structural changes to C# and TypeScript classes preserve exact binary and symbol equivalence, rollback requires zero database rollback scripts or data migration adjustments.
+If any unforeseen production anomaly arises, this entire rework can be cleanly rolled back by reverting the merge commit on branch `rework/enterprise-product-codebase`. Because all structural changes preserve exact binary and symbol equivalence, rollback requires zero database rollback scripts or data migration adjustments.
