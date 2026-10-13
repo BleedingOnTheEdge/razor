@@ -516,7 +516,9 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
         }
         else
         {
-            string[] endpoints = { AppConstants.PrimaryEndpoint, AppConstants.FallbackEndpoint };
+            string[] endpoints = string.Equals(AppConstants.PrimaryEndpoint, AppConstants.FallbackEndpoint, StringComparison.OrdinalIgnoreCase)
+                ? [AppConstants.PrimaryEndpoint]
+                : [AppConstants.PrimaryEndpoint, AppConstants.FallbackEndpoint];
             Exception? lastException = null;
             foreach (string endpoint in endpoints)
             {
@@ -796,6 +798,15 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
                         if (payload.TryGetValue("Nonce", out object? nonceObj))
                         {
                             _securityManager.SetNonce(nonceObj.ToString()!);
+                        }
+
+                        if (payload.TryGetValue("EngineId", out object? engineIdObj) && engineIdObj != null)
+                        {
+                            string boundEngineId = engineIdObj.ToString()!;
+                            if (!string.IsNullOrWhiteSpace(boundEngineId))
+                            {
+                                _stateManager.SetEngineId(boundEngineId);
+                            }
                         }
 
                         _securityManager.DeriveSharedSecret();

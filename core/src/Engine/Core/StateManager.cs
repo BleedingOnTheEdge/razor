@@ -24,6 +24,9 @@ internal interface IStateManager
     /// <summary>Gets the engine's unique ID.</summary>
     string EngineId { get; }
 
+    /// <summary>Sets the engine's unique ID.</summary>
+    void SetEngineId(string engineId);
+
     /// <summary>Deletes the live trading state.</summary>
     Task DeleteLiveStateAsync(CancellationToken cancellationToken);
 
@@ -102,6 +105,29 @@ internal sealed class StateManager : IStateManager, IDisposable
 
     /// <inheritdoc/>
     public string EngineId => _engineId;
+
+    /// <inheritdoc/>
+    public void SetEngineId(string engineId)
+    {
+        if (string.IsNullOrWhiteSpace(engineId))
+        {
+            return;
+        }
+
+        _engineId = engineId.Trim();
+        try
+        {
+            using var connection = new SqliteConnection($"Data Source={_databasePath}");
+            connection.Open();
+            using var cmd = new SqliteCommand("INSERT OR REPLACE INTO Metadata (Key, Value) VALUES ('EngineId', @Value)", connection);
+            cmd.Parameters.AddWithValue("@Value", _engineId);
+            cmd.ExecuteNonQuery();
+        }
+        catch
+        {
+            // Database may not be initialized yet; _engineId is already stored in memory.
+        }
+    }
 
     /// <summary>Initializes a new instance of the <see cref="StateManager"/> class.</summary>
     /// <param name="databasePath">Optional custom path for the SQLite database file (e.g. for testing).</param>

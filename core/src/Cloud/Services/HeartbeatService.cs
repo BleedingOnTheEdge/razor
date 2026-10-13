@@ -64,11 +64,19 @@ internal sealed class HeartbeatService(
 
         if (!string.Equals(instance.EngineId, reportedEngineId, StringComparison.Ordinal))
         {
-            return new HeartbeatOutcome(
-                CloudProtocol.HeartbeatStatus.Lock,
-                AuthValid: false,
-                options.HeartbeatIntervalSeconds,
-                now);
+            if (string.IsNullOrWhiteSpace(instance.EngineId) || instance.LastSeenAt is null)
+            {
+                instance.EngineId = reportedEngineId ?? instance.EngineId;
+                await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                return new HeartbeatOutcome(
+                    CloudProtocol.HeartbeatStatus.Lock,
+                    AuthValid: false,
+                    options.HeartbeatIntervalSeconds,
+                    now);
+            }
         }
 
         await commandService.FailExpiredAsync(instanceId, cancellationToken).ConfigureAwait(false);

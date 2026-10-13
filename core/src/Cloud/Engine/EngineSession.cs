@@ -339,6 +339,8 @@ internal sealed class EngineSession : IDisposable
                 PublicKey = cipher.GetPublicKey(),
                 Nonce = nonce,
                 SessionId = _sessionId,
+                InstanceId = outcome.Instance.Id,
+                EngineId = outcome.Instance.EngineId,
                 RequiredCapabilities = _options.RequiredCapabilities
             },
             cancellationToken).ConfigureAwait(false);

@@ -49,6 +49,30 @@ internal static class Credentials
         EncryptCredentials();
     }
 
+    /// <summary>Sets any available credentials from CLI flags.</summary>
+    public static void SetPartialCredentials(string? username, string? password, string? apiKey)
+    {
+        if (!string.IsNullOrWhiteSpace(username))
+        {
+            _username = username.Trim();
+        }
+
+        if (!string.IsNullOrWhiteSpace(password))
+        {
+            _password = password;
+        }
+
+        if (!string.IsNullOrWhiteSpace(apiKey))
+        {
+            _instanceApiKey = apiKey.Trim();
+        }
+
+        if (!string.IsNullOrWhiteSpace(_username) && !string.IsNullOrWhiteSpace(_password) && !string.IsNullOrWhiteSpace(_instanceApiKey))
+        {
+            EncryptCredentials();
+        }
+    }
+
     /// <summary>Ensures credentials are available. If not, prompts the user.</summary>
     public static void EnsureAvailable()
     {
@@ -64,12 +88,26 @@ internal static class Credentials
     public static void PromptForCredentials()
     {
         Console.WriteLine("=== Engine Authentication ===");
-        Console.Write("Cloud Username: ");
-        string? username = Console.ReadLine();
-        Console.Write("Cloud Password: ");
-        string password = ReadPasswordFromConsole();
-        Console.Write("Instance API Key: ");
-        string instanceApiKey = ReadPasswordFromConsole();
+        string username = _username ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            Console.Write("Cloud Username: ");
+            username = Console.ReadLine() ?? string.Empty;
+        }
+
+        string password = _password ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            Console.Write("Cloud Password: ");
+            password = ReadPasswordFromConsole();
+        }
+
+        string instanceApiKey = _instanceApiKey ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(instanceApiKey))
+        {
+            Console.Write("Instance API Key: ");
+            instanceApiKey = ReadPasswordFromConsole();
+        }
 
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password) ||
             string.IsNullOrWhiteSpace(instanceApiKey))
