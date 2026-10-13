@@ -1,51 +1,54 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShoppingBag, ArrowUpRight, UploadCloud, Compass, MessageSquare, LifeBuoy, Zap, Shield, Check, Loader2 } from 'lucide-react';
+import {
+  ShoppingBag,
+  ArrowUpRight,
+  UploadCloud,
+  Compass,
+  MessageSquare,
+  LifeBuoy,
+  Zap,
+  Shield,
+  Check,
+  Loader2,
+  User,
+  LogOut,
+  LogIn,
+  UserPlus
+} from 'lucide-react';
 import clsx from 'clsx';
 import { getApiClient } from '@/lib/api-client';
-import type { UserProfilePayload } from '@razor/api-client';
+import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/components/ui/toast';
 
 export function Navbar() {
   const pathname = usePathname();
-  const [profile, setProfile] = useState<UserProfilePayload | null>(null);
+  const { user, isAuthenticated, logout } = useAuth();
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
   const [upgrading, setUpgrading] = useState(false);
   const toast = useToast();
 
-  const loadProfile = async () => {
-    try {
-      const client = getApiClient();
-      const res = await client.GET('/api/users/me');
-      if (res.data) {
-        setProfile(res.data);
-      }
-    } catch {
-      // Ignore initial background fetch error
-    }
-  };
-
-  useEffect(() => {
-    void loadProfile();
-  }, []);
-
   const handleUpgrade = async (tier: 'Pro' | 'Enterprise') => {
-    if (!profile) return;
+    if (!user) return;
     try {
       setUpgrading(true);
       const client = getApiClient();
       const res = await client.POST('/api/accounts/{accountId}/subscription', {
-        params: { path: { accountId: profile.accountId } },
+        params: { path: { accountId: user.accountId } },
         body: { tier },
       });
 
       if (res.data) {
-        setProfile(res.data);
-        toast.success('Subscription Upgraded', `Successfully upgraded to ${tier} Tier!`);
+        toast.success('Subscription Upgraded', `Successfully upgraded to ${tier} Tier! Reloading profile.`);
         setIsUpgradeOpen(false);
+        // Refresh session
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('razor_auth_user', JSON.stringify(res.data));
+          window.location.reload();
+        }
       }
     } catch {
       toast.error('Upgrade Failed', 'Failed to upgrade subscription');
@@ -125,17 +128,57 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Subscription Tier Pill */}
-            <button
-              onClick={() => setIsUpgradeOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono bg-zinc-800/90 hover:bg-zinc-700/80 border border-zinc-700/60 text-zinc-300 transition-all cursor-pointer"
-            >
-              <Zap className="w-3 h-3 text-amber-400" />
-              <span>{profile?.subscriptionTier ?? 'Free'} Plan</span>
-              <span className="text-[9px] px-1.5 py-0.2 rounded bg-zinc-900 text-zinc-400">
-                {profile?.maxInstances ?? 1} inst
-              </span>
-            </button>
+            {isAuthenticated && user ? (
+              <>
+                {/* Subscription Tier Pill */}
+                <button
+                  onClick={() => setIsUpgradeOpen(true)}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono bg-zinc-800/90 hover:bg-zinc-700/80 border border-zinc-700/60 text-zinc-300 transition-all cursor-pointer"
+                >
+                  <Zap className="w-3 h-3 text-amber-400" />
+                  <span>{user.subscriptionTier} Plan</span>
+                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-zinc-900 text-zinc-400">
+                    {user.maxInstances} inst
+                  </span>
+                </button>
+
+                {/* User Identity Pill */}
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono bg-zinc-800/80 border border-zinc-700/60 text-zinc-300">
+                  <User className="w-3 h-3 text-cyan-400" />
+                  <span>{user.userName}</span>
+                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 border border-indigo-800/60 font-semibold uppercase">
+                    {user.role}
+                  </span>
+                </div>
+
+                {/* Sign Out Button */}
+                <button
+                  onClick={logout}
+                  title="Sign Out"
+                  className="p-1.5 rounded-full bg-zinc-800/60 hover:bg-rose-500/10 hover:border-rose-500/30 border border-zinc-700/60 text-zinc-400 hover:text-rose-400 transition-all"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/login"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono text-zinc-300 hover:text-white hover:bg-zinc-800/80 transition-colors"
+                >
+                  <LogIn className="w-3.5 h-3.5 text-zinc-400" />
+                  <span>Sign In</span>
+                </Link>
+
+                <Link
+                  href="/register"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-mono font-semibold text-white transition-all shadow-md shadow-indigo-600/20"
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>Register</span>
+                </Link>
+              </div>
+            )}
 
             <a
               href="http://localhost:3002"
@@ -161,7 +204,7 @@ export function Navbar() {
                   <span>Account Subscription & Resource Entitlements</span>
                 </h2>
                 <p className="text-xs text-zinc-400 mt-1">
-                  Current tier: <strong className="text-white">{profile?.subscriptionTier} Tier</strong> ({profile?.userName})
+                  Current tier: <strong className="text-white">{user?.subscriptionTier} Tier</strong> ({user?.userName})
                 </p>
               </div>
               <button
@@ -174,7 +217,7 @@ export function Navbar() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Free Tier Card */}
-              <div className={`p-5 rounded-xl border space-y-4 ${profile?.subscriptionTier === 'Free' ? 'bg-zinc-800/40 border-indigo-500/60' : 'bg-zinc-950/40 border-zinc-800'}`}>
+              <div className={`p-5 rounded-xl border space-y-4 ${user?.subscriptionTier === 'Free' ? 'bg-zinc-800/40 border-indigo-500/60' : 'bg-zinc-950/40 border-zinc-800'}`}>
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-bold text-white text-base">Developer Free Tier</h3>
@@ -202,7 +245,7 @@ export function Navbar() {
                   </li>
                 </ul>
 
-                {profile?.subscriptionTier === 'Free' && (
+                {user?.subscriptionTier === 'Free' && (
                   <div className="text-center py-1.5 bg-zinc-800 text-[11px] font-mono text-indigo-300 rounded-lg">
                     Current Active Tier
                   </div>
@@ -210,7 +253,7 @@ export function Navbar() {
               </div>
 
               {/* Pro Tier Card */}
-              <div className={`p-5 rounded-xl border space-y-4 ${profile?.subscriptionTier === 'Pro' ? 'bg-zinc-800/40 border-indigo-500/60' : 'bg-gradient-to-b from-indigo-950/20 to-zinc-900 border-indigo-600/40'}`}>
+              <div className={`p-5 rounded-xl border space-y-4 ${user?.subscriptionTier === 'Pro' ? 'bg-zinc-800/40 border-indigo-500/60' : 'bg-gradient-to-b from-indigo-950/20 to-zinc-900 border-indigo-600/40'}`}>
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-bold text-white text-base">Pro Trader Tier</h3>
@@ -238,7 +281,7 @@ export function Navbar() {
                   </li>
                 </ul>
 
-                {profile?.subscriptionTier === 'Pro' ? (
+                {user?.subscriptionTier === 'Pro' ? (
                   <div className="text-center py-1.5 bg-zinc-800 text-[11px] font-mono text-indigo-300 rounded-lg">
                     Current Active Tier
                   </div>

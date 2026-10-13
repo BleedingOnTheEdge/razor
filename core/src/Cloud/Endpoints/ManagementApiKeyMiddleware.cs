@@ -63,6 +63,13 @@ internal static class ManagementApiKeyMiddleware
                 return;
             }
 
+            // Authentication endpoints are public to allow sign-in and account registration.
+            if (context.Request.Path.StartsWithSegments("/api/auth", StringComparison.Ordinal))
+            {
+                await next(context).ConfigureAwait(false);
+                return;
+            }
+
             if (!context.Request.Path.StartsWithSegments(ProtectedPrefix, StringComparison.Ordinal) || IsAuthorised(context, expectedKey))
             {
                 await next(context).ConfigureAwait(false);
@@ -87,6 +94,13 @@ internal static class ManagementApiKeyMiddleware
             && !string.IsNullOrEmpty(headerVal[0]))
         {
             candidateKey = headerVal[0];
+        }
+        else if (context.Request.Headers.TryGetValue("Authorization", out Microsoft.Extensions.Primitives.StringValues authVal)
+                 && authVal.Count > 0
+                 && !string.IsNullOrEmpty(authVal[0])
+                 && authVal[0]!.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        {
+            candidateKey = authVal[0]!["Bearer ".Length..].Trim();
         }
         else if (context.Request.Query.TryGetValue("apiKey", out Microsoft.Extensions.Primitives.StringValues queryVal)
                  && queryVal.Count > 0

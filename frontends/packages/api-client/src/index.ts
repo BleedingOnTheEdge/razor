@@ -484,6 +484,49 @@ export interface RazorPaths {
       };
     };
   };
+  '/api/auth/login': {
+    post: {
+      requestBody: {
+        content: {
+          'application/json': {
+            userName: string;
+            password: string;
+          };
+        };
+      };
+      responses: {
+        200: { content: { 'application/json': AuthSessionPayload } };
+        400: { content: { 'application/json': { message?: string } } };
+        401: { content: { 'application/json': { message?: string } } };
+      };
+    };
+  };
+  '/api/auth/register': {
+    post: {
+      requestBody: {
+        content: {
+          'application/json': {
+            userName: string;
+            password: string;
+            accountName?: string;
+            role?: 'Admin' | 'Operator' | 'Developer' | 'Trader';
+            subscriptionTier?: 'Free' | 'Pro' | 'Enterprise';
+          };
+        };
+      };
+      responses: {
+        200: { content: { 'application/json': AuthSessionPayload } };
+        400: { content: { 'application/json': { message?: string } } };
+      };
+    };
+  };
+  '/api/auth/session': {
+    get: {
+      responses: {
+        200: { content: { 'application/json': UserProfilePayload } };
+      };
+    };
+  };
   '/api/users/me': {
     get: {
       parameters?: {
@@ -792,6 +835,11 @@ export function createRazorClient(config: RazorClientConfig) {
     headers,
     fetch: config.fetch,
   });
+}
+
+export interface AuthSessionPayload {
+  token: string;
+  user: UserProfilePayload;
 }
 
 export interface UserProfilePayload {
