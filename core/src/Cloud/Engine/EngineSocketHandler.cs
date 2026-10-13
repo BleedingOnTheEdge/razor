@@ -57,6 +57,14 @@ internal static class EngineSocketHandler
         {
             await PumpAsync(context, socket, session, registry, logger).ConfigureAwait(false);
         }
+        catch (WebSocketException)
+        {
+            // Remote engine closed the WebSocket without completing close handshake.
+        }
+        catch (OperationCanceledException)
+        {
+            // Request was aborted or server is shutting down.
+        }
         finally
         {
             if (session.InstanceId is Guid instanceId)
@@ -124,10 +132,25 @@ internal static class EngineSocketHandler
 
             if (signal == EngineSessionSignal.Close)
             {
-                await socket.CloseAsync(
-                    WebSocketCloseStatus.NormalClosure,
-                    "Session closed",
-                    CancellationToken.None).ConfigureAwait(false);
+                if (socket.State is WebSocketState.Open or WebSocketState.CloseReceived)
+                {
+                    try
+                    {
+                        await socket.CloseAsync(
+                            WebSocketCloseStatus.NormalClosure,
+                            "Session closed",
+                            CancellationToken.None).ConfigureAwait(false);
+                    }
+                    catch (WebSocketException)
+                    {
+                        // Remote party closed without completing close handshake
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Aborted
+                    }
+                }
+
                 break;
             }
         }

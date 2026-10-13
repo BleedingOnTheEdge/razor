@@ -93,6 +93,9 @@ internal static class CloudApplication
         services.AddSingleton<RunRankingService>();
         services.AddSingleton<FlowOrchestrator>();
         services.AddSingleton<MarketplaceService>();
+        services.AddSingleton<TicketService>();
+        services.AddSingleton<CommunityService>();
+        services.AddSingleton<UserService>();
 
         services.AddCors();
 

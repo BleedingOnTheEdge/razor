@@ -74,6 +74,18 @@ internal sealed class CloudDbContext : DbContext
     /// <summary>Gets the marketplace acquisitions and licences.</summary>
     public DbSet<MarketplaceAcquisition> MarketplaceAcquisitions => Set<MarketplaceAcquisition>();
 
+    /// <summary>Gets the support and incident tickets.</summary>
+    public DbSet<Ticket> Tickets => Set<Ticket>();
+
+    /// <summary>Gets the messages in support tickets.</summary>
+    public DbSet<TicketMessage> TicketMessages => Set<TicketMessage>();
+
+    /// <summary>Gets the community discussion threads.</summary>
+    public DbSet<CommunityThread> CommunityThreads => Set<CommunityThread>();
+
+    /// <summary>Gets the replies to community threads.</summary>
+    public DbSet<CommunityReply> CommunityReplies => Set<CommunityReply>();
+
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -91,6 +103,8 @@ internal sealed class CloudDbContext : DbContext
         ConfigureRunGap(modelBuilder);
         ConfigureMarketplaceItem(modelBuilder);
         ConfigureMarketplaceAcquisition(modelBuilder);
+        ConfigureTicket(modelBuilder);
+        ConfigureCommunityThread(modelBuilder);
     }
 
 
@@ -100,6 +114,7 @@ internal sealed class CloudDbContext : DbContext
         {
             account.HasKey(a => a.Id);
             account.Property(a => a.Name).IsRequired().HasMaxLength(128);
+            account.Property(a => a.SubscriptionTier).HasConversion<string>().HasMaxLength(32);
             account.HasMany(a => a.Users).WithOne(u => u!.Account!).HasForeignKey(u => u.AccountId).OnDelete(DeleteBehavior.Cascade);
             account.HasMany(a => a.Licenses).WithOne(l => l!.Account!).HasForeignKey(l => l.AccountId).OnDelete(DeleteBehavior.Cascade);
             account.HasMany(a => a.Instances).WithOne(i => i!.Account!).HasForeignKey(i => i.AccountId).OnDelete(DeleteBehavior.Cascade);
@@ -113,6 +128,7 @@ internal sealed class CloudDbContext : DbContext
             user.HasKey(u => u.Id);
             user.Property(u => u.UserName).IsRequired().HasMaxLength(128);
             user.Property(u => u.PasswordHash).IsRequired().HasMaxLength(512);
+            user.Property(u => u.Role).HasConversion<string>().HasMaxLength(32);
             user.HasIndex(u => u.UserName).IsUnique();
         });
     }
@@ -271,6 +287,59 @@ internal sealed class CloudDbContext : DbContext
             acq.HasIndex(a => new { a.MarketplaceItemId, a.AccountId }).IsUnique();
             acq.HasOne(a => a.Account).WithMany().HasForeignKey(a => a.AccountId).OnDelete(DeleteBehavior.Cascade);
             acq.HasOne(a => a.EngineInstance).WithMany().HasForeignKey(a => a.EngineInstanceId).OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    private static void ConfigureTicket(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Ticket>(ticket =>
+        {
+            ticket.HasKey(t => t.Id);
+            ticket.Property(t => t.AuthorName).IsRequired().HasMaxLength(128);
+            ticket.Property(t => t.TargetType).HasConversion<string>().HasMaxLength(32);
+            ticket.Property(t => t.TargetItemName).HasMaxLength(128);
+            ticket.Property(t => t.Title).IsRequired().HasMaxLength(256);
+            ticket.Property(t => t.Description).IsRequired().HasMaxLength(4096);
+            ticket.Property(t => t.Category).HasConversion<string>().HasMaxLength(32);
+            ticket.Property(t => t.Priority).HasConversion<string>().HasMaxLength(32);
+            ticket.Property(t => t.Status).HasConversion<string>().HasMaxLength(32);
+            ticket.HasIndex(t => t.AccountId);
+            ticket.HasIndex(t => t.Status);
+            ticket.HasIndex(t => t.TargetType);
+            ticket.HasMany(t => t.Messages).WithOne(m => m!.Ticket!).HasForeignKey(m => m.TicketId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<TicketMessage>(msg =>
+        {
+            msg.HasKey(m => m.Id);
+            msg.Property(m => m.AuthorName).IsRequired().HasMaxLength(128);
+            msg.Property(m => m.AuthorRole).IsRequired().HasMaxLength(64);
+            msg.Property(m => m.Message).IsRequired().HasMaxLength(4096);
+            msg.HasIndex(m => m.TicketId);
+        });
+    }
+
+    private static void ConfigureCommunityThread(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CommunityThread>(thread =>
+        {
+            thread.HasKey(t => t.Id);
+            thread.Property(t => t.Title).IsRequired().HasMaxLength(256);
+            thread.Property(t => t.Category).IsRequired().HasMaxLength(64);
+            thread.Property(t => t.AuthorName).IsRequired().HasMaxLength(128);
+            thread.Property(t => t.AuthorBadge).IsRequired().HasMaxLength(64);
+            thread.Property(t => t.Content).IsRequired().HasMaxLength(8192);
+            thread.HasIndex(t => t.Category);
+            thread.HasMany(t => t.Replies).WithOne(r => r!.Thread!).HasForeignKey(r => r.ThreadId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CommunityReply>(reply =>
+        {
+            reply.HasKey(r => r.Id);
+            reply.Property(r => r.AuthorName).IsRequired().HasMaxLength(128);
+            reply.Property(r => r.AuthorBadge).IsRequired().HasMaxLength(64);
+            reply.Property(r => r.Content).IsRequired().HasMaxLength(4096);
+            reply.HasIndex(r => r.ThreadId);
         });
     }
 }

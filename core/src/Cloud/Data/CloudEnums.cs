@@ -71,3 +71,32 @@ internal enum CommandStatus
     /// <summary>The instance reported an error, or the command timed out.</summary>
     Failed
 }
+
+/// <summary>The role and access level of a user account.</summary>
+internal enum UserRole
+{
+    /// <summary>Full cluster operator with infrastructure management permissions.</summary>
+    Admin,
+
+    /// <summary>Operations engineer managing instance lifecycle and telemetry.</summary>
+    Operator,
+
+    /// <summary>Community developer developing extensions and running algorithms.</summary>
+    Developer,
+
+    /// <summary>Institutional trader executing live capital orders.</summary>
+    Trader
+}
+
+/// <summary>The subscription tier entitling an account to platform resources.</summary>
+internal enum SubscriptionTier
+{
+    /// <summary>Free community developer tier: 1 engine instance, paper trading, community forums.</summary>
+    Free,
+
+    /// <summary>Professional trader tier: 5 engine instances, live execution, advanced analytics.</summary>
+    Pro,
+
+    /// <summary>Enterprise institutional tier: unlimited instances, dedicated support, custom SLAs.</summary>
+    Enterprise
+}
