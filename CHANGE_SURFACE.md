@@ -78,8 +78,18 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `frontends/packages/ui-kit/src/components/ModalSheet.tsx`: Apple Design backdrop-blur modal sheet dialog.
 - `frontends/packages/ui-kit/src/components/SegmentedControl.tsx`: Apple Design iOS/macOS-style pill segmented control.
 - `frontends/packages/ui-kit/src/components/StatCard.tsx`: Apple Design financial statistic card with tabular numeric typography.
+- `scripts/bin/engine`: CLI launcher script wrapping standalone Engine binary execution.
+- `scripts/build-engine.mjs`: Standalone cross-platform Engine binary compiler supporting Linux, Windows, macOS x64 and arm64 architectures.
+- `scripts/dev-all.mjs`: Monorepo multi-service dev orchestrator for Cloud API, Engine, Marketplace, and Dashboard with colored logs and graceful shutdown.
+- `scripts/run-engine.mjs`: Standalone Engine runner script with automatic host binary compilation and argument pass-through.
+- `scripts/test-all.mjs`: Monorepo test orchestrator executing backend .NET test suites and frontend Vitest suites with unified scorecard.
 
 ### Modified Files
+- `.gitignore`: Added root ignores for compiled native binaries (/bin/, /artifacts/, /publish/).
+- `core/src/Engine/AGENT.md`: Added nx publish engine target delegation.
+- `core/src/Engine/Engine.csproj`: Added single-file self-contained publish configuration defaults.
+- `core/src/Engine/project.json`: Added publish target delegating to node scripts/build-engine.mjs.
+- `package.json`: Added helper scripts for dev orchestration, direct engine execution, and test running.
 - `core/src/Cloud/Engine/EngineSession.cs`: Decomposed from 640 lines down to 230 lines via `EngineSession.Handlers.cs`.
 - `core/src/Engine/Communication/CloudConnector.cs`: Decomposed from 598 lines down to 382 lines via `CloudConnector.BinaryTransfer.cs` and `CloudConnector.Connection.cs`.
 - `core/src/Engine/Core/StateManager.cs`: Decomposed from 612 lines down to 411 lines via `IStateManager.cs` and `StateManager.Messaging.cs`.
