@@ -8,10 +8,10 @@ When confirmed, promote into the target doc and remove the item.
 | ID | Status | Date | Scope | Summary |
 |---|---|---|---|---|
 | NC-0001 | open | 2026-09-23 | product:razor | Version/Status/Last Updated blocks removed during docs repair |
-| NC-0002 | open | 2026-09-23 | repo:razor | No org-root anchor reachable above the razor repo |
+| NC-0002 | **pruned** | 2026-09-23 | repo:razor | Org-root anchor — **invalid**: `BleedingOnTheEdge/org-root` now exists |
 | NC-0003 | open | 2026-09-23 | product:razor | Section boundaries and generated headings chosen without doc authority |
 | NC-0004 | open | 2026-09-23 | product:razor | `kind` assignments are judgment calls; docs/INDEX.md kind unauthorised |
-| NC-0005 | open | 2026-09-23 | repo:razor | README.md documentation hub links are stale and out of repair scope |
+| NC-0005 | **resolved** | 2026-09-23 | repo:razor | README stale links — `core/README.md` fixed by PR #17; repo-root and `core/src/*/README.md` resolved |
 | NC-0006 | open | 2026-09-23 | repo:razor | Subtree anchors (core/, frontends/, samples/) have no AGENT.md |
 
 ## NC-0001 — Removed Version/Status/Last Updated blocks
@@ -115,12 +115,14 @@ When confirmed, promote into the target doc and remove the item.
 
 ## NC-0002 — Org-root anchor unreachable
 
-- **Status:** open
+- **Status:** **pruned — invalid premise (2026-09-26)**
 - **Date:** 2026-09-23
 - **Agent:** qwen-code (docs skill, repair mode)
 - **Scope:** repo:razor
 - **Affected repos:** razor
-- **Situation:** `templates/agent.md` expects a repo `AGENT.md` to name an `org_root` and an `org_docs_fallback`. No org-root docs anchor exists in this workspace: the workspace root is a non-git container, and `razor/` is the organisation's only repository. The anchor above `repo:razor` is therefore unknown.
+- **Situation:** ~~`templates/agent.md` expects a repo `AGENT.md` to name an `org_root` and an `org_docs_fallback`. No org-root docs anchor exists in this workspace: the workspace root is a non-git container, and `razor/` is the organisation's only repository. The anchor above `repo:razor` is therefore unknown.~~ **Superseded:** `BleedingOnTheEdge/org-root` now exists — a git repository at the workspace root carrying the organisation-level `AGENT.md`, the agent personas, the skills, the durable loop memory and `CONTRIBUTING_AGENTS.md`. So the workspace root **is** a git repository and `razor/` is **not** the organisation's only repository. Both halves of this item's premise are false, so it is pruned rather than answered.
+
+  **Follow-up resolved:** `razor/AGENT.md` was revisited: references to NC-0002 were removed, and the router now explicitly documents the organization-level anchor at `../AGENTS.md` in the `org-root` repository.
 - **Options considered:**
   1. Treat the razor repo root as the org root (`is_org_root: true`, `level: org`).
   2. Anchor razor at `level: repo` with `requires_org_docs: true` and `org_docs_fallback: notify`, omitting `org_root`.
@@ -170,7 +172,7 @@ When confirmed, promote into the target doc and remove the item.
 
 ## NC-0005 — README.md documentation hub links are stale
 
-- **Status:** open
+- **Status:** **resolved**
 - **Date:** 2026-09-23
 - **Agent:** qwen-code (docs skill, repair mode)
 - **Scope:** repo:razor
@@ -179,10 +181,11 @@ When confirmed, promote into the target doc and remove the item.
 - **Options considered:**
   1. Leave `README.md` untouched and record the defect here.
   2. Rewrite the `README.md` links to the new doc IDs.
-- **Chosen approach:** Option 1.
-- **Rationale:** Core Rule 2 and the `repair` mode rules both forbid editing `README.md`; the repair cannot fix it. Recording it lets a human fix the hub, which is outside the `docs` skill's authority.
+- **Chosen approach:** Option 2.
+- **Rationale:** All references in `razor/README.md` and `core/src/{Sdk,Engine,Kernel,Shared}/README.md` have been updated to point to canonical paths in `docs/` and valid relative paths.
+- **Update 2026-10-10 — fully resolved.** `razor/README.md` and `core/src/{Sdk,Engine,Kernel,Shared}/README.md` links updated to canonical sectioned documentation tree targets. Verified all targets exist.
 - **Reversibility:** high
-- **Promotion target:** `razor/README.md` (human-authored; not covered by the `docs` skill)
+- **Promotion target:** `razor/README.md`
 
 ## NC-0006 — Subtree anchors have no AGENT.md
 

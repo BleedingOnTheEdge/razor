@@ -1,28 +1,37 @@
 ---
 id: product:razor/operational/installation-and-deployment/extension-management
 parent: product:razor/operational/installation-and-deployment
-title: 8. Extension Management
+title: Extension Management
 level: product
 kind: operational
+domains: [extensions, operations]
+flows: [extension-deployment]
+keywords:
+  - extension management
+  - extension directories
+  - adapters folder
+  - strategies folder
+  - plugins folder
+  - neural networks folder
+  - hot reload
+  - activation
+references:
+  - product:razor/contracts/extension-developer-guide/deployment
+  - product:razor/blueprint/engine-technical-blueprint/extension-and-slot-management
 ---
 
-# 8. Extension Management
+# Extension Management
 
-## 8.1 Directory Structure
+Extensions are placed in subdirectories alongside the engine executable, and the Cloud decides which
+of them are active. The directory-to-extension-type mapping and the discovery, validation and
+activation contract are owned by `product:razor/contracts/extension-developer-guide/deployment` and
+`product:razor/blueprint/engine-technical-blueprint/extension-and-slot-management`. This document
+covers the operator-facing placement mechanics and reload behaviour.
 
-Extensions are placed in subdirectories alongside the engine executable:
+A single DLL can be placed in any of those directories - the engine scans all of them - but each
+extension type conventionally has its own directory.
 
-| Directory | Purpose | Implements |
-|-----------|---------|------------|
-| `Adapters/` | Broker/exchange connectivity | `IAdapterCapability` |
-| `Strategies/` | Trading logic | `IStrategyCapability` |
-| `Indicators/` | Technical analysis computations | `Indicator` (abstract base) |
-| `Plugins/` | Hook‑based extensions | `IHookManifest` |
-| `NeuralNetworks/` | Neural network models | `INeuralNetworkModel` |
-
-A single DLL can be placed in any directory—the engine scans all of them. However, for organisational clarity, each extension type has its own directory.
-
-## 8.2 Single‑File vs Multi‑File Extensions
+## Single‑File vs Multi‑File Extensions
 
 **Single‑file extensions:** Place the `.dll` directly in the appropriate directory.
 ```
@@ -39,16 +48,7 @@ Adapters/
     └── NobitexApiClient.dll    ← loaded as dependency
 ```
 
-## 8.3 Discovery and Activation
-
-1. On startup, the engine scans all extension directories.
-2. It builds a manifest of discovered adapters, strategies, indicators, hook plugins, and NN models.
-3. The manifest is sent to Razor Cloud.
-4. The user selects active items from their Cloud profile.
-5. The Cloud sends the active set back to the engine.
-6. The engine activates the selected adapter, strategy, indicators, and plugins. Inactive items are not loaded.
-
-## 8.4 Hot‑Reloading Extensions
+## Hot‑Reloading Extensions
 
 When the Cloud sends a `ReloadExtensions` command:
 

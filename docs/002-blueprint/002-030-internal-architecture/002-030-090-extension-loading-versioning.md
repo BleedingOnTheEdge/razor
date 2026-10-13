@@ -1,14 +1,25 @@
 ---
 id: product:razor/blueprint/internal-architecture/extension-loading-versioning
 parent: product:razor/blueprint/internal-architecture
-title: 10. Extension Loading & Versioning
+title: Extension Loading & Versioning
 level: product
 kind: blueprint
+domains: [extensions]
+flows: [extension-deployment]
+keywords:
+  - extension loading
+  - versioning
+  - sdkversion
+  - plugin load context
+  - isolation
+code_paths:
+  - core/src/Kernel/**
+  - core/src/Engine/Pluggability/**
 ---
 
-# 10. Extension Loading & Versioning
+# Extension Loading & Versioning
 
-## 10.1 Directory Structure
+## Directory Structure
 
 Extensions are placed in subdirectories alongside the engine:
 
@@ -22,15 +33,15 @@ Extensions are placed in subdirectories alongside the engine:
 
 A single DLL can implement any combination. The engine scans all directories.
 
-## 10.2 Version Attributes
+## Version Attributes
 
 - `[assembly: SdkVersion("1.0.0")]` – declares the targeted SDK version. The engine checks this before loading any assembly.
 
-## 10.3 Loading Process
+## Loading Process
 
 1. Scan all extension directories for `.dll` files.
 2. For each assembly, load in a new `PluginLoadContext` (unloadable later).
-3. The `PluginLoadContext` ensures `Razor.Core.Sdk` is loaded from the default context (type sharing), while all other dependencies are resolved from the extension's directory.
+3. The `PluginLoadContext` ensures `Sdk` is loaded from the default context (type sharing), while all other dependencies are resolved from the extension's directory.
 4. Call `PluginValidator.ValidateAssembly()` to check the SDK version. Reject if the major version differs.
 5. Call `PluginSafetyValidator.Validate()` to check strong‑naming in production.
 6. Discover types implementing `IHookManifest`, `IAdapterCapability`, `IStrategyCapability`, `INeuralNetworkModel`, or `Indicator`.

@@ -1,7 +1,7 @@
-using Razor.Core.Sdk.Hooks;
-using Razor.Core.Sdk.Shared;
+using Sdk.Hooks;
+using Sdk.Shared;
 
-namespace Razor.Core.Sdk.IntegrationTests.Hooks;
+namespace Sdk.IntegrationTests.Hooks;
 
 public class FilterResult_IntegrationTests
 {

@@ -1,0 +1,41 @@
+{
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "name": "cloud-dashboard",
+  "projectType": "application",
+  "sourceRoot": "frontends/apps/cloud-dashboard/src",
+  "tags": [
+    "scope:frontend",
+    "profile:b",
+    "lang:typescript"
+  ],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter cloud-dashboard lint",
+        "cwd": "."
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter cloud-dashboard test",
+        "cwd": "."
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter cloud-dashboard build",
+        "cwd": "."
+      }
+    },
+    "audit": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm audit --audit-level high || true",
+        "cwd": "."
+      }
+    }
+  }
+}

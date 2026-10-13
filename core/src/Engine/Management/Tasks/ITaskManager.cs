@@ -45,6 +45,18 @@ internal interface ITaskManager
     /// <summary>Cancels an optimisation task.</summary>
     Task CancelOptimizationTaskAsync(string taskId, CancellationToken cancellationToken);
 
+    /// <summary>Advances the optimization task by the specified number of generations.</summary>
+    Task<global::Kernel.Optimization.ComputationCheckpoint> StepComputationAsync(string taskId, int generations, CancellationToken cancellationToken);
+
+    /// <summary>Gets the current computation checkpoint of an optimization task.</summary>
+    Task<global::Kernel.Optimization.ComputationCheckpoint> GetCheckpointAsync(string taskId, CancellationToken cancellationToken);
+
+    /// <summary>Updates or overrides the computation checkpoint of an optimization task with an audit rationale.</summary>
+    Task<global::Kernel.Optimization.ComputationCheckpoint> SetCheckpointAsync(string taskId, global::Kernel.Optimization.ComputationCheckpoint checkpoint, string? reason, CancellationToken cancellationToken);
+
+    /// <summary>Restores an optimization task from persisted state.</summary>
+    Task<string?> RestoreOptimizationTaskAsync(OptimizationState state, CancellationToken cancellationToken);
+
     /// <summary>Pauses a task.</summary>
     Task PauseTaskAsync(string taskId, CancellationToken cancellationToken);
     /// <summary>Resumes a task.</summary>
@@ -52,8 +64,20 @@ internal interface ITaskManager
 
     /// <summary>Gets the state of a task.</summary>
     Task<object> GetTaskStateAsync(string taskId, CancellationToken cancellationToken);
-    /// <summary>Gets the result of an optimisation task.</summary>
-    Task<object> GetOptimizationResultAsync(string taskId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Gets the result of a task, or <c>null</c> if it has not produced one yet.
+    /// </summary>
+    /// <remarks>
+    /// Distinct from <see cref="GetTaskStateAsync"/> on purpose: state describes progress, the
+    /// result is the outcome. Callers that asked for a result used to receive the state, so the
+    /// task's actual output was never reachable. Null means "not finished", which is a different
+    /// answer from "finished with nothing".
+    /// </remarks>
+    Task<object?> GetTaskResultAsync(string taskId, CancellationToken cancellationToken);
+
+    /// <summary>Gets the result of an optimisation task, or <c>null</c> if it has not produced one yet.</summary>
+    Task<object?> GetOptimizationResultAsync(string taskId, CancellationToken cancellationToken);
 
     /// <summary>Stops all tasks.</summary>
     Task StopAllTasksAsync(CancellationToken cancellationToken);

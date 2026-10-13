@@ -8,6 +8,7 @@ namespace Engine.Kernel;
 
 using Engine.Management.Tasks;
 using global::Kernel.Backtesting;
+using global::Kernel.Optimization;
 using Sdk.Slots.Adapter;
 using Sdk.Slots.Strategy;
 using ChromosomeKernel = global::Kernel.Optimization.Chromosome;
@@ -20,8 +21,22 @@ internal interface IKernelService
     /// <summary>Starts a backtest using the given adapter and strategy.</summary>
     Task<string> StartBacktestAsync(IAdapterCapability adapter, IStrategyCapability strategy, BacktestConfiguration config, CancellationToken cancellationToken);
 
-    /// <summary>Gets the result of a completed backtest.</summary>
-    Task<BacktestResult> GetBacktestResultAsync(string taskId, CancellationToken cancellationToken);
+    /// <summary>
+    /// Gets the result of a completed backtest.
+    /// </summary>
+    /// <param name="taskId">The kernel task identifier returned when the backtest started.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>
+    /// The result once the run has finished, or <c>null</c> while it is still running or if the task
+    /// is unknown.
+    /// </returns>
+    /// <remarks>
+    /// Returns <c>null</c> rather than an empty result deliberately. A placeholder that looks like a
+    /// real result cannot be told apart from one, and a caller polling for completion reads the
+    /// placeholder as "finished" -- which is what made a backtest report itself complete while it
+    /// was still running.
+    /// </remarks>
+    Task<BacktestResult?> GetBacktestResultAsync(string taskId, CancellationToken cancellationToken);
 
     /// <summary>Starts a live trading session.</summary>
     Task<string> StartLiveAsync(LiveInput input, CancellationToken cancellationToken);
@@ -46,6 +61,21 @@ internal interface IKernelService
 
     /// <summary>Gets the best chromosome from a completed optimisation.</summary>
     Task<ChromosomeKernel> GetOptimizationResultAsync(string taskId, CancellationToken cancellationToken);
+
+    /// <summary>Advances the optimization run by exactly one generation step and returns the resulting state.</summary>
+    Task<GeneticOptimizerState> StepOptimizationAsync(string taskId, CancellationToken cancellationToken);
+
+    /// <summary>Gets the current optimization checkpoint state, or null if task is not found.</summary>
+    Task<GeneticOptimizerState?> GetOptimizationCheckpointAsync(string taskId, CancellationToken cancellationToken);
+
+    /// <summary>Sets/restores the optimization state from a checkpoint, optionally invalidating cached fitness values.</summary>
+    Task SetOptimizationCheckpointAsync(string taskId, GeneticOptimizerState state, bool invalidateFitness, CancellationToken cancellationToken);
+
+    /// <summary>Pauses an active optimization task.</summary>
+    Task PauseOptimizationAsync(string taskId, CancellationToken cancellationToken);
+
+    /// <summary>Resumes a paused optimization task.</summary>
+    Task ResumeOptimizationAsync(string taskId, CancellationToken cancellationToken);
 }
 
 /// <summary>Input for starting a live trading session.</summary>
@@ -89,6 +119,8 @@ internal sealed record OptimizationInput
     public required DateTime EndDate { get; init; }
     public required string[] Timeframes { get; init; }
     public required string AccountCurrency { get; init; }    // base account currency
+    public bool IsSteppable { get; init; }
+    public GeneticOptimizerState? InitialState { get; init; }
 }
 
 /// <summary>Snapshot of live trading state.</summary>

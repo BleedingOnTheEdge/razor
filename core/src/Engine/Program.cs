@@ -36,6 +36,7 @@ internal sealed class Program
 {
     private static IServiceProvider? _serviceProvider;
     private static CancellationTokenSource? _shutdownCts;
+    private static string? _configuredEngineId;
 
     // LoggerMessage delegates for shutdown.
     private static readonly Action<ILogger, Exception?> _logShutdownTasksError =
@@ -79,7 +80,110 @@ internal sealed class Program
         RuntimeEnvironment.SetDevelopment(true);
 #endif
 
-        // Parse --auth=username,password,apikey
+        // Parse --auth=username,password,apikey or individual flags (--endpoint, --instance, --key, --username, --password)
+        string? username = null;
+        string? password = null;
+        string? apiKey = null;
+        string? instanceId = null;
+        string? endpoint = null;
+
+        for (int i = 0; i < args.Length; i++)
+        {
+            string arg = args[i];
+            if (arg.StartsWith("--endpoint=", StringComparison.OrdinalIgnoreCase))
+            {
+                endpoint = arg["--endpoint=".Length..];
+            }
+            else if (arg.Equals("--endpoint", StringComparison.OrdinalIgnoreCase) || arg.Equals("-e", StringComparison.OrdinalIgnoreCase))
+            {
+                if (i + 1 < args.Length)
+                {
+                    endpoint = args[++i];
+                }
+            }
+            else if (arg.StartsWith("--key=", StringComparison.OrdinalIgnoreCase))
+            {
+                apiKey = arg["--key=".Length..];
+            }
+            else if (arg.Equals("--key", StringComparison.OrdinalIgnoreCase) || arg.Equals("-k", StringComparison.OrdinalIgnoreCase))
+            {
+                if (i + 1 < args.Length)
+                {
+                    apiKey = args[++i];
+                }
+            }
+            else if (arg.StartsWith("--apikey=", StringComparison.OrdinalIgnoreCase))
+            {
+                apiKey = arg["--apikey=".Length..];
+            }
+            else if (arg.Equals("--apikey", StringComparison.OrdinalIgnoreCase))
+            {
+                if (i + 1 < args.Length)
+                {
+                    apiKey = args[++i];
+                }
+            }
+            else if (arg.StartsWith("--instance=", StringComparison.OrdinalIgnoreCase))
+            {
+                instanceId = arg["--instance=".Length..];
+            }
+            else if (arg.Equals("--instance", StringComparison.OrdinalIgnoreCase))
+            {
+                if (i + 1 < args.Length)
+                {
+                    instanceId = args[++i];
+                }
+            }
+            else if (arg.StartsWith("--username=", StringComparison.OrdinalIgnoreCase))
+            {
+                username = arg["--username=".Length..];
+            }
+            else if (arg.Equals("--username", StringComparison.OrdinalIgnoreCase) || arg.Equals("-u", StringComparison.OrdinalIgnoreCase))
+            {
+                if (i + 1 < args.Length)
+                {
+                    username = args[++i];
+                }
+            }
+            else if (arg.StartsWith("--password=", StringComparison.OrdinalIgnoreCase))
+            {
+                password = arg["--password=".Length..];
+            }
+            else if (arg.Equals("--password", StringComparison.OrdinalIgnoreCase) || arg.Equals("-p", StringComparison.OrdinalIgnoreCase))
+            {
+                if (i + 1 < args.Length)
+                {
+                    password = args[++i];
+                }
+            }
+            else if (arg.StartsWith("--engine-id=", StringComparison.OrdinalIgnoreCase))
+            {
+                _configuredEngineId = arg["--engine-id=".Length..];
+            }
+            else if (arg.Equals("--engine-id", StringComparison.OrdinalIgnoreCase) || arg.Equals("--engineid", StringComparison.OrdinalIgnoreCase))
+            {
+                if (i + 1 < args.Length)
+                {
+                    _configuredEngineId = args[++i];
+                }
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(endpoint))
+        {
+            AppConstants.SetPrimaryEndpoint(endpoint);
+        }
+
+        if (!string.IsNullOrWhiteSpace(instanceId))
+        {
+            Console.WriteLine($"Bound to Engine Instance: {instanceId}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(apiKey) || !string.IsNullOrWhiteSpace(username) || !string.IsNullOrWhiteSpace(password))
+        {
+            Credentials.SetPartialCredentials(username, password, apiKey);
+        }
+
         string? authArg = args.FirstOrDefault(a => a.StartsWith("--auth=", StringComparison.OrdinalIgnoreCase));
         if (authArg != null)
         {
@@ -138,10 +242,12 @@ internal sealed class Program
         catch (OperationCanceledException)
         {
             Log.Information("Engine shutdown requested.");
+            Console.WriteLine("Engine shutdown requested.");
         }
         catch (Exception ex)
         {
             Log.Fatal(ex, "Unhandled exception in Main.");
+            Console.WriteLine($"[FATAL] Unhandled exception in Main: {ex}");
             exitCode = 1;
         }
         finally
@@ -219,6 +325,11 @@ internal sealed class Program
         var stateManager = serviceProvider.GetRequiredService<IStateManager>();
         await stateManager.LoadStateAsync(cancellationToken).ConfigureAwait(false);
 
+        if (!string.IsNullOrWhiteSpace(_configuredEngineId))
+        {
+            stateManager.SetEngineId(_configuredEngineId);
+        }
+
         // Restore live state
         var liveState = await stateManager.LoadLiveStateAsync(cancellationToken).ConfigureAwait(false);
         if (liveState != null)
@@ -259,6 +370,12 @@ internal sealed class Program
         if (!Credentials.IsAvailable)
         {
             Credentials.PromptForCredentials();
+        }
+
+        // Initialize command dispatcher before running the connector
+        if (serviceProvider.GetRequiredService<Management.Commands.ICommandDispatcher>() is Management.Commands.CommandDispatcher dispatcher)
+        {
+            dispatcher.Initialize();
         }
 
         // Reuse the same cloud connector instance
@@ -422,7 +539,12 @@ internal sealed class Program
         Console.WriteLine("Razor Engine v" + AppConstants.EngineVersion);
         Console.WriteLine("Usage: Engine [options]");
         Console.WriteLine("Options:");
-        Console.WriteLine("  --auth=username,password,apikey   Set credentials via command line (required for service mode)");
+        Console.WriteLine("  --endpoint=<url>, -e <url>       Cloud control plane WebSocket URL (default: ws://localhost:5000/engine)");
+        Console.WriteLine("  --instance=<id>                  Instance UUID to bind to");
+        Console.WriteLine("  --key=<key>, -k <key>            Instance API key issued by Cloud");
+        Console.WriteLine("  --username=<name>, -u <name>     Cloud operator/trader username");
+        Console.WriteLine("  --password=<pass>, -p <pass>     Cloud operator/trader password");
+        Console.WriteLine("  --auth=username,password,apikey  Set credentials via command line (required for service mode)");
         Console.WriteLine("  --help, -h                       Show this help message");
         Console.WriteLine("  --version, -v                    Show version information");
         Console.WriteLine("  --service                        Run as a Windows Service (Windows) or systemd (Linux)");

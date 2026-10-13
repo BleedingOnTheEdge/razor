@@ -84,6 +84,12 @@ internal static class CommandIds
     public const int GetOptimizationResult = 1305;
     /// <summary>ListOptimizations command ID (1306).</summary>
     public const int ListOptimizations = 1306;
+    /// <summary>StepComputation command ID (1307).</summary>
+    public const int StepComputation = 1307;
+    /// <summary>GetCheckpoint command ID (1308).</summary>
+    public const int GetCheckpoint = 1308;
+    /// <summary>SetCheckpoint command ID (1309).</summary>
+    public const int SetCheckpoint = 1309;
 
     // ─── Extensions (1400‑1499) ───────────────────────────────────
 

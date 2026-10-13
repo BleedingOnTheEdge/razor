@@ -4,6 +4,16 @@ parent: product:razor/cross-cutting/principles
 title: 13. Live Trading Robustness
 level: product
 kind: cross-cutting
+domains: [live-trading, operations]
+keywords:
+  - principle 13
+  - live trading robustness
+  - reconciliation
+  - reconnection
+  - in-flight order guard
+  - health checks
+references:
+  - product:razor/cross-cutting/principles/internal-clock-no-system-time-in-trading-logic
 ---
 
 # 13. Live Trading Robustness

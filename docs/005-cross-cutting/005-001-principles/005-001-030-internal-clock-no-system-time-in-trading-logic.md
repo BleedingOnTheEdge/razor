@@ -4,6 +4,16 @@ parent: product:razor/cross-cutting/principles
 title: 3. Internal Clock – No System Time in Trading Logic
 level: product
 kind: cross-cutting
+domains: [engine, live-trading, backtesting]
+keywords:
+  - principle 3
+  - internal clock
+  - market time
+  - wall-clock time
+  - iclock
+  - tickclock
+  - systemclock
+  - datetime.utcnow
 ---
 
 # 3. Internal Clock – No System Time in Trading Logic

@@ -19,7 +19,7 @@ public static class TickSynthesizer
 
         int barsCount = bars.Length;
         int totalTicks = barsCount * 4;
-        var ticks = GC.AllocateUninitializedArray<Tick>(totalTicks);
+        Tick[] ticks = GC.AllocateUninitializedArray<Tick>(totalTicks);
         ref Bar barRef = ref MemoryMarshal.GetArrayDataReference(bars);
         ref Tick tickRef = ref MemoryMarshal.GetArrayDataReference(ticks);
         for (int i = 0; i < barsCount; i++)
@@ -33,8 +33,8 @@ public static class TickSynthesizer
                 duration = 4;
             }
 
-            long t2 = openTime + duration / 3;
-            long t3 = openTime + duration * 2 / 3;
+            long t2 = openTime + (duration / 3);
+            long t3 = openTime + (duration * 2 / 3);
             long t4 = closeTime > openTime ? closeTime - 1 : openTime + 3;
             double volTick = bar.Volume * 0.25;
             double open = bar.Open, close = bar.Close, high = bar.High, low = bar.Low;
@@ -69,9 +69,9 @@ public static class TickSynthesizer
             ticksPerBar = 2;
         }
 
-        var rng = new CustomizedRandom(seed);
+        CustomizedRandom rng = new(seed);
         int totalTicks = bars.Length * ticksPerBar;
-        var ticks = GC.AllocateUninitializedArray<Tick>(totalTicks);
+        Tick[] ticks = GC.AllocateUninitializedArray<Tick>(totalTicks);
         ref Bar barRef = ref MemoryMarshal.GetArrayDataReference(bars);
         ref Tick tickRef = ref MemoryMarshal.GetArrayDataReference(ticks);
         for (int i = 0; i < bars.Length; i++)
@@ -101,7 +101,7 @@ public static class TickSynthesizer
 
                 double progress = (double)t / (ticksPerBar - 1);
 #pragma warning disable CA5394 // Reason: Deterministic use for synthetic tick generation, not security.
-                double price = low + (high - low) * (rng.NextDouble() * 0.3 + progress * 0.8);
+                double price = low + ((high - low) * ((rng.NextDouble() * 0.3) + (progress * 0.8)));
 #pragma warning restore CA5394
                 if (price < low)
                 {
@@ -126,7 +126,7 @@ public static class TickSynthesizer
         ArgumentNullException.ThrowIfNull(streams);
         long minTime = long.MaxValue, maxTime = long.MinValue;
         int maxTicks = 0;
-        foreach (var s in streams)
+        foreach (IReadOnlyList<Tick> s in streams)
         {
             if (s is null)
             {

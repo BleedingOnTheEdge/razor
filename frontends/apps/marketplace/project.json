@@ -1,0 +1,41 @@
+{
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "name": "marketplace",
+  "projectType": "application",
+  "sourceRoot": "frontends/apps/marketplace/src",
+  "tags": [
+    "scope:frontend",
+    "profile:b",
+    "lang:typescript"
+  ],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter marketplace lint",
+        "cwd": "."
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter marketplace test",
+        "cwd": "."
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter marketplace build",
+        "cwd": "."
+      }
+    },
+    "audit": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm audit --audit-level high || true",
+        "cwd": "."
+      }
+    }
+  }
+}

@@ -4,6 +4,15 @@ parent: product:razor/cross-cutting/principles
 title: 1. Market / Exchange / Asset Agnosticism
 level: product
 kind: cross-cutting
+domains: [engine, extensions, data]
+keywords:
+  - principle 1
+  - market agnosticism
+  - exchange agnosticism
+  - asset agnosticism
+  - adapters
+  - iadaptercapability
+  - imarketcalculator
 ---
 
 # 1. Market / Exchange / Asset Agnosticism

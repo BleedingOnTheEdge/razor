@@ -1,7 +1,7 @@
-using Razor.Core.Sdk.Shared;
+using Sdk.Shared;
 using System.Collections.Immutable;
 
-namespace Razor.Core.Sdk.IntegrationTests.Shared;
+namespace Sdk.IntegrationTests.Shared;
 
 public class StrategySpecification_IntegrationTests
 {

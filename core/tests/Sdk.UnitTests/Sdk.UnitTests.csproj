@@ -25,6 +25,7 @@
 
     <ItemGroup>
         <ProjectReference Include="../../src/Sdk/Sdk.csproj" />
+        <ProjectReference Include="../../src/Shared/Shared.csproj" />
     </ItemGroup>
 
 </Project>

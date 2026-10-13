@@ -274,4 +274,4 @@ Unit and integration tests verify:
 
 ---
 
-*This README is intended for Razor core developers. For extension development, see the [Sdk README](src/Sdk/README.md).*
+*This README is intended for Razor core developers. For extension development, see the [Sdk README](../Sdk/README.md).*

@@ -30,7 +30,7 @@ using ChromosomeKernel = global::Kernel.Optimization.Chromosome;
 /// <summary>
 /// Real implementation of <see cref="IKernelService"/> using the Kernel components.
 /// </summary>
-internal sealed class KernelService : IKernelService, IDisposable
+internal sealed partial class KernelService : IKernelService, IDisposable
 {
     private readonly IExtensionManager _extensionManager;
     private readonly IHookRegistry _hookRegistry;
@@ -87,13 +87,18 @@ internal sealed class KernelService : IKernelService, IDisposable
         OptimizationRunner? Runner = null,
         IIndicatorRegistry? IndicatorRegistry = null,
         TickWindow? TickWindow = null,
-        List<MemoryMappedTickList>? MappedTickLists = null)
+        List<MemoryMappedTickList>? MappedTickLists = null,
+        Func<ChromosomeKernel, CancellationToken, Task<double>>? Evaluator = null,
+        ManualResetEventSlim? PauseGate = null,
+        bool IsSteppable = false)
     {
         public void DisposeCts()
         {
             Cts?.Cancel();
             Cts?.Dispose();
         }
+
+        public void DisposePauseGate() => PauseGate?.Dispose();
 
         public void DisposeIndicatorRegistry()
         {
@@ -320,14 +325,18 @@ internal sealed class KernelService : IKernelService, IDisposable
     }
 
     /// <inheritdoc/>
-    public Task<BacktestResult> GetBacktestResultAsync(string taskId, CancellationToken cancellationToken)
+    public Task<BacktestResult?> GetBacktestResultAsync(string taskId, CancellationToken cancellationToken)
     {
+        // Null means "not finished yet", which is a different answer from "finished with nothing".
+        // Returning a zeroed result here made the two indistinguishable: the caller polling for
+        // completion saw a result on its first poll and reported the task complete while the run
+        // was still going.
         if (_activeTasks.TryGetValue(taskId, out var state) && state.Result is BacktestResult result)
         {
-            return Task.FromResult(result);
+            return Task.FromResult<BacktestResult?>(result);
         }
 
-        return Task.FromResult(new BacktestResult { Balance = 0, Equity = 0, Drawdown = 0, DailyDrawdown = 0, TotalTrades = 0 });
+        return Task.FromResult<BacktestResult?>(null);
     }
 
     /// <inheritdoc/>
@@ -565,288 +574,5 @@ internal sealed class KernelService : IKernelService, IDisposable
         }
 
         await Task.CompletedTask.ConfigureAwait(false);
-    }
-
-    /// <inheritdoc/>
-    public async Task<string> StartOptimizationAsync(OptimizationInput input, CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(input);
-        string taskId = $"opt_{Guid.NewGuid():N}";
-        _logOptimizationStarted(_logger, taskId, null);
-
-        var adapter = _extensionManager.ActiveAdapter
-            ?? throw new InvalidOperationException("No active adapter found.");
-        var strategy = _extensionManager.ActiveStrategy
-            ?? throw new InvalidOperationException("No active strategy found.");
-
-        var symbolProperties = new Dictionary<string, SymbolProperties>();
-        var tickStreams = new List<IReadOnlyList<Tick>>();
-        var mappedLists = new List<MemoryMappedTickList>();
-
-        try
-        {
-            foreach (string symbol in input.Symbols)
-            {
-                var props = await adapter.GetSymbolPropertiesAsync(symbol, cancellationToken).ConfigureAwait(false);
-                if (props == null)
-                {
-                    _logOptimizationDataFetchFailed(_logger, symbol, taskId, null);
-                    throw new InvalidOperationException($"Symbol properties for {symbol} not available.");
-                }
-                symbolProperties[symbol] = props;
-
-                var request = new HistoricalDataRequest
-                {
-                    Symbol = symbol,
-                    StartTime = input.StartDate,
-                    EndTime = input.EndDate,
-                    RetentionPolicy = DataActionPolicy.DeleteAfterTask
-                };
-                var response = await adapter.FetchHistoryToBinaryFileAsync(request, cancellationToken).ConfigureAwait(false);
-                if (!response.Success)
-                {
-                    throw new InvalidOperationException($"Failed to fetch history for {symbol}: {response.ErrorMessage}");
-                }
-
-                var mmList = new MemoryMappedTickList(response.BinaryFilePath);
-                mappedLists.Add(mmList);
-                tickStreams.Add(mmList);
-            }
-
-            var timeframeEnums = input.Timeframes
-                .Select(ParseTimeFrame)
-                .Distinct()
-                .ToArray();
-
-            var symbolRequests = input.Symbols.Select(s =>
-                new SymbolRequest(s, ImmutableArray.Create(timeframeEnums)))
-                .ToImmutableArray();
-
-            var strategySpec = new StrategySpecification
-            {
-                InitialBalance = input.InitialBalance,
-                Leverage = input.Leverage,
-                RequestedSymbols = symbolRequests
-            };
-            strategySpec.Validate();
-
-            var execSpec = new ExecutionSpecification
-            {
-                StartDate = input.StartDate,
-                EndDate = input.EndDate,
-                MaxParallelThreads = input.MaxParallelThreads,
-                LatencyTicks = 0,
-                WarmupWindowCount = 0,
-                MaxOpenPositions = 5,
-                StopOutLevel = 0.5,
-                GeneInitializationSeed = null
-            };
-            execSpec.Validate();
-
-            INeuralNetworkModel? nnModel = null;
-            if (!string.IsNullOrEmpty(input.NeuralNetworkName))
-            {
-                nnModel = _extensionManager.ActiveNeuralNetwork;
-                if (nnModel == null)
-                {
-                    throw new InvalidOperationException($"Neural network model '{input.NeuralNetworkName}' not active.");
-                }
-            }
-
-            // Get currency converter
-            ICurrencyConverter? converter = null;
-            if (adapter is IHasCurrencyConverter hasConverter)
-            {
-                converter = hasConverter.CurrencyConverter;
-            }
-
-            var optSpec = new OptimizationSpecification
-            {
-                MasterSeed = input.MasterSeed,
-                Generations = input.Generations,
-                PopulationSize = input.PopulationSize,
-                MutationRate = input.MutationRate,
-                CrossoverRate = input.CrossoverRate,
-                ElitismPct = input.ElitismPct,
-                TournamentSize = input.TournamentSize,
-                StagnationGenerationsBeforeHyper = input.StagnationGenerationsBeforeHyper,
-                MaxParallelThreads = input.MaxParallelThreads
-            };
-
-            var schema = GeneInjector.ExtractSchema(strategy.GetType());
-
-            var runner = new OptimizationRunner(
-                optSpec,
-                schema,
-                (CoreMetrics)_metrics,
-                _hookRegistry.Optimization,
-                nnModel,
-                _messageBus,
-                _hookRegistry);
-
-            async Task<double> EvaluateChromosome(ChromosomeKernel chromo, CancellationToken ct)
-            {
-                var transientStrategy = _extensionManager.CreateTransientStrategy(input.StrategyName);
-                if (transientStrategy == null)
-                {
-                    throw new InvalidOperationException($"Could not create transient strategy '{input.StrategyName}'.");
-                }
-
-                try
-                {
-                    transientStrategy.InjectGenes(chromo.Genes);
-
-                    var backtestInput = new BacktestInput
-                    {
-                        TickStreams = tickStreams.ToArray(),
-                        Symbols = input.Symbols,
-                        Strategy = transientStrategy,
-                        StrategySpecification = strategySpec,
-                        ExecutionSpecification = execSpec,
-                        MarketCalculator = adapter.Calculator,
-                        SymbolProperties = symbolProperties,
-                        Genes = chromo.Genes,
-                        GeneInitializationSeed = null,
-                        NeuralNetwork = nnModel,
-                        Progress = null,
-                        MessageBus = _messageBus,
-                        Metrics = _metrics,
-                        HookRegistry = _hookRegistry,
-                        CurrencyConverter = converter,
-                        AccountCurrency = input.AccountCurrency
-                    };
-
-                    var runnerBt = new BacktestRunner();
-                    var result = await runnerBt.RunAsync(backtestInput, ct).ConfigureAwait(false);
-                    return result.Balance - input.InitialBalance;
-                }
-                finally
-                {
-                    (transientStrategy as IDisposable)?.Dispose();
-                }
-            }
-
-            CancellationTokenSource cts;
-#pragma warning disable CA2000
-            cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-#pragma warning restore CA2000
-            var taskState = new TaskState(cts, Runner: runner, MappedTickLists: mappedLists);
-
-            try
-            {
-                _activeTasks[taskId] = taskState;
-            }
-            catch
-            {
-                cts.Dispose();
-                throw;
-            }
-
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    var best = await runner.RunAsync(EvaluateChromosome, cts.Token).ConfigureAwait(false);
-                    _activeTasks[taskId] = _activeTasks[taskId] with { Result = best };
-                    _logOptimizationCompleted(_logger, taskId, null);
-                }
-                catch (OperationCanceledException)
-                {
-                    if (_activeTasks.TryRemove(taskId, out var state))
-                    {
-                        state.DisposeCts();
-                        state.DisposeMappedTickLists();
-                    }
-                    _logOptimizationCancelled(_logger, taskId, null);
-                }
-                catch (Exception ex)
-                {
-                    if (_activeTasks.TryRemove(taskId, out var state))
-                    {
-                        state.DisposeCts();
-                        state.DisposeMappedTickLists();
-                    }
-                    _logOptimizationFailed(_logger, taskId, ex);
-                }
-                finally
-                {
-                    if (_activeTasks.TryGetValue(taskId, out var state))
-                    {
-                        state.DisposeMappedTickLists();
-                    }
-                }
-            }, cts.Token);
-
-            return taskId;
-        }
-        catch
-        {
-            foreach (var mm in mappedLists)
-            {
-                mm?.Dispose();
-            }
-
-            throw;
-        }
-    }
-
-    /// <inheritdoc/>
-    public Task<ChromosomeKernel> GetOptimizationResultAsync(string taskId, CancellationToken cancellationToken)
-    {
-        if (_activeTasks.TryGetValue(taskId, out var state) && state.Result is ChromosomeKernel best)
-        {
-            return Task.FromResult(best);
-        }
-
-        var dummy = new ChromosomeKernel(1);
-        dummy.Genes[0] = 0;
-        dummy.Fitness = 0;
-        dummy.Generation = 0;
-        dummy.IndividualIndex = 0;
-        dummy.Seed = 0;
-        return Task.FromResult(dummy);
-    }
-
-    private static TimeFrame ParseTimeFrame(string tf)
-    {
-        return tf.ToUpperInvariant() switch
-        {
-            "TICK" => TimeFrame.Tick,
-            "M1" => TimeFrame.M1,
-            "M5" => TimeFrame.M5,
-            "M15" => TimeFrame.M15,
-            "M30" => TimeFrame.M30,
-            "H1" => TimeFrame.H1,
-            "H2" => TimeFrame.H2,
-            "H3" => TimeFrame.H3,
-            "H4" => TimeFrame.H4,
-            "H6" => TimeFrame.H6,
-            "H12" => TimeFrame.H12,
-            "D1" => TimeFrame.D1,
-            "D2" => TimeFrame.D2,
-            "D3" => TimeFrame.D3,
-            "W1" => TimeFrame.W1,
-            "MN1" => TimeFrame.MN1,
-            _ => TimeFrame.Tick
-        };
-    }
-
-    public void Dispose()
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        _disposed = true;
-        _taskLock.Dispose();
-        foreach (var kv in _activeTasks)
-        {
-            kv.Value.DisposeCts();
-            kv.Value.DisposeIndicatorRegistry();
-            kv.Value.DisposeTickWindow();
-            kv.Value.DisposeMappedTickLists();
-        }
-        _activeTasks.Clear();
     }
 }

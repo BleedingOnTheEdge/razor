@@ -1,7 +1,8 @@
-using Razor.Core.Sdk.Shared;
-using Razor.Core.Sdk.Slots;
+using Shared;
+using Sdk.Shared;
+using Sdk.Slots.Adapter;
 
-namespace Razor.Core.Sdk.IntegrationTests.Shared;
+namespace Sdk.IntegrationTests.Shared;
 
 public sealed class BorrowedTickData_IntegrationTests : IDisposable
 {
@@ -122,7 +123,9 @@ public sealed class BorrowedTickData_IntegrationTests : IDisposable
 
         await data.DisposeAsync();
         await data.DisposeAsync();
-        Assert.Equal(2, adapter.NotifyCount);
+        // Disposal is idempotent: repeated calls must not re-run the release or re-notify the
+        // adapter for a file path that was already handed back (see 005-001-070).
+        Assert.Equal(1, adapter.NotifyCount);
     }
 
     [Fact]

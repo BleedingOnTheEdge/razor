@@ -100,7 +100,14 @@ internal sealed class CronJobManager : ICronJobManager, IDisposable
             return;
         }
 
-        if (!await _lock.WaitAsync(0).ConfigureAwait(false))
+        try
+        {
+            if (!await _lock.WaitAsync(0).ConfigureAwait(false))
+            {
+                return;
+            }
+        }
+        catch (ObjectDisposedException)
         {
             return;
         }
@@ -136,7 +143,16 @@ internal sealed class CronJobManager : ICronJobManager, IDisposable
         }
         finally
         {
-            _lock.Release();
+            try
+            {
+                if (!_disposed)
+                {
+                    _lock.Release();
+                }
+            }
+            catch (ObjectDisposedException)
+            {
+            }
         }
     }
 

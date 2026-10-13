@@ -1,0 +1,41 @@
+{
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "name": "cloud",
+  "projectType": "application",
+  "sourceRoot": "core/src/Cloud",
+  "tags": [
+    "scope:backend",
+    "profile:a",
+    "lang:csharp"
+  ],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet format --verify-no-changes core/src/Cloud/Cloud.csproj",
+        "cwd": "."
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet test core/tests/Cloud.UnitTests/Cloud.UnitTests.csproj -c Release",
+        "cwd": "."
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet build core/src/Cloud/Cloud.csproj -c Release",
+        "cwd": "."
+      }
+    },
+    "audit": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet list core/src/Cloud/Cloud.csproj package --vulnerable --include-transitive || true",
+        "cwd": "."
+      }
+    }
+  }
+}

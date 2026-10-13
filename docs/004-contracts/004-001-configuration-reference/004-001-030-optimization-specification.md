@@ -1,30 +1,47 @@
 ---
 id: product:razor/contracts/configuration-reference/optimization-specification
 parent: product:razor/contracts/configuration-reference
-title: 3. Optimization Specification
+title: Optimization Specification
 level: product
 kind: contract
+domains: [optimisation]
+flows: [optimisation-run]
+keywords:
+  - optimization specification
+  - master seed
+  - generations
+  - population size
+  - mutation rate
+  - crossover rate
+  - elitism
+  - tournament size
+  - stagnation
+  - hyper mutation
+references:
+  - product:razor/contracts/configuration-reference/hook-system
+code_paths:
+  - core/src/Kernel/Configuration/OptimizationSpecification.cs
 ---
 
-# 3. Optimization Specification
+# Optimization Specification
 
-**Type:** `OptimizationSpecification` (immutable record)  
-**Namespace:** `Razor.Core.Kernel.Configuration`
+**Type:** `OptimizationSpecification` (immutable record)
+**Namespace:** `Kernel.Configuration`
 
-The optimisation pipeline uses the hook system for fitness evaluation. No `FitnessModel` field is present in the specification; instead, the engine invokes the `optimization.fitness.evaluate` hook after each chromosome evaluation, and the Cloud or a hook plugin computes the fitness score.
+The optimisation pipeline uses the hook system for fitness evaluation. No `FitnessModel` field is present in the specification; instead, the engine invokes the `OnFitnessEvaluation` hook for each chromosome, and the Cloud or a hook plugin sets the fitness score (see `product:razor/contracts/configuration-reference/hook-system`).
 
 ## Fields
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `MasterSeed` | `int` | Yes | — | Master seed for the entire GA run. Guarantees reproducibility. Must be non‑negative. |
-| `Generations` | `int` | Yes | — | Number of generations to evolve. Must be `> 0`. |
-| `PopulationSize` | `int` | Yes | — | Individuals per generation. Must be `≥ 4`. |
-| `MutationRate` | `double` | Yes | — | Base probability of gene mutation. `[0, 1]`. |
-| `CrossoverRate` | `double` | Yes | — | Probability that a gene comes from the first parent. `[0, 1]`. |
-| `ElitismPct` | `double` | Yes | — | Fraction of best individuals preserved unchanged. `[0, 1]`. |
-| `TournamentSize` | `int` | Yes | — | Number of individuals competing in selection. Must be `≥ 2`. |
-| `StagnationGenerationsBeforeHyper` | `int` | No | `3` | Generations without improvement before hyper‑mutation activates. `≥ 1`. |
+| `MasterSeed` | `int` | Yes | - | Master seed for the entire GA run. Guarantees reproducibility. Must be non-negative. |
+| `Generations` | `int` | Yes | - | Number of generations to evolve. Must be `> 0`. |
+| `PopulationSize` | `int` | Yes | - | Individuals per generation. Must be `≥ 4`. |
+| `MutationRate` | `double` | Yes | - | Base probability of gene mutation. `[0, 1]`. |
+| `CrossoverRate` | `double` | Yes | - | Probability that a gene comes from the first parent. `[0, 1]`. |
+| `ElitismPct` | `double` | Yes | - | Fraction of best individuals preserved unchanged. `[0, 1]`. |
+| `TournamentSize` | `int` | Yes | - | Number of individuals competing in selection. Must be `≥ 2`. |
+| `StagnationGenerationsBeforeHyper` | `int` | No | `3` | Generations without improvement before hyper-mutation activates. `≥ 1`. |
 | `MaxParallelThreads` | `int` | No | `0` | Maximum parallel threads for chromosome evaluation. `0` = `Environment.ProcessorCount - 1`. |
 
 ## Validation
@@ -51,5 +68,3 @@ The optimisation pipeline uses the hook system for fitness evaluation. No `Fitne
     "MaxParallelThreads": 0
 }
 ```
-
----

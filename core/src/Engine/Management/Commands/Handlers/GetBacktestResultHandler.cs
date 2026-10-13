@@ -32,7 +32,25 @@ internal sealed class GetBacktestResultHandler : CommandHandlerBase
         }
 
         string taskId = idObj?.ToString()!;
+
+        // The task's state and its result are different answers, and this handler used to return the
+        // state for both -- so a caller asking for a result received metadata and never the run's
+        // outcome. Report the result when there is one, and say plainly when there is not yet.
+        object? result = await _taskManager.GetTaskResultAsync(taskId, cancellationToken).ConfigureAwait(false);
         object state = await _taskManager.GetTaskStateAsync(taskId, cancellationToken).ConfigureAwait(false);
-        await SendSuccessAsync(command.CorrelationId ?? string.Empty, new { TaskId = taskId, State = state }, cancellationToken).ConfigureAwait(false);
+
+        if (result is null)
+        {
+            await SendSuccessAsync(
+                command.CorrelationId ?? string.Empty,
+                new { TaskId = taskId, State = state, Result = (object?)null, IsComplete = false },
+                cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
+        await SendSuccessAsync(
+            command.CorrelationId ?? string.Empty,
+            new { TaskId = taskId, State = state, Result = result, IsComplete = true },
+            cancellationToken).ConfigureAwait(false);
     }
 }

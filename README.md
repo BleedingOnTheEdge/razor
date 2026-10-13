@@ -14,25 +14,25 @@ Welcome to the Razor documentation hub. This directory contains organisation‑l
 
 | Document | Audience | Description |
 |----------|----------|-------------|
-| [Razor Principles](Razor%20Principles.md) | All teams | Immutable architectural rules governing every Razor project. |
-| [Razor Product Model](Razor%20Product%20Model.md) | All teams | Product overview, components, licensing, and workflows. |
-| [Razor Glossary](Razor%20Glossary.md) | All users | Definitions of all domain‑specific terms. |
-| [Razor Future Features](Razor%20Future%20Features.md) | Internal & partners | Long‑term roadmap of planned features. |
-| [Razor Proposal](Razor%20Proposal.md) | External (future) | High‑level introduction to Razor. |
+| [Razor Principles](docs/005-cross-cutting/005-001-principles/INDEX.md) | All teams | Immutable architectural rules governing every Razor project. |
+| [Razor Product Model](docs/002-blueprint/002-001-project-overview/INDEX.md) | All teams | Product overview, components, licensing, and workflows. |
+| [Razor Glossary](docs/005-cross-cutting/005-010-glossary/INDEX.md) | All users | Definitions of all domain‑specific terms. |
+| [Razor Future Features](docs/002-blueprint/002-040-future-features/INDEX.md) | Internal & partners | Long‑term roadmap of planned features. |
+| [Razor Proposal](docs/002-blueprint/002-001-project-overview/INDEX.md) | External (future) | High‑level introduction to Razor. |
 
 ---
 
 ## Core Engine Documentation
 
-The following documents are located in the [core/docs/](../core/docs/) directory and provide detailed technical information about the Razor Engine and its components.
+The following documents are located in the [docs/](docs/) directory and provide detailed technical information about the Razor Engine and its components.
 
 | Document | Audience | Description |
 |----------|----------|-------------|
-| [Razor Configuration Reference](../core/docs/Razor%20Configuration%20Reference.md) | Extension developers & power users | Complete catalog of configuration objects, enums, and validation rules. |
-| [Razor Engine – Finalised Technical Blueprint](../core/docs/Razor%20Engine%20–%20Finalised%20Technical%20Blueprint.md) | Core developers | Complete engine specification: CLI, communication protocol, commands, security. |
-| [Razor Extension Developer Guide](../core/docs/Razor%20Extension%20Developer%20Guide.md) | Extension developers | Comprehensive guide for building adapters, strategies, indicators, hook plugins, and NN models. |
-| [Razor Installation & Deployment Guide](../core/docs/Razor%20Installation%20%26%20Deployment%20Guide.md) | End‑users & IT staff | Step‑by‑step installation, configuration, and troubleshooting. |
-| [Razor Internal Technical Architecture Document](../core/docs/Razor%20Internal%20Technical%20Architecture%20Document.md) | Core developers | Data flow, broker architecture, hook system, GA engine, threading, telemetry. |
+| [Razor Configuration Reference](docs/004-contracts/004-001-configuration-reference/INDEX.md) | Extension developers & power users | Complete catalog of configuration objects, enums, and validation rules. |
+| [Razor Engine – Finalised Technical Blueprint](docs/002-blueprint/002-020-engine-technical-blueprint/INDEX.md) | Core developers | Complete engine specification: CLI, communication protocol, commands, security. |
+| [Razor Extension Developer Guide](docs/004-contracts/004-010-extension-developer-guide/INDEX.md) | Extension developers | Comprehensive guide for building adapters, strategies, indicators, hook plugins, and NN models. |
+| [Razor Installation & Deployment Guide](docs/006-operational/006-001-installation-and-deployment/INDEX.md) | End‑users & IT staff | Step‑by‑step installation, configuration, and troubleshooting. |
+| [Razor Internal Technical Architecture Document](docs/002-blueprint/002-030-internal-architecture/INDEX.md) | Core developers | Data flow, broker architecture, hook system, GA engine, threading, telemetry. |
 
 ---
 
@@ -40,23 +40,23 @@ The following documents are located in the [core/docs/](../core/docs/) directory
 
 ### For Extension Developers
 
-1. Read the [Razor Principles](Razor%20Principles.md) to understand the design rules.
-2. Read the [Extension Developer Guide](../core/docs/Razor%20Extension%20Developer%20Guide.md) for step‑by‑step instructions.
-3. Refer to the [Configuration Reference](../core/docs/Razor%20Configuration%20Reference.md) for all config objects.
-4. Use the [Glossary](Razor%20Glossary.md) for terminology.
+1. Read the [Razor Principles](docs/005-cross-cutting/005-001-principles/INDEX.md) to understand the design rules.
+2. Read the [Extension Developer Guide](docs/004-contracts/004-010-extension-developer-guide/INDEX.md) for step‑by‑step instructions.
+3. Refer to the [Configuration Reference](docs/004-contracts/004-001-configuration-reference/INDEX.md) for all config objects.
+4. Use the [Glossary](docs/005-cross-cutting/005-010-glossary/INDEX.md) for terminology.
 
 ### For Core Developers
 
-1. Read the [Razor Principles](Razor%20Principles.md) for the architectural contract.
-2. Study the [Internal Technical Architecture Document](../core/docs/Razor%20Internal%20Technical%20Architecture%20Document.md) for detailed implementation.
-3. Review the [Engine Technical Blueprint](../core/docs/Razor%20Engine%20–%20Finalised%20Technical%20Blueprint.md) for the complete specification.
-4. Use the [Configuration Reference](../core/docs/Razor%20Configuration%20Reference.md) for configuration details.
+1. Read the [Razor Principles](docs/005-cross-cutting/005-001-principles/INDEX.md) for the architectural contract.
+2. Study the [Internal Technical Architecture Document](docs/002-blueprint/002-030-internal-architecture/INDEX.md) for detailed implementation.
+3. Review the [Engine Technical Blueprint](docs/002-blueprint/002-020-engine-technical-blueprint/INDEX.md) for the complete specification.
+4. Use the [Configuration Reference](docs/004-contracts/004-001-configuration-reference/INDEX.md) for configuration details.
 
 ### For End‑Users and IT Staff
 
-1. Read the [Product Model](Razor%20Product%20Model.md) to understand the product.
-2. Follow the [Installation & Deployment Guide](../core/docs/Razor%20Installation%20%26%20Deployment%20Guide.md) to set up the Engine.
-3. Refer to the [Glossary](Razor%20Glossary.md) for definitions.
+1. Read the [Product Model](docs/002-blueprint/002-001-project-overview/INDEX.md) to understand the product.
+2. Follow the [Installation & Deployment Guide](docs/006-operational/006-001-installation-and-deployment/INDEX.md) to set up the Engine.
+3. Refer to the [Glossary](docs/005-cross-cutting/005-010-glossary/INDEX.md) for definitions.
 
 ---
 

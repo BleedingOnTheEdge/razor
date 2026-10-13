@@ -68,13 +68,24 @@ internal sealed class ExtensionManager : IExtensionManager, IDisposable
         ILoggerFactory loggerFactory,
         IHookRegistry hookRegistry,
         IBehaviorRecorder behaviorRecorder)
+        : this(logger, stateManager, loggerFactory, hookRegistry, behaviorRecorder, AppDomain.CurrentDomain.BaseDirectory)
+    {
+    }
+
+    internal ExtensionManager(
+        ILogger<ExtensionManager> logger,
+        IStateManager stateManager,
+        ILoggerFactory loggerFactory,
+        IHookRegistry hookRegistry,
+        IBehaviorRecorder behaviorRecorder,
+        string basePath)
     {
         _logger = logger;
         _stateManager = stateManager;
         _loggerFactory = loggerFactory;
         _hookRegistry = hookRegistry ?? throw new ArgumentNullException(nameof(hookRegistry));
         _behaviorRecorder = behaviorRecorder ?? throw new ArgumentNullException(nameof(behaviorRecorder));
-        _basePath = AppDomain.CurrentDomain.BaseDirectory;
+        _basePath = basePath ?? AppDomain.CurrentDomain.BaseDirectory;
     }
 
     /// <inheritdoc/>
@@ -239,11 +250,12 @@ internal sealed class ExtensionManager : IExtensionManager, IDisposable
     /// <inheritdoc/>
     public async Task DeployExtensionAsync(string name, byte[] binaryData, CancellationToken cancellationToken)
     {
-        _logDeployingExtension(_logger, name, binaryData.Length, null);
         if (string.IsNullOrWhiteSpace(name) || binaryData == null || binaryData.Length == 0)
         {
             throw new ArgumentException("Invalid extension name or binary data.");
         }
+
+        _logDeployingExtension(_logger, name, binaryData.Length, null);
 
         await Task.Run(() =>
         {

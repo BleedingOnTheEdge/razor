@@ -4,6 +4,13 @@ parent: product:razor/cross-cutting/principles
 title: 20. Enforcement
 level: product
 kind: cross-cutting
+domains: [engine, operations]
+keywords:
+  - principle 20
+  - enforcement
+  - static analysis
+  - ci gate
+  - golden determinism test
 ---
 
 # 20. Enforcement
@@ -14,4 +21,4 @@ kind: cross-cutting
 
 ---
 
-*This document is living; it may be amended only with a formal review. Amendments must be backward‑compatible with existing adapters and strategies unless a major version increment occurs.*
+*The principle set is amended only through a formal review. Amendments must be backward‑compatible with existing adapters and strategies unless a major version increment occurs.*

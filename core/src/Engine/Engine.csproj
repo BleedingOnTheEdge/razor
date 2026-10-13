@@ -35,4 +35,9 @@
         <ProjectReference Include="..\Kernel\Kernel.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="Engine.UnitTests" />
+        <InternalsVisibleTo Include="Engine.IntegrationTests" />
+    </ItemGroup>
+
 </Project>

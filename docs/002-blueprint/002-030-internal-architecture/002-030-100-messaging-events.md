@@ -1,14 +1,23 @@
 ---
 id: product:razor/blueprint/internal-architecture/messaging-events
 parent: product:razor/blueprint/internal-architecture
-title: 11. Messaging & Events
+title: Messaging & Events
 level: product
 kind: blueprint
+domains: [engine]
+keywords:
+  - message bus
+  - events
+  - event catalog
+  - deduplication
+code_paths:
+  - core/src/Kernel/Messaging/**
+  - core/src/Kernel/Events/**
 ---
 
-# 11. Messaging & Events
+# Messaging & Events
 
-## 11.1 In‑Process Message Bus
+## In‑Process Message Bus
 
 `Kernel.Messaging.MessageBus` implements `IMessageBus`:
 
@@ -16,18 +25,18 @@ kind: blueprint
 - **Deduplication:** If `message.EventId` is non‑null and has been published within the last 60 seconds, the message is suppressed.
 - **Thread safety:** Subscriptions are locked; publishing iterates a snapshot of handlers.
 
-## 11.2 Event Catalog
+## Event Catalog
 
-All event records reside in `Razor.Core.Kernel.Events`. They are internal infrastructure and not part of the public SDK.
+All event records reside in `Kernel.Events`. They are internal infrastructure and not part of the public SDK.
 
 | Event | Publisher | Payload |
 |-------|-----------|---------|
 | `BacktestStartedEvent` | BacktestRunner | (timestamp only) |
-| `BacktestCompletedEvent` | BacktestRunner | NetProfit, ReturnPct, MaxDrawdown, Sharpe, Sortino, etc. |
+| `BacktestCompletedEvent` | BacktestRunner | NetProfit, ReturnPct, MaxDrawdownPct, MaxDailyDrawdownPct, SharpeRatio, SortinoRatio, etc. |
 | `OrderExecutedEvent` | SimulatedBroker, LiveBroker | Symbol, OrderType, Volume, Price, IsOpen |
 | `ConnectionStateEvent` | LiveBroker | IsConnected, AdapterName |
 | `LiveReconnectEvent` | LiveBroker | Success, AttemptCount, AdapterName |
-| `LiveSessionEndedEvent` | LiveBroker | FinalBalance, FinalEquity, MaxDrawdown, TotalTrades |
+| `LiveSessionEndedEvent` | LiveBroker | FinalBalance, FinalEquity, MaxDrawdownPct, MaxDailyDrawdownPct, TotalTrades |
 | `OptimizationGenerationEvent` | OptimizationRunner | Generation, BestFitness, IsHyperMutation |
 | `OptimizationCycleCompletedEvent` | OptimizationRunner | CycleIndex, BestFitness, GenerationCount |
 

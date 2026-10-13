@@ -110,6 +110,9 @@ internal sealed class CommandDispatcher : ICommandDispatcher
         this.RegisterHandler(CommandIds.GetOptimizationState, new GetOptimizationStateHandler(_cloudConnector, this, _taskManager, _loggerFactory.CreateLogger<GetOptimizationStateHandler>()));
         this.RegisterHandler(CommandIds.GetOptimizationResult, new GetOptimizationResultHandler(_cloudConnector, this, _taskManager, _loggerFactory.CreateLogger<GetOptimizationResultHandler>()));
         this.RegisterHandler(CommandIds.ListOptimizations, new ListOptimizationsHandler(_cloudConnector, this, _taskManager, _loggerFactory.CreateLogger<ListOptimizationsHandler>()));
+        this.RegisterHandler(CommandIds.StepComputation, new StepComputationHandler(_cloudConnector, this, _taskManager, _loggerFactory.CreateLogger<StepComputationHandler>()));
+        this.RegisterHandler(CommandIds.GetCheckpoint, new GetCheckpointHandler(_cloudConnector, this, _taskManager, _loggerFactory.CreateLogger<GetCheckpointHandler>()));
+        this.RegisterHandler(CommandIds.SetCheckpoint, new SetCheckpointHandler(_cloudConnector, this, _taskManager, _loggerFactory.CreateLogger<SetCheckpointHandler>()));
 
         // Extensions (1400-1499)
         this.RegisterHandler(CommandIds.ReloadExtensions, new ReloadExtensionsHandler(_cloudConnector, this, _extensionManager, _loggerFactory.CreateLogger<ReloadExtensionsHandler>()));

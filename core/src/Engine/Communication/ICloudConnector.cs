@@ -17,6 +17,12 @@ internal interface ICloudConnector
     /// <summary>Gets the current session identifier.</summary>
     string? SessionId { get; }
 
+    /// <summary>Gets the current heartbeat interval in seconds configured by Cloud.</summary>
+    int HeartbeatIntervalSeconds { get; }
+
+    /// <summary>Gets the measured clock drift between engine and cloud (ServerTime - LocalUtcTime).</summary>
+    TimeSpan ClockDrift { get; }
+
     /// <summary>Runs the main connection loop with infinite retry.</summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>

@@ -4,6 +4,13 @@ parent: product:razor/cross-cutting/principles
 title: 14. Extension Isolation & Future Extensibility
 level: product
 kind: cross-cutting
+domains: [extensions, security]
+keywords:
+  - principle 14
+  - extension isolation
+  - assemblyloadcontext
+  - signed assemblies
+  - load contexts
 ---
 
 # 14. Extension Isolation & Future Extensibility

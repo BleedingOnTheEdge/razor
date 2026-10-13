@@ -1,12 +1,20 @@
 ---
 id: product:razor/blueprint/internal-architecture/threading-concurrency
 parent: product:razor/blueprint/internal-architecture
-title: 12. Threading & Concurrency
+title: Threading & Concurrency
 level: product
 kind: blueprint
+domains: [engine]
+keywords:
+  - threading
+  - concurrency
+  - thread safety
+  - locks
+references:
+  - product:razor/cross-cutting/principles/live-trading-robustness
 ---
 
-# 12. Threading & Concurrency
+# Threading & Concurrency
 
 | Component | Threading Model | Notes |
 |-----------|-----------------|-------|
@@ -16,7 +24,7 @@ kind: blueprint
 | `GeneticOptimizer.EvaluateAsync` | Parallel | Uses `Parallel.ForEachAsync` with configurable max DOP. |
 | `MessageBus` | Lock‑free for publish | Uses snapshot of handlers; subscriptions locked briefly. |
 | `HookInvoker` | Single‑threaded per pipeline | Filters and actions execute synchronously within the pipeline's thread. |
-| Adapter implementations | Must be thread‑safe (Principle 13) | The engine may call adapter methods from multiple threads. |
+| Adapter implementations | Must be thread‑safe (Principle 13, `product:razor/cross-cutting/principles/live-trading-robustness`) | The engine may call adapter methods from multiple threads. |
 | `TickWindow` | Not thread‑safe | Designed for single‑threaded tick processing only. |
 
 ---

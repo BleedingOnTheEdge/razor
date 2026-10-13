@@ -32,7 +32,19 @@ internal sealed class GetOptimizationResultHandler : CommandHandlerBase
         }
 
         string taskId = idObj?.ToString()!;
-        object result = await _taskManager.GetOptimizationResultAsync(taskId, cancellationToken).ConfigureAwait(false);
+
+        // The optimiser has no result until it has produced a best chromosome. Saying so plainly is
+        // better than reporting a placeholder as though it were an outcome.
+        object? result = await _taskManager.GetOptimizationResultAsync(taskId, cancellationToken).ConfigureAwait(false);
+        if (result is null)
+        {
+            await SendSuccessAsync(
+                command.CorrelationId ?? string.Empty,
+                new { TaskId = taskId, Result = (object?)null, IsComplete = false },
+                cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
         await SendSuccessAsync(command.CorrelationId ?? string.Empty, result, cancellationToken).ConfigureAwait(false);
     }
 }

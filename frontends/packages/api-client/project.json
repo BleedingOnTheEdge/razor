@@ -1,0 +1,41 @@
+{
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "name": "api-client",
+  "projectType": "library",
+  "sourceRoot": "frontends/packages/api-client/src",
+  "tags": [
+    "scope:shared",
+    "profile:d",
+    "lang:typescript"
+  ],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter @razor/api-client typecheck",
+        "cwd": "."
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter @razor/api-client build",
+        "cwd": "."
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter @razor/api-client build",
+        "cwd": "."
+      }
+    },
+    "audit": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm audit --audit-level high || true",
+        "cwd": "."
+      }
+    }
+  }
+}

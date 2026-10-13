@@ -1,16 +1,32 @@
 ---
 id: product:razor/blueprint/internal-architecture/broker-architecture
 parent: product:razor/blueprint/internal-architecture
-title: 5. Broker Architecture
+title: Broker Architecture
 level: product
 kind: blueprint
+domains: [live-trading, backtesting]
+flows: [live-trading-session, backtest-run]
+keywords:
+  - broker
+  - simulatedbroker
+  - livebroker
+  - parity
+  - stop out
+  - pending orders
+  - holding costs
+  - reconciliation
+references:
+  - product:razor/cross-cutting/principles/live-backtest-behavioural-parity
+  - product:razor/cross-cutting/principles/live-trading-robustness
+code_paths:
+  - core/src/Kernel/Brokers/**
 ---
 
-# 5. Broker Architecture
+# Broker Architecture
 
-Both brokers implement `IBroker` and use the same `IMarketCalculator` for financial math, ensuring live‑backtest parity (Principle 5).
+Both brokers implement `IBroker` and use the same `IMarketCalculator` for financial math, ensuring live‑backtest parity (Principle 5, `product:razor/cross-cutting/principles/live-backtest-behavioural-parity`).
 
-## 5.1 SimulatedBroker
+## SimulatedBroker
 
 Used exclusively for backtesting and optimisation. Entirely deterministic, single‑threaded per backtest run.
 
@@ -30,7 +46,7 @@ Used exclusively for backtesting and optimisation. Entirely deterministic, singl
 
 **Determinism:** No `DateTime.UtcNow`, no system clock. All randomisation is external (strategy can be seeded). The execution queue time is purely tick‑driven.
 
-## 5.2 LiveBroker
+## LiveBroker
 
 Wraps an `IAdapterCapability` for real exchange trading. Adds reconciliation, connection handling, and telemetry.
 
@@ -41,7 +57,7 @@ Wraps an `IAdapterCapability` for real exchange trading. Adds reconciliation, co
 - **State reconciliation:** `ReconcileAsync()` fetches the full account state from the adapter and corrects local positions/orders. Called at startup and after reconnection.
 - **In‑flight order guard:** Uses `SystemClock.GetTimestamp()` (monotonic) + configurable timeout to prevent duplicate order submissions.
 - **Order execution:** Delegated to adapter methods. Responses are returned immediately; execution reports are handled asynchronously.
-- **Execution reports:** The adapter's `OnExecutionUpdate` event is handled in a fire‑and‑forget task with full exception logging to prevent process crashes (Principle 13).
+- **Execution reports:** The adapter's `OnExecutionUpdate` event is handled in a fire‑and‑forget task with full exception logging to prevent process crashes (Principle 13, `product:razor/cross-cutting/principles/live-trading-robustness`).
 - **Connection management:** `ConnectAndNotifyAsync` and `DisconnectAndNotifyAsync` publish `ConnectionStateEvent` and update telemetry.
 - **Telemetry:** Records order latency, rejection count, and tick arrival latency via `CoreMetrics`.
 - **Logger:** Uses `ILogger<LiveBroker>` for operational visibility.

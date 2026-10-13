@@ -1,23 +1,37 @@
 ---
 id: product:razor/contracts/configuration-reference/strategy-specification
 parent: product:razor/contracts/configuration-reference
-title: 1. Strategy Specification
+title: Strategy Specification
 level: product
 kind: contract
+domains: [engine, sdk]
+flows: [strategy-development, backtest-run]
+keywords:
+  - strategy specification
+  - initial balance
+  - leverage
+  - requested symbols
+  - symbol request
+  - duplicate symbols
+references:
+  - product:razor/contracts/configuration-reference/market-data-types
+code_paths:
+  - core/src/Sdk/Shared/StrategySpecification.cs
+  - core/src/Sdk/Shared/SymbolRequest.cs
 ---
 
-# 1. Strategy Specification
+# Strategy Specification
 
-**Type:** `StrategySpecification` (immutable record)  
-**Namespace:** `Razor.Core.Sdk.Shared`
+**Type:** `StrategySpecification` (immutable record)
+**Namespace:** `Sdk.Shared`
 
 ## Fields
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `InitialBalance` | `double` | Yes | Starting account balance in quote currency. |
-| `Leverage` | `double` | Yes | Account‑wide leverage multiplier (e.g., 10, 50). Must be `> 0`. |
-| `RequestedSymbols` | `ImmutableArray<SymbolRequest>` | Yes | List of symbols and their timeframes the strategy needs. At least one element required. Symbols must be unique (case‑insensitive). |
+| `Leverage` | `double` | Yes | Account-wide leverage multiplier (e.g., 10, 50). Must be `> 0`. |
+| `RequestedSymbols` | `ImmutableArray<SymbolRequest>` | Yes | List of symbols and their timeframes the strategy needs. At least one element required. Symbols must be unique (case-insensitive). |
 
 ## Nested Type: `SymbolRequest`
 
@@ -26,13 +40,15 @@ kind: contract
 | `Symbol` | `string` | Broker symbol (e.g., `"EURUSD"`, `"BTCUSDT"`). |
 | `TimeFrames` | `ImmutableArray<TimeFrame>` | Timeframes the strategy consumes. Can include `Tick` if raw tick feed is desired. |
 
+**Equality.** `SymbolRequest` is a record, so equality is the compiler-generated field comparison: `Symbol` is compared **case-sensitively** (ordinal), and `TimeFrames` is compared by `ImmutableArray` **storage equality**, not by content. Two requests with identical contents but separately constructed `TimeFrames` arrays are therefore **not** equal, while the default and `ImmutableArray.Empty` values do compare equal. Symbol uniqueness across a strategy is still enforced case-insensitively by validation (below).
+
 ## Validation
 
 - `InitialBalance` must be `> 0`.
 - `Leverage` must be `> 0`.
 - `RequestedSymbols` must not be empty.
-- Each `SymbolRequest` must have a non‑empty `Symbol` and at least one `TimeFrame` (but `TimeFrame.Tick` alone is valid).
-- Duplicate `Symbol` values (case‑insensitive) are not allowed. A `ConfigurationException` is thrown if the same symbol appears more than once.
+- Each `SymbolRequest` must have a non-empty `Symbol` and at least one `TimeFrame` (but `TimeFrame.Tick` alone is valid).
+- Duplicate `Symbol` values (case-insensitive) are not allowed. A `ConfigurationException` is thrown if the same symbol appears more than once.
 
 ## Example (JSON, as Cloud might send)
 
@@ -52,5 +68,3 @@ kind: contract
     ]
 }
 ```
-
----

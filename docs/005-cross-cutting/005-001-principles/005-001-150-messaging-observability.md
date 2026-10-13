@@ -4,6 +4,15 @@ parent: product:razor/cross-cutting/principles
 title: 15. Messaging & Observability
 level: product
 kind: cross-cutting
+domains: [engine, reporting]
+keywords:
+  - principle 15
+  - message bus
+  - events
+  - observability
+  - opentelemetry
+  - eventid
+  - imessagebus
 ---
 
 # 15. Messaging & Observability

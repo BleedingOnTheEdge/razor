@@ -15,7 +15,12 @@
         <PackageProjectUrl>https://Razor.io</PackageProjectUrl>
         <RepositoryUrl>https://git.Razor.io/Razor/core.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <!-- Proprietary, freely redistributable for extension development — owner ruling on
+             issue #18, 2026-09-26. No PackageLicenseExpression: NuGet expressions must be SPDX
+             identifiers and there is no SPDX identifier for proprietary terms, so the licence is
+             stated in core/README.md "Licensing" rather than claimed in package metadata. Adding
+             a LICENSE file plus PackageLicenseFile is the follow-up if the terms should travel
+             inside the package. -->
         <PackageIcon>icon.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>

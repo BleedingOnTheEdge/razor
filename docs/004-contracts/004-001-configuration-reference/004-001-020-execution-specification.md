@@ -1,15 +1,31 @@
 ---
 id: product:razor/contracts/configuration-reference/execution-specification
 parent: product:razor/contracts/configuration-reference
-title: 2. Execution Specification
+title: Execution Specification
 level: product
 kind: contract
+domains: [engine, backtesting]
+flows: [backtest-run, optimisation-run]
+keywords:
+  - execution specification
+  - date range
+  - warmup
+  - latency
+  - max positions
+  - stop out
+  - parallelism
+  - gene seed
+  - data retention
+references:
+  - product:razor/contracts/configuration-reference/market-data-types
+code_paths:
+  - core/src/Kernel/Configuration/ExecutionSpecification.cs
 ---
 
-# 2. Execution Specification
+# Execution Specification
 
-**Type:** `ExecutionSpecification` (immutable record)  
-**Namespace:** `Razor.Core.Kernel.Configuration`
+**Type:** `ExecutionSpecification` (immutable record)
+**Namespace:** `Kernel.Configuration`
 
 Controls the backtest or optimisation run environment.
 
@@ -17,16 +33,16 @@ Controls the backtest or optimisation run environment.
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `StartDate` | `DateTime` | Yes | — | First tick timestamp (UTC, inclusive). |
-| `EndDate` | `DateTime` | Yes | — | Last tick timestamp (UTC, inclusive). Must be `> StartDate`. |
+| `StartDate` | `DateTime` | Yes | - | First tick timestamp (UTC, inclusive). |
+| `EndDate` | `DateTime` | Yes | - | Last tick timestamp (UTC, inclusive). Must be `> StartDate`. |
 | `MaxParallelThreads` | `int` | No | `0` (auto) | Maximum threads for GA evaluation. `0` = `Environment.ProcessorCount - 1`. |
-| `LatencyTicks` | `long` | No | `0` | Simulated execution delay in 100‑ns ticks. `0` = instant fill. |
+| `LatencyTicks` | `long` | No | `0` | Simulated execution delay in 100-ns ticks. `0` = instant fill. |
 | `WarmupWindowCount` | `int` | No | `0` | Number of initial tick windows to skip for signal generation. |
-| `MaxOpenPositions` | `int` | Yes | — | Hard limit on concurrent positions. Must be `> 0`. |
-| `StopOutLevel` | `double` | Yes | — | Stop‑out margin ratio (e.g., `0.5` = 50%). Must be `> 0` and `≤ 1`. |
+| `MaxOpenPositions` | `int` | Yes | - | Hard limit on concurrent positions. Must be `> 0`. |
+| `StopOutLevel` | `double` | Yes | - | Stop-out margin ratio (e.g., `0.5` = 50%). Must be `> 0` and `≤ 1`. |
 | `GeneInitializationSeed` | `int?` | No | `null` | Seed for deterministic gene initialization when no explicit genes are provided. `null` means no seed was explicitly supplied. |
 
-> **Note:** The `ExecutionSpecification` does **not** contain a `HistoricalDataPolicy` field. Data retention is controlled at the `BorrowedTickData` level via the `DataActionPolicy` parameter passed to its constructor. The `DataActionPolicy` enum values are `KeepUntilExit`, `DeleteAfterTask`, and `PersistentCache`.
+> **Note:** The `ExecutionSpecification` does **not** contain a `HistoricalDataPolicy` field. Data retention is controlled at the `BorrowedTickData` level via the `DataActionPolicy` parameter passed to its constructor; the policy values are defined in `product:razor/contracts/configuration-reference/market-data-types`.
 
 ## Validation
 
@@ -35,7 +51,7 @@ Controls the backtest or optimisation run environment.
 - `MaxOpenPositions > 0`.
 - `0 < StopOutLevel ≤ 1`.
 - `MaxParallelThreads ≥ 0`.
-- `GeneInitializationSeed` must be non‑negative when provided.
+- `GeneInitializationSeed` must be non-negative when provided.
 
 ## Example
 
@@ -51,5 +67,3 @@ Controls the backtest or optimisation run environment.
     "GeneInitializationSeed": 12345
 }
 ```
-
----

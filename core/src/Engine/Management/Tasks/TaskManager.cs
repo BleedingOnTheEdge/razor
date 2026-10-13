@@ -10,12 +10,14 @@ using Engine.Core;
 using Engine.Core.Exceptions;
 using Engine.Extensions;
 using Engine.Kernel;
+using global::Kernel.Optimization;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using System.Text.Json;
 using LiveState = Engine.Core.LiveState;
 
 /// <summary>Default implementation of <see cref="ITaskManager"/>.</summary>
-internal sealed class TaskManager : ITaskManager, IDisposable
+internal sealed partial class TaskManager : ITaskManager, IDisposable
 {
     private readonly ConcurrentDictionary<string, EngineTaskBase> _tasks = new();
     private readonly ConcurrentDictionary<string, Thread> _liveThreads = new();
@@ -110,7 +112,7 @@ internal sealed class TaskManager : ITaskManager, IDisposable
                 MaxOpenPositions = state.MaxOpenPositions,
                 Genes = state.Genes,
                 NeuralNetworkName = state.NeuralNetworkName ?? string.Empty,
-                AccountCurrency = "USD" // TODO: persist and retrieve AccountCurrency from LiveState
+                AccountCurrency = state.AccountCurrency
             };
 
             // Start a new live session via kernel service
@@ -233,6 +235,7 @@ internal sealed class TaskManager : ITaskManager, IDisposable
                 MaxOpenPositions = liveConfig.MaxOpenPositions,
                 NeuralNetworkName = liveConfig.NeuralNetworkName ?? string.Empty,
                 Genes = liveConfig.Genes,
+                AccountCurrency = liveConfig.AccountCurrency,
                 LastTickTime = null,
                 StartTime = task.StartTime
             };
@@ -254,8 +257,6 @@ internal sealed class TaskManager : ITaskManager, IDisposable
             if (_tasks.TryRemove(taskId, out var task))
             {
                 await task.CancellationTokenSource.CancelAsync().ConfigureAwait(false);
-                task.State = TaskState.Canceled;
-                task.Dispose(); // THR‑05: Dispose CTS.
 
                 // Wait for the live thread to finish
                 if (_liveThreads.TryRemove(taskId, out var thread))
@@ -268,6 +269,9 @@ internal sealed class TaskManager : ITaskManager, IDisposable
                         }
                     }
                 }
+
+                task.State = TaskState.Canceled;
+                task.Dispose(); // THR‑05: Dispose CTS.
 
                 // If it's a live task, stop the kernel session
                 if (task is LiveTask liveTask)
@@ -352,6 +356,13 @@ internal sealed class TaskManager : ITaskManager, IDisposable
                 throw new ArgumentException("Configuration must be a dictionary.", nameof(config));
             }
 
+            bool isSteppable = GetBool(dict, "IsSteppable", false);
+            GeneticOptimizerState? initialState = null;
+            if (dict.TryGetValue("InitialState", out object? initStateObj) && initStateObj is GeneticOptimizerState st)
+            {
+                initialState = st;
+            }
+
             var optInput = new OptimizationInput
             {
                 AdapterName = GetString(dict, "AdapterName"),
@@ -373,7 +384,9 @@ internal sealed class TaskManager : ITaskManager, IDisposable
                 StartDate = GetDateTime(dict, "StartDate", DateTime.UtcNow.AddDays(-30)),
                 EndDate = GetDateTime(dict, "EndDate", DateTime.UtcNow),
                 Timeframes = GetStringArray(dict, "Timeframes", ["M1"]),
-                AccountCurrency = GetString(dict, "AccountCurrency", "USD")
+                AccountCurrency = GetString(dict, "AccountCurrency", "USD"),
+                IsSteppable = isSteppable,
+                InitialState = initialState
             };
 
             // Get active adapter and strategy
@@ -385,7 +398,16 @@ internal sealed class TaskManager : ITaskManager, IDisposable
             // Start via kernel service
             string kernelTaskId = await _kernelService.StartOptimizationAsync(optInput, cancellationToken).ConfigureAwait(false);
 
-            var task = new OptimizationTask(taskId, config ?? new object(), _loggerFactory.CreateLogger<OptimizationTask>(), this, _kernelService, kernelTaskId);
+            string? initialFingerprint = initialState != null ? CheckpointFingerprint.Compute(initialState) : null;
+            var task = new OptimizationTask(
+                taskId,
+                config ?? new object(),
+                _loggerFactory.CreateLogger<OptimizationTask>(),
+                this,
+                _kernelService,
+                kernelTaskId,
+                isSteppable: isSteppable,
+                initialFingerprint: initialFingerprint);
             _tasks[taskId] = task;
             _ = Task.Run(() => ExecuteTaskAsync(task, cancellationToken), cancellationToken);
 
@@ -394,10 +416,14 @@ internal sealed class TaskManager : ITaskManager, IDisposable
             {
                 TaskId = taskId,
                 Config = config ?? new object(),
-                Population = new object(),
-                CurrentGeneration = 0,
-                BestFitness = 0.0,
-                StartTime = task.StartTime
+                OptimizerState = initialState,
+                Population = initialState?.Population ?? new object(),
+                CurrentGeneration = initialState?.CurrentGeneration ?? 0,
+                BestFitness = initialState?.BestOverallFitness ?? 0.0,
+                StartTime = task.StartTime,
+                CheckpointFingerprint = initialFingerprint,
+                Diverged = false,
+                Interventions = Array.Empty<InterventionRecord>()
             };
             await _stateManager.SaveOptimizationStateAsync(taskId, state, cancellationToken).ConfigureAwait(false);
             return taskId;
@@ -501,306 +527,25 @@ internal sealed class TaskManager : ITaskManager, IDisposable
         return fallback;
     }
 
-    /// <inheritdoc/>
-    public async Task CancelOptimizationTaskAsync(string taskId, CancellationToken cancellationToken)
+    private static bool GetBool(Dictionary<string, object> dict, string key, bool fallback = false)
     {
-        await _lock.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
+        if (dict.TryGetValue(key, out object? value))
         {
-            if (_tasks.TryRemove(taskId, out var task))
+            if (value is bool b)
             {
-                await task.CancellationTokenSource.CancelAsync().ConfigureAwait(false);
-                task.State = TaskState.Canceled;
-                task.Dispose(); // THR‑05: Dispose CTS.
-                // No explicit kernel cancel for optimisation (stub)
-            }
-        }
-        finally
-        {
-            _lock.Release();
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task PauseTaskAsync(string taskId, CancellationToken cancellationToken)
-    {
-        await _lock.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            if (_tasks.TryGetValue(taskId, out var task))
-            {
-                await task.PauseAsync(cancellationToken).ConfigureAwait(false);
-                if (task is LiveTask liveTask)
-                {
-                    await _kernelService.PauseLiveAsync(liveTask.KernelTaskId, cancellationToken).ConfigureAwait(false);
-                }
-                // For optimisation, we could also pause, but stub doesn't support.
-            }
-        }
-        finally
-        {
-            _lock.Release();
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task ResumeTaskAsync(string taskId, CancellationToken cancellationToken)
-    {
-        await _lock.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            if (_tasks.TryGetValue(taskId, out var task))
-            {
-                await task.ResumeAsync(cancellationToken).ConfigureAwait(false);
-                if (task is LiveTask liveTask)
-                {
-                    await _kernelService.ResumeLiveAsync(liveTask.KernelTaskId, cancellationToken).ConfigureAwait(false);
-                }
-            }
-        }
-        finally
-        {
-            _lock.Release();
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task<object> GetTaskStateAsync(string taskId, CancellationToken cancellationToken)
-    {
-        if (_tasks.TryGetValue(taskId, out var task))
-        {
-            return await task.GetStateAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        throw new EngineException($"Task {taskId} not found.");
-    }
-
-    /// <inheritdoc/>
-    public async Task<object> GetOptimizationResultAsync(string taskId, CancellationToken cancellationToken)
-    {
-        if (_tasks.TryGetValue(taskId, out var task) && task is OptimizationTask optTask)
-        {
-            return await optTask.GetResultAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        throw new EngineException($"Optimization task {taskId} not found.");
-    }
-
-    /// <inheritdoc/>
-    public async Task StopAllTasksAsync(CancellationToken cancellationToken)
-    {
-        await _lock.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            foreach (var task in _tasks.Values)
-            {
-                await task.CancellationTokenSource.CancelAsync().ConfigureAwait(false);
-                task.State = TaskState.Canceled;
-                task.Dispose(); // THR‑05: Dispose CTS.
-                // Cancel kernel sessions
-                if (task is LiveTask lt)
-                {
-                    await _kernelService.StopLiveAsync(lt.KernelTaskId, cancellationToken).ConfigureAwait(false);
-                }
+                return b;
             }
 
-            // Wait for live threads to finish
-            foreach (var kv in _liveThreads)
+            if (value is string s && bool.TryParse(s, out var parsed))
             {
-                if (kv.Value.IsAlive)
-                {
-                    kv.Value.Join(TimeSpan.FromSeconds(5));
-                }
+                return parsed;
             }
-            _liveThreads.Clear();
-            _tasks.Clear();
-        }
-        finally
-        {
-            _lock.Release();
-        }
-    }
 
-    /// <inheritdoc/>
-    public async Task StopAllUserTasksAsync(CancellationToken cancellationToken)
-    {
-        var userTypes = new[] { "Live", "Backtest", "Optimization" };
-        await _lock.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            foreach (var kv in _tasks.Where(kv => userTypes.Contains(kv.Value.TaskType)).ToList())
+            if (value is System.Text.Json.JsonElement element && (element.ValueKind == System.Text.Json.JsonValueKind.True || element.ValueKind == System.Text.Json.JsonValueKind.False))
             {
-                await kv.Value.CancellationTokenSource.CancelAsync().ConfigureAwait(false);
-                kv.Value.State = TaskState.Canceled;
-                kv.Value.Dispose(); // THR‑05: Dispose CTS.
-                if (kv.Value is LiveTask lt)
-                {
-                    await _kernelService.StopLiveAsync(lt.KernelTaskId, cancellationToken).ConfigureAwait(false);
-                }
-
-                _tasks.TryRemove(kv.Key, out _);
-                if (_liveThreads.TryRemove(kv.Key, out var thread))
-                {
-                    if (thread.IsAlive)
-                    {
-                        thread.Join(TimeSpan.FromSeconds(5));
-                    }
-                }
+                return element.GetBoolean();
             }
         }
-        finally
-        {
-            _lock.Release();
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task StopAllLiveTasksAsync(CancellationToken cancellationToken)
-    {
-        await _lock.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            var liveTasks = _tasks.Where(kv => kv.Value.TaskType == "Live").ToList();
-            foreach (var kv in liveTasks)
-            {
-                await kv.Value.CancellationTokenSource.CancelAsync().ConfigureAwait(false);
-                kv.Value.State = TaskState.Canceled;
-                kv.Value.Dispose(); // THR‑05: Dispose CTS.
-                if (kv.Value is LiveTask lt)
-                {
-                    await _kernelService.StopLiveAsync(lt.KernelTaskId, cancellationToken).ConfigureAwait(false);
-                }
-
-                _tasks.TryRemove(kv.Key, out _);
-                if (_liveThreads.TryRemove(kv.Key, out var thread))
-                {
-                    if (thread.IsAlive)
-                    {
-                        thread.Join(TimeSpan.FromSeconds(5));
-                    }
-                }
-            }
-        }
-        finally
-        {
-            _lock.Release();
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task InjectGenesAsync(string taskId, double[] genes, CancellationToken cancellationToken)
-    {
-        await _lock.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            if (_tasks.TryGetValue(taskId, out var task) && task is LiveTask liveTask)
-            {
-                await liveTask.InjectGenesAsync(genes, cancellationToken).ConfigureAwait(false);
-                await _kernelService.InjectGenesAsync(liveTask.KernelTaskId, genes, cancellationToken).ConfigureAwait(false);
-
-                // Persist updated genes – load existing state, update genes, and save
-                var currentState = await _stateManager.LoadLiveStateAsync(cancellationToken).ConfigureAwait(false);
-                if (currentState != null)
-                {
-                    var updatedState = currentState with
-                    {
-                        Genes = genes,
-                        LastTickTime = liveTask.LastTickTime
-                    };
-                    await _stateManager.SaveLiveStateAsync(updatedState, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    // Fallback: create a minimal state
-                    var state = new LiveState
-                    {
-                        TaskId = liveTask.TaskId,
-                        Config = liveTask.Config,
-                        Genes = genes,
-                        LastTickTime = liveTask.LastTickTime,
-                        StartTime = liveTask.StartTime,
-                        StrategyName = liveTask.StrategyName,
-                        AdapterName = liveTask.AdapterName
-                    };
-                    await _stateManager.SaveLiveStateAsync(state, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            else
-            {
-                throw new EngineException($"Live task {taskId} not found.");
-            }
-        }
-        finally
-        {
-            _lock.Release();
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task<object> GetLiveStateAsync(string taskId, CancellationToken cancellationToken)
-    {
-        if (_tasks.TryGetValue(taskId, out var task) && task is LiveTask liveTask)
-        {
-            return await liveTask.GetLiveStateAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        throw new EngineException($"Live task {taskId} not found.");
-    }
-
-    /// <summary>Executes a task and handles its lifecycle.</summary>
-    private async Task ExecuteTaskAsync(EngineTaskBase task, CancellationToken cancellationToken)
-    {
-        try
-        {
-            await task.ExecuteAsync(cancellationToken).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            task.State = TaskState.Canceled;
-        }
-        catch (Exception ex)
-        {
-            task.State = TaskState.Faulted;
-            _logTaskFaulted(_logger, task.TaskId, ex);
-        }
-        finally
-        {
-            task.EndTime = DateTime.UtcNow;
-            _ = Task.Run(async () =>
-            {
-                await Task.Delay(TimeSpan.FromMinutes(5), CancellationToken.None).ConfigureAwait(false);
-                if (_tasks.TryRemove(task.TaskId, out var removedTask))
-                {
-                    removedTask.Dispose(); // Ensure cleanup of CTS even if removed later.
-                }
-                _liveThreads.TryRemove(task.TaskId, out _);
-            }, CancellationToken.None);
-        }
-    }
-
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        _disposed = true;
-        foreach (var task in _tasks.Values)
-        {
-            task.CancellationTokenSource.Cancel();
-            task.Dispose();
-        }
-
-        foreach (var kv in _liveThreads)
-        {
-            if (kv.Value.IsAlive)
-            {
-                kv.Value.Join(TimeSpan.FromSeconds(5));
-            }
-        }
-
-        _lock.Dispose();
+        return fallback;
     }
 }

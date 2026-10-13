@@ -46,6 +46,20 @@ public class BarTests
         var bar = new Bar(1, 2, 3, 4, 5, 6, 7);
         Assert.False(bar.Equals("not a bar"));
     }
+
+    [Fact]
+    public void Equals_Through_Object_Agrees_With_The_Typed_Overload()
+    {
+        var b1 = new Bar(100, 1.2, 1.5, 1.1, 1.3, 1000, 200);
+        var b2 = new Bar(100, 1.2, 1.5, 1.1, 1.3, 1000, 200);
+        var b3 = new Bar(101, 1.2, 1.5, 1.1, 1.3, 1000, 200);
+
+        // A typed argument binds to Equals(Bar), so the object overload is only ever called with something
+        // that is already an object. That is the path every non-generic collection and Dictionary uses, and
+        // it must still recognise an equal bar rather than answering false for everything.
+        Assert.True(b1.Equals((object)b2));
+        Assert.False(b1.Equals((object)b3));
+    }
 }
 
 public class OrderTests

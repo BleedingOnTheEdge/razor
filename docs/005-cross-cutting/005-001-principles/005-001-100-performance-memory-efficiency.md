@@ -4,6 +4,15 @@ parent: product:razor/cross-cutting/principles
 title: 10. Performance & Memory Efficiency
 level: product
 kind: cross-cutting
+domains: [engine, optimisation]
+keywords:
+  - principle 10
+  - performance
+  - memory efficiency
+  - allocations
+  - arraypool
+  - span
+  - tickringbuffer
 ---
 
 # 10. Performance & Memory Efficiency

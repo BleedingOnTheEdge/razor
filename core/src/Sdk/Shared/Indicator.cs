@@ -20,11 +20,11 @@ public abstract class Indicator : IDisposable, IWindowAwareIndicator
     {
         get
         {
-            if (index < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(index), "Index must be non-negative.");
-            }
-            return _count == 0 ? 0 : _buffer[(int)(index % _count)];
+            return index < 0
+                ? throw new ArgumentOutOfRangeException(nameof(index), "Index must be non-negative.")
+                : _count == 0
+                    ? 0
+                    : _buffer[(int)(index % _count)];
         }
         set
         {

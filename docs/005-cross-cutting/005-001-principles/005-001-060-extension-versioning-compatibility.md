@@ -4,6 +4,15 @@ parent: product:razor/cross-cutting/principles
 title: 6. Extension Versioning & Compatibility
 level: product
 kind: cross-cutting
+domains: [extensions, sdk]
+keywords:
+  - principle 6
+  - extension versioning
+  - sdk version
+  - compatibility
+  - sdkversionattribute
+references:
+  - product:razor/cross-cutting/principles/feature-based-versioning-future
 ---
 
 # 6. Extension Versioning & Compatibility
@@ -14,6 +23,6 @@ kind: cross-cutting
   - Extensions written for an older major version may be loaded if backward compatibility is guaranteed and they pass an interface validation.
   - Extensions targeting a newer major version are rejected unless an explicit compatibility mode is configured.
 - The SDK (contracts assembly) itself is versioned strictly; breaking changes require a major version bump.
-- Future feature‑based versioning will be expressed through dedicated version attributes, allowing the host to negotiate features without breaking older extensions.
+- Future feature‑based versioning is specified by `product:razor/cross-cutting/principles/feature-based-versioning-future`.
 
 ---

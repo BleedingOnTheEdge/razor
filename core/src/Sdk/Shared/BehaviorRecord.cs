@@ -24,5 +24,5 @@ public sealed record BehaviorRecord
     /// State dictionary containing indicator values, open positions, equity, etc.
     /// The strategy is responsible for populating this.
     /// </summary>
-    public Dictionary<string, double> State { get; init; } = new();
+    public Dictionary<string, double> State { get; init; } = [];
 }

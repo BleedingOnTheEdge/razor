@@ -74,9 +74,9 @@ public sealed class BorrowedTickData : IAsyncDisposable, IDisposable
         _policy = policy;
 
         // DAT‑05: Increment reference count for each file.
-        foreach (var path in _filePaths)
+        foreach (string path in _filePaths)
         {
-            _fileRefCounts.AddOrUpdate(path, 1, (_, count) => count + 1);
+            _ = _fileRefCounts.AddOrUpdate(path, 1, (_, count) => count + 1);
         }
     }
 
@@ -90,13 +90,13 @@ public sealed class BorrowedTickData : IAsyncDisposable, IDisposable
 
         _disposed = true;
 
-        foreach (var mm in _mappedLists)
+        foreach (MemoryMappedTickList mm in _mappedLists)
         {
             mm.Dispose();
         }
 
         // DAT‑05: Decrement reference count and delete only when zero.
-        foreach (var path in _filePaths)
+        foreach (string path in _filePaths)
         {
             bool shouldDelete = false;
             lock (_refCountLock)
@@ -105,7 +105,7 @@ public sealed class BorrowedTickData : IAsyncDisposable, IDisposable
                 {
                     if (count <= 1)
                     {
-                        _fileRefCounts.TryRemove(path, out _);
+                        _ = _fileRefCounts.TryRemove(path, out _);
                         shouldDelete = true;
                     }
                     else

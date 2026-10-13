@@ -1,14 +1,22 @@
 ---
 id: product:razor/operational/installation-and-deployment/verifying-the-installation
 parent: product:razor/operational/installation-and-deployment
-title: 7. Verifying the Installation
+title: Verifying the Installation
 level: product
 kind: operational
+domains: [operations, cloud, live-trading]
+flows: [onboarding, backtest-run]
+keywords:
+  - verifying installation
+  - engine startup
+  - online status
+  - test backtest
+  - connectivity check
 ---
 
-# 7. Verifying the Installation
+# Verifying the Installation
 
-## 7.1 Engine Startup
+## Engine Startup
 
 When the engine starts successfully, you will see log output similar to:
 
@@ -22,11 +30,11 @@ When the engine starts successfully, you will see log output similar to:
 [info] Waiting for commands...
 ```
 
-## 7.2 Cloud Verification
+## Cloud Verification
 
 In Razor Cloud, navigate to **Engines**. Your engine should appear as **Online** with a green indicator. If it shows **Offline** or **Error**, check the local log file in the `logs/` directory.
 
-## 7.3 Running a Test Backtest
+## Running a Test Backtest
 
 1. In Razor Cloud, create a simple strategy configuration.
 2. Click **Run Backtest** and select your online engine.

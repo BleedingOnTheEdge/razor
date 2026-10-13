@@ -4,6 +4,14 @@ parent: product:razor/cross-cutting/principles
 title: 17. Versioning & Long‑Term Support
 level: product
 kind: cross-cutting
+domains: [engine]
+keywords:
+  - principle 17
+  - versioning
+  - semver
+  - long-term support
+  - lts
+  - breaking changes
 ---
 
 # 17. Versioning & Long‑Term Support

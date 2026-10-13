@@ -1,8 +1,9 @@
-using Razor.Core.Sdk.Shared;
+using Shared;
+using Sdk.Shared;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Razor.Core.Sdk.IntegrationTests.Shared;
+namespace Sdk.IntegrationTests.Shared;
 
 public sealed class BinaryDataMapper_IntegrationTests : IDisposable
 {

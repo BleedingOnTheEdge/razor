@@ -1,0 +1,90 @@
+# Build and package the Engine.
+#
+# Issue #2: moved here from `core/.github/workflows/`, a path GitHub never
+# reads, so this workflow could never run from where it sat.
+#
+# Stale content fixed in this file:
+#   * `src/Razor.Core.Engine/Razor.Core.Engine.csproj` -> `src/Engine/Engine.csproj`.
+#     The project was renamed and the old path does not exist.
+#   * the version no longer comes from `VERSION.txt`: that file does not exist
+#     anywhere in the repository. The release tag is the version; a manual
+#     dispatch asks for one explicitly.
+#
+# The .NET steps run with `working-directory: core`, as CONTRIBUTING_AGENTS.md
+# prescribes, which also keeps them under the single SDK pin at
+# `razor/global.json` -- see issue #11.
+
+name: Build and Package Engine
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build, without a leading v (for example 0.0.4).'
+        required: true
+
+jobs:
+  build-engine:
+    runs-on: windows-latest   # Engine needs Windows build for obfuscation
+
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            runtime: win-x64
+            output: Engine.exe
+          - os: ubuntu-latest
+            runtime: linux-x64
+            output: Engine
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          # Must stay on the pinned band; see razor/global.json and issue #11.
+          dotnet-version: 10.0.x
+
+      - name: Resolve the version
+        id: version
+        env:
+          # Empty on a tag push, where the tag itself is the version.
+          DISPATCH_VERSION: ${{ inputs.version }}
+        run: |
+          version="${DISPATCH_VERSION}"
+          if [ -z "$version" ]; then
+            version="${GITHUB_REF_NAME#v}"
+          fi
+          echo "VERSION=$version" >> "$GITHUB_OUTPUT"
+        shell: bash
+
+      - name: Restore
+        working-directory: core
+        run: dotnet restore src/Engine/Engine.csproj
+
+      - name: Build
+        working-directory: core
+        run: dotnet build src/Engine/Engine.csproj --configuration Release --no-restore
+
+      - name: Publish for ${{ matrix.runtime }}
+        working-directory: core
+        run: |
+          dotnet publish src/Engine/Engine.csproj \
+            --configuration Release \
+            --runtime ${{ matrix.runtime }} \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:IncludeNativeLibrariesForSelfExtract=true \
+            --output ./publish/${{ matrix.runtime }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: razor-engine-${{ matrix.runtime }}-${{ steps.version.outputs.VERSION }}
+          path: core/publish/${{ matrix.runtime }}

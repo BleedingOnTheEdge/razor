@@ -4,6 +4,12 @@ parent: product:razor/cross-cutting/principles
 title: 18. Feature‑Based Versioning (Future)
 level: product
 kind: cross-cutting
+domains: [extensions, sdk]
+keywords:
+  - principle 18
+  - feature based versioning
+  - feature negotiation
+  - version attributes
 ---
 
 # 18. Feature‑Based Versioning (Future)

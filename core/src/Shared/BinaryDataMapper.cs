@@ -30,12 +30,12 @@ public static class BinaryDataMapper
             }
         }
 
-        using var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
+        using FileStream fs = new(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
         Span<byte> header = stackalloc byte[HeaderSize];
-        BitConverter.TryWriteBytes(header, FileMagic);
-        BitConverter.TryWriteBytes(header[4..], FileVersion);
+        _ = BitConverter.TryWriteBytes(header, FileMagic);
+        _ = BitConverter.TryWriteBytes(header[4..], FileVersion);
         fs.Write(header);
-        var byteSpan = MemoryMarshal.AsBytes(ticks.AsSpan());
+        Span<byte> byteSpan = MemoryMarshal.AsBytes(ticks.AsSpan());
         fs.Write(byteSpan);
     }
 }

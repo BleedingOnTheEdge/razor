@@ -34,6 +34,13 @@ public sealed class GeneticOptimizer : IGeneticOptimizer
     private readonly int _stagnationGenerationsBeforeHyper;
     private const double RelativeFitnessTolerance = 1e-6;
     private readonly SystemClock _systemClock = new();
+    private bool _isInitialized;
+
+    /// <inheritdoc/>
+    public bool IsInitialized => _isInitialized;
+
+    /// <inheritdoc/>
+    public bool Evaluated => _evaluated;
 
     /// <inheritdoc/>
     public int CurrentGeneration => _currentGeneration;
@@ -105,6 +112,7 @@ public sealed class GeneticOptimizer : IGeneticOptimizer
     /// <inheritdoc/>
     public void Initialize()
     {
+        _isInitialized = true;
         _currentGeneration = 0;
         _hyperMutation = false;
         _stagnationCount = 0;
@@ -339,6 +347,8 @@ public sealed class GeneticOptimizer : IGeneticOptimizer
     /// <summary>Saves current state to a snapshot for pause/resume.</summary>
     public GeneticOptimizerState SaveState()
     {
+        var (randomState0, randomState1) = _mainRng.CaptureState();
+
         return new GeneticOptimizerState
         {
             Population = [.. _population.Select(c => c.Clone())],
@@ -346,7 +356,9 @@ public sealed class GeneticOptimizer : IGeneticOptimizer
             Evaluated = _evaluated,
             BestOverallFitness = _bestOverallFitness,
             StagnationCount = _stagnationCount,
-            HyperMutation = _hyperMutation
+            HyperMutation = _hyperMutation,
+            RandomState0 = randomState0,
+            RandomState1 = randomState1
         };
     }
 
@@ -354,12 +366,20 @@ public sealed class GeneticOptimizer : IGeneticOptimizer
     public void LoadState(GeneticOptimizerState state)
     {
         ArgumentNullException.ThrowIfNull(state);
+        _isInitialized = true;
         _population = [.. state.Population.Select(c => c.Clone())];
         _currentGeneration = state.CurrentGeneration;
         _evaluated = state.Evaluated;
         _bestOverallFitness = state.BestOverallFitness;
         _stagnationCount = state.StagnationCount;
         _hyperMutation = state.HyperMutation;
+
+        // Restore the sequence position as well as the population: without it the next Evolve
+        // draws different numbers from the run being continued, so the resume is not faithful.
+        if (state.RandomState0 is { } randomState0 && state.RandomState1 is { } randomState1)
+        {
+            _mainRng.RestoreState((randomState0, randomState1));
+        }
     }
 
     /// <summary>Marks all chromosomes as unevaluated.</summary>

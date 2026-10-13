@@ -4,6 +4,14 @@ parent: product:razor/cross-cutting/principles
 title: 16. Future‑Proofing & .NET Version
 level: product
 kind: cross-cutting
+domains: [engine]
+keywords:
+  - principle 16
+  - dotnet version
+  - net 10
+  - nuget
+  - reflection
+  - aot
 ---
 
 # 16. Future‑Proofing & .NET Version

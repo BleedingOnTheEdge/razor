@@ -105,9 +105,9 @@ Hook callbacks are strongly typed. Action hook callbacks **must be synchronous**
 
 ## Documentation
 
-- [Razor Principles](../../docs/Razor%20Principles.md)
-- [Configuration Reference](../../docs/Razor%20Configuration%20Reference.md)
-- [Extension Developer Guide](../../docs/Razor%20Extension%20Developer%20Guide.md)
+- [Razor Principles](../../../docs/005-cross-cutting/005-001-principles/INDEX.md)
+- [Configuration Reference](../../../docs/004-contracts/004-001-configuration-reference/INDEX.md)
+- [Extension Developer Guide](../../../docs/004-contracts/004-010-extension-developer-guide/INDEX.md)
 
 ---
 

@@ -36,8 +36,8 @@ public sealed record StrategySpecification
         }
 
         // Check for duplicate symbols (case‑insensitive).
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var sr in RequestedSymbols)
+        HashSet<string> seen = new(StringComparer.OrdinalIgnoreCase);
+        foreach (SymbolRequest sr in RequestedSymbols)
         {
             if (string.IsNullOrWhiteSpace(sr.Symbol))
             {
@@ -64,7 +64,7 @@ public sealed record StrategySpecification
         double leverage,
         ImmutableArray<SymbolRequest> requestedSymbols)
     {
-        var spec = new StrategySpecification
+        StrategySpecification spec = new()
         {
             InitialBalance = initialBalance,
             Leverage = leverage,

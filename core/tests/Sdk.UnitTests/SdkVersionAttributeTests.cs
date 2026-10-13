@@ -1,3 +1,5 @@
+using Sdk.Shared;
+
 namespace Sdk.UnitTests;
 
 public class SdkVersionAttributeTests

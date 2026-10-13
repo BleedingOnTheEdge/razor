@@ -6,6 +6,8 @@
 
 namespace Engine.Core;
 
+using global::Kernel.Optimization;
+
 /// <summary>
 /// Persistent state for a live trading task.
 /// </summary>
@@ -50,6 +52,9 @@ internal sealed record LiveState
     /// <summary>Gets the gene array currently injected into the strategy.</summary>
     public double[] Genes { get; init; } = Array.Empty<double>();
 
+    /// <summary>Gets the account currency.</summary>
+    public string AccountCurrency { get; init; } = "USD";
+
     /// <summary>Gets the timestamp of the last tick received, or null if none.</summary>
     public DateTime? LastTickTime { get; init; }
 
@@ -68,8 +73,11 @@ internal sealed record OptimizationState
     /// <summary>Gets the configuration object used to start the task.</summary>
     public object Config { get; init; } = new object();
 
-    /// <summary>Gets the current population snapshot (placeholder).</summary>
-    public object Population { get; init; } = new object();
+    /// <summary>Gets the real optimizer state snapshot.</summary>
+    public GeneticOptimizerState? OptimizerState { get; init; }
+
+    /// <summary>Gets the current population snapshot (placeholder preserved for backwards compatibility).</summary>
+    public object? Population { get; init; } = new object();
 
     /// <summary>Gets the current generation number.</summary>
     public int CurrentGeneration { get; init; }
@@ -79,4 +87,16 @@ internal sealed record OptimizationState
 
     /// <summary>Gets the start time of the task.</summary>
     public DateTime StartTime { get; init; }
+
+    /// <summary>Gets the current checkpoint fingerprint.</summary>
+    public string? CheckpointFingerprint { get; init; }
+
+    /// <summary>Gets the parent checkpoint fingerprint.</summary>
+    public string? ParentCheckpointFingerprint { get; init; }
+
+    /// <summary>Gets whether this run has diverged from pure determinism via intervention.</summary>
+    public bool Diverged { get; init; }
+
+    /// <summary>Gets recorded interventions on this computation.</summary>
+    public IReadOnlyList<InterventionRecord> Interventions { get; init; } = Array.Empty<InterventionRecord>();
 }

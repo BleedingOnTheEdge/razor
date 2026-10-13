@@ -20,7 +20,7 @@ using System.Text;
 using System.Text.Json;
 
 /// <summary>Default implementation of <see cref="ICloudConnector"/>.</summary>
-internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
+internal sealed partial class CloudConnector : ICloudConnector, IAsyncDisposable
 {
     private readonly ILogger<CloudConnector> _logger;
     private readonly ISecurityManager _securityManager;
@@ -36,6 +36,8 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
     private CancellationTokenSource? _receiveCts;
     private bool _isConnected;
     private string? _sessionId;
+    private int _heartbeatIntervalSeconds = AppConstants.DefaultHeartbeatIntervalSeconds;
+    private TimeSpan _clockDrift = TimeSpan.Zero;
     private int _reconnectAttempt;
     private bool _isDisposing;
     private int _connectionAttemptCounter;
@@ -173,11 +175,23 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
     private static readonly Action<ILogger, Exception?> _logCannotSendManifest =
         LoggerMessage.Define(LogLevel.Warning, 46, "Cannot send extension manifest: not connected.");
 
+    private static readonly Action<ILogger, double, Exception?> _logClockDriftWarning =
+        LoggerMessage.Define<double>(LogLevel.Warning, 47, "Clock drift detected between engine and cloud: {DriftSeconds:F2}s");
+
+    private static readonly Action<ILogger, int, Exception?> _logHeartbeatIntervalUpdated =
+        LoggerMessage.Define<int>(LogLevel.Debug, 48, "Heartbeat interval updated to {IntervalSeconds}s");
+
     /// <inheritdoc/>
     public bool IsConnected => _isConnected;
 
     /// <inheritdoc/>
     public string? SessionId => _sessionId;
+
+    /// <inheritdoc/>
+    public int HeartbeatIntervalSeconds => _heartbeatIntervalSeconds;
+
+    /// <inheritdoc/>
+    public TimeSpan ClockDrift => _clockDrift;
 
     /// <summary>Event raised when a command is received.</summary>
     public event Func<CloudCommand, Task>? CommandReceived;
@@ -502,7 +516,9 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
         }
         else
         {
-            string[] endpoints = { AppConstants.PrimaryEndpoint, AppConstants.FallbackEndpoint };
+            string[] endpoints = string.Equals(AppConstants.PrimaryEndpoint, AppConstants.FallbackEndpoint, StringComparison.OrdinalIgnoreCase)
+                ? [AppConstants.PrimaryEndpoint]
+                : [AppConstants.PrimaryEndpoint, AppConstants.FallbackEndpoint];
             Exception? lastException = null;
             foreach (string endpoint in endpoints)
             {
@@ -526,10 +542,11 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
 
     private async Task ConnectSingleEndpointAsync(string endpoint, CancellationToken cancellationToken)
     {
-        _webSocket = new ClientWebSocket();
-        await _webSocket.ConnectAsync(new Uri(endpoint), cancellationToken).ConfigureAwait(false);
+        var socket = new ClientWebSocket();
+        _webSocket = socket;
+        await socket.ConnectAsync(new Uri(endpoint), cancellationToken).ConfigureAwait(false);
 
-        if (_webSocket.State == WebSocketState.Open)
+        if (socket.State == WebSocketState.Open)
         {
             if (RuntimeEnvironment.IsDevelopment)
             {
@@ -542,10 +559,24 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
                 Console.WriteLine("Connected to Cloud.");
             }
 
-            await this.AuthenticateAsync(cancellationToken).ConfigureAwait(false);
-
+            // The AuthResponse that completes the handshake can only be read off the socket, and only the
+            // receive loop reads it, so the loop has to be running before the Auth is sent: started
+            // afterwards it could not be reached until authentication had already finished, which deadlocks
+            // the handshake against any Cloud.
             _receiveCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            _ = Task.Run(() => this.ReceiveLoopAsync(_receiveCts.Token), _receiveCts.Token);
+            _ = Task.Run(() => this.ReceiveLoopAsync(socket, _receiveCts.Token), _receiveCts.Token);
+
+            try
+            {
+                await this.AuthenticateAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // A failed handshake is retried on a fresh socket, so the reader is released first: left
+                // running it would keep reading whichever socket the retry installs.
+                await _receiveCts.CancelAsync().ConfigureAwait(false);
+                throw;
+            }
 
             _isConnected = true;
             _connectionLostEvent.Reset(); // ensure event is not set
@@ -563,675 +594,5 @@ internal sealed class CloudConnector : ICloudConnector, IAsyncDisposable
         }
     }
 
-    private async Task ProcessOutgoingQueueAsync(CancellationToken cancellationToken)
-    {
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            // RUN‑02: Check cancellation at the start of each loop iteration.
-            if (cancellationToken.IsCancellationRequested)
-            {
-                break;
-            }
 
-            try
-            {
-                if (_isConnected && _webSocket?.State == WebSocketState.Open)
-                {
-                    var pending = await _stateManager.GetPendingOutgoingMessagesAsync(cancellationToken).ConfigureAwait(false);
-                    foreach (var msg in pending)
-                    {
-                        if (!_isConnected || cancellationToken.IsCancellationRequested)
-                        {
-                            break;
-                        }
-                        // Deserialize message from JSON
-                        var cloudMsg = JsonSerializer.Deserialize<CloudMessage>(msg.PayloadJson);
-                        if (cloudMsg == null)
-                        {
-                            continue;
-                        }
-                        // Send it
-                        try
-                        {
-                            await SendAsync(cloudMsg, cancellationToken).ConfigureAwait(false);
-                            // Mark as sent
-                            await _stateManager.DeleteOutgoingMessageAsync(msg.Id, cancellationToken).ConfigureAwait(false);
-                        }
-                        catch (Exception ex)
-                        {
-                            // Log and break to retry later
-                            _logErrorInLoop(_logger, $"Failed to send queued message: {ex.Message}", ex);
-                            break;
-                        }
-                    }
-                }
-            }
-            catch (OperationCanceledException) { break; }
-            catch (Exception ex)
-            {
-                _logErrorInLoop(_logger, $"Error in queue processing: {ex.Message}", ex);
-            }
-            // Wait a short interval before checking again
-            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    private async Task AuthenticateAsync(CancellationToken cancellationToken)
-    {
-        _logAuthenticating(_logger, null);
-        Console.WriteLine("Authenticating with cloud...");
-
-        var authMessage = new CloudMessage
-        {
-            MessageType = "Auth",
-            Encrypted = false,
-            Payload = new
-            {
-                Credentials.Username,
-                Credentials.Password,
-                InstanceApiKey = Credentials.InstanceApiKey,
-                EngineVersion = AppConstants.EngineVersion,
-                ClientCapabilities = AppConstants.SupportedCapabilities,
-                PublicKey = _securityManager.GetPublicKey()
-            }
-        };
-
-        await this.SendAsync(authMessage, cancellationToken).ConfigureAwait(false);
-
-        bool authResponseReceived = false;
-        while (!authResponseReceived && !cancellationToken.IsCancellationRequested)
-        {
-            if (!string.IsNullOrEmpty(_sessionId))
-            {
-                authResponseReceived = true;
-                break;
-            }
-
-            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-        }
-
-        if (string.IsNullOrEmpty(_sessionId))
-        {
-            throw new EngineException("Authentication failed: no session ID received.");
-        }
-
-        _logAuthenticated(_logger, _sessionId, null);
-        Console.WriteLine($"Authenticated. Session ID: {_sessionId}");
-        await _stateManager.SetSessionIdAsync(_sessionId, cancellationToken).ConfigureAwait(false);
-    }
-
-    private async Task ReceiveLoopAsync(CancellationToken cancellationToken)
-    {
-        byte[] buffer = new byte[4096];
-        StringBuilder messageBuilder = new StringBuilder();
-
-        while (!cancellationToken.IsCancellationRequested && _webSocket != null &&
-               _webSocket.State == WebSocketState.Open)
-        {
-            try
-            {
-                WebSocketReceiveResult result = await _webSocket
-                    .ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken).ConfigureAwait(false);
-                if (result.MessageType == WebSocketMessageType.Close)
-                {
-                    _logWebSocketClosedByServer(_logger, null);
-                    Console.WriteLine("WebSocket closed by server.");
-                    _isConnected = false;
-                    _connectionLostEvent.Set(); // signal connection lost
-                    break;
-                }
-
-                string messagePart = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                messageBuilder.Append(messagePart);
-
-                if (result.EndOfMessage)
-                {
-                    string json = messageBuilder.ToString();
-                    messageBuilder.Clear();
-
-                    try
-                    {
-                        CloudMessage? message = JsonSerializer.Deserialize<CloudMessage>(json);
-                        if (message != null)
-                        {
-                            await this.ProcessReceivedMessageAsync(message, cancellationToken).ConfigureAwait(false);
-                        }
-                    }
-                    catch (JsonException ex)
-                    {
-                        _logDeserializationError(_logger, json, ex);
-                    }
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
-            catch (Exception ex)
-            {
-                _logReceiveLoopError(_logger, ex.Message, ex);
-                await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        _isConnected = false;
-        _connectionLostEvent.Set(); // signal connection lost
-        _telemetry.SetConnectionState(false);
-        _logReceiveLoopEnded(_logger, null);
-        Console.WriteLine("Receive loop ended.");
-    }
-
-    private async Task ProcessReceivedMessageAsync(CloudMessage message, CancellationToken cancellationToken)
-    {
-        _logReceivedMessage(_logger, message.MessageType, message.Encrypted, null);
-
-        if (message.Encrypted && message.Payload is string encryptedPayload)
-        {
-            try
-            {
-                string decryptedJson = _securityManager.DecryptMessage(encryptedPayload);
-                message.Payload = JsonSerializer.Deserialize<object>(decryptedJson);
-            }
-            catch (Exception ex)
-            {
-                _logDecryptError(_logger, ex.Message, ex);
-                return;
-            }
-        }
-
-        switch (message.MessageType)
-        {
-            case "AuthResponse":
-                if (message.Payload is Dictionary<string, object> payload)
-                {
-                    if (payload.TryGetValue("Status", out object? statusObj) && statusObj.ToString() == "Success")
-                    {
-                        _sessionId = payload.TryGetValue("SessionId", out object? sessionObj)
-                            ? sessionObj.ToString()
-                            : null;
-                        if (payload.TryGetValue("PublicKey", out object? pubKeyObj))
-                        {
-                            _securityManager.SetCloudPublicKey(pubKeyObj.ToString()!);
-                        }
-
-                        if (payload.TryGetValue("Nonce", out object? nonceObj))
-                        {
-                            _securityManager.SetNonce(nonceObj.ToString()!);
-                        }
-
-                        _securityManager.DeriveSharedSecret();
-
-                        if (_sessionId != null)
-                        {
-                            string challenge = _securityManager.GenerateChallenge(nonceObj?.ToString() ?? string.Empty);
-                            var confirm = new CloudMessage
-                            {
-                                MessageType = "AuthConfirm",
-                                Encrypted = true,
-                                Payload = new { Challenge = challenge }
-                            };
-                            await this.SendAsync(confirm, cancellationToken).ConfigureAwait(false);
-                        }
-                    }
-                    else
-                    {
-                        string error = payload.TryGetValue("ErrorMessage", out object? errObj)
-                            ? errObj.ToString() ?? "Unknown error"
-                            : "Unknown error";
-                        _logAuthFailed(_logger, error, null);
-                        throw new EngineException($"Authentication failed: {error}");
-                    }
-                }
-
-                break;
-
-            case "AuthAck":
-                _logAuthAck(_logger, null);
-                Console.WriteLine("Authentication acknowledged.");
-                break;
-
-            case "HeartbeatResponse":
-                await this.HandleHeartbeatResponseAsync(message, cancellationToken).ConfigureAwait(false);
-                break;
-
-            case "Command":
-                if (message.Payload is Dictionary<string, object> payloadDict)
-                {
-                    try
-                    {
-                        var command = new CloudCommand
-                        {
-                            CommandId = Convert.ToInt32(payloadDict.GetValueOrDefault("CommandId", 0),
-                                CultureInfo.InvariantCulture),
-                            CommandType = payloadDict.GetValueOrDefault("CommandType")?.ToString() ?? string.Empty,
-                            Parameters = payloadDict.GetValueOrDefault("Parameters"),
-                            TimeoutSeconds = payloadDict.GetValueOrDefault("TimeoutSeconds") as int?,
-                            CorrelationId = message.CorrelationId
-                        };
-
-                        if (this.CommandReceived != null)
-                        {
-                            await this.CommandReceived.Invoke(command).ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            _logNoCommandHandler(_logger, null);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logCommandError(_logger, ex.Message, ex);
-                    }
-                }
-                else
-                {
-                    _logInvalidCommandPayload(_logger, null);
-                }
-
-                break;
-
-            case "CommandResponse":
-                break;
-
-            case "BinaryTransferStart":
-            case "BinaryChunk":
-            case "BinaryTransferEnd":
-            case "BinaryTransferAck":
-                await this.ProcessBinaryTransferAsync(message, cancellationToken).ConfigureAwait(false);
-                break;
-
-            case "BroadcastMessage":
-                await this.DisplayBroadcastMessageAsync(message, cancellationToken).ConfigureAwait(false);
-                break;
-
-            default:
-                _logUnhandledMessageType(_logger, message.MessageType, null);
-                break;
-        }
-    }
-
-    private async Task ProcessBinaryTransferAsync(CloudMessage message, CancellationToken cancellationToken)
-    {
-        _logBinaryTransfer(_logger, message.MessageType, null);
-
-        if (message.Payload is not Dictionary<string, object> payload)
-        {
-            return;
-        }
-
-        switch (message.MessageType)
-        {
-            case "BinaryTransferStart":
-                string transferId = payload.GetValueOrDefault("TransferId")?.ToString() ?? string.Empty;
-                string fileName = payload.GetValueOrDefault("FileName")?.ToString() ?? "unknown";
-                long totalSize = Convert.ToInt64(payload.GetValueOrDefault("TotalSize", 0L), CultureInfo.InvariantCulture);
-                string checksum = payload.GetValueOrDefault("Checksum")?.ToString() ?? string.Empty;
-                string contentType = payload.GetValueOrDefault("ContentType")?.ToString() ?? "application/octet-stream";
-
-                _transferManager.StartIncoming(transferId, fileName, totalSize, checksum, contentType);
-                break;
-
-            case "BinaryChunk":
-                string chunkTransferId = payload.GetValueOrDefault("TransferId")?.ToString() ?? string.Empty;
-                long offset = Convert.ToInt64(payload.GetValueOrDefault("Offset", 0L), CultureInfo.InvariantCulture);
-                string dataB64 = payload.GetValueOrDefault("Data")?.ToString() ?? string.Empty;
-                byte[] chunkData = Convert.FromBase64String(dataB64);
-
-                bool complete = _transferManager.AppendChunk(chunkTransferId, offset, chunkData);
-                if (complete)
-                {
-                    // Send ACK
-                    var ackPayload = new
-                    {
-                        TransferId = chunkTransferId,
-                        Status = "Success"
-                    };
-                    var ackMessage = new CloudMessage
-                    {
-                        MessageType = "BinaryTransferAck",
-                        Encrypted = true,
-                        Payload = ackPayload
-                    };
-                    await this.SendAsync(ackMessage, cancellationToken).ConfigureAwait(false);
-                    _logBinaryTransfer(_logger, "BinaryTransferAck", null);
-                }
-                break;
-
-            case "BinaryTransferEnd":
-                string endTransferId = payload.GetValueOrDefault("TransferId")?.ToString() ?? string.Empty;
-                string status = payload.GetValueOrDefault("Status")?.ToString() ?? "Success";
-
-                if (status == "Success")
-                {
-                    var transfer = _transferManager.GetCompletedTransfer(endTransferId);
-                    if (transfer != null)
-                    {
-                        // Save the received file to disk
-                        string outputDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "downloads");
-                        Directory.CreateDirectory(outputDir);
-                        string outputPath = Path.Combine(outputDir, transfer.FileName);
-                        if (File.Exists(transfer.TempFilePath))
-                        {
-                            File.Move(transfer.TempFilePath, outputPath, true);
-                            _logBinaryTransferSaved(_logger, endTransferId, outputPath, null);
-                        }
-                        else
-                        {
-                            _logBinaryTransferNotFound(_logger, endTransferId, null);
-                        }
-                    }
-                    else
-                    {
-                        _logBinaryTransferNotFound(_logger, endTransferId, null);
-                    }
-                }
-                else
-                {
-                    _transferManager.CancelIncoming(endTransferId);
-                    _logBinaryTransferEnded(_logger, endTransferId, status, null);
-                }
-                break;
-
-            case "BinaryTransferAck":
-                string ackTransferId = payload.GetValueOrDefault("TransferId")?.ToString() ?? string.Empty;
-                string ackStatus = payload.GetValueOrDefault("Status")?.ToString() ?? "Success";
-                if (ackStatus == "RetransmitRequest")
-                {
-                    // The receiver is asking to retransmit from a specific offset.
-                    long expectedOffset = Convert.ToInt64(payload.GetValueOrDefault("ExpectedOffset", 0L), CultureInfo.InvariantCulture);
-                    _logRetransmitRequest(_logger, ackTransferId, null);
-                    _transferManager.HandleRetransmitRequest(ackTransferId, expectedOffset);
-                }
-                else
-                {
-                    _logBinaryTransferAck(_logger, ackTransferId, ackStatus, null);
-                }
-                break;
-        }
-    }
-
-    private async Task HandleHeartbeatResponseAsync(CloudMessage message, CancellationToken cancellationToken)
-    {
-        if (message.Payload is not Dictionary<string, object> payload)
-        {
-            return;
-        }
-
-        if (payload.TryGetValue("Status", out object? statusObj))
-        {
-            string? status = statusObj.ToString();
-            if (status == "Stop")
-            {
-                _logStopRequested(_logger, null);
-                Console.WriteLine("Cloud requested engine stop.");
-                // Signal cancellation to stop the main loop
-                cancellationToken = new CancellationToken(true);
-                return;
-            }
-            else if (status == "Lock" || status == "Ban")
-            {
-                _logLockBanRequested(_logger, null);
-                Console.WriteLine("🔴 Engine is locked/banned. Stopping user tasks.");
-                var stopCommand = new CloudCommand
-                {
-                    CommandId = CommandIds.EmergencyStop,
-                    CommandType = "EmergencyStop",
-                    CorrelationId = Guid.NewGuid().ToString()
-                };
-                if (this.CommandReceived != null)
-                {
-                    await this.CommandReceived.Invoke(stopCommand).ConfigureAwait(false);
-                }
-            }
-            else
-            {
-                _logHeartbeatResponseStatus(_logger, status ?? "unknown", null);
-            }
-        }
-
-        if (payload.TryGetValue("Commands", out object? commandsObj) && commandsObj is object[] commands)
-        {
-            foreach (object cmd in commands)
-            {
-                if (cmd is Dictionary<string, object> cmdDict)
-                {
-                    var command = new CloudCommand
-                    {
-                        CommandId = Convert.ToInt32(cmdDict.GetValueOrDefault("CommandId", 0),
-                            CultureInfo.InvariantCulture),
-                        CommandType = cmdDict.GetValueOrDefault("CommandType")?.ToString() ?? string.Empty,
-                        Parameters = cmdDict.GetValueOrDefault("Parameters"),
-                        CorrelationId = Guid.NewGuid().ToString()
-                    };
-                    if (this.CommandReceived != null)
-                    {
-                        _ = Task.Run(() => this.CommandReceived.Invoke(command), cancellationToken);
-                    }
-                }
-            }
-        }
-
-        if (payload.TryGetValue("AuthValid", out object? authValidObj) && authValidObj is bool authValid && !authValid)
-        {
-            _logAuthInvalid(_logger, null);
-            Console.WriteLine("🔴 Authentication invalid. Stopping user tasks.");
-            var stopCommand = new CloudCommand
-            {
-                CommandId = CommandIds.EmergencyStop,
-                CommandType = "EmergencyStop",
-                CorrelationId = Guid.NewGuid().ToString()
-            };
-            if (this.CommandReceived != null)
-            {
-                await this.CommandReceived.Invoke(stopCommand).ConfigureAwait(false);
-            }
-
-            // Force reconnection by disconnecting and signaling the event
-            _isConnected = false;
-            _connectionLostEvent.Set();
-            await this.DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
-            return;
-        }
-
-        if (payload.TryGetValue("AdminMessage", out object? adminMsgObj) && adminMsgObj.ToString() is string adminMsg)
-        {
-            Console.WriteLine($"\n[ADMIN] {adminMsg}");
-        }
-
-        // Check for self-update metadata
-        if (payload.TryGetValue("NewVersion", out object? newVersionObj) && newVersionObj is string newVersion &&
-            payload.TryGetValue("DownloadUrl", out object? downloadUrlObj) && downloadUrlObj is string downloadUrlStr &&
-            payload.TryGetValue("Checksum", out object? checksumObj) && checksumObj is string checksum)
-        {
-            try
-            {
-                _selfUpdateManager.CheckForUpdate(newVersion, new Uri(downloadUrlStr), checksum);
-                if (_selfUpdateManager.IsUpdateAvailable)
-                {
-                    // Trigger update in background
-                    _ = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            await _selfUpdateManager.InstallUpdateAsync(CancellationToken.None).ConfigureAwait(false);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logSelfUpdateInstallFailed(_logger, ex);
-                        }
-                    }, cancellationToken);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logSelfUpdateMetadataFailed(_logger, ex);
-            }
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task SendExtensionManifestAsync(object manifest, CancellationToken cancellationToken)
-    {
-        if (!_isConnected || _webSocket == null)
-        {
-            _logCannotSendManifest(_logger, null);
-            return;
-        }
-
-        var message = new CloudMessage
-        {
-            MessageType = "ExtensionManifest",
-            Encrypted = true,
-            Payload = manifest
-        };
-
-        await this.SendAsync(message, cancellationToken).ConfigureAwait(false);
-    }
-
-    private async Task DisplayBroadcastMessageAsync(CloudMessage message, CancellationToken cancellationToken)
-    {
-        if (message.Payload is not Dictionary<string, object> payload)
-        {
-            return;
-        }
-
-        string text = payload.GetValueOrDefault("Text")?.ToString() ?? string.Empty;
-        string style = payload.GetValueOrDefault("Style")?.ToString() ?? "info";
-
-        Console.ForegroundColor = style switch
-        {
-            "error" => ConsoleColor.Red,
-            "warning" => ConsoleColor.Yellow,
-            "success" => ConsoleColor.Green,
-            _ => ConsoleColor.Cyan
-        };
-        Console.WriteLine($"\n=== BROADCAST ===\n{text}\n================\n");
-        Console.ResetColor();
-        await Task.CompletedTask.ConfigureAwait(false);
-    }
-
-    private async Task HeartbeatLoopAsync(CancellationToken cancellationToken)
-    {
-        while (!cancellationToken.IsCancellationRequested && _isConnected)
-        {
-            try
-            {
-                await Task.Delay(TimeSpan.FromSeconds(AppConstants.DefaultHeartbeatIntervalSeconds), cancellationToken)
-                    .ConfigureAwait(false);
-                await this.SendHeartbeatAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
-            catch (Exception ex)
-            {
-                _logHeartbeatError(_logger, ex);
-            }
-        }
-    }
-
-    private async Task SendHeartbeatAsync(CancellationToken cancellationToken)
-    {
-        if (!_isConnected || _webSocket == null)
-        {
-            return;
-        }
-
-        // Collect system metrics
-        double cpuUsage = GetCpuUsage();
-        long memoryUsage = Process.GetCurrentProcess().WorkingSet64;
-        int tasksRunning = _taskManager.RunningTasks.Count;
-        long? liveTickAgeTicks = GetLiveTickAgeTicks();
-
-        // Record live tick age telemetry
-        if (liveTickAgeTicks.HasValue)
-        {
-            _telemetry.RecordLiveTickAge(liveTickAgeTicks.Value);
-        }
-
-        var heartbeat = new CloudMessage
-        {
-            MessageType = "Heartbeat",
-            Encrypted = true,
-            Payload = new
-            {
-                EngineId = _stateManager.EngineId,
-                LocalTimestamp = DateTime.UtcNow,
-                IsConnected = _isConnected,
-                Health = new
-                {
-                    CpuUsage = cpuUsage,
-                    MemoryUsage = memoryUsage,
-                    TasksRunning = tasksRunning,
-                    LiveTickAge = liveTickAgeTicks ?? 0
-                }
-            }
-        };
-
-        await this.SendAsync(heartbeat, cancellationToken).ConfigureAwait(false);
-    }
-
-    private double GetCpuUsage()
-    {
-        try
-        {
-            var process = Process.GetCurrentProcess();
-            var now = DateTime.UtcNow;
-            var totalProcessorTime = process.TotalProcessorTime;
-            var deltaTime = (now - _lastCpuTimeSample).TotalSeconds;
-            var deltaProcessorTime = (totalProcessorTime - _lastTotalProcessorTime).TotalSeconds;
-
-            _lastCpuTimeSample = now;
-            _lastTotalProcessorTime = totalProcessorTime;
-
-            if (deltaTime <= 0 || deltaProcessorTime <= 0)
-            {
-                return 0.0;
-            }
-
-            // CPU usage as percentage of total available (Environment.ProcessorCount)
-            double usage = (deltaProcessorTime / deltaTime) / Environment.ProcessorCount * 100.0;
-            return Math.Min(100.0, Math.Max(0.0, usage));
-        }
-        catch
-        {
-            return 0.0;
-        }
-    }
-
-    private long? GetLiveTickAgeTicks()
-    {
-        var lastTick = _taskManager.GetLastLiveTickTimestamp();
-        if (lastTick.HasValue)
-        {
-            return (DateTime.UtcNow - lastTick.Value).Ticks;
-        }
-        return null;
-    }
-
-    private TimeSpan GetReconnectDelay()
-    {
-        _reconnectAttempt++;
-        double delay = Math.Min(AppConstants.MaxRetryDelaySeconds, AppConstants.DefaultRetryDelaySeconds * Math.Pow(1.5, _reconnectAttempt));
-        return TimeSpan.FromSeconds(delay);
-    }
-
-    /// <inheritdoc/>
-    public async ValueTask DisposeAsync()
-    {
-        if (_isDisposing)
-        {
-            return;
-        }
-
-        _isDisposing = true;
-
-        await this.DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
-        _receiveCts?.Dispose();
-        _sendLock.Dispose();
-        _transferManager.Dispose();
-        _queueCts?.Dispose();
-        _connectionLostEvent.Dispose();
-    }
 }

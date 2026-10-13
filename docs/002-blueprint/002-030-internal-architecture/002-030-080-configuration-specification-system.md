@@ -1,22 +1,34 @@
 ---
 id: product:razor/blueprint/internal-architecture/configuration-specification-system
 parent: product:razor/blueprint/internal-architecture
-title: 9. Configuration & Specification System
+title: Configuration & Specification System
 level: product
 kind: blueprint
+domains: [engine]
+keywords:
+  - specification
+  - validation
+  - execution specification
+  - optimization specification
+  - live specification
+  - strategy specification
+references:
+  - product:razor/cross-cutting/principles/configuration-is-source-of-truth-strict-validation
+code_paths:
+  - core/src/Kernel/Configuration/**
 ---
 
-# 9. Configuration & Specification System
+# Configuration & Specification System
 
-All configuration is represented by immutable `record` types that implement a `Validate()` method. A `ConfigurationException` is thrown for invalid input. There are no silent defaults for critical parameters (Principle 9).
+All configuration is represented by immutable `record` types that implement a `Validate()` method. A `ConfigurationException` is thrown for invalid input. There are no silent defaults for critical parameters (Principle 9, `product:razor/cross-cutting/principles/configuration-is-source-of-truth-strict-validation`).
 
-**Specifications in `Razor.Core.Kernel.Configuration`:**
+**Specifications in `Kernel.Configuration`:**
 
 - `ExecutionSpecification` – date range, warmup, latency, max positions, stop‑out, parallelism, gene seed (nullable `int?`).
 - `OptimizationSpecification` – master seed (`≥ 0`), population/generations, mutation/crossover rates, elitism, tournament size. No walk‑forward fields (orchestration is Cloud‑managed). No `FitnessModel` field (fitness is computed via hooks).
 - `LiveSpecification` – magic number, order guard timeout. Continuous optimisation fields removed (Cloud‑orchestrated).
 
-**Specifications in `Razor.Core.Sdk.Shared`:**
+**Specifications in `Sdk.Shared`:**
 
 - `StrategySpecification` – initial balance, leverage, symbols/timeframes. No `FrictionModel` (adapter‑internal) or `FitnessModel` (hook‑based). Duplicate symbols are rejected.
 

@@ -4,6 +4,13 @@ parent: product:razor/cross-cutting/principles
 title: 9. Configuration is Source of Truth – Strict Validation
 level: product
 kind: cross-cutting
+domains: [engine, data]
+keywords:
+  - principle 9
+  - configuration
+  - strict validation
+  - specification record
+  - configurationexception
 ---
 
 # 9. Configuration is Source of Truth – Strict Validation
