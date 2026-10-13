@@ -98,11 +98,6 @@ public sealed class TickWindow : IDisposable
                     _lastCompletedBar[(symbol, tf)] = new CompletedBar(
                         stats.Open, stats.High, stats.Low, stats.Close, stats.Volume, true);
                 }
-                else
-                {
-                    // Fallback: compute from buffer
-                    ComputeAndStoreCompletedBar(symbol, tf, buffer);
-                }
 
                 // Reset rolling stats for the new window
                 foreach (PriceType priceType in AggregatedPriceTypes)
@@ -282,67 +277,6 @@ public sealed class TickWindow : IDisposable
 
         _buffers.Clear();
         _rollingStats.Clear();
-    }
-
-    private void ComputeAndStoreCompletedBar(string symbol, TimeFrame tf, TickRingBuffer buffer)
-    {
-        long periodTicks = (long)tf * TimeSpan.TicksPerMinute;
-        if (periodTicks <= 0)
-        {
-            return;
-        }
-
-        int n = buffer.Count;
-        if (n == 0)
-        {
-            return;
-        }
-
-        long lastTime = buffer[n - 1].Time;
-        long windowStart = lastTime / periodTicks * periodTicks;
-
-        double open = 0, high = double.MinValue, low = double.MaxValue, close = 0, volume = 0;
-        bool found = false;
-        for (int i = 0; i < n; i++)
-        {
-            Tick t = buffer[i];
-            if (t.Time < windowStart)
-            {
-                continue;
-            }
-
-            double price = (t.Bid + t.Ask) * 0.5;
-            if (!found)
-            {
-                open = high = low = close = price;
-                found = true;
-            }
-            else
-            {
-                if (price > high)
-                {
-                    high = price;
-                }
-
-                if (price < low)
-                {
-                    low = price;
-                }
-
-                close = price;
-            }
-
-            volume += t.Volume;
-        }
-
-        if (found)
-        {
-            _lastCompletedBar[(symbol, tf)] = new CompletedBar(open, high, low, close, volume, true);
-        }
-        else
-        {
-            _lastCompletedBar[(symbol, tf)] = new CompletedBar(0, 0, 0, 0, 0, false);
-        }
     }
 
     private sealed record CompletedBar(

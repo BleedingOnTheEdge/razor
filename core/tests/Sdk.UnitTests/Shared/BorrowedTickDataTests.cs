@@ -161,5 +161,13 @@ public sealed class BorrowedTickDataTests : IDisposable
 
         await data.DisposeAsync();
     }
+
+    [Fact]
+    public void Dispose_Synchronous_WorksAndIsIdempotent()
+    {
+        var data = new BorrowedTickData(EmptyStreams, EmptyStrings, EmptyMmList, EmptyStrings, new FakeAdapter(), DataActionPolicy.KeepUntilExit);
+        data.Dispose();
+        data.Dispose();
+    }
 }
 #pragma warning restore CA2007

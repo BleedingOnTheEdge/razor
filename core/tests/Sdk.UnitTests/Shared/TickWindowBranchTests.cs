@@ -297,4 +297,57 @@ public class TickWindowBranchTests
         Assert.Throws<ArgumentNullException>(() => new TickWindow(null!, new[] { TimeFrame.M1 }));
         Assert.Throws<ArgumentNullException>(() => new TickWindow(SymbolsX, null!));
     }
+
+    [Fact]
+    public void PushTick_UnknownSymbol_ReturnsEarly()
+    {
+        using var window = new TickWindow(SymbolsX, new[] { TimeFrame.M1 });
+        window.PushTick("UNKNOWN_SYM", new Tick(0, 1.0, 1.0, 1));
+        Assert.Empty(window.GetRecentTicks("UNKNOWN_SYM", 10));
+    }
+
+    [Fact]
+    public void Fallback_Computes_High_And_Low_In_Secondary_Loop()
+    {
+        // Construct window with M1 only, so H1 falls back to the buffer loop
+        using var window = new TickWindow(SymbolsX, new[] { TimeFrame.M1 });
+        long m = TimeSpan.TicksPerMinute;
+
+        // Feed three ticks in the same H1 window:
+        // first tick: base price 10.0 (sets initial open/high/low/close)
+        // second tick: price 15.0 (> high)
+        // third tick: price 5.0 (< low)
+        window.PushTick("X", new Tick(0, 10.0, 10.0, 1));
+        window.PushTick("X", new Tick(m, 15.0, 15.0, 1));
+        window.PushTick("X", new Tick(m * 2, 5.0, 5.0, 1));
+
+        window.GetCurrentStats("X", TimeFrame.H1, PriceType.Bid,
+            out double open, out double high, out double low, out double close, out double volume, out bool isComplete);
+
+        Assert.Equal(10.0, open);
+        Assert.Equal(15.0, high);
+        Assert.Equal(5.0, low);
+        Assert.Equal(5.0, close);
+        Assert.Equal(3, volume);
+    }
+
+    [Fact]
+    public void Fallback_Computes_Completed_Bar_Over_Multiple_Buffered_Ticks()
+    {
+        using var window = new TickWindow(SymbolsX, new[] { TimeFrame.H1 }, maxTicksPerSymbol: 50);
+        long h = TimeSpan.TicksPerMinute * 60;
+
+        // Push 3 ticks into the first window [0, h)
+        window.PushTick("X", new Tick(0, 10.0, 10.0, 1));
+        window.PushTick("X", new Tick(10, 20.0, 20.0, 1));
+        window.PushTick("X", new Tick(20, 5.0, 5.0, 1));
+
+        // Tick at h completes [0, h)
+        window.PushTick("X", new Tick(h, 10.0, 10.0, 1));
+
+        // Skip to 3h so the [h, 2h) interval had zero ticks, forcing ComputeAndStoreCompletedBar
+        window.PushTick("X", new Tick(3 * h, 10.0, 10.0, 1));
+
+        Assert.True(window.TryGetLastCompletedBar("X", TimeFrame.H1, out double open, out double high, out double low, out double close, out double vol));
+    }
 }
