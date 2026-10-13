@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getApiClient } from '@/lib/api-client';
+import type { EngineInstanceDetailPayload } from '@razor/api-client';
 import { useToast } from '@/components/ui/toast';
 import {
   getInstanceStatusBadge,
@@ -69,10 +70,12 @@ const COMMAND_PRESETS = [
   },
 ];
 
+type ManifestExtension = EngineInstanceDetailPayload['manifest'][number];
+
 export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
   const toast = useToast();
 
-  const [instance, setInstance] = useState<any>(null);
+  const [instance, setInstance] = useState<EngineInstanceDetailPayload | null>(null);
   const [commands, setCommands] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -113,8 +116,8 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
       if (cmdsRes.data) {
         setCommands(cmdsRes.data);
       }
-    } catch (e: any) {
-      setError(e?.message || 'Error communicating with Cloud API backend.');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error communicating with Cloud API backend.');
     } finally {
       setLoading(false);
     }
@@ -165,8 +168,8 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
         );
         await loadDetails();
       }
-    } catch (e: any) {
-      toast.error('Dispatch Error', e?.message || 'Network communication error.');
+    } catch (e) {
+      toast.error('Dispatch Error', e instanceof Error ? e.message : 'Network communication error.');
     } finally {
       setDispatching(false);
     }
@@ -198,15 +201,15 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
         setSlotModalOpen(false);
         await loadDetails();
       }
-    } catch (e: any) {
-      toast.error('Slot Update Error', e?.message || 'Network error.');
+    } catch (e) {
+      toast.error('Slot Update Error', e instanceof Error ? e.message : 'Network error.');
     } finally {
       setUpdatingSlot(false);
     }
   }
 
-  function openSlotModal(kind: 'Adapter' | 'Strategy' | 'NeuralNetwork' | 'HookPlugin', defaultName?: string) {
-    setSelectedSlotKind(kind);
+  function openSlotModal(kind: string, defaultName?: string) {
+    setSelectedSlotKind(kind as 'Adapter' | 'Strategy' | 'NeuralNetwork' | 'HookPlugin');
     setSelectedExtensionName(defaultName || '');
     setIsSlotActive(true);
     setSlotModalOpen(true);
@@ -320,7 +323,7 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
                   </div>
                   <div className="mt-4 pt-3 border-t border-zinc-800/50 flex justify-end">
                     <button
-                      onClick={() => openSlotModal('Adapter', instance.activeSelections?.adapter)}
+                      onClick={() => openSlotModal('Adapter', instance.activeSelections?.adapter || undefined)}
                       className="text-xs font-mono text-cyan-400 hover:text-cyan-300 transition-colors"
                     >
                       Hot-Swap Adapter →
@@ -343,7 +346,7 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
                   </div>
                   <div className="mt-4 pt-3 border-t border-zinc-800/50 flex justify-end">
                     <button
-                      onClick={() => openSlotModal('Strategy', instance.activeSelections?.strategy)}
+                      onClick={() => openSlotModal('Strategy', instance.activeSelections?.strategy || undefined)}
                       className="text-xs font-mono text-cyan-400 hover:text-cyan-300 transition-colors"
                     >
                       Hot-Swap Strategy →
@@ -366,7 +369,7 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
                   </div>
                   <div className="mt-4 pt-3 border-t border-zinc-800/50 flex justify-end">
                     <button
-                      onClick={() => openSlotModal('NeuralNetwork', instance.activeSelections?.neuralNetwork)}
+                      onClick={() => openSlotModal('NeuralNetwork', instance.activeSelections?.neuralNetwork || undefined)}
                       className="text-xs font-mono text-cyan-400 hover:text-cyan-300 transition-colors"
                     >
                       Hot-Swap Model →
@@ -421,7 +424,7 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
                 </div>
               ) : (
                 <div className="divide-y divide-zinc-800/50">
-                  {instance.manifest.map((ext: any, idx: number) => {
+                  {instance.manifest.map((ext: ManifestExtension, idx: number) => {
                     const kindBadge = getExtensionKindBadge(ext.kind);
                     return (
                       <div
@@ -640,8 +643,8 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
                     <span className="text-[11px] text-zinc-500">From Manifest:</span>
                     <div className="flex flex-wrap gap-1">
                       {instance.manifest
-                        .filter((m: any) => m.kind === selectedSlotKind || selectedSlotKind === 'HookPlugin')
-                        .map((m: any, idx: number) => (
+                        .filter((m: ManifestExtension) => m.kind === selectedSlotKind || selectedSlotKind === 'HookPlugin')
+                        .map((m: ManifestExtension, idx: number) => (
                           <button
                             key={idx}
                             type="button"

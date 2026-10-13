@@ -35,8 +35,8 @@ export function useSseStream() {
           // Keep-alive or ping message
         }
       };
-    } catch (e: any) {
-      setError(e?.message || 'Failed to initialize EventSource');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to initialize EventSource');
     }
 
     return () => {

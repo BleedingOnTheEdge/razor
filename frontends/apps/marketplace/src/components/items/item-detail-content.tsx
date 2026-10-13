@@ -72,8 +72,8 @@ export function ItemDetailContent({ itemId }: ItemDetailContentProps) {
             setTargetInstanceId(instancesRes.data[0].instanceId);
           }
         }
-      } catch (e: any) {
-        setError(e?.message || 'Error communicating with Marketplace API.');
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Error communicating with Marketplace API.');
       } finally {
         setLoading(false);
       }
@@ -107,8 +107,8 @@ export function ItemDetailContent({ itemId }: ItemDetailContentProps) {
         setAcquiredLicense(data.licenseKey);
         success('License Acquired', `License ${data.licenseKey} issued successfully.`);
       }
-    } catch (e: any) {
-      toastError('Acquisition Error', e?.message || 'Network error during license issuance.');
+    } catch (e) {
+      toastError('Acquisition Error', e instanceof Error ? e.message : 'Network error during license issuance.');
     } finally {
       setAcquiring(false);
     }
@@ -144,8 +144,8 @@ export function ItemDetailContent({ itemId }: ItemDetailContentProps) {
           setItem({ ...item, rating: data.newRating });
         }
       }
-    } catch (e: any) {
-      toastError('Submission Error', e?.message || 'Failed to submit review.');
+    } catch (e) {
+      toastError('Submission Error', e instanceof Error ? e.message : 'Failed to submit review.');
     } finally {
       setSubmittingReview(false);
     }

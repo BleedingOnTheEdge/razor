@@ -57,8 +57,8 @@ export function RunReportContent({ runId }: { runId: string }) {
       } else if (data) {
         setReport(data);
       }
-    } catch (e: any) {
-      setError(e?.message || 'Error communicating with Cloud API backend.');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error communicating with Cloud API backend.');
     } finally {
       setLoading(false);
     }
@@ -83,8 +83,8 @@ export function RunReportContent({ runId }: { runId: string }) {
         toast.success('Run Paused', `Run ${formatHash(runId, 6)} state transitioned to Paused.`);
         await loadReport();
       }
-    } catch (e: any) {
-      toast.error('Pause Error', e?.message || 'Communication error.');
+    } catch (e) {
+      toast.error('Pause Error', e instanceof Error ? e.message : 'Communication error.');
     } finally {
       setPausing(false);
     }
@@ -114,8 +114,8 @@ export function RunReportContent({ runId }: { runId: string }) {
         setCompleteModalOpen(false);
         await loadReport();
       }
-    } catch (e: any) {
-      toast.error('Completion Error', e?.message || 'Network error.');
+    } catch (e) {
+      toast.error('Completion Error', e instanceof Error ? e.message : 'Network error.');
     } finally {
       setSubmittingComplete(false);
     }

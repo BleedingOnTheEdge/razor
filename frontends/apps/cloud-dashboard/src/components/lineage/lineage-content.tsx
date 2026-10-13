@@ -61,8 +61,8 @@ export function LineageContent({ runId }: { runId: string }) {
       } else if (data) {
         setRootNode(data);
       }
-    } catch (e: any) {
-      setError(e?.message || 'Error communicating with Cloud API.');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error communicating with Cloud API.');
     } finally {
       setLoading(false);
     }
@@ -100,8 +100,8 @@ export function LineageContent({ runId }: { runId: string }) {
         setBranchModalOpen(false);
         await loadLineage();
       }
-    } catch (e: any) {
-      toast.error('Branch Error', e?.message || 'Unexpected network failure.');
+    } catch (e) {
+      toast.error('Branch Error', e instanceof Error ? e.message : 'Unexpected network failure.');
     } finally {
       setSubmittingBranch(false);
     }
@@ -135,8 +135,8 @@ export function LineageContent({ runId }: { runId: string }) {
         setResumeModalOpen(false);
         await loadLineage();
       }
-    } catch (e: any) {
-      toast.error('Resume Error', e?.message || 'Unexpected network failure.');
+    } catch (e) {
+      toast.error('Resume Error', e instanceof Error ? e.message : 'Unexpected network failure.');
     } finally {
       setSubmittingResume(false);
     }
