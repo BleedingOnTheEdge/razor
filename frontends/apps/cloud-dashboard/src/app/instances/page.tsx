@@ -75,8 +75,8 @@ export default function InstancesPage() {
       } else if (data) {
         setInstances(data);
       }
-    } catch (e: any) {
-      setError(e?.message || 'Error communicating with Cloud API backend.');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error communicating with Cloud API backend.');
     } finally {
       setLoading(false);
     }
@@ -94,16 +94,12 @@ export default function InstancesPage() {
       const accountId = (regAccountId || user?.accountId || '').trim();
       const licenseId = regLicenseId.trim();
 
-      const bodyPayload: any = {
-        engineId: regEngineId.trim(),
-        name: regName.trim(),
+      const bodyPayload = {
+        accountId,
+        licenseId,
+        engineId: regEngineId.trim() || undefined,
+        name: regName.trim() || undefined,
       };
-      if (accountId) {
-        bodyPayload.accountId = accountId;
-      }
-      if (licenseId) {
-        bodyPayload.licenseId = licenseId;
-      }
 
       const { data, error: err } = await client.POST('/api/engines', {
         body: bodyPayload,
@@ -118,8 +114,8 @@ export default function InstancesPage() {
         toast.success('Engine Registered', `Instance ${formatHash(data.instanceId, 6)} provisioned.`);
         await loadInstances();
       }
-    } catch (e: any) {
-      toast.error('Registration Error', e?.message || 'Network communication error.');
+    } catch (e) {
+      toast.error('Registration Error', e instanceof Error ? e.message : 'Network communication error.');
     } finally {
       setRegistering(false);
     }

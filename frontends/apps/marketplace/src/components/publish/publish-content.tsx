@@ -83,8 +83,8 @@ export function PublishContent() {
         success('Extension Published', `Listing "${data.name}" has been published to the catalogue.`);
         router.push(`/items/${data.id}`);
       }
-    } catch (e: any) {
-      toastError('Network Error', e?.message || 'Error communicating with marketplace API.');
+    } catch (e) {
+      toastError('Network Error', e instanceof Error ? e.message : 'Error communicating with marketplace API.');
     } finally {
       setSubmitting(false);
     }

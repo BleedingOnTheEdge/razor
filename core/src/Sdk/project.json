@@ -1,0 +1,41 @@
+{
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "name": "sdk",
+  "projectType": "library",
+  "sourceRoot": "core/src/Sdk",
+  "tags": [
+    "scope:shared",
+    "profile:d",
+    "lang:csharp"
+  ],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet format --verify-no-changes core/src/Sdk/Sdk.csproj",
+        "cwd": "."
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet test core/tests/Sdk.UnitTests/Sdk.UnitTests.csproj -c Release && dotnet test core/tests/Sdk.IntegrationTests/Sdk.IntegrationTests.csproj -c Release",
+        "cwd": "."
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet build core/src/Sdk/Sdk.csproj -c Release",
+        "cwd": "."
+      }
+    },
+    "audit": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet list core/src/Sdk/Sdk.csproj package --vulnerable --include-transitive || true",
+        "cwd": "."
+      }
+    }
+  }
+}

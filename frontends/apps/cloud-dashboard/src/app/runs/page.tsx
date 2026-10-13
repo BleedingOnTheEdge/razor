@@ -80,8 +80,8 @@ export default function RunsPage() {
       } else {
         setRuns([]);
       }
-    } catch (e: any) {
-      setError(e?.message || 'Error loading flow runs from Cloud API.');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error loading flow runs from Cloud API.');
     } finally {
       setLoading(false);
     }
@@ -143,8 +143,8 @@ export default function RunsPage() {
         setLaunchModalOpen(false);
         await loadRuns();
       }
-    } catch (e: any) {
-      toast.error('Launch Error', e?.message || 'Network communication error.');
+    } catch (e) {
+      toast.error('Launch Error', e instanceof Error ? e.message : 'Network communication error.');
     } finally {
       setLaunching(false);
     }

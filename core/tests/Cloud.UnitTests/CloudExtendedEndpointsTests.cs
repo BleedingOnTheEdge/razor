@@ -335,6 +335,26 @@ public sealed class CloudExtendedEndpointsTests
     }
 
     [Fact]
+    public async Task MarketplaceEndpoints_AutoSeedsDefaultItemsWhenEmpty()
+    {
+        using var factory = new CloudWebApplicationFactory();
+        using HttpClient client = factory.CreateAuthorisedClient();
+
+        using HttpResponseMessage response = await GetRelativeAsync(client, "/api/marketplace/items").ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        List<MarketplaceItemView>? items = await ReadJsonAsync<List<MarketplaceItemView>>(response).ConfigureAwait(true);
+        Assert.NotNull(items);
+        Assert.True(items.Count >= 5);
+
+        using HttpResponseMessage adapterResp = await GetRelativeAsync(client, "/api/marketplace/items?kind=Adapter&isCurated=true").ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.OK, adapterResp.StatusCode);
+        List<MarketplaceItemView>? curatedAdapters = await ReadJsonAsync<List<MarketplaceItemView>>(adapterResp).ConfigureAwait(true);
+        Assert.NotNull(curatedAdapters);
+        Assert.NotEmpty(curatedAdapters);
+    }
+
+    [Fact]
     public async Task MarketplaceEndpoints_PublishSearchAndAcquireFlowSucceeds()
     {
         using var factory = new CloudWebApplicationFactory();
@@ -819,7 +839,10 @@ public sealed class CloudExtendedEndpointsTests
         {
             await consumeTask.ConfigureAwait(true);
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Expected cancellation when broadcast consumption completes
+        }
 
         Assert.Single(received);
         Assert.Equal("target", received[0].EventType);

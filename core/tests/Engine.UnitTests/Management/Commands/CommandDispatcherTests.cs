@@ -304,7 +304,8 @@ public sealed class CommandDispatcherTests
 
     private sealed class FakeStateManager : IStateManager
     {
-        public string EngineId => "engine-1";
+        public string EngineId { get; private set; } = "engine-1";
+        public void SetEngineId(string engineId) => this.EngineId = engineId;
         public Task DeleteLiveStateAsync(CancellationToken cancellationToken) => Task.CompletedTask;
         public Task SetSessionIdAsync(string sessionId, CancellationToken cancellationToken) => Task.CompletedTask;
         public Task LoadStateAsync(CancellationToken cancellationToken) => Task.CompletedTask;

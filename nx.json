@@ -23,6 +23,10 @@
     "lint": {
       "inputs": ["default"],
       "cache": true
+    },
+    "audit": {
+      "inputs": ["default"],
+      "cache": true
     }
   }
 }

@@ -13,6 +13,7 @@ using System.Text.Json.Serialization;
 using Cloud.Data;
 using Cloud.Services;
 using Cloud.UnitTests.TestSupport;
+using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Verifies community discussion forums, unified ticketing operations, and user subscription endpoints.
@@ -33,6 +34,9 @@ public sealed class CommunityAndTicketingTests
 
     private static async Task<HttpResponseMessage> GetRelativeAsync(HttpClient client, string url) =>
         await client.GetAsync(Relative(url)).ConfigureAwait(true);
+
+    private static async Task<HttpResponseMessage> PostRelativeAsync(HttpClient client, string url, HttpContent? content = null) =>
+        await client.PostAsync(Relative(url), content).ConfigureAwait(true);
 
     private static async Task<HttpResponseMessage> PostJsonRelativeAsync<T>(HttpClient client, string url, T body) =>
         await client.PostAsJsonAsync(Relative(url), body, JsonOptions).ConfigureAwait(true);
@@ -113,6 +117,12 @@ public sealed class CommunityAndTicketingTests
         List<Ticket>? tickets = await ReadJsonAsync<List<Ticket>>(listResponse).ConfigureAwait(true);
         Assert.NotNull(tickets);
         Assert.Contains(tickets, t => t.Id == created.Id);
+
+        // Query tickets with composite filters
+        using HttpResponseMessage multiFilterResponse = await GetRelativeAsync(
+            client,
+            $"/api/tickets?targetType=SystemManager&status=Open&accountId={profile.AccountId}&targetItemId={Guid.NewGuid()}").ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.OK, multiFilterResponse.StatusCode);
 
         // 4. Add message/reply
         var replyPayload = new
@@ -216,5 +226,134 @@ public sealed class CommunityAndTicketingTests
         Assert.Equal(created.Id, fetched.Id);
         Assert.Equal(1, fetched.RepliesCount);
         Assert.Single(fetched.Replies);
+
+        // 5. Upvote thread
+        using HttpResponseMessage upvoteResponse = await PostRelativeAsync(client, $"/api/community/threads/{created.Id}/upvote").ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.OK, upvoteResponse.StatusCode);
+
+        // Upvote unknown thread returns 404
+        using HttpResponseMessage upvoteNotFound = await PostRelativeAsync(client, $"/api/community/threads/{Guid.NewGuid()}/upvote").ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.NotFound, upvoteNotFound.StatusCode);
+
+        // 6. Filter threads by category
+        using HttpResponseMessage filterCat = await GetRelativeAsync(client, "/api/community/threads?category=Strategies").ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.OK, filterCat.StatusCode);
+
+        using HttpResponseMessage filterAll = await GetRelativeAsync(client, "/api/community/threads?category=All").ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.OK, filterAll.StatusCode);
+    }
+
+    [Fact]
+    public async Task Services_BranchEdgeCases_Succeed()
+    {
+        using var factory = new CloudWebApplicationFactory();
+        UserService userService = factory.Services.GetRequiredService<UserService>();
+        CommunityService communityService = factory.Services.GetRequiredService<CommunityService>();
+        TicketService ticketService = factory.Services.GetRequiredService<TicketService>();
+
+        // 1. UserService.AuthenticateAsync role fallbacks:
+        AuthSessionResponse? trader = await userService.AuthenticateAsync("trader-jane", "pw").ConfigureAwait(true);
+        Assert.NotNull(trader);
+        Assert.Equal(UserRole.Trader, trader.User.Role);
+
+        AuthSessionResponse? operatorUser = await userService.AuthenticateAsync("plain-user", "pw").ConfigureAwait(true);
+        Assert.NotNull(operatorUser);
+        Assert.Equal(UserRole.Operator, operatorUser.User.Role);
+
+        // 2. UserService.UpgradeSubscriptionAsync unknown account returns null:
+        UserProfileView? unknownUpgrade = await userService.UpgradeSubscriptionAsync(Guid.NewGuid(), SubscriptionTier.Enterprise).ConfigureAwait(true);
+        Assert.Null(unknownUpgrade);
+
+        // 3. CommunityService.AddReplyAsync to unknown thread returns null:
+        CommunityReply? unknownReply = await communityService.AddReplyAsync(Guid.NewGuid(), "dev", "badge", "msg").ConfigureAwait(true);
+        Assert.Null(unknownReply);
+
+        // 4. CommunityService.CreateThreadAsync with empty category and badge defaults:
+        CommunityThread defaultThread = await communityService.CreateThreadAsync("Blank Meta Thread", "", "author", "", "content").ConfigureAwait(true);
+        Assert.Equal("General", defaultThread.Category);
+        Assert.Equal("Community", defaultThread.AuthorBadge);
+
+        // 5. TicketService.AddMessageAsync to unknown ticket returns null:
+        TicketMessage? unknownMsg = await ticketService.AddMessageAsync(Guid.NewGuid(), "author", "role", "msg").ConfigureAwait(true);
+        Assert.Null(unknownMsg);
+
+        // 6. TicketService.UpdateStatusAsync to unknown ticket returns false:
+        bool unknownStatus = await ticketService.UpdateStatusAsync(Guid.NewGuid(), TicketStatus.Closed).ConfigureAwait(true);
+        Assert.False(unknownStatus);
+    }
+
+    [Fact]
+    public async Task Endpoints_NotFoundAndErrorCases_ReturnAppropriateStatus()
+    {
+        using var factory = new CloudWebApplicationFactory();
+        using HttpClient client = factory.CreateAuthorisedClient();
+        Guid nonExistent = Guid.NewGuid();
+
+        // 1. GetTicketById non-existent returns 404
+        using HttpResponseMessage ticket404 = await GetRelativeAsync(client, $"/api/tickets/{nonExistent}").ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.NotFound, ticket404.StatusCode);
+
+        // 2. AddTicketMessage non-existent returns 404
+        var replyPayload = new
+        {
+            AuthorName = "Operator",
+            Message = "Hello"
+        };
+        using HttpResponseMessage ticketMsg404 = await PostJsonRelativeAsync(client, $"/api/tickets/{nonExistent}/messages", replyPayload).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.NotFound, ticketMsg404.StatusCode);
+
+        // 3. UpdateTicketStatus non-existent returns 404
+        var statusPayload = new
+        {
+            Status = "Resolved"
+        };
+        using HttpResponseMessage ticketStatus404 = await PatchJsonRelativeAsync(client, $"/api/tickets/{nonExistent}/status", statusPayload).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.NotFound, ticketStatus404.StatusCode);
+
+        // 4. CreateTicket with Guid.Empty AccountId and UserId (exercises ternary branches)
+        var createPayload = new
+        {
+            AccountId = Guid.Empty,
+            UserId = Guid.Empty,
+            AuthorName = "AutoUser",
+            TargetType = "SystemManager",
+            Title = "Ticket with empty GUIDs",
+            Description = "Testing fallback generation of account and user IDs.",
+            Category = "General",
+            Priority = "Low"
+        };
+        using HttpResponseMessage createResp = await PostJsonRelativeAsync(client, "/api/tickets", createPayload).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.Created, createResp.StatusCode);
+
+        // 5. GetCommunityThread non-existent returns 404
+        using HttpResponseMessage thread404 = await GetRelativeAsync(client, $"/api/community/threads/{nonExistent}").ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.NotFound, thread404.StatusCode);
+
+        // 6. AddCommunityReply non-existent returns 404
+        var commReply = new
+        {
+            AuthorName = "Dev",
+            Content = "Test reply"
+        };
+        using HttpResponseMessage commReply404 = await PostJsonRelativeAsync(client, $"/api/community/threads/{nonExistent}/replies", commReply).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.NotFound, commReply404.StatusCode);
+
+        // 7. UpgradeSubscription non-existent returns 404
+        var upgradeReq = new
+        {
+            Tier = "Enterprise"
+        };
+        using HttpResponseMessage upgrade404 = await PostJsonRelativeAsync(client, $"/api/accounts/{nonExistent}/subscription", upgradeReq).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.NotFound, upgrade404.StatusCode);
+
+        // 8. SubmitCommand non-existent returns 404
+        var cmdReq = new
+        {
+            InstanceId = nonExistent,
+            CommandId = 1,
+            CommandType = "Ping"
+        };
+        using HttpResponseMessage cmd404 = await PostJsonRelativeAsync(client, $"/api/instances/{nonExistent}/commands", cmdReq).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.NotFound, cmd404.StatusCode);
     }
 }

@@ -251,6 +251,85 @@ public sealed class ProtocolAndGuardTests
     }
 
     [Fact]
+    public async Task TheKeyFilterServesAuthorizationBearerAndQueryApiKey()
+    {
+        var options = new CloudOptions { ManagementApiKey = "the-key" };
+        RequestDelegate pipeline = BuildPipeline(options);
+
+        // Authorization: Bearer the-key
+        HttpContext bearerCtx = Context("/api/instances");
+        bearerCtx.Request.Headers["Authorization"] = "Bearer the-key";
+        await pipeline(bearerCtx).ConfigureAwait(true);
+        Assert.True(bearerCtx.Items.ContainsKey("reached"));
+
+        // Authorization: Bearer with wrong key -> 401
+        HttpContext wrongBearer = Context("/api/instances");
+        wrongBearer.Request.Headers["Authorization"] = "Bearer wrong-key";
+        await pipeline(wrongBearer).ConfigureAwait(true);
+        Assert.Equal(StatusCodes.Status401Unauthorized, wrongBearer.Response.StatusCode);
+
+        // Authorization: Basic (not Bearer) -> fallback / 401
+        HttpContext notBearer = Context("/api/instances");
+        notBearer.Request.Headers["Authorization"] = "Basic dXNlcjpwYXNz";
+        await pipeline(notBearer).ConfigureAwait(true);
+        Assert.Equal(StatusCodes.Status401Unauthorized, notBearer.Response.StatusCode);
+
+        // Authorization: empty string -> 401
+        HttpContext emptyAuth = Context("/api/instances");
+        emptyAuth.Request.Headers["Authorization"] = "";
+        await pipeline(emptyAuth).ConfigureAwait(true);
+        Assert.Equal(StatusCodes.Status401Unauthorized, emptyAuth.Response.StatusCode);
+
+        // Query: ?apiKey=the-key -> 200
+        HttpContext queryCtx = Context("/api/instances");
+        queryCtx.Request.QueryString = new QueryString("?apiKey=the-key");
+        await pipeline(queryCtx).ConfigureAwait(true);
+        Assert.True(queryCtx.Items.ContainsKey("reached"));
+
+        // Query: ?apiKey=wrong -> 401
+        HttpContext wrongQuery = Context("/api/instances");
+        wrongQuery.Request.QueryString = new QueryString("?apiKey=wrong");
+        await pipeline(wrongQuery).ConfigureAwait(true);
+        Assert.Equal(StatusCodes.Status401Unauthorized, wrongQuery.Response.StatusCode);
+
+        // Query: ?apiKey= (empty) -> 401
+        HttpContext emptyQuery = Context("/api/instances");
+        emptyQuery.Request.QueryString = new QueryString("?apiKey=");
+        await pipeline(emptyQuery).ConfigureAwait(true);
+        Assert.Equal(StatusCodes.Status401Unauthorized, emptyQuery.Response.StatusCode);
+
+        // Public /api/auth path passes without key
+        HttpContext authCtx = Context("/api/auth/login");
+        await pipeline(authCtx).ConfigureAwait(true);
+        Assert.True(authCtx.Items.ContainsKey("reached"));
+    }
+
+    [Fact]
+    public void FlexibleGuidConverter_HandlesAllTokenTypesAndFormats()
+    {
+        var validId = Guid.NewGuid();
+        string json = JsonSerializer.Serialize(new
+        {
+            AccountId = validId
+        });
+        var parsed = JsonSerializer.Deserialize<RegisterEngineRequest>(json);
+        Assert.NotNull(parsed);
+        Assert.Equal(validId, parsed.AccountId);
+
+        var badString = JsonSerializer.Deserialize<RegisterEngineRequest>("{\"AccountId\": \"not-a-guid\"}");
+        Assert.NotNull(badString);
+        Assert.Equal(Guid.Empty, badString.AccountId);
+
+        var emptyString = JsonSerializer.Deserialize<RegisterEngineRequest>("{\"AccountId\": \"\"}");
+        Assert.NotNull(emptyString);
+        Assert.Equal(Guid.Empty, emptyString.AccountId);
+
+        var numberToken = JsonSerializer.Deserialize<RegisterEngineRequest>("{\"AccountId\": 12345}");
+        Assert.NotNull(numberToken);
+        Assert.Equal(Guid.Empty, numberToken.AccountId);
+    }
+
+    [Fact]
     public async Task TheKeyFilterFailsClosedWhenNoKeyIsConfigured()
     {
         // CloudOptions refuses to start without a key, so this cannot happen through the composition root;

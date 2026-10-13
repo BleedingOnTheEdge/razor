@@ -1,0 +1,41 @@
+{
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "name": "engine",
+  "projectType": "application",
+  "sourceRoot": "core/src/Engine",
+  "tags": [
+    "scope:backend",
+    "profile:a",
+    "lang:csharp"
+  ],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet format --verify-no-changes core/src/Engine/Engine.csproj",
+        "cwd": "."
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet test core/tests/Engine.UnitTests/Engine.UnitTests.csproj -c Release && dotnet test core/tests/Engine.IntegrationTests/Engine.IntegrationTests.csproj -c Release",
+        "cwd": "."
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet build core/src/Engine/Engine.csproj -c Release",
+        "cwd": "."
+      }
+    },
+    "audit": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "dotnet list core/src/Engine/Engine.csproj package --vulnerable --include-transitive || true",
+        "cwd": "."
+      }
+    }
+  }
+}

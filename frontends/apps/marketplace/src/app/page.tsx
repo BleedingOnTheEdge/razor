@@ -52,8 +52,8 @@ export default function MarketplaceCataloguePage() {
         } else if (data) {
           setItems(data);
         }
-      } catch (e: any) {
-        setError(e?.message || 'Error communicating with Marketplace API.');
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Error communicating with Marketplace API.');
       } finally {
         setLoading(false);
       }

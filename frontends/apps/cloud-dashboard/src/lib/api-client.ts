@@ -14,7 +14,7 @@ export function getApiClient(): RazorClient {
   }
 
   if (!apiKey && process.env.NODE_ENV !== 'production') {
-    apiKey = 'dev-cloud-management-key-3000';
+    apiKey = process.env.NEXT_PUBLIC_DEV_API_KEY || '';
   }
 
   return createRazorClient({

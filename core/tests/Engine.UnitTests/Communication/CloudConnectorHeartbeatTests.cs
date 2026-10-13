@@ -303,7 +303,8 @@ public sealed class CloudConnectorHeartbeatTests : IAsyncDisposable
 
     private sealed class FakeStateManager : IStateManager
     {
-        public string EngineId => "test-engine-id";
+        public string EngineId { get; private set; } = "test-engine-id";
+        public void SetEngineId(string engineId) => this.EngineId = engineId;
         public Task DeleteLiveStateAsync(CancellationToken cancellationToken) => Task.CompletedTask;
         public Task SetSessionIdAsync(string sessionId, CancellationToken cancellationToken) => Task.CompletedTask;
         public Task LoadStateAsync(CancellationToken cancellationToken) => Task.CompletedTask;

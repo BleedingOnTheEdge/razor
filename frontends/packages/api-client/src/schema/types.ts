@@ -1,0 +1,196 @@
+// -----------------------------------------------------------------------------
+// <copyright file="types.ts" company="BleedingOnTheEdge">
+//   Copyright (c) BleedingOnTheEdge. All rights reserved.
+// </copyright>
+// -----------------------------------------------------------------------------
+
+export interface EngineInstanceDetailPayload {
+  instanceId: string;
+  accountId: string;
+  licenseId: string;
+  engineId: string;
+  name: string;
+  status: string;
+  isConnected?: boolean;
+  createdAt: string;
+  lastSeenAt?: string | null;
+  activeSelections: {
+    adapter?: string | null;
+    strategy?: string | null;
+    neuralNetwork?: string | null;
+    hookPlugins: string[];
+  };
+  selections: Array<{ kind: string; name: string; isActive: boolean }>;
+  manifest: Array<{ kind: string; name: string; reportedAt: string }>;
+}
+
+export interface FlowRunPayload {
+  id: string;
+  engineInstanceId: string;
+  kind: string;
+  status: string;
+  parentRunId?: string | null;
+  relation?: string | null;
+  continuity?: string | null;
+  forkPointStep?: number | null;
+  forkPointGeneration?: number | null;
+  forkPointWindowIndex?: number | null;
+  baseSeed?: number | null;
+  randomPosition?: string | null;
+  isPartial: boolean;
+  createdAt: string;
+  metrics?: {
+    netProfit?: number | null;
+    totalReturn?: number | null;
+    sharpeRatio?: number | null;
+    maxDrawdown?: number | null;
+    tradeCount?: number | null;
+    bestFitness?: number | null;
+  } | null;
+  interventionsCount: number;
+  gapsCount: number;
+}
+
+export interface LineageNodePayload {
+  run: FlowRunPayload;
+  children: LineageNodePayload[];
+}
+
+export interface RunReportPayload {
+  runId: string;
+  engineInstanceId: string;
+  kind: string;
+  status: string;
+  relation?: string | null;
+  continuity?: string | null;
+  baseSeed?: number | null;
+  isPartial: boolean;
+  createdAt: string;
+  metrics?: {
+    netProfit?: number | null;
+    totalReturn?: number | null;
+    sharpeRatio?: number | null;
+    maxDrawdown?: number | null;
+    tradeCount?: number | null;
+    bestFitness?: number | null;
+  } | null;
+  interventions: Array<{
+    id: string;
+    stepIndex: number;
+    previousFingerprint: string;
+    newFingerprint: string;
+    actor: string;
+    reason: string;
+    modificationsSummary?: string | null;
+    timestamp: string;
+  }>;
+  gaps: Array<{
+    id: string;
+    startStep: number;
+    endStep: number;
+    reason: string;
+    recordedAt: string;
+  }>;
+  comparable: boolean;
+}
+
+export interface RankedRunResultPayload {
+  rank: number;
+  runId: string;
+  score: number;
+  metric: string;
+  relation?: string | null;
+  continuity?: string | null;
+  isDiverged: boolean;
+  divergenceReason?: string | null;
+  comparable: boolean;
+}
+
+export interface MarketplaceItemPayload {
+  id: string;
+  name: string;
+  kind: string;
+  version: string;
+  author: string;
+  description: string;
+  price: number;
+  sdkVersion: string;
+  isCurated: boolean;
+  downloads?: number;
+  downloadsCount: number;
+  rating?: number;
+  createdAt: string;
+  tags?: string[];
+  permissions?: string[];
+  readmeMarkdown?: string;
+  changelog?: Array<{ version: string; date: string; changes: string[] }>;
+}
+
+export interface AuthSessionPayload {
+  token: string;
+  user: UserProfilePayload;
+}
+
+export interface UserProfilePayload {
+  userId: string;
+  accountId: string;
+  userName: string;
+  accountName: string;
+  role: 'Admin' | 'Operator' | 'Developer' | 'Trader';
+  subscriptionTier: 'Free' | 'Pro' | 'Enterprise';
+  maxInstances: number;
+  canManageFleet: boolean;
+  canExecuteLive: boolean;
+  canPublishMarketplace: boolean;
+  createdAt: string;
+}
+
+export interface TicketMessagePayload {
+  id: string;
+  ticketId: string;
+  authorName: string;
+  authorRole: string;
+  message: string;
+  createdAt: string;
+}
+
+export interface TicketPayload {
+  id: string;
+  accountId: string;
+  userId: string;
+  authorName: string;
+  targetType: 'SystemManager' | 'AdditiveDeveloper';
+  targetItemId?: string | null;
+  targetItemName?: string | null;
+  title: string;
+  description: string;
+  category: 'Bug' | 'FeatureRequest' | 'Billing' | 'Incident' | 'General';
+  priority: 'Low' | 'Medium' | 'High' | 'Critical';
+  status: 'Open' | 'InProgress' | 'Resolved' | 'Closed';
+  createdAt: string;
+  updatedAt: string;
+  messages: TicketMessagePayload[];
+}
+
+export interface CommunityReplyPayload {
+  id: string;
+  threadId: string;
+  authorName: string;
+  authorBadge: string;
+  content: string;
+  upvotes: number;
+  createdAt: string;
+}
+
+export interface CommunityThreadPayload {
+  id: string;
+  title: string;
+  category: string;
+  authorName: string;
+  authorBadge: string;
+  content: string;
+  upvotes: number;
+  repliesCount: number;
+  createdAt: string;
+  replies: CommunityReplyPayload[];
+}

@@ -66,7 +66,10 @@ internal sealed class StubStateManager : IStateManager
     }
 
     /// <inheritdoc/>
-    public string EngineId => "engine-under-test";
+    public string EngineId { get; private set; } = "engine-under-test";
+
+    /// <inheritdoc/>
+    public void SetEngineId(string engineId) => this.EngineId = engineId;
 
     /// <inheritdoc/>
     public Task SetSessionIdAsync(string sessionId, CancellationToken cancellationToken)
