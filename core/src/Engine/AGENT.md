@@ -31,6 +31,7 @@ Trading execution engine orchestrating trading strategy lifecycles, task managem
 - `nx test engine` -> `dotnet test core/tests/Engine.UnitTests/Engine.UnitTests.csproj -c Release`
 - `nx build engine` -> `dotnet build core/src/Engine/Engine.csproj -c Release`
 - `nx audit engine` -> `dotnet list core/src/Engine/Engine.csproj package --vulnerable`
+- `nx publish engine` -> `node scripts/build-engine.mjs`
 
 ## 4. Test & Verification Rules
 - Unit tests verify task lifecycle transitions, command dispatching, and state management (`core/tests/Engine.UnitTests`).
