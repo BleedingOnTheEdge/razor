@@ -78,8 +78,12 @@ internal static class DatabaseSchemaCompatibility
                 "BestFitness" double precision,
                 "IsPartial" boolean NOT NULL DEFAULT false,
                 "CreatedAt" timestamp with time zone NOT NULL,
-                "CompletedAt" timestamp with time zone
+                "CompletedAt" timestamp with time zone,
+                "ConfigurationJson" character varying(16384)
             );
+
+            -- Ensure FlowRuns table has ConfigurationJson column if already created
+            ALTER TABLE IF EXISTS "FlowRuns" ADD COLUMN IF NOT EXISTS "ConfigurationJson" character varying(16384);
 
             CREATE TABLE IF NOT EXISTS "RunInterventions" (
                 "Id" uuid PRIMARY KEY,

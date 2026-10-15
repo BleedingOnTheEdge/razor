@@ -8,6 +8,7 @@ namespace Cloud.UnitTests;
 
 using System.IO;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using Cloud.Data;
@@ -296,4 +297,93 @@ public sealed class CloudBranchCoverageTests
         Assert.NotNull(reply2);
         Assert.Equal("Pro Analyst", reply2.AuthorBadge);
     }
+
+    [Fact]
+    public async Task FlowOrchestrator_CoversCommandDispatchAndEventBroadcaster()
+    {
+        using var testDb = new CloudTestDatabase();
+        var lineageService = new LineageService(testDb, TimeProvider.System, Microsoft.Extensions.Logging.Abstractions.NullLogger<LineageService>.Instance);
+        var broadcaster = new ClientEventBroadcaster();
+        var cmdService = new CommandService(testDb, new CloudOptions(), TimeProvider.System, Microsoft.Extensions.Logging.Abstractions.NullLogger<CommandService>.Instance);
+        var sut = new FlowOrchestrator(
+            testDb,
+            lineageService,
+            TimeProvider.System,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<FlowOrchestrator>.Instance,
+            broadcaster,
+            cmdService);
+
+        SeededAccount account = await testDb.SeedAccountAsync().ConfigureAwait(true);
+        EngineInstance instance = await testDb.SeedEngineInstanceAsync(account.AccountId, account.LicenseId).ConfigureAwait(true);
+
+        // Optimization (1201) with configurationJson
+        FlowRun optRun = await sut.StartOriginalRunAsync(
+            instance.Id,
+            RunKind.Optimization,
+            baseSeed: 100,
+            configurationJson: "{\"strategy\":\"fast\"}").ConfigureAwait(true);
+        Assert.Equal(RunStatus.Running, optRun.Status);
+        Assert.Equal("{\"strategy\":\"fast\"}", optRun.ConfigurationJson);
+
+        // WalkForward (1202) without configurationJson
+        FlowRun wfRun = await sut.StartOriginalRunAsync(
+            instance.Id,
+            RunKind.WalkForward,
+            baseSeed: 200,
+            configurationJson: null).ConfigureAwait(true);
+        Assert.Equal(RunStatus.Running, wfRun.Status);
+
+        // Backtest (1200) default
+        FlowRun btRun = await sut.StartOriginalRunAsync(
+            instance.Id,
+            RunKind.Backtest,
+            baseSeed: 300,
+            configurationJson: "{}").ConfigureAwait(true);
+        Assert.Equal(RunStatus.Running, btRun.Status);
+
+        // Pause with event broadcaster
+        FlowRun paused = await sut.PauseRunAsync(optRun.Id).ConfigureAwait(true);
+        Assert.Equal(RunStatus.Paused, paused.Status);
+    }
+
+    [Fact]
+    public async Task UserProfileEndpoints_CoverBranchConditions()
+    {
+        using var factory = new CloudWebApplicationFactory();
+        using HttpClient client = factory.CreateAuthorisedClient();
+
+        // 1. Get profile by username query
+        using HttpResponseMessage respUser = await client.GetAsync(
+            new Uri("/api/profile?userName=admin", UriKind.Relative)).ConfigureAwait(true);
+        using JsonDocument doc = await respUser.Content.ReadFromJsonAsync<JsonDocument>().ConfigureAwait(true) ?? throw new InvalidOperationException();
+        string? username = doc.RootElement.GetProperty("userName").GetString();
+        string? userIdStr = doc.RootElement.GetProperty("userId").GetString();
+        Assert.Equal("admin", username);
+
+        // 2. Get profile by specific userId query
+        using HttpResponseMessage respId = await client.GetAsync(
+            new Uri($"/api/profile?userId={userIdStr}", UriKind.Relative)).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.OK, respId.StatusCode);
+
+        // 3. Update profile with Guid.Empty (default user fallback)
+        using HttpResponseMessage updateDefault = await client.PutAsJsonAsync(
+            new Uri("/api/profile", UriKind.Relative),
+            new
+            {
+                UserId = Guid.Empty,
+                DisplayName = "Default Superadmin"
+            }).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.OK, updateDefault.StatusCode);
+
+        // 4. Update profile for non-existent user returns 404
+        using HttpResponseMessage updateMissing = await client.PutAsJsonAsync(
+            new Uri("/api/profile", UriKind.Relative),
+            new
+            {
+                UserId = Guid.NewGuid(),
+                DisplayName = "Missing User"
+            }).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.NotFound, updateMissing.StatusCode);
+    }
 }
+

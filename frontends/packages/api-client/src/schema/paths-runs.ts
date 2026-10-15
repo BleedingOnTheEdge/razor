@@ -20,6 +20,7 @@ export interface RunPaths {
             instanceId: string;
             kind: string;
             baseSeed?: number;
+            configurationJson?: string;
           };
         };
       };

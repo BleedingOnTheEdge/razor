@@ -98,9 +98,9 @@ function MaintenanceContent() {
       const { data, error: err } = await client.POST('/api/instances/{instanceId}/commands', {
         params: { path: { instanceId: selectedInstanceId } },
         body: {
-          numericCommandId: Number(cmdId),
+          commandId: Number(cmdId),
           commandType: cmdType,
-          parametersJson: cmdParams.trim() ? cmdParams : '{}',
+          parameters: cmdParams.trim() ? cmdParams : '{}',
           timeoutSeconds: Number(timeoutSeconds),
         },
       });
@@ -136,7 +136,7 @@ function MaintenanceContent() {
 
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
             onClick={() => {
               loadInstances();
               if (selectedInstanceId) loadCommands(selectedInstanceId);

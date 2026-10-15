@@ -117,6 +117,7 @@ internal sealed class RunReportService
             Gaps: gapDetails,
             Aggregates: aggregates,
             Interventions: interventions,
-            WarningMessage: warningMessage);
+            WarningMessage: warningMessage,
+            ConfigurationJson: run.ConfigurationJson);
     }
 }

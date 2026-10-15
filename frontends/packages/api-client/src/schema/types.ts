@@ -39,6 +39,8 @@ export interface FlowRunPayload {
   randomPosition?: string | null;
   isPartial: boolean;
   createdAt: string;
+  completedAt?: string | null;
+  configurationJson?: string | null;
   metrics?: {
     netProfit?: number | null;
     totalReturn?: number | null;
@@ -64,6 +66,7 @@ export interface RunReportPayload {
   relation?: string | null;
   continuity?: string | null;
   baseSeed?: number | null;
+  configurationJson?: string | null;
   isPartial: boolean;
   createdAt: string;
   metrics?: {

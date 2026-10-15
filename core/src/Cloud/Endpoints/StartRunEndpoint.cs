@@ -23,6 +23,9 @@ internal sealed class StartRunRequest
 
     /// <summary>Gets or sets the initial master seed for the run.</summary>
     public long? BaseSeed { get; set; }
+
+    /// <summary>Gets or sets the execution parameters, slot configurations, and hook specifications.</summary>
+    public string? ConfigurationJson { get; set; }
 }
 
 /// <summary>
@@ -48,7 +51,7 @@ internal sealed class StartRunEndpoint(FlowOrchestrator orchestrator)
         try
         {
             FlowRun run = await orchestrator
-                .StartOriginalRunAsync(request.InstanceId, request.Kind, request.BaseSeed, cancellationToken)
+                .StartOriginalRunAsync(request.InstanceId, request.Kind, request.BaseSeed, request.ConfigurationJson, cancellationToken)
                 .ConfigureAwait(false);
 
             await Send.ResponseAsync(FlowRunView.FromEntity(run), StatusCodes.Status201Created, cancellationToken)

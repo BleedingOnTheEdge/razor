@@ -100,4 +100,7 @@ internal sealed class FlowRun
 
     /// <summary>Gets or sets the completion timestamp of this run, if finished.</summary>
     public DateTimeOffset? CompletedAt { get; set; }
+
+    /// <summary>Gets or sets the serialized execution parameters, slot configurations, and hook specifications.</summary>
+    public string? ConfigurationJson { get; set; }
 }

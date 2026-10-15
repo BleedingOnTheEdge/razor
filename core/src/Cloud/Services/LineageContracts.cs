@@ -101,6 +101,7 @@ internal sealed record ReportAggregateMetrics(
 /// <param name="Aggregates">The aggregate metrics, suppressed or marked partial if gapped.</param>
 /// <param name="Interventions">The recorded intervention history.</param>
 /// <param name="WarningMessage">Warning or notice regarding gaps or divergence.</param>
+/// <param name="ConfigurationJson">The execution specifications and parameters.</param>
 internal sealed record RunReport(
     Guid RunId,
     Guid? ParentRunId,
@@ -114,7 +115,8 @@ internal sealed record RunReport(
     IReadOnlyList<ReportGapDetail> Gaps,
     ReportAggregateMetrics? Aggregates,
     IReadOnlyList<InterventionSpecification> Interventions,
-    string? WarningMessage = null);
+    string? WarningMessage = null,
+    string? ConfigurationJson = null);
 
 /// <summary>
 /// Target metric for benchmarking and ranking runs.
