@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Server, Activity, ShoppingBag, ShieldCheck, LayoutDashboard, LifeBuoy } from 'lucide-react';
+import { Server, Activity, ShoppingBag, ShieldCheck, LayoutDashboard, LifeBuoy, ShieldAlert, Settings, User } from 'lucide-react';
 import clsx from 'clsx';
 
 export function Sidebar() {
@@ -26,6 +26,24 @@ export function Sidebar() {
       label: 'Flow Runs & Lineage',
       icon: Activity,
       active: pathname.startsWith('/runs') || pathname.startsWith('/reports'),
+    },
+    {
+      href: '/admin',
+      label: 'Admin Governance',
+      icon: ShieldAlert,
+      active: pathname.startsWith('/admin'),
+    },
+    {
+      href: '/settings',
+      label: 'Preferences',
+      icon: Settings,
+      active: pathname.startsWith('/settings'),
+    },
+    {
+      href: '/profile',
+      label: 'User Profile',
+      icon: User,
+      active: pathname.startsWith('/profile'),
     },
     {
       href: '/tickets',

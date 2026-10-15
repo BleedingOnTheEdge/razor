@@ -70,30 +70,12 @@ internal static class CloudApplication
             {
                 await db.Database.EnsureCreatedAsync().ConfigureAwait(false);
 
-                DateTimeOffset now = DateTimeOffset.UtcNow;
-                var accounts = await db.Accounts
-                    .Include(a => a.Licenses)
-                    .ToListAsync()
-                    .ConfigureAwait(false);
-
-                foreach (Account account in accounts)
+                CloudOptions cloudOptions = scope.ServiceProvider.GetRequiredService<CloudOptions>();
+                if (!string.Equals(cloudOptions.ConnectionString, "Host=unused;Database=unused", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!account.Licenses.Any(l => l.Status == LicenseStatus.Active))
-                    {
-                        var lic = new License
-                        {
-                            Id = Guid.NewGuid(),
-                            AccountId = account.Id,
-                            LicenseKey = $"LIC-{Guid.NewGuid():N}",
-                            Status = LicenseStatus.Active,
-                            IssuedAt = now,
-                            MaxInstances = 10
-                        };
-                        db.Licenses.Add(lic);
-                    }
+                    IPasswordHasher<User> passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
+                    await DatabaseSeeder.SeedAsync(db, passwordHasher).ConfigureAwait(false);
                 }
-
-                await db.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
@@ -131,6 +113,7 @@ internal static class CloudApplication
         services.AddSingleton<TicketService>();
         services.AddSingleton<CommunityService>();
         services.AddSingleton<UserService>();
+        services.AddSingleton<AdminSettingsService>();
 
         services.AddCors();
 

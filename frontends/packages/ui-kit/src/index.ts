@@ -250,3 +250,4 @@ export {
   type SegmentedControlOption,
   type SegmentedControlOption as SegmentedOption,
 } from './components/SegmentedControl';
+export { ThemeToggle, type ThemeToggleProps, type Theme } from './components/ThemeToggle';

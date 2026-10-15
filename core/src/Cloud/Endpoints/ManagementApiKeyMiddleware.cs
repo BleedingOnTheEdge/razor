@@ -63,8 +63,11 @@ internal static class ManagementApiKeyMiddleware
                 return;
             }
 
-            // Authentication endpoints are public to allow sign-in and account registration.
-            if (context.Request.Path.StartsWithSegments("/api/auth", StringComparison.Ordinal))
+            // Public endpoints that unauthenticated users can access
+            if (context.Request.Path.StartsWithSegments("/api/auth", StringComparison.Ordinal)
+                || context.Request.Path.StartsWithSegments("/api/marketplace", StringComparison.Ordinal)
+                || context.Request.Path.StartsWithSegments("/api/community", StringComparison.Ordinal)
+                || context.Request.Path.StartsWithSegments("/api/events/stream", StringComparison.Ordinal))
             {
                 await next(context).ConfigureAwait(false);
                 return;

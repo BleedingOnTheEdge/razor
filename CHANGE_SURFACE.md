@@ -78,6 +78,36 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `frontends/packages/ui-kit/src/components/ModalSheet.tsx`: Apple Design backdrop-blur modal sheet dialog.
 - `frontends/packages/ui-kit/src/components/SegmentedControl.tsx`: Apple Design iOS/macOS-style pill segmented control.
 - `frontends/packages/ui-kit/src/components/StatCard.tsx`: Apple Design financial statistic card with tabular numeric typography.
+- `frontends/packages/ui-kit/src/components/ThemeToggle.tsx`: Apple Design light/dark mode theme toggle with smooth CSS variable transitions.
+- `frontends/apps/cloud-dashboard/src/app/admin/page.tsx`: Rich Admin panel page for operator elevation/demotion, user status management, and audit inspection.
+- `frontends/apps/cloud-dashboard/src/app/profile/page.tsx`: User profile view and update page with subscription and preferences.
+- `frontends/apps/cloud-dashboard/src/app/settings/page.tsx`: Cluster administrative settings page for fleet, security, and marketplace configurations.
+- `frontends/apps/cloud-dashboard/src/components/instances/ManageEngineModals.tsx`: Engine lifecycle modals for renaming, secret key rotation, revocation, and decommissioning.
+- `frontends/apps/marketplace/src/app/my-licenses/page.tsx`: Marketplace licenses page for inspecting and activating licenses.
+- `frontends/apps/marketplace/src/app/profile/page.tsx`: Marketplace user profile page.
+- `frontends/packages/api-client/src/schema/paths-admin.ts`: Modular OpenAPI path schemas for admin endpoints.
+- `frontends/packages/api-client/src/schema/paths-instances.ts`: Modular OpenAPI path schemas for engine lifecycle management.
+- `frontends/packages/api-client/src/schema/paths-marketplace.ts`: Modular OpenAPI path schemas for marketplace catalog and acquisition.
+- `frontends/packages/api-client/src/schema/paths-runs.ts`: Modular OpenAPI path schemas for execution runs.
+- `frontends/packages/api-client/src/schema/paths-tickets.ts`: Modular OpenAPI path schemas for support tickets.
+- `core/src/Cloud/Data/DatabaseSeeder.cs`: Production database seeder for 1 superadmin, 3 operators, 20 traders, 20 developers, and 16 additives.
+- `core/src/Cloud/Data/SystemSetting.cs`: Entity Framework model and configuration table for cluster system settings.
+- `core/src/Cloud/Endpoints/AdminEndpoints.cs`: FastEndpoints controller for admin user governance and system settings.
+- `core/src/Cloud/Endpoints/DeleteEngineEndpoint.cs`: FastEndpoints controller for engine instance cascading deletion.
+- `core/src/Cloud/Endpoints/RevokeEngineEndpoint.cs`: FastEndpoints controller for engine instance credential revocation.
+- `core/src/Cloud/Endpoints/RotateEngineKeyEndpoint.cs`: FastEndpoints controller for rotating engine instance API keys.
+- `core/src/Cloud/Endpoints/UpdateEngineEndpoint.cs`: FastEndpoints controller for updating engine metadata and labels.
+- `core/src/Cloud/Endpoints/UserProfileEndpoints.cs`: FastEndpoints controller for user profile inspection and updates.
+- `core/src/Cloud/Services/AdminSettingsService.cs`: Service layer managing cluster settings defaults and database persistence.
+- `core/src/Cloud/Services/EngineRegistrationService.Management.cs`: Partial service isolating engine rename, key rotation, revocation, and deletion.
+- `core/src/Cloud/Services/UserService.Admin.cs`: Partial service isolating user role elevation/demotion and status management.
+- `core/src/Engine/Management/Commands/Handlers/PingHandler.cs`: Ping diagnostic command handler for Engine.
+- `core/src/Engine/Management/Commands/Handlers/SoftReloadHandler.cs`: Soft reload runtime command handler for Engine.
+- `core/tests/Cloud.UnitTests/AdminAndGovernanceEdgeCaseTests.cs`: Boundary and security test suite for admin endpoints.
+- `core/tests/Cloud.UnitTests/AdminEndpointsTests.cs`: Functional test suite for admin settings and user management.
+- `core/tests/Cloud.UnitTests/EngineCrudAndProfileEndpointsTests.cs`: Functional test suite for engine CRUD and profile endpoints.
+- `core/tests/Cloud.UnitTests/EngineManagementEdgeCaseTests.cs`: Edge case test suite for engine lifecycle management.
+- `core/tests/Engine.UnitTests/Management/Commands/CommandDispatcherEdgeCaseTests.cs`: Edge case test suite for Engine command dispatcher.
 - `scripts/bin/engine`: CLI launcher script wrapping standalone Engine binary execution.
 - `scripts/build-engine.mjs`: Standalone cross-platform Engine binary compiler supporting Linux, Windows, macOS x64 and arm64 architectures.
 - `scripts/dev-all.mjs`: Monorepo multi-service dev orchestrator for Cloud API, Engine, Marketplace, and Dashboard with colored logs and graceful shutdown.

@@ -76,6 +76,8 @@ internal sealed class CommandDispatcher : ICommandDispatcher
     private void RegisterDefaultHandlers()
     {
         // System Management (1000-1099)
+        this.RegisterHandler(PingHandler.Id, new PingHandler(_cloudConnector, this, _loggerFactory.CreateLogger<PingHandler>()));
+        this.RegisterHandler(SoftReloadHandler.Id, new SoftReloadHandler(_cloudConnector, this, _extensionManager, _loggerFactory.CreateLogger<SoftReloadHandler>()));
         this.RegisterHandler(CommandIds.GetStatus, new GetStatusHandler(_cloudConnector, this, _loggerFactory.CreateLogger<GetStatusHandler>(), _taskManager));
         this.RegisterHandler(CommandIds.PauseEngine, new PauseEngineHandler(_cloudConnector, this, _taskManager, _loggerFactory.CreateLogger<PauseEngineHandler>()));
         this.RegisterHandler(CommandIds.ResumeEngine, new ResumeEngineHandler(_cloudConnector, this, _taskManager, _loggerFactory.CreateLogger<ResumeEngineHandler>()));
@@ -177,13 +179,52 @@ internal sealed class CommandDispatcher : ICommandDispatcher
         _logRegisterHandler(_logger, commandId, null);
     }
 
+    private ICommandHandler? ResolveHandler(int commandId, string? commandType)
+    {
+        if (!string.IsNullOrWhiteSpace(commandType))
+        {
+            int? mappedId = commandType.ToUpperInvariant() switch
+            {
+                "PING" => PingHandler.Id,
+                "SOFTRELOAD" => SoftReloadHandler.Id,
+                "GETSTATUS" or "STATUS" => CommandIds.GetStatus,
+                "PAUSEENGINE" => CommandIds.PauseEngine,
+                "RESUMEENGINE" => CommandIds.ResumeEngine,
+                "SHUTDOWN" => CommandIds.Shutdown,
+                "RESTART" => CommandIds.Restart,
+                "PAUSETRADING" or "PAUSELIVE" => CommandIds.PauseLive,
+                "RESUMETRADING" or "RESUMELIVE" => CommandIds.ResumeLive,
+                "STARTLIVE" => CommandIds.StartLive,
+                "STOPLIVE" => CommandIds.StopLive,
+                "GETLIVEMETRICS" or "GETMETRICS" or "METRICS" => CommandIds.GetLiveMetrics,
+                "RELOADEXTENSIONS" => CommandIds.ReloadExtensions,
+                "LISTEXTENSIONS" => CommandIds.ListExtensions,
+                "DRAIN" or "EMERGENCYSTOP" => CommandIds.EmergencyStop,
+                _ => null
+            };
+
+            if (mappedId.HasValue && _handlers.TryGetValue(mappedId.Value, out var mappedHandler))
+            {
+                return mappedHandler;
+            }
+        }
+
+        if (_handlers.TryGetValue(commandId, out var handler))
+        {
+            return handler;
+        }
+
+        return null;
+    }
+
     public override async Task DispatchAsync(CloudCommand command, CancellationToken cancellationToken)
     {
-        if (!_handlers.TryGetValue(command.CommandId, out var handler))
+        var handler = ResolveHandler(command.CommandId, command.CommandType);
+        if (handler is null)
         {
             _logNoHandler(_logger, command.CommandId, null);
             await this.SendResponseAsync(command.CommandId, command.CorrelationId ?? string.Empty, null,
-                $"Command {command.CommandId} not supported.", cancellationToken).ConfigureAwait(false);
+                $"Command {command.CommandId} ({command.CommandType}) not supported.", cancellationToken).ConfigureAwait(false);
             return;
         }
 

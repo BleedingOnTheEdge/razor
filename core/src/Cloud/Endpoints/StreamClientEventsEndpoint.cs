@@ -60,6 +60,9 @@ internal sealed class StreamClientEventsEndpoint(IClientEventBroadcaster broadca
             await HttpContext.Response
                 .WriteAsync($"event: {ev.EventType}\ndata: {payloadJson}\n\n", cancellationToken)
                 .ConfigureAwait(false);
+            await HttpContext.Response
+                .WriteAsync($"data: {payloadJson}\n\n", cancellationToken)
+                .ConfigureAwait(false);
             await HttpContext.Response.Body
                 .FlushAsync(cancellationToken)
                 .ConfigureAwait(false);

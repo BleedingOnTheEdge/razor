@@ -17,12 +17,17 @@ import {
   Server,
   Plus,
   SlidersHorizontal,
+  Edit2,
+  Key,
+  ShieldAlert,
+  Trash2,
 } from 'lucide-react';
 import {
   CommandDispatchSection,
   COMMAND_PRESETS,
 } from './CommandDispatchSection';
 import { SlotAssignmentModal } from './SlotAssignmentModal';
+import { InstanceActionModals } from './ManageEngineModals';
 
 type ManifestExtension = EngineInstanceDetailPayload['manifest'][number];
 
@@ -47,18 +52,20 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
   const [isSlotActive, setIsSlotActive] = useState(true);
   const [updatingSlot, setUpdatingSlot] = useState(false);
 
+  // Manage engine modals
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [rotateOpen, setRotateOpen] = useState(false);
+  const [revokeOpen, setRevokeOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
   async function loadDetails() {
     setLoading(true);
     setError(null);
     try {
       const client = getApiClient();
       const [instRes, cmdsRes] = await Promise.all([
-        client.GET('/api/instances/{instanceId}', {
-          params: { path: { instanceId } },
-        }),
-        client.GET('/api/instances/{instanceId}/commands', {
-          params: { path: { instanceId } },
-        }),
+        client.GET('/api/instances/{instanceId}', { params: { path: { instanceId } } }),
+        client.GET('/api/instances/{instanceId}/commands', { params: { path: { instanceId } } }),
       ]);
 
       if (instRes.data) {
@@ -92,9 +99,7 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
     e.preventDefault();
     // Validate JSON parameters
     try {
-      if (cmdParams.trim()) {
-        JSON.parse(cmdParams);
-      }
+      if (cmdParams.trim()) JSON.parse(cmdParams);
     } catch {
       toast.error('Invalid JSON', 'Command parameters must be valid JSON');
       return;
@@ -105,21 +110,13 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
       const client = getApiClient();
       const { data, error: err } = await client.POST('/api/instances/{instanceId}/commands', {
         params: { path: { instanceId } },
-        body: {
-          commandId: Number(cmdId),
-          commandType: cmdType,
-          parameters: cmdParams,
-          timeoutSeconds: 30,
-        },
+        body: { commandId: Number(cmdId), commandType: cmdType, parameters: cmdParams, timeoutSeconds: 30 },
       });
 
       if (err) {
         toast.error('Dispatch Failed', 'The backend rejected the engine command.');
       } else if (data) {
-        toast.success(
-          'Command Dispatched',
-          `Dispatched #${cmdId} (${cmdType}). Correlation: ${formatHash(data.correlationId, 6)}`
-        );
+        toast.success('Command Dispatched', `Dispatched #${cmdId} (${cmdType}). Correlation: ${formatHash(data.correlationId, 6)}`);
         await loadDetails();
       }
     } catch (e) {
@@ -141,11 +138,7 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
       const client = getApiClient();
       const { data, error: err } = await client.PUT('/api/instances/{instanceId}/profile/selections', {
         params: { path: { instanceId } },
-        body: {
-          kind: selectedSlotKind,
-          name: selectedExtensionName.trim(),
-          isActive: isSlotActive,
-        },
+        body: { kind: selectedSlotKind, name: selectedExtensionName.trim(), isActive: isSlotActive },
       });
 
       if (err) {
@@ -214,13 +207,46 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
           <p className="text-xs font-mono text-zinc-400 mt-1">Instance ID: {instanceId}</p>
         </div>
 
-        <button
-          onClick={loadDetails}
-          className="px-3 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-mono text-zinc-300 transition-colors flex items-center gap-2"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Refresh</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setRenameOpen(true)}
+            title="Rename Engine Instance"
+            className="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-750 border border-zinc-700/60 text-xs font-mono text-zinc-300 transition-colors flex items-center gap-1.5"
+          >
+            <Edit2 className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Rename</span>
+          </button>
+          <button
+            onClick={() => setRotateOpen(true)}
+            title="Rotate Engine API Key"
+            className="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-amber-500/10 border border-zinc-700/60 hover:border-amber-500/30 text-xs font-mono text-amber-300 transition-colors flex items-center gap-1.5"
+          >
+            <Key className="w-3.5 h-3.5" />
+            <span>Rotate Key</span>
+          </button>
+          <button
+            onClick={() => setRevokeOpen(true)}
+            title="Revoke Engine API Key"
+            className="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-rose-500/10 border border-zinc-700/60 hover:border-rose-500/30 text-xs font-mono text-rose-300 transition-colors flex items-center gap-1.5"
+          >
+            <ShieldAlert className="w-3.5 h-3.5" />
+            <span>Revoke</span>
+          </button>
+          <button
+            onClick={() => setDeleteOpen(true)}
+            title="Decommission Engine Instance"
+            className="p-1.5 rounded-lg bg-zinc-800 hover:bg-rose-500/10 border border-zinc-700/60 hover:border-rose-500/30 text-xs font-mono text-rose-400 transition-colors flex items-center gap-1"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={loadDetails}
+            className="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-mono text-zinc-300 transition-colors flex items-center gap-1.5"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Refresh</span>
+          </button>
+        </div>
       </div>
 
       {loading && (
@@ -437,6 +463,22 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
         updatingSlot={updatingSlot}
         onSubmit={handleSlotSubmit}
         manifest={instance?.manifest}
+      />
+
+      {/* Modals: Manage Engine (Rename, Rotate Key, Revoke Key, Decommission) */}
+      <InstanceActionModals
+        instanceId={instanceId}
+        instanceName={instance?.name}
+        renameOpen={renameOpen}
+        setRenameOpen={setRenameOpen}
+        rotateOpen={rotateOpen}
+        setRotateOpen={setRotateOpen}
+        revokeOpen={revokeOpen}
+        setRevokeOpen={setRevokeOpen}
+        deleteOpen={deleteOpen}
+        setDeleteOpen={setDeleteOpen}
+        onRenamed={(newName) => setInstance((prev) => (prev ? { ...prev, name: newName } : null))}
+        onReload={loadDetails}
       />
     </div>
   );

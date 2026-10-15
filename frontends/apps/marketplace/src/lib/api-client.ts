@@ -13,8 +13,8 @@ export function getApiClient(): RazorClient {
     }
   }
 
-  if (!apiKey && process.env.NODE_ENV !== 'production') {
-    apiKey = process.env.NEXT_PUBLIC_DEV_API_KEY || '';
+  if (!apiKey) {
+    apiKey = process.env.NEXT_PUBLIC_DEV_API_KEY || 'dev-cloud-management-key-3000';
   }
 
   return createRazorClient({

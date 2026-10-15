@@ -136,12 +136,18 @@ export interface UserProfilePayload {
   accountId: string;
   userName: string;
   accountName: string;
-  role: 'Admin' | 'Operator' | 'Developer' | 'Trader';
+  displayName?: string | null;
+  email?: string | null;
+  avatarUrl?: string | null;
+  bio?: string | null;
+  role: 'SuperAdmin' | 'Admin' | 'Operator' | 'Developer' | 'Trader';
+  isActive?: boolean;
   subscriptionTier: 'Free' | 'Pro' | 'Enterprise';
   maxInstances: number;
   canManageFleet: boolean;
   canExecuteLive: boolean;
   canPublishMarketplace: boolean;
+  canAdministerCluster?: boolean;
   createdAt: string;
 }
 
@@ -193,4 +199,31 @@ export interface CommunityThreadPayload {
   repliesCount: number;
   createdAt: string;
   replies: CommunityReplyPayload[];
+}
+
+export interface ClusterSettingsPayload {
+  heartbeatIntervalSeconds: number;
+  heartbeatTimeoutSeconds: number;
+  maxFleetSizePerAccount: number;
+  commandQueueExpirySeconds: number;
+  autoDrainGracePeriodSeconds: number;
+  enforceStrictKeyRotationDays: number;
+  requireMfaForLiveTrading: boolean;
+  allowSelfRegistration: boolean;
+  allowedIpRanges: string;
+  sessionTimeoutMinutes: number;
+  requireCurationApproval: boolean;
+  platformFeePercent: number;
+  allowUnverifiedAuthors: boolean;
+  metricsRetentionDays: number;
+  auditLogRetentionDays: number;
+  detailedBehaviorLogging: boolean;
+}
+
+export interface UpdateProfileRequestPayload {
+  userId?: string;
+  displayName?: string;
+  email?: string;
+  avatarUrl?: string;
+  bio?: string;
 }

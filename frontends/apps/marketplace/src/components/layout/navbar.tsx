@@ -17,9 +17,11 @@ import {
   User,
   LogOut,
   LogIn,
-  UserPlus
+  UserPlus,
+  KeyRound,
 } from 'lucide-react';
 import clsx from 'clsx';
+import { ThemeToggle } from '@razor/ui-kit';
 import { getApiClient } from '@/lib/api-client';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/components/ui/toast';
@@ -113,6 +115,19 @@ export function Navbar() {
               </Link>
 
               <Link
+                href="/my-licenses"
+                className={clsx(
+                  'flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors',
+                  pathname === '/my-licenses'
+                    ? 'bg-zinc-800 text-indigo-400 font-semibold'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
+                )}
+              >
+                <KeyRound className="w-3.5 h-3.5" />
+                <span>My Licenses</span>
+              </Link>
+
+              <Link
                 href="/publish"
                 className={clsx(
                   'flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors',
@@ -128,6 +143,9 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
             {isAuthenticated && user ? (
               <>
                 {/* Subscription Tier Pill */}
@@ -143,13 +161,17 @@ export function Navbar() {
                 </button>
 
                 {/* User Identity Pill */}
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono bg-zinc-800/80 border border-zinc-700/60 text-zinc-300">
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700/60 text-zinc-300 transition-colors"
+                  title="View Profile"
+                >
                   <User className="w-3 h-3 text-cyan-400" />
                   <span>{user.userName}</span>
                   <span className="text-[9px] px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 border border-indigo-800/60 font-semibold uppercase">
                     {user.role}
                   </span>
-                </div>
+                </Link>
 
                 {/* Sign Out Button */}
                 <button

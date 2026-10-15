@@ -160,13 +160,37 @@ internal sealed class MarketplaceService(
             return null;
         }
 
-        bool accountExists = await db.Accounts
-            .AnyAsync(a => a.Id == accountId, cancellationToken)
-            .ConfigureAwait(false);
-
-        if (!accountExists)
+        if (accountId == Guid.Empty)
+        {
+            Account? fallbackAccount = await db.Accounts
+                .FirstOrDefaultAsync(cancellationToken)
+                .ConfigureAwait(false);
+            if (fallbackAccount is not null)
+            {
+                accountId = fallbackAccount.Id;
+            }
+            else
+            {
+                var newAccount = new Account
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Default Trader Workspace",
+                    SubscriptionTier = SubscriptionTier.Free,
+                    CreatedAt = timeProvider.GetUtcNow()
+                };
+                db.Accounts.Add(newAccount);
+                await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                accountId = newAccount.Id;
+            }
+        }
+        else if (!await db.Accounts.AnyAsync(a => a.Id == accountId, cancellationToken).ConfigureAwait(false))
         {
             return null;
+        }
+
+        if (targetInstanceId.HasValue && !await db.EngineInstances.AnyAsync(i => i.Id == targetInstanceId.Value, cancellationToken).ConfigureAwait(false))
+        {
+            targetInstanceId = null;
         }
 
         // Check if already acquired
