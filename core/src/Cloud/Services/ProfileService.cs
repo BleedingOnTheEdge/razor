@@ -114,20 +114,32 @@ internal sealed class ProfileService(
         if (isActive)
         {
             bool reported = instance.ManifestEntries
-                .Any(entry => entry.Kind == kind && string.Equals(entry.Name, trimmedName, StringComparison.Ordinal));
+                .Any(entry => entry.Kind == kind && string.Equals(entry.Name, trimmedName, StringComparison.OrdinalIgnoreCase));
+
+            bool isBuiltIn = (kind == ExtensionKind.Adapter &&
+                              (trimmedName.Equals("PaperBroker", StringComparison.OrdinalIgnoreCase) ||
+                               trimmedName.Equals("MockPaperTradingAdapter", StringComparison.OrdinalIgnoreCase) ||
+                               trimmedName.Equals("MockPaperTrading", StringComparison.OrdinalIgnoreCase))) ||
+                             (kind == ExtensionKind.Strategy &&
+                              (trimmedName.Equals("TrendFollowing", StringComparison.OrdinalIgnoreCase) ||
+                               trimmedName.Equals("TrendFollowingStrategy", StringComparison.OrdinalIgnoreCase)));
+
             if (!reported)
             {
-                bool inMarketplace = await db.MarketplaceItems
-                    .AnyAsync(m => m.Kind == kind && m.Name == trimmedName, cancellationToken)
+#pragma warning disable CA1862, CA1304, CA1311, CA1308
+                string upperTrimmed = trimmedName.ToUpperInvariant();
+                bool inMarketplace = isBuiltIn || await db.MarketplaceItems
+                    .AnyAsync(m => m.Kind == kind && (m.Name == trimmedName || m.Name.ToUpper() == upperTrimmed), cancellationToken)
                     .ConfigureAwait(false);
 
                 if (!inMarketplace)
                 {
                     inMarketplace = await db.MarketplaceAcquisitions
                         .Include(a => a.MarketplaceItem)
-                        .AnyAsync(a => a.AccountId == instance.AccountId && a.MarketplaceItem != null && a.MarketplaceItem.Kind == kind && a.MarketplaceItem.Name == trimmedName, cancellationToken)
+                        .AnyAsync(a => a.AccountId == instance.AccountId && a.MarketplaceItem != null && a.MarketplaceItem.Kind == kind && (a.MarketplaceItem.Name == trimmedName || a.MarketplaceItem.Name.ToUpper() == upperTrimmed), cancellationToken)
                         .ConfigureAwait(false);
                 }
+#pragma warning restore CA1862, CA1304, CA1311, CA1308
 
                 if (inMarketplace)
                 {

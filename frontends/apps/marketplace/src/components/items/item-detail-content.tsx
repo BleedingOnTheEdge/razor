@@ -86,7 +86,7 @@ export function ItemDetailContent({ itemId }: ItemDetailContentProps) {
   }, [itemId]);
 
   useEffect(() => {
-    if (user?.accountId && !accountId) {
+    if (user?.accountId && (!accountId || accountId === 'acc-operator-default')) {
       setAccountId(user.accountId);
     }
   }, [user, accountId]);
@@ -108,9 +108,14 @@ export function ItemDetailContent({ itemId }: ItemDetailContentProps) {
       });
 
       if (err) {
-        const errorMsg = typeof err === 'object' && err !== null && 'detail' in err
-          ? String((err as { detail: unknown }).detail)
-          : 'The licensing server was unable to issue a license.';
+        const errorObj = typeof err === 'object' && err !== null ? err as Record<string, unknown> : {};
+        const errorMsg = errorObj.detail
+          ? String(errorObj.detail)
+          : errorObj.message
+            ? String(errorObj.message)
+            : errorObj.title
+              ? String(errorObj.title)
+              : 'The licensing server was unable to issue a license.';
         toastError('Acquisition Failed', errorMsg);
       } else if (data) {
         setAcquiredLicense(data.licenseKey);

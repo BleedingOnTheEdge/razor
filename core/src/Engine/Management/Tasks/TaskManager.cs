@@ -300,10 +300,23 @@ internal sealed partial class TaskManager : ITaskManager, IDisposable
             var btConfig = BacktestConfiguration.Parse(config);
 
             // Get active adapter and strategy
-            var adapter = _extensionManager.ActiveAdapter
-                ?? throw new InvalidOperationException("No active adapter found.");
-            var strategy = _extensionManager.ActiveStrategy
-                ?? throw new InvalidOperationException("No active strategy found.");
+            var adapter = _extensionManager.ActiveAdapter;
+            if (adapter is null)
+            {
+                string adapterName = !string.IsNullOrWhiteSpace(btConfig.AdapterName) ? btConfig.AdapterName : "PaperBroker";
+                adapter = _extensionManager.CreateTransientAdapter(adapterName)
+                    ?? _extensionManager.CreateTransientAdapter("PaperBroker")
+                    ?? throw new InvalidOperationException("No active adapter found.");
+            }
+
+            var strategy = _extensionManager.ActiveStrategy;
+            if (strategy is null)
+            {
+                string strategyName = !string.IsNullOrWhiteSpace(btConfig.StrategyName) ? btConfig.StrategyName : "TrendFollowing";
+                strategy = _extensionManager.CreateTransientStrategy(strategyName)
+                    ?? _extensionManager.CreateTransientStrategy("TrendFollowing")
+                    ?? throw new InvalidOperationException("No active strategy found.");
+            }
 
             // Start via kernel service
             string kernelTaskId = await _kernelService.StartBacktestAsync(

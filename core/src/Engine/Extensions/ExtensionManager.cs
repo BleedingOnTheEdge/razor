@@ -134,7 +134,7 @@ internal sealed class ExtensionManager : IExtensionManager, IDisposable
         _logActivatingExtensions(_logger, adapterName, strategyName, nnModelName ?? "none", string.Join(",", hookPluginNames), null);
 
         // 1. Instantiate adapter
-        if (!_catalog.AdapterNames.Contains(adapterName))
+        if (!_catalog.ContainsAdapter(adapterName) && !_catalog.AdapterNames.Contains(adapterName))
         {
             throw new InvalidOperationException($"Adapter '{adapterName}' not found.");
         }
@@ -142,7 +142,7 @@ internal sealed class ExtensionManager : IExtensionManager, IDisposable
         _logExtensionActivated(_logger, $"Adapter: {adapterName}", null);
 
         // 2. Instantiate strategy
-        if (!_catalog.StrategyNames.Contains(strategyName))
+        if (!_catalog.ContainsStrategy(strategyName) && !_catalog.StrategyNames.Contains(strategyName))
         {
             throw new InvalidOperationException($"Strategy '{strategyName}' not found.");
         }
@@ -311,17 +311,33 @@ internal sealed class ExtensionManager : IExtensionManager, IDisposable
     {
         if (_catalog == null)
         {
-            throw new InvalidOperationException("Catalog not initialized.");
+            throw new InvalidOperationException("Catalog not initialized. Discovery must run first.");
         }
 
-        if (!_catalog.StrategyNames.Contains(strategyName))
+        if (!_catalog.ContainsStrategy(strategyName) && !_catalog.StrategyNames.Contains(strategyName))
         {
             _logExtensionNotFound(_logger, strategyName, null);
             return null;
         }
 
-        var strategy = _catalog.CreateStrategy(strategyName);
-        return strategy;
+        return _catalog.CreateStrategy(strategyName);
+    }
+
+    /// <inheritdoc/>
+    public IAdapterCapability? CreateTransientAdapter(string adapterName)
+    {
+        if (_catalog == null)
+        {
+            throw new InvalidOperationException("Catalog not initialized. Discovery must run first.");
+        }
+
+        if (!_catalog.ContainsAdapter(adapterName) && !_catalog.AdapterNames.Contains(adapterName))
+        {
+            _logExtensionNotFound(_logger, adapterName, null);
+            return null;
+        }
+
+        return _catalog.CreateAdapter(adapterName);
     }
 
     // ─── Behavior logging support (via internal hook) ──────────

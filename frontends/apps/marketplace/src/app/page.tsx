@@ -108,13 +108,11 @@ function MarketplaceCatalogueContent() {
     setAssigningId(item.id);
     try {
       const client = getApiClient();
-      // If paid item, acquire first
-      if (item.price > 0) {
-        await client.POST('/api/marketplace/items/{itemId}/acquire', {
-          params: { path: { itemId: item.id } },
-          body: {},
-        });
-      }
+      // Ensure acquisition and manifest record exists
+      await client.POST('/api/marketplace/items/{itemId}/acquire', {
+        params: { path: { itemId: item.id } },
+        body: { accountId: '00000000-0000-0000-0000-000000000000', targetInstanceId: targetEngineId },
+      });
 
       const { data, error: err } = await client.PUT('/api/instances/{instanceId}/profile/selections', {
         params: { path: { instanceId: targetEngineId } },
@@ -122,7 +120,9 @@ function MarketplaceCatalogueContent() {
       });
 
       if (err) {
-        toast.error('Assignment Failed', 'Engine profile rejected selection.');
+        const errorObj = typeof err === 'object' && err !== null ? err as Record<string, unknown> : {};
+        const msg = errorObj.detail || errorObj.message || 'Engine profile rejected selection.';
+        toast.error('Assignment Failed', String(msg));
       } else {
         toast.success('Slot Configured', `Assigned and activated ${item.name} on engine.`);
         window.location.href = `http://localhost:3000/instances/${targetEngineId}`;

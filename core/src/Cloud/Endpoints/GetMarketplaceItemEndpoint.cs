@@ -29,6 +29,7 @@ internal sealed class GetMarketplaceItemEndpoint(MarketplaceService marketplace)
     public override void Configure()
     {
         Get("/api/marketplace/items/{itemId}");
+        AllowAnonymous();
         Summary(summary =>
         {
             summary.Summary = "Get marketplace item details";

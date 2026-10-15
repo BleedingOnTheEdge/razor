@@ -160,32 +160,32 @@ internal sealed class MarketplaceService(
             return null;
         }
 
-        if (accountId == Guid.Empty)
+        Account? account = accountId != Guid.Empty
+            ? await db.Accounts.FirstOrDefaultAsync(a => a.Id == accountId, cancellationToken).ConfigureAwait(false)
+            : null;
+
+        if (account is null)
         {
-            Account? fallbackAccount = await db.Accounts
-                .FirstOrDefaultAsync(cancellationToken)
-                .ConfigureAwait(false);
-            if (fallbackAccount is not null)
+            if (accountId != Guid.Empty)
             {
-                accountId = fallbackAccount.Id;
+                return null;
             }
-            else
+
+            account = await db.Accounts.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+            if (account is null)
             {
-                var newAccount = new Account
+                account = new Account
                 {
                     Id = Guid.NewGuid(),
                     Name = "Default Trader Workspace",
                     SubscriptionTier = SubscriptionTier.Free,
                     CreatedAt = timeProvider.GetUtcNow()
                 };
-                db.Accounts.Add(newAccount);
+                db.Accounts.Add(account);
                 await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                accountId = newAccount.Id;
             }
-        }
-        else if (!await db.Accounts.AnyAsync(a => a.Id == accountId, cancellationToken).ConfigureAwait(false))
-        {
-            return null;
+
+            accountId = account.Id;
         }
 
         if (targetInstanceId.HasValue && !await db.EngineInstances.AnyAsync(i => i.Id == targetInstanceId.Value, cancellationToken).ConfigureAwait(false))

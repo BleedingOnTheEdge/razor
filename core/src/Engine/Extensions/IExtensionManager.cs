@@ -47,6 +47,11 @@ internal interface IExtensionManager
     /// </summary>
     IStrategyCapability? CreateTransientStrategy(string strategyName);
 
+    /// <summary>
+    /// Creates a new transient instance of the specified adapter type.
+    /// </summary>
+    IAdapterCapability? CreateTransientAdapter(string adapterName);
+
     // ─── Behavior logging support ──────────────────────────
 
     /// <summary>Enables behavior logging on the active strategy.</summary>

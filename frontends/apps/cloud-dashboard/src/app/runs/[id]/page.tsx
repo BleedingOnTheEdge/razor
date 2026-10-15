@@ -1,6 +1,7 @@
 'use client';
 
 import { use, useState, useEffect, useRef } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getApiClient, type FlowRunPayload, type EngineInstanceDetailPayload } from '@/lib/api-client';
 import { useToast } from '@/components/ui/toast';
@@ -32,7 +33,10 @@ interface TelemetryEvent {
 }
 
 export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: runId } = use(params);
+  const routeParams = useParams();
+  const resolved = params ? use(params) : null;
+  const runId = (routeParams?.id as string) || resolved?.id || '';
+
   const toast = useToast();
 
   const [run, setRun] = useState<FlowRunPayload | null>(null);
@@ -42,7 +46,7 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
   const [elapsed, setElapsed] = useState(0);
   const [showJson, setShowJson] = useState(false);
   const [telemetry, setTelemetry] = useState<TelemetryEvent[]>(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && runId) {
       try {
         const stored = localStorage.getItem(`telemetry_${runId}`);
         if (stored) return JSON.parse(stored);
@@ -205,34 +209,43 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
   const badge = getRunStatusBadge(run.status);
   const timerStr = `${Math.floor(elapsed / 60).toString().padStart(2, '0')}:${(elapsed % 60).toString().padStart(2, '0')}`;
 
+  const effMetrics = {
+    netProfit: run.metrics?.netProfit ?? (run as any).netProfit,
+    totalReturn: run.metrics?.totalReturn ?? (run as any).totalReturn,
+    sharpeRatio: run.metrics?.sharpeRatio ?? (run as any).sharpeRatio,
+    maxDrawdown: run.metrics?.maxDrawdown ?? (run as any).maxDrawdown,
+    tradeCount: run.metrics?.tradeCount ?? (run as any).tradeCount,
+    bestFitness: run.metrics?.bestFitness ?? (run as any).bestFitness,
+  };
+
   const metricCards = [
     {
       title: 'Net Profit',
-      val: run.metrics?.netProfit != null ? formatCurrency(run.metrics.netProfit) : '—',
-      sub: run.metrics?.totalReturn != null ? `${run.metrics.totalReturn >= 0 ? '+' : ''}${run.metrics.totalReturn.toFixed(2)}%` : 'Realized PnL',
-      col: (run.metrics?.netProfit ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-700',
+      val: effMetrics.netProfit != null ? formatCurrency(effMetrics.netProfit) : '—',
+      sub: effMetrics.totalReturn != null ? `${effMetrics.totalReturn >= 0 ? '+' : ''}${effMetrics.totalReturn.toFixed(2)}%` : 'Realized PnL',
+      col: (effMetrics.netProfit ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-700',
     },
     {
       title: 'Sharpe Ratio',
-      val: run.metrics?.sharpeRatio != null ? run.metrics.sharpeRatio.toFixed(2) : '—',
+      val: effMetrics.sharpeRatio != null ? effMetrics.sharpeRatio.toFixed(2) : '—',
       sub: 'Risk-adjusted return',
       col: 'text-cyan-800',
     },
     {
       title: 'Max Drawdown',
-      val: run.metrics?.maxDrawdown != null ? `${run.metrics.maxDrawdown.toFixed(2)}%` : '—',
+      val: effMetrics.maxDrawdown != null ? `${effMetrics.maxDrawdown.toFixed(2)}%` : '—',
       sub: `Limit: ${cfg?.hooks?.maxDrawdownPct ?? 10}%`,
       col: 'text-rose-700',
     },
     {
       title: 'Trade Count',
-      val: run.metrics?.tradeCount != null ? String(run.metrics.tradeCount) : '—',
+      val: effMetrics.tradeCount != null ? String(effMetrics.tradeCount) : '—',
       sub: 'Executed fills',
       col: 'text-zinc-900',
     },
     {
       title: 'Best Fitness',
-      val: run.metrics?.bestFitness != null ? run.metrics.bestFitness.toFixed(4) : '—',
+      val: effMetrics.bestFitness != null ? effMetrics.bestFitness.toFixed(4) : '—',
       sub: 'Objective metric',
       col: 'text-amber-700',
     },

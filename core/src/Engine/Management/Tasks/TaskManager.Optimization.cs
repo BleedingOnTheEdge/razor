@@ -23,7 +23,31 @@ internal sealed partial class TaskManager
         try
         {
             // Parse configuration into OptimizationInput
-            if (config is not Dictionary<string, object> dict)
+            Dictionary<string, object>? dict = config as Dictionary<string, object>;
+            if (dict is null && config is string jsonStr && !string.IsNullOrWhiteSpace(jsonStr))
+            {
+                try
+                {
+                    dict = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonStr);
+                }
+                catch
+                {
+                    throw new ArgumentException("Configuration must be a dictionary or valid JSON object.", nameof(config));
+                }
+            }
+            else if (dict is null && config is JsonElement je && je.ValueKind == JsonValueKind.Object)
+            {
+                try
+                {
+                    dict = JsonSerializer.Deserialize<Dictionary<string, object>>(je.GetRawText());
+                }
+                catch
+                {
+                    throw new ArgumentException("Configuration must be a dictionary or valid JSON object.", nameof(config));
+                }
+            }
+
+            if (dict is null)
             {
                 throw new ArgumentException("Configuration must be a dictionary.", nameof(config));
             }
@@ -62,10 +86,23 @@ internal sealed partial class TaskManager
             };
 
             // Get active adapter and strategy
-            var adapter = _extensionManager.ActiveAdapter
-                ?? throw new InvalidOperationException("No active adapter found.");
-            var strategy = _extensionManager.ActiveStrategy
-                ?? throw new InvalidOperationException("No active strategy found.");
+            var adapter = _extensionManager.ActiveAdapter;
+            if (adapter is null)
+            {
+                string adapterName = !string.IsNullOrWhiteSpace(optInput.AdapterName) ? optInput.AdapterName : "PaperBroker";
+                adapter = _extensionManager.CreateTransientAdapter(adapterName)
+                    ?? _extensionManager.CreateTransientAdapter("PaperBroker")
+                    ?? throw new InvalidOperationException("No active adapter found.");
+            }
+
+            var strategy = _extensionManager.ActiveStrategy;
+            if (strategy is null)
+            {
+                string strategyName = !string.IsNullOrWhiteSpace(optInput.StrategyName) ? optInput.StrategyName : "TrendFollowing";
+                strategy = _extensionManager.CreateTransientStrategy(strategyName)
+                    ?? _extensionManager.CreateTransientStrategy("TrendFollowing")
+                    ?? throw new InvalidOperationException("No active strategy found.");
+            }
 
             // Start via kernel service
             string kernelTaskId = await _kernelService.StartOptimizationAsync(optInput, cancellationToken).ConfigureAwait(false);

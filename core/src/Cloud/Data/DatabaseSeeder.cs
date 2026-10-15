@@ -241,6 +241,10 @@ internal static class DatabaseSeeder
         var additives = new (string Name, ExtensionKind Kind, string Version, string Author, string Description, decimal Price, double Rating, int Downloads)[]
         {
             // Adapters
+            ("PaperBroker", ExtensionKind.Adapter, "1.0.0", "Razor Platform Built-In",
+             "Zero-dependency simulated paper trading broker adapter generating realistic synthetic market ticks and tracking simulated cash balances.",
+             0m, 5.0, 5000),
+
             ("BinanceSpotAdapter", ExtensionKind.Adapter, "1.4.2", "Binance VIP Integrations",
              "High-throughput WebSocket order routing and Level-2 orderbook adapter for Binance Spot markets with sub-millisecond execution.",
              0m, 4.9, 1420),
@@ -262,6 +266,10 @@ internal static class DatabaseSeeder
              29.00m, 4.9, 610),
 
             // Strategies
+            ("TrendFollowing", ExtensionKind.Strategy, "1.0.0", "Razor Platform Built-In",
+             "Standard dual exponential moving average (EMA) trend-following algorithmic engine with configurable stop-loss and take-profit genes.",
+             0m, 5.0, 5000),
+
             ("MeanRevertingPairsStrategy", ExtensionKind.Strategy, "2.0.0", "Razor Quantitative Research",
              "Statistical arbitrage strategy trading cointegrated asset pairs using dynamic Kalman-filtered hedge ratios and Bollinger z-score bands.",
              99.00m, 5.0, 1850),

@@ -106,7 +106,7 @@ public sealed class CloudBranchCoverageTests
             Assert.Equal(3, await db.Users.CountAsync(u => u.Role == UserRole.Operator).ConfigureAwait(true));
             Assert.Equal(20, await db.Users.CountAsync(u => u.Role == UserRole.Trader).ConfigureAwait(true));
             Assert.Equal(20, await db.Users.CountAsync(u => u.Role == UserRole.Developer).ConfigureAwait(true));
-            Assert.Equal(16, await db.MarketplaceItems.CountAsync().ConfigureAwait(true));
+            Assert.Equal(18, await db.MarketplaceItems.CountAsync().ConfigureAwait(true));
         }
 
         // Second execution executes all existing-entity branches idempotently
@@ -119,7 +119,7 @@ public sealed class CloudBranchCoverageTests
             Assert.Equal(3, await db.Users.CountAsync(u => u.Role == UserRole.Operator).ConfigureAwait(true));
             Assert.Equal(20, await db.Users.CountAsync(u => u.Role == UserRole.Trader).ConfigureAwait(true));
             Assert.Equal(20, await db.Users.CountAsync(u => u.Role == UserRole.Developer).ConfigureAwait(true));
-            Assert.Equal(16, await db.MarketplaceItems.CountAsync().ConfigureAwait(true));
+            Assert.Equal(18, await db.MarketplaceItems.CountAsync().ConfigureAwait(true));
         }
     }
 

@@ -189,12 +189,12 @@ export default function AdminPage() {
   if (!isAuthenticated || !user) {
     return (
       <div className="max-w-md mx-auto py-16 text-center space-y-4">
-        <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto">
+        <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto">
           <Lock className="w-6 h-6" />
         </div>
-        <h1 className="text-xl font-bold text-white">Authentication Required</h1>
-        <p className="text-xs text-zinc-400 font-mono">Sign in with administrative credentials to access governance.</p>
-        <Link href="/login" className="inline-block px-5 py-2.5 rounded-xl bg-cyan-500 text-zinc-950 font-bold text-xs font-mono">
+        <h1 className="text-xl font-bold text-zinc-900">Authentication Required</h1>
+        <p className="text-xs text-zinc-500 font-mono">Sign in with administrative credentials to access governance.</p>
+        <Link href="/login" className="inline-block px-5 py-2.5 rounded-xl bg-cyan-600 text-white font-bold text-xs font-mono shadow-sm hover:bg-cyan-700 transition-colors">
           Sign In
         </Link>
       </div>
@@ -206,19 +206,19 @@ export default function AdminPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-mono text-rose-400 uppercase tracking-wider mb-1">
+          <div className="flex items-center gap-2 text-xs font-mono text-rose-600 uppercase tracking-wider mb-1">
             <ShieldAlert className="w-3.5 h-3.5" />
             <span>Root Governance & RBAC</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Cluster Administration</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Cluster Administration</h1>
         </div>
 
         {/* Tab Toggle */}
-        <div className="flex items-center gap-1 p-1 bg-zinc-900 border border-zinc-800 rounded-xl font-mono text-xs">
+        <div className="flex items-center gap-1 p-1 bg-zinc-100 border border-zinc-200 rounded-xl font-mono text-xs">
           <button
             onClick={() => setActiveTab('users')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
-              activeTab === 'users' ? 'bg-zinc-800 text-white font-semibold' : 'text-zinc-400 hover:text-white'
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${
+              activeTab === 'users' ? 'bg-white text-zinc-900 shadow-sm font-semibold' : 'text-zinc-600 hover:text-zinc-900'
             }`}
           >
             <Users className="w-3.5 h-3.5" />
@@ -226,8 +226,8 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab('settings')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
-              activeTab === 'settings' ? 'bg-zinc-800 text-white font-semibold' : 'text-zinc-400 hover:text-white'
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${
+              activeTab === 'settings' ? 'bg-white text-zinc-900 shadow-sm font-semibold' : 'text-zinc-600 hover:text-zinc-900'
             }`}
           >
             <Sliders className="w-3.5 h-3.5" />
@@ -237,10 +237,10 @@ export default function AdminPage() {
       </div>
 
       {/* Explanation Banner */}
-      <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 flex items-start gap-3 text-xs text-zinc-300 font-mono">
-        <Info className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+      <div className="p-4 rounded-xl bg-cyan-50/60 border border-cyan-100 flex items-start gap-3 text-xs text-zinc-700 font-mono">
+        <Info className="w-4 h-4 text-cyan-600 shrink-0 mt-0.5" />
         <div>
-          <span className="text-white font-semibold">Governance Protocol:</span> SuperAdmin accounts have full authority to alter cluster limits, elevate users to Operator, or suspend abusive accounts. Operators can manage instances and dispatch commands.
+          <span className="text-zinc-900 font-semibold">Governance Protocol:</span> SuperAdmin accounts have full authority to alter cluster limits, elevate users to Operator, or suspend abusive accounts. Operators can manage instances and dispatch commands.
         </div>
       </div>
 
@@ -249,14 +249,14 @@ export default function AdminPage() {
           {/* Filter Bar */}
           <div className="flex flex-col sm:flex-row items-center gap-3">
             <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-2.5" />
+              <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
               <input
                 type="text"
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && loadUsers()}
                 placeholder="Search username, email, display name..."
-                className="w-full pl-9 pr-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-xs font-mono text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500"
+                className="w-full pl-9 pr-3 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-mono text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-cyan-500 shadow-sm"
               />
             </div>
             <select
@@ -264,7 +264,7 @@ export default function AdminPage() {
               onChange={(e) => {
                 setUserFilterRole(e.target.value);
               }}
-              className="px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-xs font-mono text-zinc-300 focus:outline-none focus:border-cyan-500"
+              className="px-3 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-mono text-zinc-700 focus:outline-none focus:border-cyan-500 shadow-sm"
             >
               <option value="">All Roles</option>
               <option value="SuperAdmin">SuperAdmin</option>
@@ -278,10 +278,10 @@ export default function AdminPage() {
           </div>
 
           {/* User Table */}
-          <Card className="overflow-hidden border-zinc-800 bg-zinc-900/40">
+          <Card className="overflow-hidden border-zinc-200 bg-white shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
-                <thead className="bg-zinc-950/80 text-zinc-400 border-b border-zinc-800">
+                <thead className="bg-zinc-50 text-zinc-500 border-b border-zinc-200">
                   <tr>
                     <th className="px-4 py-3">User</th>
                     <th className="px-4 py-3">Role</th>
@@ -290,32 +290,32 @@ export default function AdminPage() {
                     <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-800/60">
+                <tbody className="divide-y divide-zinc-100">
                   {loadingUsers ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-zinc-500">
+                      <td colSpan={5} className="px-4 py-8 text-center text-zinc-400">
                         Loading users...
                       </td>
                     </tr>
                   ) : users.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-zinc-500">
+                      <td colSpan={5} className="px-4 py-8 text-center text-zinc-400">
                         No users found matching query.
                       </td>
                     </tr>
                   ) : (
                     users.map((u) => (
-                      <tr key={u.userId} className="hover:bg-zinc-800/20 transition-colors">
+                      <tr key={u.userId} className="hover:bg-zinc-50/80 transition-colors">
                         <td className="px-4 py-3">
-                          <div className="font-semibold text-white">@{u.userName}</div>
-                          <div className="text-[11px] text-zinc-400">{u.displayName || u.email || '—'}</div>
+                          <div className="font-semibold text-zinc-900">@{u.userName}</div>
+                          <div className="text-[11px] text-zinc-500">{u.displayName || u.email || '—'}</div>
                         </td>
                         <td className="px-4 py-3">
                           <select
                             value={u.role}
                             disabled={actionUserId === u.userId}
                             onChange={(e) => handleRoleChange(u.userId, e.target.value)}
-                            className="px-2 py-1 bg-zinc-950 border border-zinc-800 rounded text-[11px] font-mono text-zinc-200 focus:outline-none"
+                            className="px-2 py-1 bg-zinc-50 border border-zinc-200 rounded text-[11px] font-mono text-zinc-800 focus:outline-none"
                           >
                             <option value="SuperAdmin">SuperAdmin</option>
                             <option value="Operator">Operator</option>
@@ -323,9 +323,9 @@ export default function AdminPage() {
                             <option value="Developer">Developer</option>
                           </select>
                         </td>
-                        <td className="px-4 py-3 text-zinc-300">
-                          <span className="font-semibold text-amber-400">{u.subscriptionTier}</span>
-                          <span className="text-[10px] text-zinc-500 ml-1.5">({u.maxInstances} inst)</span>
+                        <td className="px-4 py-3 text-zinc-700">
+                          <span className="font-semibold text-amber-600">{u.subscriptionTier}</span>
+                          <span className="text-[10px] text-zinc-400 ml-1.5">({u.maxInstances} inst)</span>
                         </td>
                         <td className="px-4 py-3">
                           <button
@@ -333,8 +333,8 @@ export default function AdminPage() {
                             disabled={actionUserId === u.userId}
                             className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${
                               u.isActive !== false
-                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : 'bg-rose-50 text-rose-700 border-rose-200'
                             }`}
                           >
                             {u.isActive !== false ? 'Active' : 'Suspended'}
@@ -345,7 +345,7 @@ export default function AdminPage() {
                             onClick={() => handleDeleteUser(u.userId, u.userName)}
                             disabled={actionUserId === u.userId || u.userName === 'superadmin'}
                             title="Delete User"
-                            className="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-rose-500/10 hover:text-rose-400 text-zinc-400 transition-colors disabled:opacity-30"
+                            className="p-1.5 rounded-lg bg-zinc-100 hover:bg-rose-50 hover:text-rose-600 text-zinc-500 transition-colors disabled:opacity-30"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>

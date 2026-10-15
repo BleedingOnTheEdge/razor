@@ -26,7 +26,7 @@ export default function RootLayout({
               </main>
             </div>
 
-            <footer className="border-t border-zinc-200 dark:border-zinc-800/80 py-8 text-center text-xs text-zinc-500 dark:text-zinc-400 font-mono bg-white/50 dark:bg-zinc-950/50">
+            <footer className="border-t border-zinc-200 py-8 text-center text-xs text-zinc-500 font-mono bg-white/50">
               <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <span>Razor Marketplace • Curated Trading Ecosystem</span>
                 <span>Compatible with Razor Engine v1.0.0 LTS</span>

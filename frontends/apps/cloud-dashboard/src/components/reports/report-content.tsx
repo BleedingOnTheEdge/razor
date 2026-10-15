@@ -122,7 +122,14 @@ export function RunReportContent({ runId }: { runId: string }) {
     }
   }
 
-  const metrics = report?.aggregates || report?.metrics;
+  const metrics = report?.aggregates || report?.metrics || (report ? {
+    netProfit: (report as any).netProfit,
+    totalReturn: (report as any).totalReturn,
+    sharpeRatio: (report as any).sharpeRatio,
+    maxDrawdown: (report as any).maxDrawdown,
+    tradeCount: (report as any).tradeCount,
+    bestFitness: (report as any).bestFitness,
+  } : null);
   const isComparable = report?.isComparable ?? report?.comparable ?? true;
   const statusBadge = report?.status ? getRunStatusBadge(report.status) : null;
   const relBadge = report?.relation ? getRunRelationBadge(report.relation) : null;
@@ -221,6 +228,19 @@ export function RunReportContent({ runId }: { runId: string }) {
       {error && (
         <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-mono">
           {error}
+        </div>
+      )}
+
+      {!loading && !report && !error && (
+        <div className="py-16 text-center rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50">
+          <FileText className="w-10 h-10 text-zinc-400 mx-auto mb-3" />
+          <h3 className="text-base font-semibold text-zinc-800 font-mono">No Report Available</h3>
+          <p className="text-xs text-zinc-500 mt-1">This run is either still pending, missing, or has not yet emitted final execution metrics.</p>
+          <div className="mt-4">
+            <Link href="/runs" className="px-3 py-1.5 rounded-lg bg-zinc-900 text-white text-xs font-semibold">
+              Return to Runs
+            </Link>
+          </div>
         </div>
       )}
 
@@ -330,8 +350,8 @@ export function RunReportContent({ runId }: { runId: string }) {
               </div>
             ) : (
               <div className="divide-y divide-zinc-100">
-                {report.interventions.map((item) => (
-                  <div key={item.id} className="py-4 space-y-2 text-xs font-mono">
+                {report.interventions.map((item, idx) => (
+                  <div key={item.id || `intervention-${idx}-${item.stepIndex}`} className="py-4 space-y-2 text-xs font-mono">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <span className="px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200 font-bold">
@@ -378,15 +398,15 @@ export function RunReportContent({ runId }: { runId: string }) {
               </div>
             ) : (
               <div className="divide-y divide-zinc-100">
-                {report.gaps.map((gap) => (
-                  <div key={gap.id} className="py-3 flex items-center justify-between text-xs font-mono">
+                {report.gaps.map((gap, idx) => (
+                  <div key={gap.id || `gap-${idx}-${gap.startStep}`} className="py-3 flex items-center justify-between text-xs font-mono">
                     <div className="flex items-center gap-3">
                       <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
                         Steps {gap.startStep} – {gap.endStep}
                       </span>
                       <span className="text-zinc-700 font-sans">{gap.reason}</span>
                     </div>
-                    <span className="text-zinc-400">{formatTimestamp(gap.recordedAt)}</span>
+                    <span className="text-zinc-400">{formatTimestamp(gap.recordedAt || '')}</span>
                   </div>
                 ))}
               </div>

@@ -258,6 +258,7 @@ public sealed class CommandDispatcherTests
         public Task RemoveExtensionAsync(string name, CancellationToken cancellationToken) => Task.CompletedTask;
         public Task<object> GetManifestAsync(CancellationToken cancellationToken) => Task.FromResult<object>(new object());
         public Sdk.Slots.Strategy.IStrategyCapability? CreateTransientStrategy(string strategyName) => null;
+        public Sdk.Slots.Adapter.IAdapterCapability? CreateTransientAdapter(string adapterName) => null;
         public void EnableBehaviorLoggingOnStrategy(string sessionId, int snapshotIntervalSeconds = 10)
         {
         }

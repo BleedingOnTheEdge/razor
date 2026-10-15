@@ -103,6 +103,7 @@ internal sealed class ListMarketplaceItemsEndpoint(MarketplaceService marketplac
     public override void Configure()
     {
         Get("/api/marketplace/items");
+        AllowAnonymous();
         Summary(summary =>
         {
             summary.Summary = "Search marketplace catalogue";
