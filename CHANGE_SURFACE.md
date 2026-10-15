@@ -145,8 +145,8 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 ## 4. Test Surface
 
 ### Unit & Domain Tests
-- `core/tests/Cloud.UnitTests`: 268/268 unit tests passing verifying FastEndpoints, authentication tokens, rate limiting, and database models.
-- `core/tests/Engine.UnitTests`: 101/101 unit tests passing verifying command dispatching, task operations, and heartbeat serialization.
+- `core/tests/Cloud.UnitTests`: 310/310 unit tests passing verifying FastEndpoints, authentication tokens, rate limiting, Admin RBAC, Engine CRUD, User Profiles, Database Seeder idempotency, and branch coverage edge cases (coverage: 98.00% line, 95.18% branch).
+- `core/tests/Engine.UnitTests`: 106/106 unit tests passing verifying command dispatching, task operations, and heartbeat serialization.
 - `core/tests/Kernel.UnitTests`: 183/183 unit tests passing verifying simulated broker matching, order book updates, and pre-trade risk checks.
 - `core/tests/Sdk.UnitTests`: 454/454 unit tests passing verifying public contracts, developer indicators, and immutable parameter models.
 - `frontends/apps/cloud-dashboard`: 18/18 Vitest unit tests passing verifying telemetry widgets, status indicators, and modal interaction labels.
