@@ -23,6 +23,8 @@ internal static class DatabaseSeeder
         ArgumentNullException.ThrowIfNull(db);
         ArgumentNullException.ThrowIfNull(passwordHasher);
 
+        await DatabaseSchemaCompatibility.EnsureSchemaAsync(db).ConfigureAwait(false);
+
         DateTimeOffset now = DateTimeOffset.UtcNow;
 
         // 1. Seed SuperAdmin

@@ -108,6 +108,11 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `core/tests/Cloud.UnitTests/EngineCrudAndProfileEndpointsTests.cs`: Functional test suite for engine CRUD and profile endpoints.
 - `core/tests/Cloud.UnitTests/EngineManagementEdgeCaseTests.cs`: Edge case test suite for engine lifecycle management.
 - `core/tests/Engine.UnitTests/Management/Commands/CommandDispatcherEdgeCaseTests.cs`: Edge case test suite for Engine command dispatcher.
+- `core/src/Cloud/Data/DatabaseSchemaCompatibility.cs`: Self-healing schema synchronization utility executing idempotent DDL statements before seeding on PostgreSQL databases.
+- `core/src/Cloud/Migrations/20261015060000_AddEnterpriseFeatures.cs`: EF Core migration for enterprise schema expansion.
+- `core/src/Cloud/Migrations/20261015060000_AddEnterpriseFeatures.Designer.cs`: EF Core migration metadata designer file.
+- `core/tests/Cloud.UnitTests/DatabaseSchemaCompatibilityTests.cs`: Unit test suite verifying schema synchronization and PostgreSQL detection logic.
+- `frontends/apps/cloud-dashboard/src/test/settings.test.tsx`: Vitest suite verifying role-based access control and section locking on /settings page for Traders, Operators, and Admins.
 - `scripts/bin/engine`: CLI launcher script wrapping standalone Engine binary execution.
 - `scripts/build-engine.mjs`: Standalone cross-platform Engine binary compiler supporting Linux, Windows, macOS x64 and arm64 architectures.
 - `scripts/dev-all.mjs`: Monorepo multi-service dev orchestrator for Cloud API, Engine, Marketplace, and Dashboard with colored logs and graceful shutdown.
@@ -145,11 +150,11 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 ## 4. Test Surface
 
 ### Unit & Domain Tests
-- `core/tests/Cloud.UnitTests`: 310/310 unit tests passing verifying FastEndpoints, authentication tokens, rate limiting, Admin RBAC, Engine CRUD, User Profiles, Database Seeder idempotency, and branch coverage edge cases (coverage: 98.00% line, 95.18% branch).
+- `core/tests/Cloud.UnitTests`: 317/317 unit tests passing verifying FastEndpoints, authentication tokens, rate limiting, Admin RBAC, Engine CRUD, User Profiles, Database Seeder idempotency, PostgreSQL schema compatibility, and branch coverage edge cases (enforced scope coverage: 98.01% line, 95.20% branch).
 - `core/tests/Engine.UnitTests`: 106/106 unit tests passing verifying command dispatching, task operations, and heartbeat serialization.
 - `core/tests/Kernel.UnitTests`: 183/183 unit tests passing verifying simulated broker matching, order book updates, and pre-trade risk checks.
 - `core/tests/Sdk.UnitTests`: 454/454 unit tests passing verifying public contracts, developer indicators, and immutable parameter models.
-- `frontends/apps/cloud-dashboard`: 18/18 Vitest unit tests passing verifying telemetry widgets, status indicators, and modal interaction labels.
+- `frontends/apps/cloud-dashboard`: 21/21 Vitest unit tests passing verifying telemetry widgets, status indicators, modal interaction labels, and settings role-based access control.
 - `frontends/apps/marketplace`: 17/17 Vitest unit tests passing verifying extension cards, category filtering, and license acquisition cards.
 
 ### Integration Tests

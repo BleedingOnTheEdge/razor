@@ -69,6 +69,7 @@ internal static class CloudApplication
             await using (db.ConfigureAwait(false))
             {
                 await db.Database.EnsureCreatedAsync().ConfigureAwait(false);
+                await DatabaseSchemaCompatibility.EnsureSchemaAsync(db).ConfigureAwait(false);
 
                 CloudOptions cloudOptions = scope.ServiceProvider.GetRequiredService<CloudOptions>();
                 if (!string.Equals(cloudOptions.ConnectionString, "Host=unused;Database=unused", StringComparison.OrdinalIgnoreCase))

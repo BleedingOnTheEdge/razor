@@ -59,27 +59,27 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             role={toast.type === 'error' ? 'alert' : 'status'}
             className={`pointer-events-auto flex items-start gap-3 p-4 rounded-xl border shadow-xl backdrop-blur-md transition-all duration-200 animate-in fade-in slide-in-from-bottom-2 ${
               toast.type === 'success'
-                ? 'bg-zinc-900/95 border-emerald-500/30 text-zinc-100'
+                ? 'bg-white/95 border-emerald-500/40 text-emerald-950 dark:bg-zinc-900/95 dark:border-emerald-500/30 dark:text-zinc-100 shadow-emerald-500/10'
                 : toast.type === 'error'
-                ? 'bg-zinc-900/95 border-rose-500/30 text-zinc-100'
-                : 'bg-zinc-900/95 border-cyan-500/30 text-zinc-100'
+                ? 'bg-white/95 border-rose-500/40 text-rose-950 dark:bg-zinc-900/95 dark:border-rose-500/30 dark:text-zinc-100 shadow-rose-500/10'
+                : 'bg-white/95 border-cyan-500/40 text-cyan-950 dark:bg-zinc-900/95 dark:border-cyan-500/30 dark:text-zinc-100 shadow-cyan-500/10'
             }`}
           >
             <div className="shrink-0 mt-0.5">
-              {toast.type === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
-              {toast.type === 'error' && <AlertTriangle className="w-4 h-4 text-rose-400" />}
-              {toast.type === 'info' && <Info className="w-4 h-4 text-cyan-400" />}
+              {toast.type === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+              {toast.type === 'error' && <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400" />}
+              {toast.type === 'info' && <Info className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />}
             </div>
 
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold font-mono tracking-tight text-white">{toast.title}</p>
-              {toast.message && <p className="text-xs text-zinc-400 mt-0.5 break-words">{toast.message}</p>}
+              <p className="text-xs font-semibold font-mono tracking-tight text-zinc-900 dark:text-white">{toast.title}</p>
+              {toast.message && <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5 break-words">{toast.message}</p>}
             </div>
 
             <button
               onClick={() => removeToast(toast.id)}
               aria-label="Dismiss notification"
-              className="shrink-0 p-1 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+              className="shrink-0 p-1 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-zinc-800 transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>

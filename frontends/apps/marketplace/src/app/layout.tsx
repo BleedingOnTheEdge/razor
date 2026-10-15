@@ -16,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen bg-zinc-950 text-zinc-100 font-sans antialiased selection:bg-indigo-500/30 selection:text-indigo-200 flex flex-col justify-between">
+      <body className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 font-sans antialiased selection:bg-indigo-500/30 selection:text-indigo-800 dark:selection:text-indigo-200 flex flex-col justify-between">
         <AuthProvider>
           <ToastProvider>
             <div>
@@ -26,7 +26,7 @@ export default function RootLayout({
               </main>
             </div>
 
-            <footer className="border-t border-zinc-800/80 py-8 text-center text-xs text-zinc-400 font-mono">
+            <footer className="border-t border-zinc-200 dark:border-zinc-800/80 py-8 text-center text-xs text-zinc-500 dark:text-zinc-400 font-mono bg-white/50 dark:bg-zinc-950/50">
               <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <span>Razor Marketplace • Curated Trading Ecosystem</span>
                 <span>Compatible with Razor Engine v1.0.0 LTS</span>
