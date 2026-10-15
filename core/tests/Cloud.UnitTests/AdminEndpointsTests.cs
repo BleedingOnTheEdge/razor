@@ -319,24 +319,32 @@ public sealed class AdminEndpointsTests
         using var factory = new CloudWebApplicationFactory();
         using HttpClient client = factory.CreateAuthorisedClient();
 
-        // Seed root superadmin user
+        // Obtain root superadmin user
         Guid superadminId;
         using (CloudDbContext db = factory.Database.CreateDbContext())
         {
-            var acc = new Account { Id = Guid.NewGuid(), Name = "Root Account", SubscriptionTier = SubscriptionTier.Enterprise, CreatedAt = DateTimeOffset.UtcNow };
-            var superadmin = new User
+            var existingSuperAdmin = await db.Users.FirstOrDefaultAsync(u => u.UserName == "superadmin").ConfigureAwait(true);
+            if (existingSuperAdmin != null)
             {
-                Id = Guid.NewGuid(),
-                AccountId = acc.Id,
-                UserName = "superadmin",
-                Role = UserRole.SuperAdmin,
-                IsActive = true,
-                CreatedAt = DateTimeOffset.UtcNow
-            };
-            db.Accounts.Add(acc);
-            db.Users.Add(superadmin);
-            await db.SaveChangesAsync().ConfigureAwait(true);
-            superadminId = superadmin.Id;
+                superadminId = existingSuperAdmin.Id;
+            }
+            else
+            {
+                var acc = new Account { Id = Guid.NewGuid(), Name = "Root Account", SubscriptionTier = SubscriptionTier.Enterprise, CreatedAt = DateTimeOffset.UtcNow };
+                var superadmin = new User
+                {
+                    Id = Guid.NewGuid(),
+                    AccountId = acc.Id,
+                    UserName = "superadmin",
+                    Role = UserRole.SuperAdmin,
+                    IsActive = true,
+                    CreatedAt = DateTimeOffset.UtcNow
+                };
+                db.Accounts.Add(acc);
+                db.Users.Add(superadmin);
+                await db.SaveChangesAsync().ConfigureAwait(true);
+                superadminId = superadmin.Id;
+            }
         }
 
         // Attempting to delete root superadmin must fail with 400 BadRequest

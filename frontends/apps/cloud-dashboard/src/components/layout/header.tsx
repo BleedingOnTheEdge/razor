@@ -4,25 +4,34 @@ import React from 'react';
 import Link from 'next/link';
 import { useSseStream } from '@/hooks/use-sse-stream';
 import { useAuth } from '@/context/auth-context';
-import { User, LogOut, LogIn, Zap } from 'lucide-react';
-import { ThemeToggle } from '@razor/ui-kit';
+import { User, LogOut, LogIn, Zap, Menu } from 'lucide-react';
 import clsx from 'clsx';
 
-export function Header() {
+export interface HeaderProps {
+  onToggleMobileMenu?: () => void;
+}
+
+export function Header({ onToggleMobileMenu }: HeaderProps = {}) {
   const { isConnected } = useSseStream();
   const { user, isAuthenticated, logout } = useAuth();
 
   return (
-    <header className="h-16 border-b border-zinc-200 dark:border-zinc-800 px-8 flex items-center justify-between bg-white/80 dark:bg-zinc-900/30 backdrop-blur-md" role="banner">
-      <div className="flex items-center gap-4">
-        <h1 className="text-base font-semibold text-zinc-900 dark:text-zinc-200">
+    <header className="h-16 border-b border-zinc-200 px-4 md:px-8 flex items-center justify-between bg-white/80 backdrop-blur-md" role="banner">
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onToggleMobileMenu}
+          aria-label="Open Navigation Menu"
+          className="md:hidden p-2 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+        <h1 className="text-base font-semibold text-zinc-900">
           Razor Operator Dashboard
         </h1>
       </div>
 
       <div className="flex items-center gap-3 text-xs font-mono">
-        {/* Theme Toggle */}
-        <ThemeToggle />
 
         {/* User Identity or Sign In Prompt */}
         {isAuthenticated && user ? (

@@ -118,6 +118,9 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `scripts/dev-all.mjs`: Monorepo multi-service dev orchestrator for Cloud API, Engine, Marketplace, and Dashboard with colored logs and graceful shutdown.
 - `scripts/run-engine.mjs`: Standalone Engine runner script with automatic host binary compilation and argument pass-through.
 - `scripts/test-all.mjs`: Monorepo test orchestrator executing backend .NET test suites and frontend Vitest suites with unified scorecard.
+- `core/tests/Cloud.UnitTests/ProfileServiceSlotAssignmentTests.cs`: Unit test suite verifying automatic marketplace extension provisioning and heartbeat connectivity reporting.
+- `frontends/apps/cloud-dashboard/src/app/maintenance/page.tsx`: Dedicated Maintenance and Command Console page for dispatching engine commands with correlation logs and presets.
+- `frontends/apps/cloud-dashboard/src/components/layout/MobileBottomNav.tsx`: Apple Design 5-item mobile bottom navigation bar with off-canvas sidebar drawer trigger.
 
 ### Modified Files
 - `.gitignore`: Added root ignores for compiled native binaries (/bin/, /artifacts/, /publish/).
@@ -125,6 +128,18 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `core/src/Engine/Engine.csproj`: Added single-file self-contained publish configuration defaults.
 - `core/src/Engine/project.json`: Added publish target delegating to node scripts/build-engine.mjs.
 - `package.json`: Added helper scripts for dev orchestration, direct engine execution, and test running.
+- `core/src/Cloud/Endpoints/GetInstanceEndpoint.cs`: Injected EngineSessionRegistry to synchronize real-time socket connectivity and fresh heartbeats with IsConnected response state.
+- `core/src/Cloud/Endpoints/ListInstancesEndpoint.cs`: Factored recent heartbeat timestamp freshness into IsConnected status calculation.
+- `core/src/Cloud/Services/ProfileService.cs`: Added self-healing auto-provisioning of ExtensionManifestEntry for valid marketplace extensions on slot configuration.
+- `frontends/apps/cloud-dashboard/src/app/layout.tsx`: Pure light mode enforcement; removed dark class and styled background for zero dark flash.
+- `frontends/apps/marketplace/src/app/layout.tsx`: Pure light mode enforcement; removed dark class and styled background for zero dark flash.
+- `frontends/packages/ui-kit/src/components/ThemeToggle.tsx`: Neutralized to light mode enforcer with zero visual rendering.
+- `frontends/packages/ui-kit/src/components/Badge.tsx`: Added outline variant support for subtle enterprise status tags.
+- `frontends/apps/cloud-dashboard/src/components/instances/SlotAssignmentModal.tsx`: Upgraded slot configuration UX with direct marketplace link and installed manifest badges.
+- `frontends/apps/cloud-dashboard/src/components/layout/sidebar.tsx`: Added off-canvas sliding mobile drawer and maintenance navigation entry.
+- `frontends/apps/cloud-dashboard/src/components/layout/dashboard-shell.tsx`: Integrated off-canvas drawer toggle state and fixed 5-item mobile bottom navigation.
+- `frontends/apps/cloud-dashboard/src/components/layout/header.tsx`: Added mobile hamburger navigation trigger.
+- `frontends/apps/marketplace/src/app/page.tsx`: Added contextual target engine install workflow and tablist accessibility roles.
 - `core/src/Cloud/Engine/EngineSession.cs`: Decomposed from 640 lines down to 230 lines via `EngineSession.Handlers.cs`.
 - `core/src/Engine/Communication/CloudConnector.cs`: Decomposed from 598 lines down to 382 lines via `CloudConnector.BinaryTransfer.cs` and `CloudConnector.Connection.cs`.
 - `core/src/Engine/Core/StateManager.cs`: Decomposed from 612 lines down to 411 lines via `IStateManager.cs` and `StateManager.Messaging.cs`.

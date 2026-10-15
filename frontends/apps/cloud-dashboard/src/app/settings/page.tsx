@@ -21,7 +21,7 @@ import {
   Sliders,
   User,
 } from 'lucide-react';
-import { Card, Button, Badge, ThemeToggle } from '@razor/ui-kit';
+import { Card, Button, Badge } from '@razor/ui-kit';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/components/ui/toast';
 
@@ -217,12 +217,12 @@ export default function SettingsPage() {
           </div>
           <div className="flex items-center justify-between py-2">
             <div>
-              <p className="text-xs font-medium text-zinc-900 dark:text-zinc-200">Apple Design Theme Mode</p>
+              <p className="text-xs font-medium text-zinc-900">Apple Design Theme</p>
               <p className="text-[11px] text-zinc-500 font-mono">
-                Toggle between dark mode (deep zinc) and light mode (frosted bright).
+                Pure Apple Light Mode is permanently active across all applications.
               </p>
             </div>
-            <ThemeToggle />
+            <Badge variant="outline">Apple Light Mode</Badge>
           </div>
         </Card>
 

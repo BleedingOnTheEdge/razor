@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { getApiClient } from '@/lib/api-client';
 import { getExtensionKindBadge, formatCurrency } from '@razor/ui-kit';
+import { useToast } from '@/components/ui/toast';
 import {
   Search,
   Download,
@@ -15,6 +17,8 @@ import {
   RotateCcw,
   Tag,
   CheckCircle2,
+  Server,
+  Zap,
 } from 'lucide-react';
 import type { MarketplaceItemPayload } from '@razor/api-client';
 
@@ -22,14 +26,26 @@ const KINDS = ['All', 'Strategy', 'Adapter', 'Indicator', 'NeuralNetwork', 'Hook
 
 type SortOption = 'rating' | 'downloads' | 'price_asc' | 'price_desc';
 
-export default function MarketplaceCataloguePage() {
+function MarketplaceCatalogueContent() {
+  const searchParams = useSearchParams();
+  const targetEngineId = searchParams?.get('targetEngineId') || null;
+  const targetSlot = searchParams?.get('slot') || null;
+  const toast = useToast();
+
   const [items, setItems] = useState<MarketplaceItemPayload[]>([]);
-  const [selectedKind, setSelectedKind] = useState<string>('All');
+  const [selectedKind, setSelectedKind] = useState<string>(targetSlot || 'All');
   const [searchQuery, setSearchQuery] = useState('');
   const [curatedOnly, setCuratedOnly] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('rating');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [assigningId, setAssigningId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (targetSlot && KINDS.includes(targetSlot as any)) {
+      setSelectedKind(targetSlot);
+    }
+  }, [targetSlot]);
 
   useEffect(() => {
     async function fetchItems() {
@@ -80,141 +96,159 @@ export default function MarketplaceCataloguePage() {
   }, [items, sortBy]);
 
   function resetFilters() {
-    setSelectedKind('All');
+    setSelectedKind(targetSlot || 'All');
     setSearchQuery('');
     setCuratedOnly(false);
     setSortBy('rating');
   }
 
+  async function handleAssignToEngine(item: MarketplaceItemPayload) {
+    if (!targetEngineId) return;
+
+    setAssigningId(item.id);
+    try {
+      const client = getApiClient();
+      // If paid item, acquire first
+      if (item.price > 0) {
+        await client.POST('/api/marketplace/items/{itemId}/acquire', {
+          params: { path: { itemId: item.id } },
+          body: {},
+        });
+      }
+
+      const { data, error: err } = await client.PUT('/api/instances/{instanceId}/profile/selections', {
+        params: { path: { instanceId: targetEngineId } },
+        body: { kind: item.kind, name: item.name, isActive: true },
+      });
+
+      if (err) {
+        toast.error('Assignment Failed', 'Engine profile rejected selection.');
+      } else {
+        toast.success('Slot Configured', `Assigned and activated ${item.name} on engine.`);
+        window.location.href = `http://localhost:3000/instances/${targetEngineId}`;
+      }
+    } catch (e) {
+      toast.error('Error', e instanceof Error ? e.message : 'Network error.');
+    } finally {
+      setAssigningId(null);
+    }
+  }
+
   return (
-    <div className="space-y-8">
-      {/* Hero section */}
-      <div className="text-center max-w-3xl mx-auto space-y-3 pt-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-mono">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Curated Institutional Algorithmic Extensions</span>
+    <div className="space-y-8 max-w-7xl mx-auto">
+      {/* Contextual Assignment Banner */}
+      {targetEngineId && (
+        <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-900 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm animate-in fade-in">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+              <Server className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold font-mono">
+                Target Node: Engine {targetEngineId.slice(0, 8)}...
+              </h3>
+              <p className="text-xs text-indigo-700">
+                Filter applied for {targetSlot || 'all'} additives. Click &quot;Assign to Engine&quot; to install and activate directly.
+              </p>
+            </div>
+          </div>
+          <a
+            href={`http://localhost:3000/instances/${targetEngineId}`}
+            className="text-xs font-mono font-semibold text-indigo-700 hover:text-indigo-900 underline shrink-0"
+          >
+            ← Return to Fleet Dashboard
+          </a>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
+      )}
+
+      {/* Hero section */}
+      <div className="text-center max-w-3xl mx-auto space-y-3 pt-2">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-mono">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Curated Institutional Trading Additives</span>
+        </div>
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900">
           Extend Your Razor Trading Engine
         </h1>
-        <p className="text-sm text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-          Discover certified adapters, quantitative strategies, indicators, and deep learning models built for zero-alloc high-frequency execution.
+        <p className="text-sm text-zinc-600 max-w-2xl mx-auto leading-relaxed">
+          Discover, audit, and hot-swap verified strategies, exchange adapters, indicators, and risk hooks.
         </p>
-
-        {/* Quick stats pills */}
-        <div className="pt-2 flex items-center justify-center gap-4 text-xs font-mono text-zinc-400">
-          <span className="flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Deterministic Reproduction Certified</span>
-          </span>
-          <span className="text-zinc-700">•</span>
-          <span className="flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Engine Sandbox Safe</span>
-          </span>
-        </div>
       </div>
 
-      {/* Search, Categories, and Control Bar */}
-      <div className="space-y-4 p-5 rounded-2xl bg-zinc-900/50 border border-zinc-800/80 backdrop-blur-sm">
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-          {/* Category Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0" role="tablist" aria-label="Extension category filters">
-            {KINDS.map((kind) => {
-              const active = selectedKind === kind;
-              return (
-                <button
-                  key={kind}
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => setSelectedKind(kind)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-colors whitespace-nowrap ${
-                    active
-                      ? 'bg-indigo-600 text-white font-bold shadow-sm shadow-indigo-600/30'
-                      : 'bg-zinc-800/60 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
-                  }`}
-                >
-                  {kind}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Search Input */}
-          <div className="relative w-full md:w-80">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-zinc-400" />
+      {/* Filter and Search Bar */}
+      <div className="space-y-4">
+        <div className="flex flex-col md:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
             <input
+              type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              type="text"
-              placeholder="Search extensions, authors, models..."
-              aria-label="Search extensions"
-              className="w-full pl-9 pr-4 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-xs font-mono text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition-colors"
+              placeholder="Search extensions, strategies, adapters, indicators..."
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-zinc-200 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 font-mono shadow-sm"
             />
           </div>
-        </div>
 
-        {/* Second bar: Curated toggle + Sorting */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-3 border-t border-zinc-800/60 text-xs font-mono">
-          <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2 cursor-pointer text-zinc-300 hover:text-white select-none">
-              <input
-                type="checkbox"
-                checked={curatedOnly}
-                onChange={(e) => setCuratedOnly(e.target.checked)}
-                className="w-4 h-4 rounded bg-zinc-950 border-zinc-700 text-indigo-600 focus:ring-0 focus:ring-offset-0 cursor-pointer"
-              />
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Curated Only</span>
-              </span>
-            </label>
-
-            {(selectedKind !== 'All' || searchQuery || curatedOnly) && (
-              <button
-                onClick={resetFilters}
-                className="text-zinc-400 hover:text-zinc-200 flex items-center gap-1 transition-colors"
-              >
-                <RotateCcw className="w-3 h-3" />
-                <span>Reset Filters</span>
-              </button>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <span className="text-zinc-400 flex items-center gap-1">
-              <SlidersHorizontal className="w-3.5 h-3.5" />
-              <span>Sort:</span>
-            </span>
+          <div className="flex items-center gap-2">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
-              aria-label="Sort extensions"
-              className="px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs font-mono text-zinc-200 focus:outline-none focus:border-indigo-500"
+              className="px-3 py-2.5 rounded-xl bg-white border border-zinc-200 text-xs font-mono text-zinc-700 focus:outline-none focus:border-indigo-500 shadow-sm"
             >
-              <option value="rating">Top Rated</option>
+              <option value="rating">Highest Rated</option>
               <option value="downloads">Most Downloaded</option>
               <option value="price_asc">Price: Low to High</option>
               <option value="price_desc">Price: High to Low</option>
             </select>
+
+            <button
+              onClick={() => setCuratedOnly((prev) => !prev)}
+              className={`px-3 py-2.5 rounded-xl border text-xs font-mono font-medium transition-colors flex items-center gap-1.5 shadow-sm ${
+                curatedOnly
+                  ? 'bg-indigo-50 border-indigo-300 text-indigo-800'
+                  : 'bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50'
+              }`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Curated Only</span>
+            </button>
           </div>
+        </div>
+
+        {/* Category Pill Tabs */}
+        <div role="tablist" aria-label="Extension categories" className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-mono">
+          {KINDS.map((kind) => (
+            <button
+              key={kind}
+              role="tab"
+              aria-selected={selectedKind === kind}
+              onClick={() => setSelectedKind(kind)}
+              className={`px-3 py-1.5 rounded-lg border transition-all ${
+                selectedKind === kind
+                  ? 'bg-indigo-600 border-indigo-600 text-white font-semibold shadow-sm'
+                  : 'bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'
+              }`}
+            >
+              {kind}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Loading & Error States */}
       {loading && (
-        <div className="py-20 text-center text-sm font-mono text-zinc-400 space-y-2">
-          <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto" />
+        <div className="py-20 text-center text-sm font-mono text-zinc-500 space-y-2">
+          <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
           <p>Loading curated extension catalogue...</p>
         </div>
       )}
 
       {error && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-mono flex items-center justify-between">
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-mono flex items-center justify-between">
           <span>{error}</span>
           <button
             onClick={() => setSelectedKind((k) => k)}
-            className="px-2.5 py-1 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 transition-colors"
+            className="px-2.5 py-1 rounded bg-rose-100 hover:bg-rose-200 text-rose-800 transition-colors"
           >
             Retry
           </button>
@@ -223,20 +257,20 @@ export default function MarketplaceCataloguePage() {
 
       {/* Empty State */}
       {!loading && !error && sortedItems.length === 0 && (
-        <div className="py-20 text-center rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/20 space-y-3">
-          <div className="w-10 h-10 rounded-xl bg-zinc-800/80 text-zinc-400 flex items-center justify-center mx-auto">
+        <div className="py-20 text-center rounded-2xl border border-dashed border-zinc-300 bg-white space-y-3 shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-zinc-100 text-zinc-500 flex items-center justify-center mx-auto">
             <Tag className="w-5 h-5" />
           </div>
-          <h3 className="text-base font-semibold text-zinc-200 font-mono">No Extensions Found</h3>
-          <p className="text-xs text-zinc-400 max-w-sm mx-auto">
+          <h3 className="text-base font-semibold text-zinc-800 font-mono">No Extensions Found</h3>
+          <p className="text-xs text-zinc-500 max-w-sm mx-auto">
             No matching extensions found for your current category, search, or curation criteria.
           </p>
           <div className="pt-2">
             <button
               onClick={resetFilters}
-              className="px-3.5 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-mono text-zinc-200 transition-colors"
+              className="px-3.5 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-xs font-mono text-zinc-700 transition-colors"
             >
-              Reset All Filters
+              Reset Filters
             </button>
           </div>
         </div>
@@ -249,32 +283,32 @@ export default function MarketplaceCataloguePage() {
             const kindBadge = getExtensionKindBadge(item.kind);
             const downloadCount = item.downloadsCount ?? item.downloads ?? 0;
             const ratingScore = item.rating ?? 5.0;
+            const isAssigning = assigningId === item.id;
 
             return (
               <div
                 key={item.id}
-                className="rounded-2xl bg-zinc-900/60 border border-zinc-800/80 p-6 flex flex-col justify-between hover:border-zinc-700 transition-all duration-200 shadow-sm hover:shadow-indigo-500/5 group"
+                className="rounded-2xl bg-white border border-zinc-200 p-6 flex flex-col justify-between hover:border-zinc-300 transition-all duration-200 shadow-sm hover:shadow-md group"
               >
                 <div>
-                  {/* Top Bar: Title & Badges */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <h3 className="font-bold text-white text-base tracking-tight truncate group-hover:text-indigo-300 transition-colors">
+                        <h3 className="font-bold text-zinc-900 text-base tracking-tight truncate group-hover:text-indigo-600 transition-colors">
                           {item.name}
                         </h3>
                         {item.isCurated && (
                           <span
                             title="Audited and curated by Razor Platform"
-                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-indigo-50 text-indigo-700 border border-indigo-200"
                           >
                             <ShieldCheck className="w-3 h-3" />
                             <span>Curated</span>
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-zinc-400 mt-0.5 font-mono">
-                        by <span className="text-zinc-300">{item.author}</span> • v{item.version}
+                      <p className="text-xs text-zinc-500 mt-0.5 font-mono">
+                        by <span className="text-zinc-700 font-medium">{item.author}</span> • v{item.version}
                       </p>
                     </div>
 
@@ -283,19 +317,17 @@ export default function MarketplaceCataloguePage() {
                     </span>
                   </div>
 
-                  {/* Description */}
-                  <p className="mt-3.5 text-xs text-zinc-300 line-clamp-3 leading-relaxed">
+                  <p className="mt-3.5 text-xs text-zinc-600 line-clamp-3 leading-relaxed">
                     {item.description || 'No description provided.'}
                   </p>
 
-                  {/* Rating & Stats Bar */}
-                  <div className="mt-4 pt-3 border-t border-zinc-800/60 flex items-center justify-between text-xs font-mono text-zinc-400">
-                    <div className="flex items-center gap-1.5 text-amber-400 font-bold">
+                  <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between text-xs font-mono text-zinc-500">
+                    <div className="flex items-center gap-1.5 text-amber-500 font-bold">
                       <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                       <span>{ratingScore.toFixed(1)}</span>
                     </div>
 
-                    <div className="flex items-center gap-1 text-zinc-400">
+                    <div className="flex items-center gap-1 text-zinc-500">
                       <Download className="w-3.5 h-3.5" />
                       <span>{downloadCount}</span>
                     </div>
@@ -306,22 +338,35 @@ export default function MarketplaceCataloguePage() {
                   </div>
                 </div>
 
-                {/* Footer Bar: Price & Action */}
-                <div className="mt-5 pt-4 border-t border-zinc-800/80 flex items-center justify-between">
+                <div className="mt-5 pt-4 border-t border-zinc-100 flex items-center justify-between gap-2">
                   <div>
                     <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block">Price</span>
-                    <span className="font-bold text-white text-sm font-mono">
+                    <span className="font-bold text-zinc-900 text-sm font-mono">
                       {item.price === 0 ? 'Free' : formatCurrency(item.price)}
                     </span>
                   </div>
 
-                  <Link
-                    href={`/items/${item.id}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/10 hover:bg-indigo-600 text-indigo-400 hover:text-white border border-indigo-500/20 hover:border-transparent text-xs font-mono font-semibold transition-all duration-150"
-                  >
-                    <span>Specification</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    {targetEngineId && (
+                      <button
+                        type="button"
+                        onClick={() => handleAssignToEngine(item)}
+                        disabled={isAssigning}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-mono font-semibold transition-all shadow-sm"
+                      >
+                        <CheckCircle2 className="w-3 h-3" />
+                        <span>{isAssigning ? 'Assigning...' : 'Assign'}</span>
+                      </button>
+                    )}
+
+                    <Link
+                      href={`/items/${item.id}`}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-mono transition-colors"
+                    >
+                      <span>Details</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </div>
                 </div>
               </div>
             );
@@ -329,5 +374,19 @@ export default function MarketplaceCataloguePage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MarketplaceCataloguePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="py-20 text-center text-sm font-mono text-zinc-500">
+          Loading Marketplace Catalogue...
+        </div>
+      }
+    >
+      <MarketplaceCatalogueContent />
+    </Suspense>
   );
 }

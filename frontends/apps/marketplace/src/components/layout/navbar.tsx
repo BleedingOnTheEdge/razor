@@ -21,7 +21,6 @@ import {
   KeyRound,
 } from 'lucide-react';
 import clsx from 'clsx';
-import { ThemeToggle } from '@razor/ui-kit';
 import { getApiClient } from '@/lib/api-client';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/components/ui/toast';
@@ -143,9 +142,6 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Theme Toggle */}
-            <ThemeToggle />
-
             {isAuthenticated && user ? (
               <>
                 {/* Subscription Tier Pill */}

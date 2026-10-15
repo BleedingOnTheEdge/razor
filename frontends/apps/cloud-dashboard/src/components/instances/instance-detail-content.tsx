@@ -21,6 +21,7 @@ import {
   Key,
   ShieldAlert,
   Trash2,
+  Terminal,
 } from 'lucide-react';
 import {
   CommandDispatchSection,
@@ -208,6 +209,14 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={`/maintenance?instanceId=${instanceId}`}
+            title="Open Maintenance & Command Dispatch Console"
+            className="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-cyan-950/60 border border-zinc-700/60 hover:border-cyan-500/40 text-xs font-mono text-cyan-300 transition-colors flex items-center gap-1.5"
+          >
+            <Terminal className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Maintenance Console</span>
+          </Link>
           <button
             onClick={() => setRenameOpen(true)}
             title="Rename Engine Instance"
@@ -454,6 +463,7 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
       <SlotAssignmentModal
         isOpen={slotModalOpen}
         onClose={() => setSlotModalOpen(false)}
+        instanceId={instanceId}
         selectedSlotKind={selectedSlotKind}
         setSelectedSlotKind={setSelectedSlotKind}
         selectedExtensionName={selectedExtensionName}

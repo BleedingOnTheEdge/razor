@@ -15,8 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 font-sans antialiased selection:bg-indigo-500/30 selection:text-indigo-800 dark:selection:text-indigo-200 flex flex-col justify-between">
+    <html lang="en" className="light">
+      <body className="min-h-screen bg-zinc-50 text-zinc-900 font-sans antialiased selection:bg-indigo-500/30 selection:text-indigo-800 flex flex-col justify-between">
         <AuthProvider>
           <ToastProvider>
             <div>

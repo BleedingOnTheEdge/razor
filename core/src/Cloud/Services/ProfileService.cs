@@ -117,10 +117,38 @@ internal sealed class ProfileService(
                 .Any(entry => entry.Kind == kind && string.Equals(entry.Name, trimmedName, StringComparison.Ordinal));
             if (!reported)
             {
-                return new SelectionOutcome(
-                    ServiceStatus.Rejected,
-                    $"The Engine has not reported a {kind} named '{trimmedName}'.",
-                    null);
+                bool inMarketplace = await db.MarketplaceItems
+                    .AnyAsync(m => m.Kind == kind && m.Name == trimmedName, cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (!inMarketplace)
+                {
+                    inMarketplace = await db.MarketplaceAcquisitions
+                        .Include(a => a.MarketplaceItem)
+                        .AnyAsync(a => a.AccountId == instance.AccountId && a.MarketplaceItem != null && a.MarketplaceItem.Kind == kind && a.MarketplaceItem.Name == trimmedName, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+
+                if (inMarketplace)
+                {
+                    var manifestEntry = new ExtensionManifestEntry
+                    {
+                        Id = Guid.NewGuid(),
+                        EngineInstanceId = instance.Id,
+                        Kind = kind,
+                        Name = trimmedName,
+                        ReportedAt = DateTimeOffset.UtcNow
+                    };
+                    db.ExtensionManifestEntries.Add(manifestEntry);
+                    instance.ManifestEntries.Add(manifestEntry);
+                }
+                else
+                {
+                    return new SelectionOutcome(
+                        ServiceStatus.Rejected,
+                        $"The Engine has not reported a {kind} named '{trimmedName}'.",
+                        null);
+                }
             }
 
             if (IsSingleSlot(kind))
