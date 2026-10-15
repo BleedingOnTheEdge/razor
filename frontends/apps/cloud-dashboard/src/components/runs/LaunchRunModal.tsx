@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Play, Sliders, Shield, Zap, X } from 'lucide-react';
+import { Play, Sliders, Shield, Zap, X, Calendar, Settings2 } from 'lucide-react';
 import { formatHash } from '@razor/ui-kit';
 import { getApiClient, type EngineInstancePayload, type FlowRunPayload } from '@/lib/api-client';
 import { useToast } from '@/components/ui/toast';
@@ -22,24 +22,9 @@ export interface LaunchRunModalProps {
 }
 
 const PRESETS = [
-  {
-    id: 'conservative',
-    label: 'Conservative',
-    desc: '1h • Slow 100 • 5% DD',
-    cfg: { capital: 250000, bar: '1h', fast: 20, slow: 100, sl: 1.5, tp: 4.0, lev: 1.0, dd: 5.0, pos: 10, rate: 20 },
-  },
-  {
-    id: 'momentum',
-    label: 'Momentum',
-    desc: '1m • Fast 9 • 10% DD',
-    cfg: { capital: 50000, bar: '1m', fast: 9, slow: 21, sl: 2.0, tp: 5.0, lev: 2.0, dd: 10.0, pos: 25, rate: 100 },
-  },
-  {
-    id: 'scalping',
-    label: 'Scalping',
-    desc: '1s • Fast 5 • 15% DD',
-    cfg: { capital: 25000, bar: '1s', fast: 5, slow: 15, sl: 0.8, tp: 1.8, lev: 3.0, dd: 15.0, pos: 40, rate: 250 },
-  },
+  { id: 'conservative', label: 'Conservative', desc: '1h • Slow 100 • 5% DD', cfg: { capital: 250000, bar: '1h', fast: 20, slow: 100, sl: 1.5, tp: 4.0, lev: 1.0, dd: 5.0, pos: 10, rate: 20 } },
+  { id: 'momentum', label: 'Momentum', desc: '1m • Fast 9 • 10% DD', cfg: { capital: 50000, bar: '1m', fast: 9, slow: 21, sl: 2.0, tp: 5.0, lev: 2.0, dd: 10.0, pos: 25, rate: 100 } },
+  { id: 'scalping', label: 'Scalping', desc: '1s • Fast 5 • 15% DD', cfg: { capital: 25000, bar: '1s', fast: 5, slow: 15, sl: 0.8, tp: 1.8, lev: 3.0, dd: 15.0, pos: 40, rate: 250 } },
 ];
 
 export function LaunchRunModal({
@@ -70,6 +55,12 @@ export function LaunchRunModal({
   const [detectedAdapter, setDetectedAdapter] = useState<string>('PaperBroker');
   const [detectedHooks, setDetectedHooks] = useState<string[]>(['RiskGuardrail', 'PositionSizer']);
 
+  // Date range
+  const today = new Date().toISOString().slice(0, 10);
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+  const [startDate, setStartDate] = useState<string>(thirtyDaysAgo);
+  const [endDate, setEndDate] = useState<string>(today);
+
   // Market & Capital specifications
   const [symbol, setSymbol] = useState<string>('BTC/USDT');
   const [barSize, setBarSize] = useState<string>('1m');
@@ -81,6 +72,15 @@ export function LaunchRunModal({
   const [stopLossPct, setStopLossPct] = useState<number>(2.0);
   const [takeProfitPct, setTakeProfitPct] = useState<number>(5.0);
   const [leverage, setLeverage] = useState<number>(1.0);
+
+  // Kind-specific knobs
+  const [generations, setGenerations] = useState<number>(10);
+  const [populationSize, setPopulationSize] = useState<number>(40);
+  const [mutationRate, setMutationRate] = useState<number>(0.05);
+  const [objectiveMetric, setObjectiveMetric] = useState<string>('SharpeRatio');
+  const [inSamplePct, setInSamplePct] = useState<number>(70);
+  const [outOfSamplePct, setOutOfSamplePct] = useState<number>(30);
+  const [windowSplits, setWindowSplits] = useState<number>(5);
 
   // Hook safety guardrails
   const [maxDrawdownPct, setMaxDrawdownPct] = useState<number>(10.0);
@@ -129,6 +129,13 @@ export function LaunchRunModal({
     toast.info('Preset Loaded', `${p.label} configuration active.`);
   }
 
+  function setDateDaysAgo(days: number) {
+    const end = new Date();
+    const start = new Date(Date.now() - days * 86400000);
+    setStartDate(start.toISOString().slice(0, 10));
+    setEndDate(end.toISOString().slice(0, 10));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedInstanceId) {
@@ -136,11 +143,26 @@ export function LaunchRunModal({
       return;
     }
 
+    const startIso = new Date(startDate + 'T00:00:00Z').toISOString();
+    const endIso = new Date(endDate + 'T23:59:59Z').toISOString();
+
     const config = {
-      market: { symbol, barSize, initialCapital: Number(initialCapital) },
+      // Top-level fields for engine configuration parser
+      StartDate: startIso,
+      EndDate: endIso,
+      Symbols: [symbol],
+      AdapterName: detectedAdapter,
+      StrategyName: detectedStrategy,
+      InitialBalance: Number(initialCapital),
+      Leverage: Number(leverage),
+      ExecutionKind: runKind,
+      // Structured sections
+      market: { symbol, barSize, initialCapital: Number(initialCapital), startDate: startIso, endDate: endIso },
       strategy: { name: detectedStrategy, fastPeriod: Number(fastPeriod), slowPeriod: Number(slowPeriod), stopLossPct: Number(stopLossPct), takeProfitPct: Number(takeProfitPct), leverage: Number(leverage) },
       adapter: { name: detectedAdapter, slippageBps: 2, feeBps: 5 },
       hooks: { active: detectedHooks, maxDrawdownPct: Number(maxDrawdownPct), maxPositionPct: Number(maxPositionPct), orderRateLimit: Number(orderRateLimit) },
+      optimization: runKind === 'Optimization' ? { generations: Number(generations), populationSize: Number(populationSize), mutationRate: Number(mutationRate), objectiveMetric } : undefined,
+      walkForward: runKind === 'WalkForward' ? { inSamplePct: Number(inSamplePct), outOfSamplePct: Number(outOfSamplePct), windowSplits: Number(windowSplits) } : undefined,
       seed: Number(seed),
     };
 
@@ -175,16 +197,16 @@ export function LaunchRunModal({
 
   return (
     <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white border border-zinc-200 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white border border-zinc-200 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
         <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
           <div>
             <h3 className="text-base font-bold text-zinc-900 flex items-center gap-2">
               <Play className="w-4 h-4 text-cyan-600 fill-current" />
               <span>Launch Deterministic Flow Run</span>
             </h3>
-            <p className="text-xs text-zinc-500 mt-0.5">Configure slot parameters, broker adapter, and safety hooks.</p>
+            <p className="text-xs text-zinc-500 mt-0.5">Configure execution kind parameters, dates, broker adapter, and safety hooks.</p>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100">
+          <button type="button" onClick={onClose} className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -206,7 +228,7 @@ export function LaunchRunModal({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
-          {/* Target & Seed */}
+          {/* Target & Kind & Seed */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-zinc-700 font-semibold mb-1">Target Engine</label>
@@ -218,7 +240,7 @@ export function LaunchRunModal({
             </div>
             <div>
               <label className="block text-zinc-700 font-semibold mb-1">Execution Kind</label>
-              <select value={runKind} onChange={(e) => { const v = e.target.value as any; setRunKind(v); extSetKind?.(v); }} className="w-full px-2.5 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:bg-white text-xs">
+              <select value={runKind} onChange={(e) => { const v = e.target.value as any; setRunKind(v); extSetKind?.(v); }} className="w-full px-2.5 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:bg-white text-xs font-semibold">
                 <option value="Backtest">Backtest (Historical Sim)</option>
                 <option value="Optimization">Optimization (Parameter Tuning)</option>
                 <option value="WalkForward">Walk-Forward (Out-of-sample)</option>
@@ -229,6 +251,87 @@ export function LaunchRunModal({
               <input type="number" value={seed} onChange={(e) => { const v = Number(e.target.value); setSeed(v); extSetSeed?.(v); }} required className="w-full px-2.5 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:bg-white text-xs font-mono" />
             </div>
           </div>
+
+          {/* Date Range Selection with Presets */}
+          <div className="border-t border-zinc-100 pt-2.5">
+            <div className="flex items-center justify-between mb-1.5">
+              <h4 className="text-xs font-semibold text-zinc-900 flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                <span>Simulation Date Range</span>
+              </h4>
+              <div className="flex items-center gap-1 font-mono text-[10px]">
+                <button type="button" onClick={() => setDateDaysAgo(7)} className="px-1.5 py-0.5 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-600">7D</button>
+                <button type="button" onClick={() => setDateDaysAgo(30)} className="px-1.5 py-0.5 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-600">30D</button>
+                <button type="button" onClick={() => setDateDaysAgo(90)} className="px-1.5 py-0.5 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-600">90D</button>
+                <button type="button" onClick={() => setDateDaysAgo(365)} className="px-1.5 py-0.5 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-600">1Y</button>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <label className="block text-zinc-600 text-[11px] mb-1">Start Date</label>
+                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required className="w-full px-2 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 text-xs font-mono" />
+              </div>
+              <div>
+                <label className="block text-zinc-600 text-[11px] mb-1">End Date</label>
+                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required className="w-full px-2 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 text-xs font-mono" />
+              </div>
+            </div>
+          </div>
+
+          {/* Execution Kind Specific Knobs */}
+          {runKind === 'Optimization' && (
+            <div className="p-2.5 rounded-xl bg-purple-50/60 border border-purple-200 space-y-2">
+              <h4 className="text-xs font-semibold text-purple-900 flex items-center gap-1.5">
+                <Settings2 className="w-3.5 h-3.5 text-purple-700" />
+                <span>Genetic Algorithm Tuning Parameters</span>
+              </h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div>
+                  <label className="block text-purple-800 text-[10px] mb-0.5">Generations</label>
+                  <input type="number" value={generations} onChange={(e) => setGenerations(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-purple-200 rounded-lg text-xs font-mono" />
+                </div>
+                <div>
+                  <label className="block text-purple-800 text-[10px] mb-0.5">Population</label>
+                  <input type="number" value={populationSize} onChange={(e) => setPopulationSize(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-purple-200 rounded-lg text-xs font-mono" />
+                </div>
+                <div>
+                  <label className="block text-purple-800 text-[10px] mb-0.5">Mutation Rate</label>
+                  <input type="number" step="0.01" value={mutationRate} onChange={(e) => setMutationRate(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-purple-200 rounded-lg text-xs font-mono" />
+                </div>
+                <div>
+                  <label className="block text-purple-800 text-[10px] mb-0.5">Objective</label>
+                  <select value={objectiveMetric} onChange={(e) => setObjectiveMetric(e.target.value)} className="w-full px-1.5 py-1 bg-white border border-purple-200 rounded-lg text-xs">
+                    <option value="SharpeRatio">Sharpe Ratio</option>
+                    <option value="NetProfit">Net Profit</option>
+                    <option value="SortinoRatio">Sortino Ratio</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {runKind === 'WalkForward' && (
+            <div className="p-2.5 rounded-xl bg-blue-50/60 border border-blue-200 space-y-2">
+              <h4 className="text-xs font-semibold text-blue-900 flex items-center gap-1.5">
+                <Settings2 className="w-3.5 h-3.5 text-blue-700" />
+                <span>Walk-Forward Cross-Validation Windows</span>
+              </h4>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-blue-800 text-[10px] mb-0.5">In-Sample (%)</label>
+                  <input type="number" value={inSamplePct} onChange={(e) => setInSamplePct(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-blue-200 rounded-lg text-xs font-mono" />
+                </div>
+                <div>
+                  <label className="block text-blue-800 text-[10px] mb-0.5">Out-Sample (%)</label>
+                  <input type="number" value={outOfSamplePct} onChange={(e) => setOutOfSamplePct(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-blue-200 rounded-lg text-xs font-mono" />
+                </div>
+                <div>
+                  <label className="block text-blue-800 text-[10px] mb-0.5">Window Splits</label>
+                  <input type="number" value={windowSplits} onChange={(e) => setWindowSplits(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-blue-200 rounded-lg text-xs font-mono" />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Profile Badge */}
           <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-lg bg-zinc-50 border border-zinc-200 text-[11px]">

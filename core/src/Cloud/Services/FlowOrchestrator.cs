@@ -71,14 +71,14 @@ internal sealed partial class FlowOrchestrator(
         {
             int commandId = kind switch
             {
-                RunKind.Optimization => 1201,
-                RunKind.WalkForward => 1202,
+                RunKind.Optimization => 1300,
+                RunKind.WalkForward => 1300,
                 _ => 1200
             };
             string cmdType = kind switch
             {
-                RunKind.Optimization => "RunOptimization",
-                RunKind.WalkForward => "RunWalkForward",
+                RunKind.Optimization => "StartOptimization",
+                RunKind.WalkForward => "StartOptimization",
                 _ => "RunBacktest"
             };
 

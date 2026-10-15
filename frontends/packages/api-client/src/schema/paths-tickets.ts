@@ -30,13 +30,15 @@ export interface TicketAndCommunityPaths {
       requestBody: {
         content: {
           'application/json': {
-            accountId: string;
-            userId: string;
+            accountId?: string;
+            userId?: string;
             authorName: string;
             targetType: 'SystemManager' | 'AdditiveDeveloper';
             targetItemId?: string;
             title: string;
             description: string;
+            category?: 'Bug' | 'FeatureRequest' | 'Billing' | 'Incident' | 'General';
+            priority?: 'Low' | 'Medium' | 'High' | 'Critical';
           };
         };
       };

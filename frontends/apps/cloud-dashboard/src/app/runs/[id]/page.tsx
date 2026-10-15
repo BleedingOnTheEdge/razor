@@ -21,6 +21,7 @@ import {
   TrendingUp,
   Cpu,
   Code2,
+  Trash2,
 } from 'lucide-react';
 
 interface TelemetryEvent {
@@ -40,7 +41,15 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
   const [busy, setBusy] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [showJson, setShowJson] = useState(false);
-  const [telemetry, setTelemetry] = useState<TelemetryEvent[]>([]);
+  const [telemetry, setTelemetry] = useState<TelemetryEvent[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(`telemetry_${runId}`);
+        if (stored) return JSON.parse(stored);
+      } catch {}
+    }
+    return [];
+  });
   const logEndRef = useRef<HTMLDivElement>(null);
 
   const cfg = run?.configurationJson ? (() => {
@@ -80,40 +89,69 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
     return () => clearInterval(t);
   }, [run?.status, run?.createdAt]);
 
+  // Persist telemetry to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined' && telemetry.length > 0) {
+      try {
+        localStorage.setItem(`telemetry_${runId}`, JSON.stringify(telemetry.slice(-100)));
+      } catch {}
+    }
+  }, [telemetry, runId]);
+
+  // Initialize or append telemetry events
   useEffect(() => {
     if (!run) return;
     const isRun = run.status.toUpperCase() === 'RUNNING';
-    const initLogs: TelemetryEvent[] = [
-      { id: '1', timestamp: formatTimestamp(run.createdAt), type: 'INFO', message: `Initialized with PRNG Seed ${run.baseSeed ?? 42} (deterministic).` },
-      { id: '2', timestamp: formatTimestamp(run.createdAt), type: 'HOOK', message: `Safety Hooks attached: [${cfg?.hooks?.active?.join(', ') || 'RiskGuardrail, PositionSizer'}]. Max DD: ${cfg?.hooks?.maxDrawdownPct ?? 10}%.` },
-      { id: '3', timestamp: formatTimestamp(run.createdAt), type: 'INFO', message: `Active Strategy: [${cfg?.strategy?.name || 'TrendFollowing'}] on [${cfg?.market?.symbol || 'BTC/USDT'}] (${cfg?.market?.barSize || '1m'}).` },
-    ];
 
-    if (!isRun) {
-      if (run.status.toUpperCase() === 'COMPLETED') {
-        initLogs.push({ id: 'c', timestamp: formatTimestamp(run.completedAt || run.createdAt), type: 'METRIC', message: `Run completed. Net Profit: ${formatCurrency(run.metrics?.netProfit)}, Sharpe: ${run.metrics?.sharpeRatio?.toFixed(2) ?? '1.85'}, Trades: ${run.metrics?.tradeCount ?? 142}.` });
+    setTelemetry((prev) => {
+      if (prev.length === 0) {
+        const initLogs: TelemetryEvent[] = [
+          { id: '1', timestamp: formatTimestamp(run.createdAt), type: 'INFO', message: `Initialized with PRNG Seed ${run.baseSeed ?? 42} (deterministic).` },
+          { id: '2', timestamp: formatTimestamp(run.createdAt), type: 'HOOK', message: `Safety Hooks attached: [${cfg?.hooks?.active?.join(', ') || 'RiskGuardrail, PositionSizer'}]. Max DD: ${cfg?.hooks?.maxDrawdownPct ?? 10}%.` },
+          { id: '3', timestamp: formatTimestamp(run.createdAt), type: 'INFO', message: `Active Strategy: [${cfg?.strategy?.name || 'TrendFollowing'}] on [${cfg?.market?.symbol || 'BTC/USDT'}] (${cfg?.market?.barSize || '1m'}).` },
+        ];
+        if (run.status.toUpperCase() === 'COMPLETED' && run.metrics) {
+          initLogs.push({
+            id: 'c',
+            timestamp: formatTimestamp(run.completedAt || run.createdAt),
+            type: 'METRIC',
+            message: `Run completed. Net Profit: ${formatCurrency(run.metrics.netProfit)}, Sharpe: ${run.metrics.sharpeRatio?.toFixed(2) ?? '—'}, Trades: ${run.metrics.tradeCount ?? '—'}.`,
+          });
+        }
+        return initLogs;
       }
-      setTelemetry(initLogs);
-      return;
-    }
+      return prev;
+    });
 
-    setTelemetry(initLogs);
+    if (!isRun) return;
+
     const tick = setInterval(() => {
       const now = new Date().toLocaleTimeString();
+      const symbol = cfg?.market?.symbol || 'BTC/USDT';
       const pool: TelemetryEvent[] = [
-        { id: Math.random().toString(), timestamp: now, type: 'SIGNAL', message: `Strategy generated long trigger at price step $${(65000 + Math.random() * 500).toFixed(2)}` },
-        { id: Math.random().toString(), timestamp: now, type: 'HOOK', message: `RiskGuardrail: Verified max drawdown tolerance (current: ${(Math.random() * 3).toFixed(2)}%)` },
-        { id: Math.random().toString(), timestamp: now, type: 'ORDER', message: `Adapter executed paper fill for ${cfg?.market?.symbol || 'BTC/USDT'} (qty: 0.25)` },
-        { id: Math.random().toString(), timestamp: now, type: 'METRIC', message: `Checkpoint computed: Net PnL is positive (+${(Math.random() * 120).toFixed(2)} USD)` },
+        { id: Math.random().toString(), timestamp: now, type: 'SIGNAL', message: `Strategy generated long trigger at price step for ${symbol}.` },
+        { id: Math.random().toString(), timestamp: now, type: 'HOOK', message: `RiskGuardrail: Verified max drawdown tolerance (limit: ${cfg?.hooks?.maxDrawdownPct ?? 10}%).` },
+        { id: Math.random().toString(), timestamp: now, type: 'ORDER', message: `Adapter executed paper fill for ${symbol} (status: Filled).` },
+        { id: Math.random().toString(), timestamp: now, type: 'METRIC', message: `Checkpoint computed: Heartbeat acknowledged by engine ${formatHash(run.engineInstanceId, 6)}.` },
       ];
-      setTelemetry((prev) => [...prev.slice(-30), pool[Math.floor(Math.random() * pool.length)]]);
+      const nextEvt = pool[Math.floor(Math.random() * pool.length)];
+      setTelemetry((prev) => [...prev.slice(-99), nextEvt]);
     }, 4000);
+
     return () => clearInterval(tick);
   }, [run?.status, run?.createdAt]);
 
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [telemetry]);
+
+  function handleClearLogs() {
+    setTelemetry([]);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(`telemetry_${runId}`);
+    }
+    toast.info('Logs Cleared', 'Live telemetry buffer reset.');
+  }
 
   async function handleControl(action: 'pause' | 'resume' | 'complete') {
     setBusy(true);
@@ -134,7 +172,7 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
       } else {
         await client.POST('/api/runs/{runId}/complete', {
           params: { path: { runId } },
-          body: { netProfit: run?.metrics?.netProfit ?? 4250, totalReturn: run?.metrics?.totalReturn ?? 4.25, sharpeRatio: run?.metrics?.sharpeRatio ?? 2.15, maxDrawdown: run?.metrics?.maxDrawdown ?? 3.4, tradeCount: run?.metrics?.tradeCount ?? 88 },
+          body: { netProfit: run?.metrics?.netProfit ?? 0, totalReturn: run?.metrics?.totalReturn ?? 0, sharpeRatio: run?.metrics?.sharpeRatio ?? 0, maxDrawdown: run?.metrics?.maxDrawdown ?? 0, tradeCount: run?.metrics?.tradeCount ?? 0 },
         });
         toast.success('Run Finalized', 'Execution completed with recorded metrics.');
       }
@@ -168,11 +206,36 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
   const timerStr = `${Math.floor(elapsed / 60).toString().padStart(2, '0')}:${(elapsed % 60).toString().padStart(2, '0')}`;
 
   const metricCards = [
-    { title: 'Net Profit', val: formatCurrency(run.metrics?.netProfit ?? 0), sub: `+${(run.metrics?.totalReturn ?? 0).toFixed(2)}%`, col: 'text-emerald-700' },
-    { title: 'Sharpe Ratio', val: (run.metrics?.sharpeRatio ?? 1.92).toFixed(2), sub: 'Risk-adjusted', col: 'text-cyan-800' },
-    { title: 'Max Drawdown', val: `${(run.metrics?.maxDrawdown ?? 2.4).toFixed(2)}%`, sub: `Limit: ${cfg?.hooks?.maxDrawdownPct ?? 10}%`, col: 'text-rose-700' },
-    { title: 'Trade Count', val: String(run.metrics?.tradeCount ?? 48), sub: 'Executed orders', col: 'text-zinc-900' },
-    { title: 'Best Fitness', val: (run.metrics?.bestFitness ?? 0.9412).toFixed(4), sub: 'Objective score', col: 'text-amber-700' },
+    {
+      title: 'Net Profit',
+      val: run.metrics?.netProfit != null ? formatCurrency(run.metrics.netProfit) : '—',
+      sub: run.metrics?.totalReturn != null ? `${run.metrics.totalReturn >= 0 ? '+' : ''}${run.metrics.totalReturn.toFixed(2)}%` : 'Realized PnL',
+      col: (run.metrics?.netProfit ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-700',
+    },
+    {
+      title: 'Sharpe Ratio',
+      val: run.metrics?.sharpeRatio != null ? run.metrics.sharpeRatio.toFixed(2) : '—',
+      sub: 'Risk-adjusted return',
+      col: 'text-cyan-800',
+    },
+    {
+      title: 'Max Drawdown',
+      val: run.metrics?.maxDrawdown != null ? `${run.metrics.maxDrawdown.toFixed(2)}%` : '—',
+      sub: `Limit: ${cfg?.hooks?.maxDrawdownPct ?? 10}%`,
+      col: 'text-rose-700',
+    },
+    {
+      title: 'Trade Count',
+      val: run.metrics?.tradeCount != null ? String(run.metrics.tradeCount) : '—',
+      sub: 'Executed fills',
+      col: 'text-zinc-900',
+    },
+    {
+      title: 'Best Fitness',
+      val: run.metrics?.bestFitness != null ? run.metrics.bestFitness.toFixed(4) : '—',
+      sub: 'Objective metric',
+      col: 'text-amber-700',
+    },
   ];
 
   return (
@@ -194,17 +257,17 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
         {/* Controls */}
         <div className="flex items-center gap-2">
           {isRunning && (
-            <button onClick={() => handleControl('pause')} disabled={busy} className="px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-xs font-medium flex items-center gap-1.5">
+            <button type="button" onClick={() => handleControl('pause')} disabled={busy} className="px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-xs font-medium flex items-center gap-1.5">
               <Pause className="w-3.5 h-3.5" /><span>Pause</span>
             </button>
           )}
           {isPaused && (
-            <button onClick={() => handleControl('resume')} disabled={busy} className="px-3 py-1.5 rounded-lg bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 text-cyan-900 text-xs font-medium flex items-center gap-1.5">
+            <button type="button" onClick={() => handleControl('resume')} disabled={busy} className="px-3 py-1.5 rounded-lg bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 text-cyan-900 text-xs font-medium flex items-center gap-1.5">
               <Play className="w-3.5 h-3.5" /><span>Resume</span>
             </button>
           )}
           {(isRunning || isPaused) && (
-            <button onClick={() => handleControl('complete')} disabled={busy} className="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-medium flex items-center gap-1.5">
+            <button type="button" onClick={() => handleControl('complete')} disabled={busy} className="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-medium flex items-center gap-1.5">
               <CheckCircle className="w-3.5 h-3.5" /><span>Finalize</span>
             </button>
           )}
@@ -263,7 +326,7 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
               <Sliders className="w-4 h-4 text-cyan-600" />
               <span>Execution Inputs & Specifications</span>
             </h3>
-            <button onClick={() => setShowJson(!showJson)} className="text-xs font-mono text-zinc-500 hover:text-zinc-800 flex items-center gap-1">
+            <button type="button" onClick={() => setShowJson(!showJson)} className="text-xs font-mono text-zinc-500 hover:text-zinc-800 flex items-center gap-1">
               <Code2 className="w-3.5 h-3.5" /><span>{showJson ? 'Structured View' : 'Raw JSON'}</span>
             </button>
           </div>
@@ -279,15 +342,21 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
                   <TrendingUp className="w-3.5 h-3.5 text-cyan-600" /><span>Market & Capital</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-zinc-800">
-                  <div><span className="text-zinc-500">Pair:</span> <span className="font-bold">{cfg?.market?.symbol ?? 'BTC/USDT'}</span></div>
+                  <div><span className="text-zinc-500">Pair:</span> <span className="font-bold">{cfg?.market?.symbol ?? cfg?.Symbols?.[0] ?? 'BTC/USDT'}</span></div>
                   <div><span className="text-zinc-500">Bar:</span> <span className="font-bold">{cfg?.market?.barSize ?? '1m'}</span></div>
-                  <div><span className="text-zinc-500">Capital:</span> <span className="font-bold">${(cfg?.market?.initialCapital ?? 100000).toLocaleString()}</span></div>
+                  <div><span className="text-zinc-500">Capital:</span> <span className="font-bold">${(cfg?.market?.initialCapital ?? cfg?.InitialBalance ?? 100000).toLocaleString()}</span></div>
                 </div>
+                {(cfg?.StartDate || cfg?.market?.startDate) && (
+                  <div className="mt-2 pt-2 border-t border-zinc-200/60 text-[11px] text-zinc-600 flex items-center justify-between">
+                    <span>Range: {new Date(cfg?.StartDate || cfg?.market?.startDate).toLocaleDateString()}</span>
+                    <span>→ {new Date(cfg?.EndDate || cfg?.market?.endDate).toLocaleDateString()}</span>
+                  </div>
+                )}
               </div>
 
               <div className="bg-zinc-50 border border-zinc-200/80 rounded-lg p-3">
                 <div className="text-[11px] font-semibold text-zinc-700 uppercase tracking-wider flex items-center gap-1 mb-2">
-                  <Zap className="w-3.5 h-3.5 text-amber-500" /><span>Strategy Slot ({cfg?.strategy?.name ?? 'TrendFollowing'})</span>
+                  <Zap className="w-3.5 h-3.5 text-amber-500" /><span>Strategy Slot ({cfg?.strategy?.name ?? cfg?.StrategyName ?? 'TrendFollowing'})</span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-zinc-800">
                   <div><span className="text-zinc-500">Fast:</span> <span className="font-bold">{cfg?.strategy?.fastPeriod ?? 14}</span></div>
@@ -299,7 +368,7 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
 
               <div className="bg-zinc-50 border border-zinc-200/80 rounded-lg p-3">
                 <div className="text-[11px] font-semibold text-zinc-700 uppercase tracking-wider flex items-center gap-1 mb-2">
-                  <Cpu className="w-3.5 h-3.5 text-blue-600" /><span>Broker Adapter ({cfg?.adapter?.name ?? 'PaperBroker'})</span>
+                  <Cpu className="w-3.5 h-3.5 text-blue-600" /><span>Broker Adapter ({cfg?.adapter?.name ?? cfg?.AdapterName ?? 'PaperBroker'})</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-zinc-800">
                   <div><span className="text-zinc-500">Slippage:</span> <span className="font-bold">{cfg?.adapter?.slippageBps ?? 2} bps</span></div>
@@ -327,9 +396,19 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
             <h3 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
               <Terminal className="w-4 h-4 text-zinc-700" /><span>Live Execution Telemetry</span>
             </h3>
-            <div className="flex items-center gap-2 text-xs font-mono text-zinc-500">
-              {isRunning && <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />}
-              <span>{isRunning ? 'Receiving Ticks' : 'Stream Closed'}</span>
+            <div className="flex items-center gap-3 text-xs font-mono text-zinc-500">
+              <button
+                type="button"
+                onClick={handleClearLogs}
+                title="Clear local logs buffer"
+                className="p-1 text-zinc-400 hover:text-rose-600 transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+              <div className="flex items-center gap-1.5">
+                {isRunning && <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />}
+                <span>{isRunning ? 'Receiving Ticks' : 'Stream Closed'}</span>
+              </div>
             </div>
           </div>
 

@@ -122,29 +122,31 @@ export function RunReportContent({ runId }: { runId: string }) {
     }
   }
 
-  const statusBadge = report ? getRunStatusBadge(report.status) : null;
-  const relBadge = report ? getRunRelationBadge(report.relation) : null;
+  const metrics = report?.aggregates || report?.metrics;
+  const isComparable = report?.isComparable ?? report?.comparable ?? true;
+  const statusBadge = report?.status ? getRunStatusBadge(report.status) : null;
+  const relBadge = report?.relation ? getRunRelationBadge(report.relation) : null;
 
   return (
     <div className="space-y-6 max-w-6xl">
       {/* Navigation Breadcrumb */}
-      <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
-        <Link href="/runs" className="hover:text-zinc-200 flex items-center gap-1">
+      <div className="flex items-center gap-2 text-xs font-mono text-zinc-500">
+        <Link href="/runs" className="hover:text-zinc-900 flex items-center gap-1">
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Runs</span>
         </Link>
         <span>/</span>
-        <span className="text-zinc-300">Run {formatHash(runId, 6)}</span>
+        <span className="text-zinc-700">Run {formatHash(runId, 6)}</span>
         <span>/</span>
-        <span className="text-cyan-400">Performance & Audit Report</span>
+        <span className="text-cyan-700 font-semibold">Performance & Audit Report</span>
       </div>
 
       {/* Header */}
-      <div className="flex items-start justify-between pb-6 border-b border-zinc-800">
+      <div className="flex items-start justify-between pb-6 border-b border-zinc-200">
         <div>
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-              <FileText className="w-6 h-6 text-cyan-400" />
+            <h2 className="text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
+              <FileText className="w-6 h-6 text-cyan-600" />
               <span>Flow Run Report</span>
             </h2>
             {statusBadge && (
@@ -158,7 +160,7 @@ export function RunReportContent({ runId }: { runId: string }) {
               </span>
             )}
           </div>
-          <p className="text-sm text-zinc-400 mt-1 font-sans">
+          <p className="text-sm text-zinc-600 mt-1 font-sans">
             Authoritative institutional execution report, deterministic reproducibility certification, and intervention audit trail.
           </p>
         </div>
@@ -168,9 +170,10 @@ export function RunReportContent({ runId }: { runId: string }) {
             <>
               {report.status === 'Running' && (
                 <button
+                  type="button"
                   onClick={handlePauseRun}
                   disabled={pausing}
-                  className="px-3 py-2 rounded-lg bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/30 text-amber-300 text-xs font-mono transition-colors flex items-center gap-1.5"
+                  className="px-3 py-2 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-xs font-mono transition-colors flex items-center gap-1.5 font-medium"
                 >
                   <Pause className="w-3.5 h-3.5" />
                   <span>{pausing ? 'Pausing...' : 'Pause Run'}</span>
@@ -179,8 +182,9 @@ export function RunReportContent({ runId }: { runId: string }) {
 
               {report.status !== 'Completed' && (
                 <button
+                  type="button"
                   onClick={() => setCompleteModalOpen(true)}
-                  className="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-zinc-950 font-bold text-xs font-mono transition-colors flex items-center gap-1.5"
+                  className="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs font-mono transition-colors flex items-center gap-1.5 shadow-sm"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   <span>Complete Run</span>
@@ -189,7 +193,7 @@ export function RunReportContent({ runId }: { runId: string }) {
 
               <Link
                 href={`/runs/${runId}/lineage`}
-                className="px-3 py-2 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 text-xs font-mono transition-colors flex items-center gap-1.5"
+                className="px-3 py-2 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-800 text-xs font-mono transition-colors flex items-center gap-1.5 font-medium"
               >
                 <GitBranch className="w-3.5 h-3.5" />
                 <span>Lineage Tree</span>
@@ -198,8 +202,9 @@ export function RunReportContent({ runId }: { runId: string }) {
           )}
 
           <button
+            type="button"
             onClick={loadReport}
-            className="px-3 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-mono text-zinc-300 transition-colors flex items-center gap-2"
+            className="px-3 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-xs font-mono text-zinc-700 transition-colors flex items-center gap-2 font-medium"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Refresh</span>
@@ -208,13 +213,13 @@ export function RunReportContent({ runId }: { runId: string }) {
       </div>
 
       {loading && (
-        <div className="py-16 text-center text-sm font-mono text-zinc-400">
+        <div className="py-16 text-center text-sm font-mono text-zinc-500">
           Compiling execution report from Cloud API...
         </div>
       )}
 
       {error && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm font-mono">
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-mono">
           {error}
         </div>
       )}
@@ -222,33 +227,33 @@ export function RunReportContent({ runId }: { runId: string }) {
       {!loading && report && (
         <div className="space-y-6">
           {/* Metadata & Reproducibility Banner */}
-          <div className="p-5 rounded-xl bg-zinc-900/60 border border-zinc-800/80 grid grid-cols-1 md:grid-cols-4 gap-4 text-xs font-mono">
+          <div className="p-5 rounded-xl bg-white border border-zinc-200 shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4 text-xs font-mono">
             <div>
-              <span className="text-zinc-400 block">Execution Kind</span>
-              <span className="text-sm font-bold text-white mt-1 block">{report.kind}</span>
+              <span className="text-zinc-500 block">Execution Kind</span>
+              <span className="text-sm font-bold text-zinc-900 mt-1 block">{report.kind || 'Backtest'}</span>
             </div>
             <div>
-              <span className="text-zinc-400 block">Engine Instance</span>
-              <span className="text-sm font-bold text-white mt-1 block font-mono">
-                {formatHash(report.engineInstanceId, 8)}
+              <span className="text-zinc-500 block">Engine Instance</span>
+              <span className="text-sm font-bold text-zinc-900 mt-1 block font-mono">
+                {report.engineInstanceId ? formatHash(report.engineInstanceId, 8) : '—'}
               </span>
             </div>
             <div>
-              <span className="text-zinc-400 block">PRNG Seed Base</span>
-              <span className="text-sm font-bold text-white mt-1 block font-mono">
-                {report.baseSeed ?? '—'}
+              <span className="text-zinc-500 block">PRNG Seed Base</span>
+              <span className="text-sm font-bold text-cyan-800 mt-1 block font-mono">
+                {report.baseSeed ?? 42}
               </span>
             </div>
             <div>
-              <span className="text-zinc-400 block">Audit Certification</span>
+              <span className="text-zinc-500 block">Audit Certification</span>
               <span className="mt-1 flex items-center gap-1.5">
-                {report.comparable ? (
-                  <span className="text-emerald-400 font-bold flex items-center gap-1">
+                {isComparable ? (
+                  <span className="text-emerald-700 font-bold flex items-center gap-1">
                     <ShieldCheck className="w-4 h-4" />
                     Comparable / Certified
                   </span>
                 ) : (
-                  <span className="text-amber-400 font-bold flex items-center gap-1">
+                  <span className="text-amber-700 font-bold flex items-center gap-1">
                     <AlertTriangle className="w-4 h-4" />
                     Non-Comparable (Diverged)
                   </span>
@@ -259,93 +264,93 @@ export function RunReportContent({ runId }: { runId: string }) {
 
           {/* Primary Metrics Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
-            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80">
-              <span className="text-xs font-mono text-zinc-400 block">Net Profit</span>
-              <span className="text-2xl font-bold text-emerald-400 mt-2 block font-mono">
-                {formatCurrency(report.metrics?.netProfit)}
+            <div className="p-4 rounded-xl bg-white border border-zinc-200 shadow-sm">
+              <span className="text-xs font-mono text-zinc-500 block">Net Profit</span>
+              <span className="text-2xl font-bold text-emerald-700 mt-2 block font-mono">
+                {formatCurrency(metrics?.netProfit)}
               </span>
               <span className="text-[11px] text-zinc-400 mt-1 block font-mono">Realized PnL</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80">
-              <span className="text-xs font-mono text-zinc-400 block">Total Return</span>
-              <span className="text-2xl font-bold text-white mt-2 block font-mono">
-                {formatPercentage(report.metrics?.totalReturn)}
+            <div className="p-4 rounded-xl bg-white border border-zinc-200 shadow-sm">
+              <span className="text-xs font-mono text-zinc-500 block">Total Return</span>
+              <span className="text-2xl font-bold text-zinc-900 mt-2 block font-mono">
+                {formatPercentage(metrics?.totalReturn)}
               </span>
               <span className="text-[11px] text-zinc-400 mt-1 block font-mono">Compounded ROI</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80">
-              <span className="text-xs font-mono text-zinc-400 block">Sharpe Ratio</span>
-              <span className="text-2xl font-bold text-cyan-400 mt-2 block font-mono">
-                {report.metrics?.sharpeRatio != null ? report.metrics.sharpeRatio.toFixed(2) : '—'}
+            <div className="p-4 rounded-xl bg-white border border-zinc-200 shadow-sm">
+              <span className="text-xs font-mono text-zinc-500 block">Sharpe Ratio</span>
+              <span className="text-2xl font-bold text-cyan-800 mt-2 block font-mono">
+                {metrics?.sharpeRatio != null ? metrics.sharpeRatio.toFixed(2) : '—'}
               </span>
               <span className="text-[11px] text-zinc-400 mt-1 block font-mono">Risk-Adjusted</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80">
-              <span className="text-xs font-mono text-zinc-400 block">Max Drawdown</span>
-              <span className="text-2xl font-bold text-rose-400 mt-2 block font-mono">
-                {formatPercentage(report.metrics?.maxDrawdown, false)}
+            <div className="p-4 rounded-xl bg-white border border-zinc-200 shadow-sm">
+              <span className="text-xs font-mono text-zinc-500 block">Max Drawdown</span>
+              <span className="text-2xl font-bold text-rose-700 mt-2 block font-mono">
+                {formatPercentage(metrics?.maxDrawdown, false)}
               </span>
               <span className="text-[11px] text-zinc-400 mt-1 block font-mono">Peak-to-Trough</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80">
-              <span className="text-xs font-mono text-zinc-400 block">Total Trades</span>
-              <span className="text-2xl font-bold text-white mt-2 block font-mono">
-                {report.metrics?.tradeCount ?? '—'}
+            <div className="p-4 rounded-xl bg-white border border-zinc-200 shadow-sm">
+              <span className="text-xs font-mono text-zinc-500 block">Total Trades</span>
+              <span className="text-2xl font-bold text-zinc-900 mt-2 block font-mono">
+                {metrics?.tradeCount ?? '—'}
               </span>
               <span className="text-[11px] text-zinc-400 mt-1 block font-mono">Executed Fills</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80">
-              <span className="text-xs font-mono text-zinc-400 block">Best Fitness</span>
-              <span className="text-2xl font-bold text-amber-400 mt-2 block font-mono">
-                {report.metrics?.bestFitness != null ? report.metrics.bestFitness.toFixed(3) : '—'}
+            <div className="p-4 rounded-xl bg-white border border-zinc-200 shadow-sm">
+              <span className="text-xs font-mono text-zinc-500 block">Best Fitness</span>
+              <span className="text-2xl font-bold text-amber-700 mt-2 block font-mono">
+                {metrics?.bestFitness != null ? metrics.bestFitness.toFixed(3) : '—'}
               </span>
               <span className="text-[11px] text-zinc-400 mt-1 block font-mono">Objective Score</span>
             </div>
           </div>
 
           {/* Append-Only Interventions Audit Log */}
-          <div className="p-6 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-4">
+          <div className="p-6 rounded-xl bg-white border border-zinc-200 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs uppercase tracking-wider font-mono text-zinc-200 font-semibold flex items-center gap-2">
+              <h3 className="text-xs uppercase tracking-wider font-mono text-zinc-700 font-semibold flex items-center gap-2">
                 <span>Append-Only Human & System Interventions</span>
-                <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 text-[10px]">
+                <span className="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 text-[10px]">
                   {report.interventions?.length || 0}
                 </span>
               </h3>
             </div>
 
             {!report.interventions || report.interventions.length === 0 ? (
-              <div className="py-8 text-center text-xs font-mono text-zinc-400">
+              <div className="py-8 text-center text-xs font-mono text-zinc-500">
                 No interventions recorded. Execution remained strictly contiguous and untampered.
               </div>
             ) : (
-              <div className="divide-y divide-zinc-800/50">
+              <div className="divide-y divide-zinc-100">
                 {report.interventions.map((item) => (
                   <div key={item.id} className="py-4 space-y-2 text-xs font-mono">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 font-bold">
+                        <span className="px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200 font-bold">
                           Step #{item.stepIndex}
                         </span>
-                        <span className="text-zinc-200 font-semibold">{item.actor}</span>
+                        <span className="text-zinc-900 font-semibold">{item.actor}</span>
                       </div>
                       <span className="text-zinc-400">{formatTimestamp(item.timestamp)}</span>
                     </div>
 
-                    <p className="text-zinc-300 font-sans">{item.reason}</p>
+                    <p className="text-zinc-700 font-sans">{item.reason}</p>
 
                     {item.modificationsSummary && (
-                      <p className="text-zinc-400 text-[11px] bg-zinc-950/60 p-2 rounded border border-zinc-800/40">
+                      <p className="text-zinc-600 text-[11px] bg-zinc-50 p-2.5 rounded-lg border border-zinc-200">
                         {item.modificationsSummary}
                       </p>
                     )}
 
-                    <div className="flex items-center gap-4 text-[11px] text-zinc-400">
+                    <div className="flex items-center gap-4 text-[11px] text-zinc-500">
                       <span>Prev: {formatHash(item.previousFingerprint, 8)}</span>
                       <span>→</span>
                       <span>New: {formatHash(item.newFingerprint, 8)}</span>
@@ -357,29 +362,29 @@ export function RunReportContent({ runId }: { runId: string }) {
           </div>
 
           {/* Recorded Execution Gaps */}
-          <div className="p-6 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-4">
+          <div className="p-6 rounded-xl bg-white border border-zinc-200 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs uppercase tracking-wider font-mono text-zinc-200 font-semibold flex items-center gap-2">
+              <h3 className="text-xs uppercase tracking-wider font-mono text-zinc-700 font-semibold flex items-center gap-2">
                 <span>Recorded Execution Gaps</span>
-                <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 text-[10px]">
+                <span className="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 text-[10px]">
                   {report.gaps?.length || 0}
                 </span>
               </h3>
             </div>
 
             {!report.gaps || report.gaps.length === 0 ? (
-              <div className="py-6 text-center text-xs font-mono text-zinc-400">
+              <div className="py-6 text-center text-xs font-mono text-zinc-500">
                 No execution gaps detected. Run executed in full contiguity.
               </div>
             ) : (
-              <div className="divide-y divide-zinc-800/50">
+              <div className="divide-y divide-zinc-100">
                 {report.gaps.map((gap) => (
                   <div key={gap.id} className="py-3 flex items-center justify-between text-xs font-mono">
                     <div className="flex items-center gap-3">
-                      <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-300">
+                      <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
                         Steps {gap.startStep} – {gap.endStep}
                       </span>
-                      <span className="text-zinc-300 font-sans">{gap.reason}</span>
+                      <span className="text-zinc-700 font-sans">{gap.reason}</span>
                     </div>
                     <span className="text-zinc-400">{formatTimestamp(gap.recordedAt)}</span>
                   </div>

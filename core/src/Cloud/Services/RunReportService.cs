@@ -106,9 +106,15 @@ internal sealed class RunReportService
 
         return new RunReport(
             RunId: run.Id,
+            EngineInstanceId: run.EngineInstanceId,
+            Kind: run.Kind,
+            Status: run.Status,
             ParentRunId: run.ParentRunId,
             Relation: run.Relation,
             Continuity: run.Continuity,
+            BaseSeed: run.BaseSeed,
+            CreatedAt: run.CreatedAt,
+            CompletedAt: run.CompletedAt,
             IsPartial: isGapped,
             HeadlineFiguresSuppressed: isGapped,
             IsDiverged: isDiverged,

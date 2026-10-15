@@ -5,6 +5,9 @@
 // -----------------------------------------------------------------------------
 
 namespace Engine.Management.Tasks;
+
+using System.Text.Json;
+
 /// <summary>
 /// Configuration for a backtest run, parsed from Cloud command parameters.
 /// </summary>
@@ -31,34 +34,83 @@ internal sealed record BacktestConfiguration
     /// <summary>
     /// Parses a Cloud command parameter object into a <see cref="BacktestConfiguration"/>.
     /// </summary>
-    /// <param name="config">The configuration object (typically a dictionary).</param>
+    /// <param name="config">The configuration object (typically a dictionary, JSON element, or string).</param>
     /// <returns>A parsed configuration.</returns>
-    /// <exception cref="ArgumentException">Thrown if required fields are missing or invalid.</exception>
-    public static BacktestConfiguration Parse(object config)
+    public static BacktestConfiguration Parse(object? config)
     {
-        if (config is not Dictionary<string, object> dict)
+        Dictionary<string, object>? dict = null;
+
+        if (config is Dictionary<string, object> d)
         {
-            throw new ArgumentException("Configuration must be a dictionary.", nameof(config));
+            dict = d;
+        }
+        else if (config is string jsonStr && !string.IsNullOrWhiteSpace(jsonStr))
+        {
+            try
+            {
+                dict = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonStr);
+            }
+            catch
+            {
+            }
+        }
+        else if (config is JsonElement je && je.ValueKind == JsonValueKind.Object)
+        {
+            try
+            {
+                dict = JsonSerializer.Deserialize<Dictionary<string, object>>(je.GetRawText());
+            }
+            catch
+            {
+            }
+        }
+
+        dict ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+        string adapterName = ConfigurationParser.GetString(dict, "AdapterName");
+        if (string.IsNullOrWhiteSpace(adapterName))
+        {
+            adapterName = ConfigurationParser.GetString(dict, "adapter", "PaperBroker");
+        }
+
+        string strategyName = ConfigurationParser.GetString(dict, "StrategyName");
+        if (string.IsNullOrWhiteSpace(strategyName))
+        {
+            strategyName = ConfigurationParser.GetString(dict, "strategy", "TrendFollowing");
+        }
+
+        string[] symbols = ConfigurationParser.GetStringArray(dict, "Symbols");
+        if (symbols.Length == 0)
+        {
+            string singleSymbol = ConfigurationParser.GetString(dict, "Symbol");
+            symbols = !string.IsNullOrWhiteSpace(singleSymbol) ? [singleSymbol] : ["BTC/USDT"];
+        }
+
+        string[] timeframes = ConfigurationParser.GetStringArray(dict, "Timeframes");
+        if (timeframes.Length == 0)
+        {
+            string barSize = ConfigurationParser.GetString(dict, "barSize");
+            timeframes = !string.IsNullOrWhiteSpace(barSize) ? [barSize] : ["1m"];
         }
 
         return new BacktestConfiguration
         {
-            AdapterName = ConfigurationParser.GetString(dict, "AdapterName"),
-            StrategyName = ConfigurationParser.GetString(dict, "StrategyName"),
-            Symbols = ConfigurationParser.GetStringArray(dict, "Symbols"),
-            StartDate = ConfigurationParser.GetDateTime(dict, "StartDate"),
-            EndDate = ConfigurationParser.GetDateTime(dict, "EndDate"),
-            InitialBalance = ConfigurationParser.GetDouble(dict, "InitialBalance"),
-            Leverage = ConfigurationParser.GetDouble(dict, "Leverage"),
-            MaxOpenPositions = ConfigurationParser.GetInt(dict, "MaxOpenPositions"),
-            StopOutLevel = ConfigurationParser.GetDouble(dict, "StopOutLevel"),
+            AdapterName = adapterName,
+            StrategyName = strategyName,
+            Symbols = symbols,
+            StartDate = ConfigurationParser.GetDateTime(dict, "StartDate", DateTime.UtcNow.AddDays(-30)),
+            EndDate = ConfigurationParser.GetDateTime(dict, "EndDate", DateTime.UtcNow),
+            InitialBalance = ConfigurationParser.GetDouble(dict, "InitialBalance", ConfigurationParser.GetDouble(dict, "initialCapital", 100000)),
+            Leverage = ConfigurationParser.GetDouble(dict, "Leverage", 1.0),
+            MaxOpenPositions = ConfigurationParser.GetInt(dict, "MaxOpenPositions", 5),
+            StopOutLevel = ConfigurationParser.GetDouble(dict, "StopOutLevel", 0.2),
             MaxParallelThreads = ConfigurationParser.GetInt(dict, "MaxParallelThreads", 0),
             LatencyTicks = ConfigurationParser.GetLong(dict, "LatencyTicks", 0),
             WarmupWindowCount = ConfigurationParser.GetInt(dict, "WarmupWindowCount", 0),
             Genes = ConfigurationParser.GetDoubleArray(dict, "Genes", Array.Empty<double>()),
             GeneInitializationSeed = dict.TryGetValue("GeneInitializationSeed", out object? seedObj) && seedObj is int seed ? seed : (int?)null,
             NeuralNetworkName = dict.TryGetValue("NeuralNetworkName", out object? nnObj) ? nnObj?.ToString() : null,
-            Timeframes = ConfigurationParser.GetStringArray(dict, "Timeframes", Array.Empty<string>()),
+            Timeframes = timeframes,
             AccountCurrency = ConfigurationParser.GetString(dict, "AccountCurrency", "USD")
         };
     }
