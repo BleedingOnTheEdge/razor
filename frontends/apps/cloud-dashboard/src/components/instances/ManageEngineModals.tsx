@@ -115,6 +115,13 @@ export const RotateKeyModal: React.FC<RotateKeyModalProps> = ({
         params: { path: { instanceId } },
       });
       if (res.data) {
+        if (typeof window !== 'undefined' && res.data.apiKey) {
+          try {
+            localStorage.setItem(`engine_key_${instanceId}`, res.data.apiKey);
+          } catch {
+            // Ignore localStorage errors
+          }
+        }
         setIssuedKey(res.data.apiKey);
         onKeyRotated(res.data.apiKey);
         success('Key Rotated', 'New engine API key generated.');

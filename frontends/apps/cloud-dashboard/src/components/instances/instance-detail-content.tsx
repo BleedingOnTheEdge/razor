@@ -11,24 +11,11 @@ import {
   formatTimestamp,
   formatHash,
 } from '@razor/ui-kit';
-import {
-  ArrowLeft,
-  RefreshCw,
-  Server,
-  Plus,
-  SlidersHorizontal,
-  Edit2,
-  Key,
-  ShieldAlert,
-  Trash2,
-  Terminal,
-} from 'lucide-react';
-import {
-  CommandDispatchSection,
-  COMMAND_PRESETS,
-} from './CommandDispatchSection';
+import { ArrowLeft, RefreshCw, Server, Plus, SlidersHorizontal, Edit2, Key, ShieldAlert, Trash2, Terminal } from 'lucide-react';
+import { CommandDispatchSection, COMMAND_PRESETS } from './CommandDispatchSection';
 import { SlotAssignmentModal } from './SlotAssignmentModal';
 import { InstanceActionModals } from './ManageEngineModals';
+import { CreatedCredentialsDialog } from './CreatedCredentialsDialog';
 
 type ManifestExtension = EngineInstanceDetailPayload['manifest'][number];
 
@@ -58,6 +45,7 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
   const [rotateOpen, setRotateOpen] = useState(false);
   const [revokeOpen, setRevokeOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [credsModalData, setCredsModalData] = useState<{ instanceId: string; engineId: string; apiKey: string } | null>(null);
 
   async function loadDetails() {
     setLoading(true);
@@ -209,6 +197,21 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => {
+              const savedKey = typeof window !== 'undefined' ? localStorage.getItem(`engine_key_${instanceId}`) : null;
+              setCredsModalData({
+                instanceId,
+                engineId: instance?.engineId || 'engine-worker-01',
+                apiKey: savedKey || '<YOUR_GENERATED_API_KEY>',
+              });
+            }}
+            title="View Engine Launch Command"
+            className="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700/60 text-xs font-mono text-emerald-400 transition-colors flex items-center gap-1.5"
+          >
+            <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Run Command</span>
+          </button>
           <Link
             href={`/maintenance?instanceId=${instanceId}`}
             title="Open Maintenance & Command Dispatch Console"
@@ -477,18 +480,19 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
 
       {/* Modals: Manage Engine (Rename, Rotate Key, Revoke Key, Decommission) */}
       <InstanceActionModals
-        instanceId={instanceId}
-        instanceName={instance?.name}
-        renameOpen={renameOpen}
-        setRenameOpen={setRenameOpen}
-        rotateOpen={rotateOpen}
-        setRotateOpen={setRotateOpen}
-        revokeOpen={revokeOpen}
-        setRevokeOpen={setRevokeOpen}
-        deleteOpen={deleteOpen}
-        setDeleteOpen={setDeleteOpen}
+        instanceId={instanceId} instanceName={instance?.name}
+        renameOpen={renameOpen} setRenameOpen={setRenameOpen}
+        rotateOpen={rotateOpen} setRotateOpen={setRotateOpen}
+        revokeOpen={revokeOpen} setRevokeOpen={setRevokeOpen}
+        deleteOpen={deleteOpen} setDeleteOpen={setDeleteOpen}
         onRenamed={(newName) => setInstance((prev) => (prev ? { ...prev, name: newName } : null))}
         onReload={loadDetails}
+      />
+
+      {/* Modal: Launch Command & Issued Credentials */}
+      <CreatedCredentialsDialog
+        credentials={credsModalData}
+        onClose={() => setCredsModalData(null)}
       />
     </div>
   );

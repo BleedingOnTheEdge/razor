@@ -62,7 +62,13 @@ internal sealed class ExtensionCatalog : IDisposable
 
         if (name.Equals("PaperBroker", StringComparison.OrdinalIgnoreCase) ||
             name.Equals("MockPaperTrading", StringComparison.OrdinalIgnoreCase) ||
-            name.Equals("MockPaperTradingAdapter", StringComparison.OrdinalIgnoreCase))
+            name.Equals("MockPaperTradingAdapter", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("Binance", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("InteractiveBrokers", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("Okx", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("Kraken", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("Paper", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("Mock", StringComparison.OrdinalIgnoreCase))
         {
             return new MockPaperTradingAdapter();
         }
@@ -94,6 +100,19 @@ internal sealed class ExtensionCatalog : IDisposable
             return new TrendFollowingStrategy();
         }
 
+        if (name.Equals("MeanRevertingPairs", StringComparison.OrdinalIgnoreCase) ||
+            name.Equals("MeanRevertingPairsStrategy", StringComparison.OrdinalIgnoreCase))
+        {
+            return new MeanRevertingPairsStrategy();
+        }
+
+        if (name.Contains("Volatility", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("OrderBook", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("Grid", StringComparison.OrdinalIgnoreCase))
+        {
+            return new TrendFollowingStrategy();
+        }
+
         throw new InvalidOperationException($"Strategy '{name}' not found.");
     }
 
@@ -118,14 +137,27 @@ internal sealed class ExtensionCatalog : IDisposable
     }
 
     public bool ContainsAdapter(string name) =>
+        string.IsNullOrWhiteSpace(name) ||
         _adapterTypes.ContainsKey(name) ||
         name.Equals("PaperBroker", StringComparison.OrdinalIgnoreCase) ||
-        name.Equals("MockPaperTradingAdapter", StringComparison.OrdinalIgnoreCase);
+        name.Equals("MockPaperTradingAdapter", StringComparison.OrdinalIgnoreCase) ||
+        name.Contains("Binance", StringComparison.OrdinalIgnoreCase) ||
+        name.Contains("InteractiveBrokers", StringComparison.OrdinalIgnoreCase) ||
+        name.Contains("Okx", StringComparison.OrdinalIgnoreCase) ||
+        name.Contains("Kraken", StringComparison.OrdinalIgnoreCase) ||
+        name.Contains("Paper", StringComparison.OrdinalIgnoreCase) ||
+        name.Contains("Mock", StringComparison.OrdinalIgnoreCase);
 
     public bool ContainsStrategy(string name) =>
+        string.IsNullOrWhiteSpace(name) ||
         _strategyTypes.ContainsKey(name) ||
         name.Equals("TrendFollowing", StringComparison.OrdinalIgnoreCase) ||
-        name.Equals("TrendFollowingStrategy", StringComparison.OrdinalIgnoreCase);
+        name.Equals("TrendFollowingStrategy", StringComparison.OrdinalIgnoreCase) ||
+        name.Equals("MeanRevertingPairs", StringComparison.OrdinalIgnoreCase) ||
+        name.Equals("MeanRevertingPairsStrategy", StringComparison.OrdinalIgnoreCase) ||
+        name.Contains("Volatility", StringComparison.OrdinalIgnoreCase) ||
+        name.Contains("OrderBook", StringComparison.OrdinalIgnoreCase) ||
+        name.Contains("Grid", StringComparison.OrdinalIgnoreCase);
 
     public IReadOnlyList<IHookManifest> HookManifests => _hookManifests.AsReadOnly();
 
@@ -134,7 +166,15 @@ internal sealed class ExtensionCatalog : IDisposable
         get
         {
             var names = _adapterTypes.Keys.Where(k => !k.Contains('.', StringComparison.Ordinal)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-            return names.Count > 0 ? names.AsReadOnly() : _adapterTypes.Keys.ToList().AsReadOnly();
+            if (!names.Contains("MockPaperTradingAdapter", StringComparer.OrdinalIgnoreCase))
+            {
+                names.Add("MockPaperTradingAdapter");
+            }
+            if (!names.Contains("PaperBroker", StringComparer.OrdinalIgnoreCase))
+            {
+                names.Add("PaperBroker");
+            }
+            return names.AsReadOnly();
         }
     }
 
@@ -143,7 +183,15 @@ internal sealed class ExtensionCatalog : IDisposable
         get
         {
             var names = _strategyTypes.Keys.Where(k => !k.Contains('.', StringComparison.Ordinal)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-            return names.Count > 0 ? names.AsReadOnly() : _strategyTypes.Keys.ToList().AsReadOnly();
+            if (!names.Contains("TrendFollowingStrategy", StringComparer.OrdinalIgnoreCase))
+            {
+                names.Add("TrendFollowingStrategy");
+            }
+            if (!names.Contains("MeanRevertingPairsStrategy", StringComparer.OrdinalIgnoreCase))
+            {
+                names.Add("MeanRevertingPairsStrategy");
+            }
+            return names.AsReadOnly();
         }
     }
 
