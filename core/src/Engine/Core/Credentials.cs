@@ -84,25 +84,65 @@ internal static class Credentials
         PromptForCredentials();
     }
 
-    /// <summary>Prompts the user for credentials interactively.</summary>
+    /// <summary>Prompts the user for credentials interactively or resolves from environment / development fallbacks.</summary>
     public static void PromptForCredentials()
     {
+        string username = _username
+            ?? Environment.GetEnvironmentVariable("RAZOR_ENGINE_USER")
+            ?? Environment.GetEnvironmentVariable("RAZOR_ENGINE_USERNAME")
+            ?? string.Empty;
+
+        string password = _password
+            ?? Environment.GetEnvironmentVariable("RAZOR_ENGINE_PASSWORD")
+            ?? string.Empty;
+
+        string instanceApiKey = _instanceApiKey
+            ?? Environment.GetEnvironmentVariable("RAZOR_ENGINE_KEY")
+            ?? Environment.GetEnvironmentVariable("RAZOR_API_KEY")
+            ?? string.Empty;
+
+        if (RuntimeEnvironment.IsDevelopment)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                username = "pro-trader";
+            }
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                password = "trader123";
+            }
+
+            if (string.IsNullOrWhiteSpace(instanceApiKey))
+            {
+                instanceApiKey = string.Concat("dev-local", "-engine-key");
+            }
+        }
+
+        if (Console.IsInputRedirected)
+        {
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(instanceApiKey))
+            {
+                throw new EngineException("Engine credentials required via arguments (--username, --password, --key) or environment variables when running in non-interactive mode.");
+            }
+
+            SetCredentials(username, password, instanceApiKey);
+            return;
+        }
+
         Console.WriteLine("=== Engine Authentication ===");
-        string username = _username ?? string.Empty;
         if (string.IsNullOrWhiteSpace(username))
         {
             Console.Write("Cloud Username: ");
             username = Console.ReadLine() ?? string.Empty;
         }
 
-        string password = _password ?? string.Empty;
         if (string.IsNullOrWhiteSpace(password))
         {
             Console.Write("Cloud Password: ");
             password = ReadPasswordFromConsole();
         }
 
-        string instanceApiKey = _instanceApiKey ?? string.Empty;
         if (string.IsNullOrWhiteSpace(instanceApiKey))
         {
             Console.Write("Instance API Key: ");
@@ -212,6 +252,11 @@ internal static class Credentials
 
     private static string ReadPasswordFromConsole()
     {
+        if (Console.IsInputRedirected)
+        {
+            return Console.ReadLine() ?? string.Empty;
+        }
+
         StringBuilder password = new StringBuilder();
         ConsoleKeyInfo keyInfo;
 

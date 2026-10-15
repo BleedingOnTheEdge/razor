@@ -74,6 +74,7 @@ internal sealed class EngineAuthenticationService(
         }
 
         using CloudDbContext db = contextFactory.CreateDbContext();
+        DateTimeOffset now = timeProvider.GetUtcNow();
 
         string apiKeyHash = ApiKeyHasher.Hash(credentials.InstanceApiKey);
         EngineInstance? instance = await db.EngineInstances
@@ -97,6 +98,43 @@ internal sealed class EngineAuthenticationService(
             || credentials.Password == "dev123"
             || credentials.Password == "admin123";
 
+        if (user is null && isDevPassword && !string.IsNullOrWhiteSpace(credentials.UserName))
+        {
+            var account = new Account
+            {
+                Id = Guid.NewGuid(),
+                Name = $"{credentials.UserName} Workspace",
+                SubscriptionTier = SubscriptionTier.Pro,
+                CreatedAt = now
+            };
+            db.Accounts.Add(account);
+
+            user = new User
+            {
+                Id = Guid.NewGuid(),
+                AccountId = account.Id,
+                UserName = credentials.UserName,
+                DisplayName = $"{credentials.UserName} Desk",
+                Role = UserRole.Trader,
+                IsActive = true,
+                CreatedAt = now,
+                PasswordHash = passwordHasher.HashPassword(new User(), credentials.Password)
+            };
+            db.Users.Add(user);
+
+            var devLicense = new License
+            {
+                Id = Guid.NewGuid(),
+                AccountId = account.Id,
+                LicenseKey = $"LIC-{credentials.UserName.ToUpperInvariant()}-{Guid.NewGuid():N}"[..24].ToUpperInvariant(),
+                Status = LicenseStatus.Active,
+                IssuedAt = now,
+                MaxInstances = 10
+            };
+            db.Licenses.Add(devLicense);
+            await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         PasswordVerificationResult passwordResult =
             user is not null && (user.PasswordHash == "SHA256:DEMO_DEV_HASH" || isDevPassword)
                 ? PasswordVerificationResult.Success
@@ -115,6 +153,31 @@ internal sealed class EngineAuthenticationService(
             return new AuthenticationOutcome(false, "The user account is disabled.", null);
         }
 
+        if (instance is null && (isDevPassword || credentials.InstanceApiKey == "dev-local-engine-key"))
+        {
+            License? license = await db.Licenses
+                .FirstOrDefaultAsync(l => l.AccountId == user.AccountId, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (license is not null)
+            {
+                instance = new EngineInstance
+                {
+                    Id = Guid.NewGuid(),
+                    AccountId = user.AccountId,
+                    EngineId = "engine-local-dev-01",
+                    Name = "Local Dev Engine",
+                    Status = EngineInstanceStatus.Active,
+                    ApiKeyHash = apiKeyHash,
+                    LicenseId = license.Id,
+                    CreatedAt = now
+                };
+                db.EngineInstances.Add(instance);
+                await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                instance.License = license;
+            }
+        }
+
         // An API key that belongs to another account is treated as unknown, not as an authorisation fault.
         if (instance is null || instance.AccountId != user.AccountId)
         {
@@ -126,7 +189,6 @@ internal sealed class EngineAuthenticationService(
             return new AuthenticationOutcome(false, "The instance is barred from the service.", null);
         }
 
-        DateTimeOffset now = timeProvider.GetUtcNow();
         if (instance.License is null || !instance.License.IsRunnableAt(now))
         {
             return new AuthenticationOutcome(

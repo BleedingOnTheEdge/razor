@@ -64,7 +64,8 @@ internal static class ManagementApiKeyMiddleware
             }
 
             // Public endpoints that unauthenticated users can access
-            if (context.Request.Path.StartsWithSegments("/api/auth", StringComparison.Ordinal)
+            if (context.Request.Path.StartsWithSegments("/api/health", StringComparison.Ordinal)
+                || context.Request.Path.StartsWithSegments("/api/auth", StringComparison.Ordinal)
                 || context.Request.Path.StartsWithSegments("/api/marketplace", StringComparison.Ordinal)
                 || context.Request.Path.StartsWithSegments("/api/community", StringComparison.Ordinal)
                 || context.Request.Path.StartsWithSegments("/api/events/stream", StringComparison.Ordinal))

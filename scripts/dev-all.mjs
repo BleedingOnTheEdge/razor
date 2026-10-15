@@ -5,7 +5,7 @@
 // </copyright>
 // -----------------------------------------------------------------------------
 
-import { spawn } from 'node:child_process';
+import { execSync, spawn } from 'node:child_process';
 import net from 'node:net';
 import path from 'node:path';
 import readline from 'node:readline';
@@ -51,6 +51,12 @@ const SERVICES = [
       '--development',
       '--endpoint',
       'ws://localhost:5000/engine',
+      '--username',
+      'pro-trader',
+      '--password',
+      'trader123',
+      '--key',
+      'dev-local-engine-key',
     ],
     cwd: REPO_ROOT,
     category: 'backend',
@@ -106,6 +112,76 @@ function checkPortInUse(port) {
 
     socket.connect(port, '127.0.0.1');
   });
+}
+
+/**
+ * Verifies whether an active HTTP endpoint responds as the Razor Cloud API.
+ */
+async function verifyCloudHealth(port) {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 1200);
+    const res = await fetch(`http://127.0.0.1:${port}/api/health`, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data = await res.json().catch(() => null);
+      if (data && (data.service?.includes('Razor Cloud') || data.status === 'healthy')) {
+        return true;
+      }
+    }
+  } catch {
+    // Port active but not Razor Cloud
+  }
+  return false;
+}
+
+/**
+ * Attempts to terminate a foreign process occupying a specified port.
+ */
+function killConflictingProcessOnPort(port) {
+  try {
+    if (isWindows) {
+      const output = execSync(`netstat -ano | findstr :${port}`, { encoding: 'utf-8' });
+      const lines = output.trim().split('\n');
+      for (const line of lines) {
+        const parts = line.trim().split(/\s+/);
+        const pid = parts[parts.length - 1];
+        if (pid && parseInt(pid, 10) > 0) {
+          try {
+            execSync(`taskkill /F /PID ${pid}`);
+          } catch {
+            // ignore
+          }
+        }
+      }
+      return true;
+    } else {
+      try {
+        execSync(`fuser -k -9 ${port}/tcp 2>/dev/null`);
+      } catch {
+        // ignore
+      }
+      const pids = execSync(`lsof -ti TCP:${port} -sTCP:LISTEN 2>/dev/null`, {
+        encoding: 'utf-8',
+      }).trim();
+      if (pids) {
+        for (const pidStr of pids.split(/\s+/)) {
+          const pid = parseInt(pidStr, 10);
+          if (pid && pid !== process.pid) {
+            try {
+              process.kill(pid, 'SIGKILL');
+            } catch {
+              // ignore
+            }
+          }
+        }
+      }
+      return true;
+    }
+  } catch {
+    // Process termination failed or no process found
+  }
+  return false;
 }
 
 /**
@@ -190,12 +266,38 @@ async function main() {
   const toSpawn = [];
   for (const s of selectedServices) {
     if (s.port) {
-      const inUse = await checkPortInUse(s.port);
+      let inUse = await checkPortInUse(s.port);
       if (inUse) {
-        console.log(
-          `${YELLOW}[dev:all] Port ${s.port} is already active. ${s.name} is already running — leaving active.${RESET}`
-        );
-        continue;
+        if (s.id === 'cloud') {
+          const isRealCloud = await verifyCloudHealth(s.port);
+          if (isRealCloud) {
+            console.log(
+              `${GREEN}[dev:all] Verified existing Cloud API on port ${s.port} — reusing active instance.${RESET}`
+            );
+            continue;
+          }
+
+          console.warn(
+            `${YELLOW}[dev:all] Port ${s.port} is active, but is NOT responding as Razor Cloud API.${RESET}`
+          );
+          console.log(`${CYAN}[dev:all] Terminating foreign conflicting process on port ${s.port}...${RESET}`);
+          killConflictingProcessOnPort(s.port);
+          await new Promise((r) => setTimeout(r, 600));
+
+          inUse = await checkPortInUse(s.port);
+          if (inUse) {
+            console.error(
+              `${RED}[dev:all] Unable to clear port ${s.port}. Please manually kill the conflicting process.${RESET}`
+            );
+            process.exit(1);
+          }
+          console.log(`${GREEN}[dev:all] Port ${s.port} successfully freed.${RESET}`);
+        } else {
+          console.log(
+            `${YELLOW}[dev:all] Port ${s.port} is already active. ${s.name} is already running — leaving active.${RESET}`
+          );
+          continue;
+        }
       }
     }
     toSpawn.push(s);
@@ -212,7 +314,7 @@ async function main() {
   process.on('SIGINT', () => shutdownAll('SIGINT'));
   process.on('SIGTERM', () => shutdownAll('SIGTERM'));
 
-  for (const service of toSpawn) {
+  function spawnService(service) {
     const child = spawn(service.command, service.args, {
       cwd: service.cwd,
       stdio: ['ignore', 'pipe', 'pipe'],
@@ -241,6 +343,27 @@ async function main() {
         `${service.color}${BOLD}${service.tag}${RESET} ${RED}Spawn error: ${err.message}${RESET}`
       );
     });
+  }
+
+  const cloudService = toSpawn.find((s) => s.id === 'cloud');
+  const otherServices = toSpawn.filter((s) => s.id !== 'cloud');
+
+  if (cloudService) {
+    spawnService(cloudService);
+
+    // Wait up to 25 seconds for Cloud API to be healthy before starting dependent services
+    const deadline = Date.now() + 25000;
+    while (Date.now() < deadline && !isShuttingDown) {
+      await new Promise((r) => setTimeout(r, 600));
+      if (await verifyCloudHealth(cloudService.port)) {
+        break;
+      }
+    }
+  }
+
+  for (const service of otherServices) {
+    if (isShuttingDown) break;
+    spawnService(service);
   }
 }
 
