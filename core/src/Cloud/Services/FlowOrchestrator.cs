@@ -82,11 +82,24 @@ internal sealed partial class FlowOrchestrator(
                 _ => "RunBacktest"
             };
 
+            string commandParamsJson = configurationJson ?? "{}";
+            try
+            {
+                var dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object?>>(commandParamsJson) ?? new();
+                dict["RunId"] = run.Id.ToString();
+                dict["FlowRunId"] = run.Id.ToString();
+                commandParamsJson = System.Text.Json.JsonSerializer.Serialize(dict);
+            }
+            catch
+            {
+                // Fallback to raw configurationJson
+            }
+
             await commandService.SubmitAsync(
                 instanceId,
                 commandId,
                 cmdType,
-                configurationJson,
+                commandParamsJson,
                 timeoutSeconds: 300,
                 cancellationToken).ConfigureAwait(false);
         }

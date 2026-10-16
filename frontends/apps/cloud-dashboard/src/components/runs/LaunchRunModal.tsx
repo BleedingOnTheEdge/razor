@@ -156,6 +156,10 @@ export function LaunchRunModal({
       InitialBalance: Number(initialCapital),
       Leverage: Number(leverage),
       ExecutionKind: runKind,
+      MasterSeed: Number(seed),
+      Generations: Number(generations),
+      PopulationSize: Number(populationSize),
+      MutationRate: Number(mutationRate),
       // Structured sections
       market: { symbol, barSize, initialCapital: Number(initialCapital), startDate: startIso, endDate: endIso },
       strategy: { name: detectedStrategy, fastPeriod: Number(fastPeriod), slowPeriod: Number(slowPeriod), stopLossPct: Number(stopLossPct), takeProfitPct: Number(takeProfitPct), leverage: Number(leverage) },
