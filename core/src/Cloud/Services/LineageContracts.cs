@@ -101,11 +101,24 @@ internal sealed record ReportAggregateMetrics(
 /// <param name="Aggregates">The aggregate metrics, suppressed or marked partial if gapped.</param>
 /// <param name="Interventions">The recorded intervention history.</param>
 /// <param name="WarningMessage">Warning or notice regarding gaps or divergence.</param>
+/// <param name="EngineInstanceId">The target Engine instance identifier.</param>
+/// <param name="Kind">The flow kind.</param>
+/// <param name="Status">The run status.</param>
+/// <param name="BaseSeed">The base deterministic seed.</param>
+/// <param name="CreatedAt">When the run was created.</param>
+/// <param name="CompletedAt">When the run completed, if applicable.</param>
+/// <param name="ConfigurationJson">The execution specifications and parameters.</param>
 internal sealed record RunReport(
     Guid RunId,
+    Guid EngineInstanceId,
+    RunKind Kind,
+    RunStatus Status,
     Guid? ParentRunId,
     RunRelation? Relation,
     RunContinuity? Continuity,
+    long? BaseSeed,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? CompletedAt,
     bool IsPartial,
     bool HeadlineFiguresSuppressed,
     bool IsDiverged,
@@ -114,7 +127,8 @@ internal sealed record RunReport(
     IReadOnlyList<ReportGapDetail> Gaps,
     ReportAggregateMetrics? Aggregates,
     IReadOnlyList<InterventionSpecification> Interventions,
-    string? WarningMessage = null);
+    string? WarningMessage = null,
+    string? ConfigurationJson = null);
 
 /// <summary>
 /// Target metric for benchmarking and ranking runs.

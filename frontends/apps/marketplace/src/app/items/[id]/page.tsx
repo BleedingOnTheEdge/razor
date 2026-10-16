@@ -1,6 +1,7 @@
 'use client';
 
 import { use } from 'react';
+import { useParams } from 'next/navigation';
 import { ItemDetailContent } from '@/components/items/item-detail-content';
 
 interface ItemDetailPageProps {
@@ -8,6 +9,9 @@ interface ItemDetailPageProps {
 }
 
 export default function ItemDetailPage({ params }: ItemDetailPageProps) {
-  const { id } = use(params);
+  const routeParams = useParams();
+  const resolved = params ? use(params) : null;
+  const id = (routeParams?.id as string) || resolved?.id || '';
+
   return <ItemDetailContent itemId={id} />;
 }

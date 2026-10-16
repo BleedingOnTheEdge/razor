@@ -21,7 +21,14 @@ internal sealed record UserProfileView(
     bool CanManageFleet,
     bool CanExecuteLive,
     bool CanPublishMarketplace,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    string? Email = null,
+    string? DisplayName = null,
+    string? AvatarUrl = null,
+    string? Bio = null,
+    bool CanManageUsers = false,
+    bool CanManageSettings = false,
+    bool IsSuperAdmin = false);
 
 /// <summary>Represents an authentication session response.</summary>
 internal sealed record AuthSessionResponse(
@@ -31,7 +38,7 @@ internal sealed record AuthSessionResponse(
 /// <summary>
 /// Manages user authentication context, role assignments, and account subscription tiers.
 /// </summary>
-internal sealed class UserService(
+internal sealed partial class UserService(
     IDbContextFactory<CloudDbContext> contextFactory,
     CloudOptions options,
     TimeProvider timeProvider,
@@ -164,6 +171,11 @@ internal sealed class UserService(
             }
         }
 
+        if (!user.IsActive)
+        {
+            return null;
+        }
+
         string token = options.ManagementApiKey ?? "dev-cloud-management-key-3000";
         return new AuthSessionResponse(token, MapToView(user));
     }
@@ -262,9 +274,12 @@ internal sealed class UserService(
             _ => 1
         };
 
-        bool canManageFleet = user.Role is UserRole.Admin or UserRole.Operator;
+        bool isSuperAdmin = user.Role is UserRole.SuperAdmin;
+        bool canManageFleet = user.Role is UserRole.SuperAdmin or UserRole.Admin or UserRole.Operator;
         bool canExecuteLive = tier is SubscriptionTier.Pro or SubscriptionTier.Enterprise;
-        bool canPublishMarketplace = user.Role is UserRole.Admin or UserRole.Developer;
+        bool canPublishMarketplace = user.Role is UserRole.SuperAdmin or UserRole.Admin or UserRole.Developer;
+        bool canManageUsers = user.Role is UserRole.SuperAdmin or UserRole.Admin;
+        bool canManageSettings = user.Role is UserRole.SuperAdmin;
 
         return new UserProfileView(
             user.Id,
@@ -277,6 +292,13 @@ internal sealed class UserService(
             canManageFleet,
             canExecuteLive,
             canPublishMarketplace,
-            user.CreatedAt);
+            user.CreatedAt,
+            user.Email,
+            user.DisplayName,
+            user.AvatarUrl,
+            user.Bio,
+            canManageUsers,
+            canManageSettings,
+            isSuperAdmin);
     }
 }

@@ -94,7 +94,7 @@ internal sealed class ListInstancesEndpoint(
             Status = i.Status,
             CreatedAt = i.CreatedAt,
             LastSeenAt = i.LastSeenAt,
-            IsConnected = connected.Contains(i.Id),
+            IsConnected = connected.Contains(i.Id) || (i.LastSeenAt.HasValue && i.LastSeenAt.Value >= DateTimeOffset.UtcNow.AddSeconds(-45)),
             ManifestExtensionCount = i.ManifestEntries.Count
         })];
 

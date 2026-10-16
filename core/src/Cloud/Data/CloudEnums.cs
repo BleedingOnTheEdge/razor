@@ -75,6 +75,9 @@ internal enum CommandStatus
 /// <summary>The role and access level of a user account.</summary>
 internal enum UserRole
 {
+    /// <summary>Root administrator with full cluster, tenant, and role governance permissions.</summary>
+    SuperAdmin,
+
     /// <summary>Full cluster operator with infrastructure management permissions.</summary>
     Admin,
 

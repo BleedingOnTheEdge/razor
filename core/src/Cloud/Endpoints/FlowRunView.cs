@@ -71,6 +71,9 @@ internal sealed class FlowRunView
     /// <summary>Gets or sets the best fitness score.</summary>
     public double? BestFitness { get; set; }
 
+    /// <summary>Gets or sets the execution parameters, slot configurations, and hook specifications.</summary>
+    public string? ConfigurationJson { get; set; }
+
     /// <summary>
     /// Creates a view model from a <see cref="FlowRun"/> entity.
     /// </summary>
@@ -104,7 +107,8 @@ internal sealed class FlowRunView
             SharpeRatio = run.SharpeRatio,
             MaxDrawdown = run.MaxDrawdown,
             TradeCount = run.TradeCount,
-            BestFitness = run.BestFitness
+            BestFitness = run.BestFitness,
+            ConfigurationJson = run.ConfigurationJson
         };
     }
 }

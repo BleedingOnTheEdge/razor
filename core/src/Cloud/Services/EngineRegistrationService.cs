@@ -17,7 +17,7 @@ using Microsoft.EntityFrameworkCore;
 /// the count is enforced here rather than at authentication, so an over-quota deployment fails at
 /// provisioning with a clear error instead of failing intermittently at connect time.
 /// </remarks>
-internal sealed class EngineRegistrationService(
+internal sealed partial class EngineRegistrationService(
     IDbContextFactory<CloudDbContext> contextFactory,
     TimeProvider timeProvider)
 {

@@ -252,7 +252,7 @@ internal sealed partial class EngineSession
                     null,
                     correlationId,
                     _timeProvider.GetUtcNow(),
-                    payload),
+                    payload.Clone()),
                 cancellationToken).ConfigureAwait(false);
         }
 
@@ -295,6 +295,7 @@ internal sealed partial class EngineSession
 
         if (_eventBroadcaster is not null)
         {
+            var clonedPayload = payload.Clone();
             await _eventBroadcaster.PublishAsync(
                 new ClientEvent(
                     "command_completed",
@@ -302,8 +303,21 @@ internal sealed partial class EngineSession
                     null,
                     correlationId,
                     _timeProvider.GetUtcNow(),
-                    new { Status = status, Succeeded = succeeded, Payload = payload }),
+                    new { Status = status, Succeeded = succeeded, Payload = clonedPayload }),
                 cancellationToken).ConfigureAwait(false);
+
+            if (succeeded)
+            {
+                await _eventBroadcaster.PublishAsync(
+                    new ClientEvent(
+                        "run_status",
+                        InstanceId!.Value,
+                        null,
+                        correlationId,
+                        _timeProvider.GetUtcNow(),
+                        new { Status = "Completed", CommandStatus = status, Payload = clonedPayload }),
+                    cancellationToken).ConfigureAwait(false);
+            }
         }
 
         return EngineSessionSignal.Continue;

@@ -56,13 +56,20 @@ internal sealed class StreamClientEventsEndpoint(IClientEventBroadcaster broadca
             .SubscribeAsync(request.InstanceId, cancellationToken)
             .ConfigureAwait(false))
         {
-            string payloadJson = JsonSerializer.Serialize(ev, JsonOptions);
-            await HttpContext.Response
-                .WriteAsync($"event: {ev.EventType}\ndata: {payloadJson}\n\n", cancellationToken)
-                .ConfigureAwait(false);
-            await HttpContext.Response.Body
-                .FlushAsync(cancellationToken)
-                .ConfigureAwait(false);
+            try
+            {
+                string payloadJson = JsonSerializer.Serialize(ev, JsonOptions);
+                await HttpContext.Response
+                    .WriteAsync($"event: {ev.EventType}\ndata: {payloadJson}\n\n", cancellationToken)
+                    .ConfigureAwait(false);
+                await HttpContext.Response.Body
+                    .FlushAsync(cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // Guard stream against transient serialization faults
+            }
         }
     }
 }

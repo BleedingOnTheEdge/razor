@@ -13,11 +13,11 @@ const variantStyles: Record<ButtonVariant, string> = {
   primary:
     'bg-cyan-500 text-zinc-950 hover:bg-cyan-400 font-semibold shadow-sm shadow-cyan-500/20 active:bg-cyan-500',
   secondary:
-    'bg-zinc-800/80 text-zinc-100 hover:bg-zinc-750 border border-zinc-700/60 active:bg-zinc-800',
+    'bg-zinc-100 text-zinc-900 hover:bg-zinc-200 border border-zinc-300 dark:bg-zinc-800/80 dark:text-zinc-100 dark:hover:bg-zinc-700/80 dark:border-zinc-700/60 active:bg-zinc-200 dark:active:bg-zinc-800',
   destructive:
-    'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 border border-rose-500/40 active:bg-rose-500/20',
+    'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 dark:bg-rose-500/20 dark:text-rose-300 dark:hover:bg-rose-500/30 dark:border-rose-500/40 active:bg-rose-100 dark:active:bg-rose-500/20',
   ghost:
-    'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50 active:bg-zinc-800/70',
+    'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800/50 active:bg-zinc-100 dark:active:bg-zinc-800/70',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {

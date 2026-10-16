@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import { CheckCircle2, KeyRound, Copy, Check, ExternalLink } from 'lucide-react';
+import { CheckCircle2, KeyRound, Copy, Check, ExternalLink, LogIn } from 'lucide-react';
 import { formatCurrency } from '@razor/ui-kit';
 import type { MarketplaceItemPayload, EngineInstancePayload } from '@razor/api-client';
+import { useAuth } from '@/context/auth-context';
 
 export interface LicenseAcquisitionCardProps {
   item: MarketplaceItemPayload;
@@ -32,6 +33,8 @@ export function LicenseAcquisitionCard({
   acquiring,
   onAcquire,
 }: LicenseAcquisitionCardProps) {
+  const { isAuthenticated } = useAuth();
+
   return (
     <div className="space-y-6">
       <div className="p-6 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 space-y-6 sticky top-24">
@@ -42,6 +45,26 @@ export function LicenseAcquisitionCard({
           </span>
           <span className="text-[11px] text-zinc-500 block mt-1">Perpetual enterprise deployment license</span>
         </div>
+
+        {!isAuthenticated && (
+          <div className="p-3.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-zinc-300 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-indigo-300 flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400" />
+                Guest Evaluation Mode
+              </span>
+              <a
+                href={`/login?redirect=/items/${item.id}`}
+                className="text-xs text-indigo-400 hover:text-indigo-300 underline font-mono flex items-center gap-1"
+              >
+                Sign in <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+            <p className="text-zinc-400 text-[11px] leading-relaxed">
+              Evaluating as guest. Acquired licenses are issued instantly and can be deployed or evaluated immediately.
+            </p>
+          </div>
+        )}
 
         {acquiredLicense ? (
           <div className="p-5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 space-y-3">
@@ -89,14 +112,14 @@ export function LicenseAcquisitionCard({
           <form onSubmit={onAcquire} className="space-y-4">
             <div>
               <label className="block text-xs font-mono text-zinc-400 mb-1">
-                Trading Account ID <span className="text-rose-400">*</span>
+                Trading Account ID <span className="text-zinc-500 font-normal">(Auto-assigned if guest)</span>
               </label>
               <input
                 value={accountId}
                 onChange={(e) => setAccountId(e.target.value)}
                 type="text"
+                placeholder="Workspace Account GUID (auto-assigned if empty)"
                 className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-indigo-500"
-                required
               />
             </div>
 

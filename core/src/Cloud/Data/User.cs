@@ -40,4 +40,16 @@ internal sealed class User
 
     /// <summary>Gets or sets the user's role and permission level.</summary>
     public UserRole Role { get; set; } = UserRole.Developer;
+
+    /// <summary>Gets or sets the user's contact email address.</summary>
+    public string? Email { get; set; }
+
+    /// <summary>Gets or sets the user's friendly display name.</summary>
+    public string? DisplayName { get; set; }
+
+    /// <summary>Gets or sets the user's avatar image URL.</summary>
+    public string? AvatarUrl { get; set; }
+
+    /// <summary>Gets or sets the user's profile biography.</summary>
+    public string? Bio { get; set; }
 }

@@ -36,6 +36,13 @@ internal sealed class CloudTestContext : IDisposable
         Commands = new CommandService(database, Options, Time, NullLogger<CommandService>.Instance);
         Profiles = new ProfileService(database, Commands, Options);
         Manifests = new InstanceManifestService(database, Time);
+        Registration = new EngineRegistrationService(database, Time);
+    }
+
+    /// <summary>Gets the registration service.</summary>
+    internal EngineRegistrationService Registration
+    {
+        get;
     }
 
     /// <summary>Gets the store.</summary>

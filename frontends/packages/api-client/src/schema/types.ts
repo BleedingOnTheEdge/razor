@@ -39,21 +39,55 @@ export interface FlowRunPayload {
   randomPosition?: string | null;
   isPartial: boolean;
   createdAt: string;
-  metrics?: {
-    netProfit?: number | null;
-    totalReturn?: number | null;
-    sharpeRatio?: number | null;
-    maxDrawdown?: number | null;
-    tradeCount?: number | null;
-    bestFitness?: number | null;
-  } | null;
+  completedAt?: string | null;
+  configurationJson?: string | null;
+  metrics?: RunMetricsPayload | null;
   interventionsCount: number;
   gapsCount: number;
 }
 
+export interface RunMetricsPayload {
+  netProfit?: number | null;
+  totalReturn?: number | null;
+  sharpeRatio?: number | null;
+  maxDrawdown?: number | null;
+  tradeCount?: number | null;
+  bestFitness?: number | null;
+}
+
 export interface LineageNodePayload {
-  run: FlowRunPayload;
+  runId: string;
+  parentRunId?: string | null;
+  kind: string;
+  status: string;
+  relation?: string | null;
+  continuity?: string | null;
+  forkPoint?: { step?: number; generation?: number; windowIndex?: number } | null;
+  forkPointStep?: number | null;
+  interventionsCount?: number;
+  engineInstanceId?: string;
+  createdAt?: string;
+  metrics?: RunMetricsPayload | null;
+  baseSeed?: number | null;
+  randomPosition?: string | null;
+  isPartial?: boolean;
+  interventions?: Array<{
+    stepIndex: number;
+    previousFingerprint: string;
+    newFingerprint: string;
+    actor: string;
+    reason: string;
+    modificationsSummary?: string | null;
+    beforePayloadJson?: string | null;
+    afterPayloadJson?: string | null;
+  }>;
+  gaps?: Array<{
+    startStep: number;
+    endStep: number;
+    reason: string;
+  }>;
   children: LineageNodePayload[];
+  run?: FlowRunPayload;
 }
 
 export interface RunReportPayload {
@@ -61,11 +95,27 @@ export interface RunReportPayload {
   engineInstanceId: string;
   kind: string;
   status: string;
+  parentRunId?: string | null;
   relation?: string | null;
   continuity?: string | null;
   baseSeed?: number | null;
-  isPartial: boolean;
   createdAt: string;
+  completedAt?: string | null;
+  configurationJson?: string | null;
+  isPartial: boolean;
+  headlineFiguresSuppressed: boolean;
+  isDiverged: boolean;
+  isComparable: boolean;
+  divergenceFlag?: string | null;
+  warningMessage?: string | null;
+  aggregates?: {
+    netProfit?: number | null;
+    totalReturn?: number | null;
+    sharpeRatio?: number | null;
+    maxDrawdown?: number | null;
+    tradeCount?: number | null;
+    bestFitness?: number | null;
+  } | null;
   metrics?: {
     netProfit?: number | null;
     totalReturn?: number | null;
@@ -75,23 +125,23 @@ export interface RunReportPayload {
     bestFitness?: number | null;
   } | null;
   interventions: Array<{
-    id: string;
+    id?: string;
     stepIndex: number;
     previousFingerprint: string;
     newFingerprint: string;
     actor: string;
     reason: string;
     modificationsSummary?: string | null;
-    timestamp: string;
+    timestamp?: string;
   }>;
   gaps: Array<{
-    id: string;
+    id?: string;
     startStep: number;
     endStep: number;
     reason: string;
-    recordedAt: string;
+    recordedAt?: string;
   }>;
-  comparable: boolean;
+  comparable?: boolean;
 }
 
 export interface RankedRunResultPayload {
@@ -136,12 +186,18 @@ export interface UserProfilePayload {
   accountId: string;
   userName: string;
   accountName: string;
-  role: 'Admin' | 'Operator' | 'Developer' | 'Trader';
+  displayName?: string | null;
+  email?: string | null;
+  avatarUrl?: string | null;
+  bio?: string | null;
+  role: 'SuperAdmin' | 'Admin' | 'Operator' | 'Developer' | 'Trader';
+  isActive?: boolean;
   subscriptionTier: 'Free' | 'Pro' | 'Enterprise';
   maxInstances: number;
   canManageFleet: boolean;
   canExecuteLive: boolean;
   canPublishMarketplace: boolean;
+  canAdministerCluster?: boolean;
   createdAt: string;
 }
 
@@ -193,4 +249,31 @@ export interface CommunityThreadPayload {
   repliesCount: number;
   createdAt: string;
   replies: CommunityReplyPayload[];
+}
+
+export interface ClusterSettingsPayload {
+  heartbeatIntervalSeconds: number;
+  heartbeatTimeoutSeconds: number;
+  maxFleetSizePerAccount: number;
+  commandQueueExpirySeconds: number;
+  autoDrainGracePeriodSeconds: number;
+  enforceStrictKeyRotationDays: number;
+  requireMfaForLiveTrading: boolean;
+  allowSelfRegistration: boolean;
+  allowedIpRanges: string;
+  sessionTimeoutMinutes: number;
+  requireCurationApproval: boolean;
+  platformFeePercent: number;
+  allowUnverifiedAuthors: boolean;
+  metricsRetentionDays: number;
+  auditLogRetentionDays: number;
+  detailedBehaviorLogging: boolean;
+}
+
+export interface UpdateProfileRequestPayload {
+  userId?: string;
+  displayName?: string;
+  email?: string;
+  avatarUrl?: string;
+  bio?: string;
 }

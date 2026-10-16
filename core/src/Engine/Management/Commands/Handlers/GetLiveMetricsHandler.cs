@@ -34,38 +34,64 @@ internal sealed class GetLiveMetricsHandler : CommandHandlerBase
 
     public override async Task HandleAsync(CloudCommand command, CancellationToken cancellationToken)
     {
-        if (command.Parameters is not Dictionary<string, object> dict ||
-            !dict.TryGetValue("TaskId", out object? idObj))
-        {
-            await SendErrorAsync(command.CorrelationId ?? string.Empty, "Missing TaskId.", cancellationToken)
-                .ConfigureAwait(false);
-            return;
-        }
-
-        string taskId = idObj?.ToString()!;
-
-        var task = _taskManager.GetTask(taskId);
-        if (task is not LiveTask liveTask)
-        {
-            await SendErrorAsync(command.CorrelationId ?? string.Empty, $"Task {taskId} is not a live task.", cancellationToken)
-                .ConfigureAwait(false);
-            return;
-        }
-
-        var state = await _taskManager.GetLiveStateAsync(taskId, cancellationToken).ConfigureAwait(false);
         var telemetrySnapshot = _telemetry.GetMetricsSnapshot();
 
-        var metrics = new
+        if (command.Parameters is not Dictionary<string, object> dict ||
+            !dict.TryGetValue("TaskId", out object? idObj) ||
+            string.IsNullOrWhiteSpace(idObj?.ToString()))
         {
-            TaskId = taskId,
-            State = state,
-            Telemetry = telemetrySnapshot,
-            LastTickTime = liveTask.LastTickTime,
-            StartTime = liveTask.StartTime,
-            Uptime = DateTime.UtcNow - liveTask.StartTime
-        };
+            var generalMetrics = new
+            {
+                Telemetry = telemetrySnapshot,
+                RunningTasks = _taskManager.RunningTasks.Select(t => new { t.TaskId, t.TaskType, State = t.State.ToString() }).ToList(),
+                LastTickTime = _taskManager.GetLastLiveTickTimestamp(),
+                Timestamp = DateTime.UtcNow
+            };
 
-        await SendSuccessAsync(command.CorrelationId ?? string.Empty, metrics, cancellationToken)
-            .ConfigureAwait(false);
+            await SendSuccessAsync(command.CorrelationId ?? string.Empty, generalMetrics, cancellationToken)
+                .ConfigureAwait(false);
+            return;
+        }
+
+        string taskId = idObj.ToString()!;
+        var task = _taskManager.GetTask(taskId);
+
+        if (task is LiveTask liveTask)
+        {
+            var state = await _taskManager.GetLiveStateAsync(taskId, cancellationToken).ConfigureAwait(false);
+            var metrics = new
+            {
+                TaskId = taskId,
+                State = state,
+                Telemetry = telemetrySnapshot,
+                LastTickTime = liveTask.LastTickTime,
+                StartTime = liveTask.StartTime,
+                Uptime = DateTime.UtcNow - liveTask.StartTime
+            };
+            await SendSuccessAsync(command.CorrelationId ?? string.Empty, metrics, cancellationToken)
+                .ConfigureAwait(false);
+            return;
+        }
+
+        if (task is not null)
+        {
+            var taskMetrics = new
+            {
+                TaskId = taskId,
+                TaskType = task.TaskType,
+                State = task.State.ToString(),
+                Telemetry = telemetrySnapshot,
+                StartTime = task.StartTime,
+                EndTime = task.EndTime
+            };
+            await SendSuccessAsync(command.CorrelationId ?? string.Empty, taskMetrics, cancellationToken)
+                .ConfigureAwait(false);
+            return;
+        }
+
+        await SendSuccessAsync(
+            command.CorrelationId ?? string.Empty,
+            new { TaskId = taskId, State = "NotFound", Telemetry = telemetrySnapshot },
+            cancellationToken).ConfigureAwait(false);
     }
 }

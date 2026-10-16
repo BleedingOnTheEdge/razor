@@ -24,7 +24,8 @@ internal sealed partial class FlowOrchestrator(
     LineageService lineageService,
     TimeProvider timeProvider,
     ILogger<FlowOrchestrator> logger,
-    IClientEventBroadcaster? eventBroadcaster = null)
+    IClientEventBroadcaster? eventBroadcaster = null,
+    CommandService? commandService = null)
 {
     /// <summary>
     /// Starts a new original flow run.
@@ -32,12 +33,14 @@ internal sealed partial class FlowOrchestrator(
     /// <param name="instanceId">The target Engine instance.</param>
     /// <param name="kind">The kind of flow.</param>
     /// <param name="baseSeed">The initial master seed for the run.</param>
+    /// <param name="configurationJson">Optional execution specifications and parameters.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The started flow run.</returns>
     public async Task<FlowRun> StartOriginalRunAsync(
         Guid instanceId,
         RunKind kind,
         long? baseSeed = null,
+        string? configurationJson = null,
         CancellationToken cancellationToken = default)
     {
         FlowRun run = await lineageService
@@ -50,15 +53,54 @@ internal sealed partial class FlowOrchestrator(
         {
             tracked.Status = RunStatus.Running;
             tracked.BaseSeed = baseSeed;
+            tracked.ConfigurationJson = configurationJson;
             await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             run.Status = RunStatus.Running;
             run.BaseSeed = baseSeed;
+            run.ConfigurationJson = configurationJson;
         }
 
         if (eventBroadcaster is not null)
         {
             await eventBroadcaster.PublishAsync(
-                new ClientEvent("run_status", instanceId, run.Id, null, timeProvider.GetUtcNow(), new { Status = run.Status, Kind = run.Kind }),
+                new ClientEvent("run_status", instanceId, run.Id, null, timeProvider.GetUtcNow(), new { Status = run.Status, Kind = run.Kind, Configuration = configurationJson }),
+                cancellationToken).ConfigureAwait(false);
+        }
+
+        if (commandService is not null)
+        {
+            int commandId = kind switch
+            {
+                RunKind.Optimization => 1300,
+                RunKind.WalkForward => 1300,
+                _ => 1200
+            };
+            string cmdType = kind switch
+            {
+                RunKind.Optimization => "StartOptimization",
+                RunKind.WalkForward => "StartOptimization",
+                _ => "RunBacktest"
+            };
+
+            string commandParamsJson = configurationJson ?? "{}";
+            try
+            {
+                var dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object?>>(commandParamsJson) ?? new();
+                dict["RunId"] = run.Id.ToString();
+                dict["FlowRunId"] = run.Id.ToString();
+                commandParamsJson = System.Text.Json.JsonSerializer.Serialize(dict);
+            }
+            catch
+            {
+                // Fallback to raw configurationJson
+            }
+
+            await commandService.SubmitAsync(
+                instanceId,
+                commandId,
+                cmdType,
+                commandParamsJson,
+                timeoutSeconds: 300,
                 cancellationToken).ConfigureAwait(false);
         }
 

@@ -15,6 +15,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import type { MarketplaceItemPayload, EngineInstancePayload } from '@razor/api-client';
+import { useAuth } from '@/context/auth-context';
 import { LicenseAcquisitionCard } from './LicenseAcquisitionCard';
 import { ReviewSubmissionModal } from './ReviewSubmissionModal';
 
@@ -24,13 +25,14 @@ export interface ItemDetailContentProps {
 
 export function ItemDetailContent({ itemId }: ItemDetailContentProps) {
   const { success, error: toastError } = useToast();
+  const { user, isAuthenticated } = useAuth();
 
   const [item, setItem] = useState<MarketplaceItemPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // License acquisition state
-  const [accountId, setAccountId] = useState('acc-operator-default');
+  const [accountId, setAccountId] = useState(user?.accountId || 'acc-operator-default');
   const [targetInstanceId, setTargetInstanceId] = useState('');
   const [fleetInstances, setFleetInstances] = useState<EngineInstancePayload[]>([]);
   const [acquiring, setAcquiring] = useState(false);
@@ -50,12 +52,9 @@ export function ItemDetailContent({ itemId }: ItemDetailContentProps) {
       setError(null);
       try {
         const client = getApiClient();
-        const [itemRes, instancesRes] = await Promise.all([
-          client.GET('/api/marketplace/items/{itemId}', {
-            params: { path: { itemId } },
-          }),
-          client.GET('/api/instances'),
-        ]);
+        const itemRes = await client.GET('/api/marketplace/items/{itemId}', {
+          params: { path: { itemId } },
+        });
 
         if (itemRes.error) {
           setError('Failed to fetch extension details.');
@@ -63,10 +62,17 @@ export function ItemDetailContent({ itemId }: ItemDetailContentProps) {
           setItem(itemRes.data);
         }
 
-        if (instancesRes.data) {
-          setFleetInstances(instancesRes.data);
-          if (instancesRes.data.length > 0 && !targetInstanceId) {
-            setTargetInstanceId(instancesRes.data[0].instanceId);
+        if (isAuthenticated) {
+          try {
+            const instancesRes = await client.GET('/api/instances');
+            if (instancesRes.data) {
+              setFleetInstances(instancesRes.data);
+              if (instancesRes.data.length > 0 && !targetInstanceId) {
+                setTargetInstanceId(instancesRes.data[0].instanceId);
+              }
+            }
+          } catch {
+            // Ignore fleet instances error if unauthenticated
           }
         }
       } catch (e) {
@@ -79,12 +85,15 @@ export function ItemDetailContent({ itemId }: ItemDetailContentProps) {
     fetchItemAndFleet();
   }, [itemId]);
 
+  useEffect(() => {
+    if (user?.accountId && (!accountId || accountId === 'acc-operator-default')) {
+      setAccountId(user.accountId);
+    }
+  }, [user, accountId]);
+
   async function handleAcquire(e: React.FormEvent) {
     e.preventDefault();
-    if (!accountId.trim()) {
-      toastError('Validation Error', 'Account ID is required for license acquisition.');
-      return;
-    }
+    const effectiveAccountId = accountId.trim() || user?.accountId || 'acc-operator-default';
 
     setAcquiring(true);
     setAcquiredLicense(null);
@@ -93,13 +102,21 @@ export function ItemDetailContent({ itemId }: ItemDetailContentProps) {
       const { data, error: err } = await client.POST('/api/marketplace/items/{itemId}/acquire', {
         params: { path: { itemId } },
         body: {
-          accountId: accountId.trim(),
+          accountId: effectiveAccountId,
           targetInstanceId: targetInstanceId.trim() || undefined,
         },
       });
 
       if (err) {
-        toastError('Acquisition Failed', 'The licensing server was unable to issue a license.');
+        const errorObj = typeof err === 'object' && err !== null ? err as Record<string, unknown> : {};
+        const errorMsg = errorObj.detail
+          ? String(errorObj.detail)
+          : errorObj.message
+            ? String(errorObj.message)
+            : errorObj.title
+              ? String(errorObj.title)
+              : 'The licensing server was unable to issue a license.';
+        toastError('Acquisition Failed', errorMsg);
       } else if (data) {
         setAcquiredLicense(data.licenseKey);
         success('License Acquired', `License ${data.licenseKey} issued successfully.`);

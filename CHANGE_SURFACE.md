@@ -78,11 +78,49 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `frontends/packages/ui-kit/src/components/ModalSheet.tsx`: Apple Design backdrop-blur modal sheet dialog.
 - `frontends/packages/ui-kit/src/components/SegmentedControl.tsx`: Apple Design iOS/macOS-style pill segmented control.
 - `frontends/packages/ui-kit/src/components/StatCard.tsx`: Apple Design financial statistic card with tabular numeric typography.
+- `frontends/packages/ui-kit/src/components/ThemeToggle.tsx`: Apple Design light/dark mode theme toggle with smooth CSS variable transitions.
+- `frontends/apps/cloud-dashboard/src/app/admin/page.tsx`: Rich Admin panel page for operator elevation/demotion, user status management, and audit inspection.
+- `frontends/apps/cloud-dashboard/src/app/profile/page.tsx`: User profile view and update page with subscription and preferences.
+- `frontends/apps/cloud-dashboard/src/app/settings/page.tsx`: Cluster administrative settings page for fleet, security, and marketplace configurations.
+- `frontends/apps/cloud-dashboard/src/components/instances/ManageEngineModals.tsx`: Engine lifecycle modals for renaming, secret key rotation, revocation, and decommissioning.
+- `frontends/apps/marketplace/src/app/my-licenses/page.tsx`: Marketplace licenses page for inspecting and activating licenses.
+- `frontends/apps/marketplace/src/app/profile/page.tsx`: Marketplace user profile page.
+- `frontends/packages/api-client/src/schema/paths-admin.ts`: Modular OpenAPI path schemas for admin endpoints.
+- `frontends/packages/api-client/src/schema/paths-instances.ts`: Modular OpenAPI path schemas for engine lifecycle management.
+- `frontends/packages/api-client/src/schema/paths-marketplace.ts`: Modular OpenAPI path schemas for marketplace catalog and acquisition.
+- `frontends/packages/api-client/src/schema/paths-runs.ts`: Modular OpenAPI path schemas for execution runs.
+- `frontends/packages/api-client/src/schema/paths-tickets.ts`: Modular OpenAPI path schemas for support tickets.
+- `core/src/Cloud/Data/DatabaseSeeder.cs`: Production database seeder for 1 superadmin, 3 operators, 20 traders, 20 developers, and 16 additives.
+- `core/src/Cloud/Data/SystemSetting.cs`: Entity Framework model and configuration table for cluster system settings.
+- `core/src/Cloud/Endpoints/AdminEndpoints.cs`: FastEndpoints controller for admin user governance and system settings.
+- `core/src/Cloud/Endpoints/DeleteEngineEndpoint.cs`: FastEndpoints controller for engine instance cascading deletion.
+- `core/src/Cloud/Endpoints/RevokeEngineEndpoint.cs`: FastEndpoints controller for engine instance credential revocation.
+- `core/src/Cloud/Endpoints/RotateEngineKeyEndpoint.cs`: FastEndpoints controller for rotating engine instance API keys.
+- `core/src/Cloud/Endpoints/UpdateEngineEndpoint.cs`: FastEndpoints controller for updating engine metadata and labels.
+- `core/src/Cloud/Endpoints/UserProfileEndpoints.cs`: FastEndpoints controller for user profile inspection and updates.
+- `core/src/Cloud/Services/AdminSettingsService.cs`: Service layer managing cluster settings defaults and database persistence.
+- `core/src/Cloud/Services/EngineRegistrationService.Management.cs`: Partial service isolating engine rename, key rotation, revocation, and deletion.
+- `core/src/Cloud/Services/UserService.Admin.cs`: Partial service isolating user role elevation/demotion and status management.
+- `core/src/Engine/Management/Commands/Handlers/PingHandler.cs`: Ping diagnostic command handler for Engine.
+- `core/src/Engine/Management/Commands/Handlers/SoftReloadHandler.cs`: Soft reload runtime command handler for Engine.
+- `core/tests/Cloud.UnitTests/AdminAndGovernanceEdgeCaseTests.cs`: Boundary and security test suite for admin endpoints.
+- `core/tests/Cloud.UnitTests/AdminEndpointsTests.cs`: Functional test suite for admin settings and user management.
+- `core/tests/Cloud.UnitTests/EngineCrudAndProfileEndpointsTests.cs`: Functional test suite for engine CRUD and profile endpoints.
+- `core/tests/Cloud.UnitTests/EngineManagementEdgeCaseTests.cs`: Edge case test suite for engine lifecycle management.
+- `core/tests/Engine.UnitTests/Management/Commands/CommandDispatcherEdgeCaseTests.cs`: Edge case test suite for Engine command dispatcher.
+- `core/src/Cloud/Data/DatabaseSchemaCompatibility.cs`: Self-healing schema synchronization utility executing idempotent DDL statements before seeding on PostgreSQL databases.
+- `core/src/Cloud/Migrations/20261015060000_AddEnterpriseFeatures.cs`: EF Core migration for enterprise schema expansion.
+- `core/src/Cloud/Migrations/20261015060000_AddEnterpriseFeatures.Designer.cs`: EF Core migration metadata designer file.
+- `core/tests/Cloud.UnitTests/DatabaseSchemaCompatibilityTests.cs`: Unit test suite verifying schema synchronization and PostgreSQL detection logic.
+- `frontends/apps/cloud-dashboard/src/test/settings.test.tsx`: Vitest suite verifying role-based access control and section locking on /settings page for Traders, Operators, and Admins.
 - `scripts/bin/engine`: CLI launcher script wrapping standalone Engine binary execution.
 - `scripts/build-engine.mjs`: Standalone cross-platform Engine binary compiler supporting Linux, Windows, macOS x64 and arm64 architectures.
 - `scripts/dev-all.mjs`: Monorepo multi-service dev orchestrator for Cloud API, Engine, Marketplace, and Dashboard with colored logs and graceful shutdown.
 - `scripts/run-engine.mjs`: Standalone Engine runner script with automatic host binary compilation and argument pass-through.
 - `scripts/test-all.mjs`: Monorepo test orchestrator executing backend .NET test suites and frontend Vitest suites with unified scorecard.
+- `core/tests/Cloud.UnitTests/ProfileServiceSlotAssignmentTests.cs`: Unit test suite verifying automatic marketplace extension provisioning and heartbeat connectivity reporting.
+- `frontends/apps/cloud-dashboard/src/app/maintenance/page.tsx`: Dedicated Maintenance and Command Console page for dispatching engine commands with correlation logs and presets.
+- `frontends/apps/cloud-dashboard/src/components/layout/MobileBottomNav.tsx`: Apple Design 5-item mobile bottom navigation bar with off-canvas sidebar drawer trigger.
 
 ### Modified Files
 - `.gitignore`: Added root ignores for compiled native binaries (/bin/, /artifacts/, /publish/).
@@ -90,6 +128,18 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `core/src/Engine/Engine.csproj`: Added single-file self-contained publish configuration defaults.
 - `core/src/Engine/project.json`: Added publish target delegating to node scripts/build-engine.mjs.
 - `package.json`: Added helper scripts for dev orchestration, direct engine execution, and test running.
+- `core/src/Cloud/Endpoints/GetInstanceEndpoint.cs`: Injected EngineSessionRegistry to synchronize real-time socket connectivity and fresh heartbeats with IsConnected response state.
+- `core/src/Cloud/Endpoints/ListInstancesEndpoint.cs`: Factored recent heartbeat timestamp freshness into IsConnected status calculation.
+- `core/src/Cloud/Services/ProfileService.cs`: Added self-healing auto-provisioning of ExtensionManifestEntry for valid marketplace extensions on slot configuration.
+- `frontends/apps/cloud-dashboard/src/app/layout.tsx`: Pure light mode enforcement; removed dark class and styled background for zero dark flash.
+- `frontends/apps/marketplace/src/app/layout.tsx`: Pure light mode enforcement; removed dark class and styled background for zero dark flash.
+- `frontends/packages/ui-kit/src/components/ThemeToggle.tsx`: Neutralized to light mode enforcer with zero visual rendering.
+- `frontends/packages/ui-kit/src/components/Badge.tsx`: Added outline variant support for subtle enterprise status tags.
+- `frontends/apps/cloud-dashboard/src/components/instances/SlotAssignmentModal.tsx`: Upgraded slot configuration UX with direct marketplace link and installed manifest badges.
+- `frontends/apps/cloud-dashboard/src/components/layout/sidebar.tsx`: Added off-canvas sliding mobile drawer and maintenance navigation entry.
+- `frontends/apps/cloud-dashboard/src/components/layout/dashboard-shell.tsx`: Integrated off-canvas drawer toggle state and fixed 5-item mobile bottom navigation.
+- `frontends/apps/cloud-dashboard/src/components/layout/header.tsx`: Added mobile hamburger navigation trigger.
+- `frontends/apps/marketplace/src/app/page.tsx`: Added contextual target engine install workflow and tablist accessibility roles.
 - `core/src/Cloud/Engine/EngineSession.cs`: Decomposed from 640 lines down to 230 lines via `EngineSession.Handlers.cs`.
 - `core/src/Engine/Communication/CloudConnector.cs`: Decomposed from 598 lines down to 382 lines via `CloudConnector.BinaryTransfer.cs` and `CloudConnector.Connection.cs`.
 - `core/src/Engine/Core/StateManager.cs`: Decomposed from 612 lines down to 411 lines via `IStateManager.cs` and `StateManager.Messaging.cs`.
@@ -115,11 +165,11 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 ## 4. Test Surface
 
 ### Unit & Domain Tests
-- `core/tests/Cloud.UnitTests`: 268/268 unit tests passing verifying FastEndpoints, authentication tokens, rate limiting, and database models.
-- `core/tests/Engine.UnitTests`: 101/101 unit tests passing verifying command dispatching, task operations, and heartbeat serialization.
+- `core/tests/Cloud.UnitTests`: 317/317 unit tests passing verifying FastEndpoints, authentication tokens, rate limiting, Admin RBAC, Engine CRUD, User Profiles, Database Seeder idempotency, PostgreSQL schema compatibility, and branch coverage edge cases (enforced scope coverage: 98.01% line, 95.20% branch).
+- `core/tests/Engine.UnitTests`: 106/106 unit tests passing verifying command dispatching, task operations, and heartbeat serialization.
 - `core/tests/Kernel.UnitTests`: 183/183 unit tests passing verifying simulated broker matching, order book updates, and pre-trade risk checks.
 - `core/tests/Sdk.UnitTests`: 454/454 unit tests passing verifying public contracts, developer indicators, and immutable parameter models.
-- `frontends/apps/cloud-dashboard`: 18/18 Vitest unit tests passing verifying telemetry widgets, status indicators, and modal interaction labels.
+- `frontends/apps/cloud-dashboard`: 21/21 Vitest unit tests passing verifying telemetry widgets, status indicators, modal interaction labels, and settings role-based access control.
 - `frontends/apps/marketplace`: 17/17 Vitest unit tests passing verifying extension cards, category filtering, and license acquisition cards.
 
 ### Integration Tests

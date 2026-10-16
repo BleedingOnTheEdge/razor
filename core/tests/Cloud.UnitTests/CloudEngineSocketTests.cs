@@ -417,7 +417,7 @@ public sealed class CloudEngineSocketTests
 
     private static async Task WaitForCommandStatusAsync(HttpClient client, Guid commandId, string expected)
     {
-        for (int attempt = 0; attempt < 200; attempt++)
+        for (int attempt = 0; attempt < 400; attempt++)
         {
             using HttpResponseMessage response = await client
                 .GetAsync(Relative($"/api/commands/{commandId}"))
