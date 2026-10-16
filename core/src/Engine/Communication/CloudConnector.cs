@@ -116,7 +116,7 @@ internal sealed partial class CloudConnector : ICloudConnector, IAsyncDisposable
         LoggerMessage.Define(LogLevel.Warning, 26, "Engine is locked/banned. Stopping user tasks.");
 
     private static readonly Action<ILogger, string, Exception?> _logHeartbeatResponseStatus =
-        LoggerMessage.Define<string>(LogLevel.Warning, 27, "Heartbeat response status: {Status}");
+        LoggerMessage.Define<string>(LogLevel.Debug, 27, "Heartbeat response status: {Status}");
 
     private static readonly Action<ILogger, Exception?> _logAuthInvalid =
         LoggerMessage.Define(LogLevel.Warning, 28, "Authentication invalid. Stopping user tasks.");

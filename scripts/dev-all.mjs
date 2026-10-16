@@ -226,6 +226,12 @@ function shutdownAll(signal = 'SIGINT') {
   }
 
   setTimeout(() => {
+    // Ensure all ports for running services are cleanly freed so no orphan servers linger
+    for (const item of runningChildren) {
+      if (item.service.port) {
+        killConflictingProcessOnPort(item.service.port);
+      }
+    }
     console.log(`${GREEN}[dev:all] All services shut down cleanly.${RESET}`);
     process.exit(0);
   }, 1000);
@@ -294,9 +300,19 @@ async function main() {
           console.log(`${GREEN}[dev:all] Port ${s.port} successfully freed.${RESET}`);
         } else {
           console.log(
-            `${YELLOW}[dev:all] Port ${s.port} is already active. ${s.name} is already running — leaving active.${RESET}`
+            `${CYAN}[dev:all] Port ${s.port} is currently occupied (${s.name}). Reclaiming port to spawn managed instance...${RESET}`
           );
-          continue;
+          killConflictingProcessOnPort(s.port);
+          await new Promise((r) => setTimeout(r, 600));
+
+          inUse = await checkPortInUse(s.port);
+          if (inUse) {
+            console.error(
+              `${RED}[dev:all] Unable to clear port ${s.port} for ${s.name}. Please manually kill conflicting process.${RESET}`
+            );
+            process.exit(1);
+          }
+          console.log(`${GREEN}[dev:all] Port ${s.port} successfully freed for ${s.name}.${RESET}`);
         }
       }
     }
