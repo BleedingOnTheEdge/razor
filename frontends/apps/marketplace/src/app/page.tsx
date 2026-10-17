@@ -125,7 +125,8 @@ function MarketplaceCatalogueContent() {
         toast.error('Assignment Failed', String(msg));
       } else {
         toast.success('Slot Configured', `Assigned and activated ${item.name} on engine.`);
-        window.location.href = `http://localhost:3000/instances/${targetEngineId}`;
+        const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL || 'http://localhost:3002';
+        window.location.href = `${dashboardUrl}/instances/${targetEngineId}`;
       }
     } catch (e) {
       toast.error('Error', e instanceof Error ? e.message : 'Network error.');
@@ -133,6 +134,8 @@ function MarketplaceCatalogueContent() {
       setAssigningId(null);
     }
   }
+
+  const dashboardBaseUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL || 'http://localhost:3002';
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
@@ -153,7 +156,7 @@ function MarketplaceCatalogueContent() {
             </div>
           </div>
           <a
-            href={`http://localhost:3000/instances/${targetEngineId}`}
+            href={`${dashboardBaseUrl}/instances/${targetEngineId}`}
             className="text-xs font-mono font-semibold text-indigo-700 hover:text-indigo-900 underline shrink-0"
           >
             ← Return to Fleet Dashboard

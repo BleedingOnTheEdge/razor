@@ -60,7 +60,6 @@ internal sealed class AcquireMarketplaceItemEndpoint(MarketplaceService marketpl
     public override void Configure()
     {
         Post("/api/marketplace/items/{itemId}/acquire");
-        AllowAnonymous();
         Summary(summary =>
         {
             summary.Summary = "Acquire marketplace extension";

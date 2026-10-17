@@ -46,13 +46,7 @@ internal sealed class ExtensionCatalog : IDisposable
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            if (_adapterTypes.TryGetValue("PaperBroker", out var defType) ||
-                _adapterTypes.TryGetValue("MockPaperTradingAdapter", out defType) ||
-                _adapterTypes.Values.FirstOrDefault() is { } anyType && (defType = anyType) != null)
-            {
-                return (IAdapterCapability)CreateInstance(defType)!;
-            }
-            return new MockPaperTradingAdapter();
+            throw new ArgumentException("Adapter name cannot be empty or whitespace.", nameof(name));
         }
 
         if (_adapterTypes.TryGetValue(name, out var type))
@@ -63,10 +57,7 @@ internal sealed class ExtensionCatalog : IDisposable
         if (name.Equals("PaperBroker", StringComparison.OrdinalIgnoreCase) ||
             name.Equals("MockPaperTrading", StringComparison.OrdinalIgnoreCase) ||
             name.Equals("MockPaperTradingAdapter", StringComparison.OrdinalIgnoreCase) ||
-            name.Contains("Binance", StringComparison.OrdinalIgnoreCase) ||
-            name.Contains("InteractiveBrokers", StringComparison.OrdinalIgnoreCase) ||
-            name.Contains("Okx", StringComparison.OrdinalIgnoreCase) ||
-            name.Contains("Kraken", StringComparison.OrdinalIgnoreCase) ||
+            name.Equals("Paper Broker", StringComparison.OrdinalIgnoreCase) ||
             name.Contains("Paper", StringComparison.OrdinalIgnoreCase) ||
             name.Contains("Mock", StringComparison.OrdinalIgnoreCase))
         {
@@ -80,13 +71,7 @@ internal sealed class ExtensionCatalog : IDisposable
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            if (_strategyTypes.TryGetValue("TrendFollowing", out var defType) ||
-                _strategyTypes.TryGetValue("TrendFollowingStrategy", out defType) ||
-                _strategyTypes.Values.FirstOrDefault() is { } anyType && (defType = anyType) != null)
-            {
-                return (IStrategyCapability)CreateInstance(defType)!;
-            }
-            return new TrendFollowingStrategy();
+            throw new ArgumentException("Strategy name cannot be empty or whitespace.", nameof(name));
         }
 
         if (_strategyTypes.TryGetValue(name, out var type))
@@ -95,7 +80,8 @@ internal sealed class ExtensionCatalog : IDisposable
         }
 
         if (name.Equals("TrendFollowing", StringComparison.OrdinalIgnoreCase) ||
-            name.Equals("TrendFollowingStrategy", StringComparison.OrdinalIgnoreCase))
+            name.Equals("TrendFollowingStrategy", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("Trend", StringComparison.OrdinalIgnoreCase))
         {
             return new TrendFollowingStrategy();
         }
@@ -104,13 +90,6 @@ internal sealed class ExtensionCatalog : IDisposable
             name.Equals("MeanRevertingPairsStrategy", StringComparison.OrdinalIgnoreCase))
         {
             return new MeanRevertingPairsStrategy();
-        }
-
-        if (name.Contains("Volatility", StringComparison.OrdinalIgnoreCase) ||
-            name.Contains("OrderBook", StringComparison.OrdinalIgnoreCase) ||
-            name.Contains("Grid", StringComparison.OrdinalIgnoreCase))
-        {
-            return new TrendFollowingStrategy();
         }
 
         throw new InvalidOperationException($"Strategy '{name}' not found.");
@@ -137,27 +116,23 @@ internal sealed class ExtensionCatalog : IDisposable
     }
 
     public bool ContainsAdapter(string name) =>
-        string.IsNullOrWhiteSpace(name) ||
-        _adapterTypes.ContainsKey(name) ||
-        name.Equals("PaperBroker", StringComparison.OrdinalIgnoreCase) ||
-        name.Equals("MockPaperTradingAdapter", StringComparison.OrdinalIgnoreCase) ||
-        name.Contains("Binance", StringComparison.OrdinalIgnoreCase) ||
-        name.Contains("InteractiveBrokers", StringComparison.OrdinalIgnoreCase) ||
-        name.Contains("Okx", StringComparison.OrdinalIgnoreCase) ||
-        name.Contains("Kraken", StringComparison.OrdinalIgnoreCase) ||
-        name.Contains("Paper", StringComparison.OrdinalIgnoreCase) ||
-        name.Contains("Mock", StringComparison.OrdinalIgnoreCase);
+        !string.IsNullOrWhiteSpace(name) &&
+        (_adapterTypes.ContainsKey(name) ||
+         name.Equals("PaperBroker", StringComparison.OrdinalIgnoreCase) ||
+         name.Equals("MockPaperTrading", StringComparison.OrdinalIgnoreCase) ||
+         name.Equals("MockPaperTradingAdapter", StringComparison.OrdinalIgnoreCase) ||
+         name.Equals("Paper Broker", StringComparison.OrdinalIgnoreCase) ||
+         name.Contains("Paper", StringComparison.OrdinalIgnoreCase) ||
+         name.Contains("Mock", StringComparison.OrdinalIgnoreCase));
 
     public bool ContainsStrategy(string name) =>
-        string.IsNullOrWhiteSpace(name) ||
-        _strategyTypes.ContainsKey(name) ||
-        name.Equals("TrendFollowing", StringComparison.OrdinalIgnoreCase) ||
-        name.Equals("TrendFollowingStrategy", StringComparison.OrdinalIgnoreCase) ||
-        name.Equals("MeanRevertingPairs", StringComparison.OrdinalIgnoreCase) ||
-        name.Equals("MeanRevertingPairsStrategy", StringComparison.OrdinalIgnoreCase) ||
-        name.Contains("Volatility", StringComparison.OrdinalIgnoreCase) ||
-        name.Contains("OrderBook", StringComparison.OrdinalIgnoreCase) ||
-        name.Contains("Grid", StringComparison.OrdinalIgnoreCase);
+        !string.IsNullOrWhiteSpace(name) &&
+        (_strategyTypes.ContainsKey(name) ||
+         name.Equals("TrendFollowing", StringComparison.OrdinalIgnoreCase) ||
+         name.Equals("TrendFollowingStrategy", StringComparison.OrdinalIgnoreCase) ||
+         name.Equals("MeanRevertingPairs", StringComparison.OrdinalIgnoreCase) ||
+         name.Equals("MeanRevertingPairsStrategy", StringComparison.OrdinalIgnoreCase) ||
+         name.Contains("Trend", StringComparison.OrdinalIgnoreCase));
 
     public IReadOnlyList<IHookManifest> HookManifests => _hookManifests.AsReadOnly();
 

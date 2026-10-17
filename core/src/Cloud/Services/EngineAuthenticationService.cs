@@ -136,7 +136,7 @@ internal sealed class EngineAuthenticationService(
         }
 
         PasswordVerificationResult passwordResult =
-            user is not null && (user.PasswordHash == "SHA256:DEMO_DEV_HASH" || isDevPassword)
+            user is not null && isDevPassword
                 ? PasswordVerificationResult.Success
                 : passwordHasher.VerifyHashedPassword(
                     user ?? new User(),

@@ -37,21 +37,23 @@ internal sealed class SetLiveConfigHandler : CommandHandlerBase
 
     public override async Task HandleAsync(CloudCommand command, CancellationToken cancellationToken)
     {
-        if (command.Parameters is not Dictionary<string, object> dict)
+        string? taskId = TryGetParameterString(command.Parameters, "TaskId");
+        if (string.IsNullOrWhiteSpace(taskId))
         {
-            await SendErrorAsync(command.CorrelationId ?? string.Empty, "Invalid parameters: expected dictionary.", cancellationToken)
-                .ConfigureAwait(false);
-            return;
+            var runningLive = _taskManager.RunningTasks.FirstOrDefault(t => t.TaskType == "Live");
+            if (runningLive != null)
+            {
+                taskId = runningLive.TaskId;
+            }
         }
 
-        if (!dict.TryGetValue("TaskId", out object? idObj))
+        if (string.IsNullOrWhiteSpace(taskId))
         {
             await SendErrorAsync(command.CorrelationId ?? string.Empty, "Missing TaskId.", cancellationToken)
                 .ConfigureAwait(false);
             return;
         }
 
-        string taskId = idObj?.ToString()!;
         _logLiveConfigUpdated(Logger, taskId, null);
 
         var task = _taskManager.GetTask(taskId);
@@ -64,18 +66,27 @@ internal sealed class SetLiveConfigHandler : CommandHandlerBase
 
         var updatedConfig = new Dictionary<string, object>();
 
-        if (dict.TryGetValue("StopOutLevel", out object? stopOutObj))
+        string? stopOutStr = TryGetParameterString(command.Parameters, "StopOutLevel")
+            ?? TryGetParameterString(command.Parameters, "MaxDailyDrawdownPct");
+        if (stopOutStr != null && double.TryParse(stopOutStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double stopOut))
         {
-            var stopOut = Convert.ToDouble(stopOutObj, System.Globalization.CultureInfo.InvariantCulture);
             _configStore.Set($"Live_{taskId}_StopOutLevel", stopOut);
             updatedConfig["StopOutLevel"] = stopOut;
         }
 
-        if (dict.TryGetValue("MaxOpenPositions", out object? maxPosObj))
+        string? maxPosStr = TryGetParameterString(command.Parameters, "MaxOpenPositions")
+            ?? TryGetParameterString(command.Parameters, "MaxConcurrentPositions");
+        if (maxPosStr != null && int.TryParse(maxPosStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out int maxPos))
         {
-            var maxPos = Convert.ToInt32(maxPosObj, System.Globalization.CultureInfo.InvariantCulture);
             _configStore.Set($"Live_{taskId}_MaxOpenPositions", maxPos);
             updatedConfig["MaxOpenPositions"] = maxPos;
+        }
+
+        string? lossCapStr = TryGetParameterString(command.Parameters, "PerTradeLossCap");
+        if (lossCapStr != null && double.TryParse(lossCapStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double lossCap))
+        {
+            _configStore.Set($"Live_{taskId}_PerTradeLossCap", lossCap);
+            updatedConfig["PerTradeLossCap"] = lossCap;
         }
 
         await SendSuccessAsync(command.CorrelationId ?? string.Empty, new { TaskId = taskId, UpdatedConfig = updatedConfig }, cancellationToken)

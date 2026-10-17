@@ -42,6 +42,7 @@ internal sealed partial class CloudConnector : ICloudConnector, IAsyncDisposable
     private bool _isDisposing;
     private int _connectionAttemptCounter;
     private readonly ManualResetEventSlim _connectionLostEvent = new(false);
+    private object? _cachedManifest;
 
     // For CPU usage calculation
     private DateTime _lastCpuTimeSample = DateTime.UtcNow;

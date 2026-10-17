@@ -4,6 +4,7 @@ import { use, useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getApiClient, type FlowRunPayload, type EngineInstanceDetailPayload } from '@/lib/api-client';
+import { useSseStream } from '@/hooks/use-sse-stream';
 import { useToast } from '@/components/ui/toast';
 import { getRunStatusBadge, formatCurrency, formatTimestamp, formatHash } from '@razor/ui-kit';
 import {
@@ -23,6 +24,8 @@ import {
   Cpu,
   Code2,
   Trash2,
+  Dna,
+  ArrowRight,
 } from 'lucide-react';
 
 interface TelemetryEvent {
@@ -54,6 +57,8 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
     }
     return [];
   });
+  const { events: sseEvents } = useSseStream(run?.engineInstanceId);
+  const processedEventIdsRef = useRef<Set<string>>(new Set());
   const logEndRef = useRef<HTMLDivElement>(null);
 
   const cfg = run?.configurationJson ? (() => {
@@ -102,10 +107,9 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
     }
   }, [telemetry, runId]);
 
-  // Initialize or append telemetry events
+  // Initialize initial run telemetry logs
   useEffect(() => {
     if (!run) return;
-    const isRun = run.status.toUpperCase() === 'RUNNING';
 
     setTelemetry((prev) => {
       if (prev.length === 0) {
@@ -114,36 +118,84 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
           { id: '2', timestamp: formatTimestamp(run.createdAt), type: 'HOOK', message: `Safety Hooks attached: [${cfg?.hooks?.active?.join(', ') || 'RiskGuardrail, PositionSizer'}]. Max DD: ${cfg?.hooks?.maxDrawdownPct ?? 10}%.` },
           { id: '3', timestamp: formatTimestamp(run.createdAt), type: 'INFO', message: `Active Strategy: [${cfg?.strategy?.name || 'TrendFollowing'}] on [${cfg?.market?.symbol || 'BTC/USDT'}] (${cfg?.market?.barSize || '1m'}).` },
         ];
-        if (run.status.toUpperCase() === 'COMPLETED' && run.metrics) {
+        const netProfit = run.metrics?.netProfit ?? (run as any).netProfit;
+        const sharpe = run.metrics?.sharpeRatio ?? (run as any).sharpeRatio;
+        const trades = run.metrics?.tradeCount ?? (run as any).tradeCount;
+        if (run.status.toUpperCase() === 'COMPLETED' && netProfit !== undefined) {
           initLogs.push({
             id: 'c',
             timestamp: formatTimestamp(run.completedAt || run.createdAt),
             type: 'METRIC',
-            message: `Run completed. Net Profit: ${formatCurrency(run.metrics.netProfit)}, Sharpe: ${run.metrics.sharpeRatio?.toFixed(2) ?? '—'}, Trades: ${run.metrics.tradeCount ?? '—'}.`,
+            message: `Run completed. Net Profit: ${formatCurrency(netProfit)}, Sharpe: ${sharpe?.toFixed(2) ?? '—'}, Trades: ${trades ?? '—'}.`,
           });
         }
         return initLogs;
       }
       return prev;
     });
-
-    if (!isRun) return;
-
-    const tick = setInterval(() => {
-      const now = new Date().toLocaleTimeString();
-      const symbol = cfg?.market?.symbol || 'BTC/USDT';
-      const pool: TelemetryEvent[] = [
-        { id: Math.random().toString(), timestamp: now, type: 'SIGNAL', message: `Strategy generated long trigger at price step for ${symbol}.` },
-        { id: Math.random().toString(), timestamp: now, type: 'HOOK', message: `RiskGuardrail: Verified max drawdown tolerance (limit: ${cfg?.hooks?.maxDrawdownPct ?? 10}%).` },
-        { id: Math.random().toString(), timestamp: now, type: 'ORDER', message: `Adapter executed paper fill for ${symbol} (status: Filled).` },
-        { id: Math.random().toString(), timestamp: now, type: 'METRIC', message: `Checkpoint computed: Heartbeat acknowledged by engine ${formatHash(run.engineInstanceId, 6)}.` },
-      ];
-      const nextEvt = pool[Math.floor(Math.random() * pool.length)];
-      setTelemetry((prev) => [...prev.slice(-99), nextEvt]);
-    }, 4000);
-
-    return () => clearInterval(tick);
   }, [run?.status, run?.createdAt]);
+
+  // Process live events from Unified SSE Stream
+  useEffect(() => {
+    if (!sseEvents || sseEvents.length === 0) return;
+
+    for (const ev of sseEvents) {
+      const eventKey = `${ev.eventType}_${ev.timestamp}_${ev.correlationId ?? ''}_${JSON.stringify(ev.data ?? '')}`;
+      if (processedEventIdsRef.current.has(eventKey)) continue;
+      processedEventIdsRef.current.add(eventKey);
+
+      // Only process events matching this run or associated engine instance
+      const matchesRun = ev.runId === runId;
+      const matchesEngine = ev.instanceId === run?.engineInstanceId;
+      if (!matchesRun && !matchesEngine) continue;
+
+      const timeStr = formatTimestamp(ev.timestamp);
+      let telemetryType: 'INFO' | 'SIGNAL' | 'ORDER' | 'HOOK' | 'METRIC' = 'INFO';
+      let message = '';
+
+      if (ev.eventType === 'command_progress') {
+        telemetryType = 'METRIC';
+        const data = ev.data as Record<string, unknown> | null;
+        const pct = data?.Percentage ?? data?.percentage;
+        const msg = data?.Message ?? data?.message ?? JSON.stringify(data);
+        message = pct !== undefined ? `[Progress ${pct}%] ${msg}` : `Progress: ${msg}`;
+      } else if (ev.eventType === 'command_completed') {
+        telemetryType = 'INFO';
+        const data = ev.data as Record<string, unknown> | null;
+        const st = data?.Status ?? (data?.Succeeded ? 'Success' : 'Failed');
+        message = `Command ${ev.correlationId ?? ''} ${st}`;
+        if (matchesRun) {
+          fetchRun();
+        }
+      } else if (ev.eventType === 'run_status') {
+        telemetryType = 'METRIC';
+        const data = ev.data as Record<string, unknown> | null;
+        const st = data?.Status ?? data?.status;
+        message = `Run status transition: ${st}`;
+        if (matchesRun) {
+          fetchRun();
+        }
+      } else if (ev.eventType === 'engine_heartbeat') {
+        telemetryType = 'INFO';
+        message = `Engine heartbeat acknowledged: ${formatHash(ev.instanceId ?? '', 6)}`;
+      } else if (ev.eventType === 'equity_tick') {
+        telemetryType = 'METRIC';
+        message = `Equity update: ${JSON.stringify(ev.data)}`;
+      } else {
+        message = `[${ev.eventType}]: ${JSON.stringify(ev.data)}`;
+      }
+
+      setTelemetry((prev) => [
+        ...prev.slice(-99),
+        {
+          id: `${Date.now()}_${Math.random()}`,
+          timestamp: timeStr,
+          type: telemetryType,
+          message,
+        },
+      ]);
+    }
+  }, [sseEvents, runId, run?.engineInstanceId]);
 
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -318,6 +370,35 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
           </div>
         </div>
       </div>
+
+      {/* Winning Strategy DNA Injected Banner */}
+      {(run.winningDnaJson || run.winningDna) && (
+        <div className="p-4 rounded-xl bg-gradient-to-r from-purple-50 via-indigo-50 to-purple-50 border border-purple-200 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-purple-600 text-white shadow-xs">
+              <Dna className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-purple-950 font-mono flex items-center gap-2">
+                <span>Winning Strategy DNA Captured</span>
+                <span className="px-2 py-0.5 rounded-full bg-purple-200/80 text-purple-900 text-[10px] font-bold">
+                  Portable DNA
+                </span>
+              </div>
+              <p className="text-[11px] text-purple-800 font-sans mt-0.5">
+                Portable chromosome genes and decoded parameters are ready for 1-click backtest verification or live deployment.
+              </p>
+            </div>
+          </div>
+          <Link
+            href={`/reports/${run.id}`}
+            className="px-3 py-1.5 rounded-lg bg-purple-700 hover:bg-purple-800 text-white text-xs font-mono font-medium flex items-center gap-1.5 shadow-xs transition-colors"
+          >
+            <span>View Full Report & Deploy</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      )}
 
       {/* Metric Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">

@@ -79,11 +79,15 @@ internal static class DatabaseSchemaCompatibility
                 "IsPartial" boolean NOT NULL DEFAULT false,
                 "CreatedAt" timestamp with time zone NOT NULL,
                 "CompletedAt" timestamp with time zone,
-                "ConfigurationJson" character varying(16384)
+                "ConfigurationJson" character varying(16384),
+                "WinningDnaJson" text,
+                "ResultPayloadJson" text
             );
 
-            -- Ensure FlowRuns table has ConfigurationJson column if already created
+            -- Ensure FlowRuns table has newly added columns if already created
             ALTER TABLE IF EXISTS "FlowRuns" ADD COLUMN IF NOT EXISTS "ConfigurationJson" character varying(16384);
+            ALTER TABLE IF EXISTS "FlowRuns" ADD COLUMN IF NOT EXISTS "WinningDnaJson" text;
+            ALTER TABLE IF EXISTS "FlowRuns" ADD COLUMN IF NOT EXISTS "ResultPayloadJson" text;
 
             CREATE TABLE IF NOT EXISTS "RunInterventions" (
                 "Id" uuid PRIMARY KEY,

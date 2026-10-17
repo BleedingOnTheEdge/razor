@@ -24,6 +24,103 @@ export interface EngineInstanceDetailPayload {
   manifest: Array<{ kind: string; name: string; reportedAt: string }>;
 }
 
+export interface WinningDnaPayload {
+  genes: number[];
+  parameters: Record<string, number>;
+  slots?: {
+    strategy?: string | null;
+    adapter?: string | null;
+    neuralNetwork?: string | null;
+  } | null;
+  execution?: {
+    symbols?: string[] | null;
+    timeframes?: string[] | null;
+    initialBalance?: number;
+    leverage?: number;
+    accountCurrency?: string | null;
+  } | null;
+  fitness: number;
+}
+
+export interface DetailedMetricsPayload {
+  grossProfit?: number;
+  grossLoss?: number;
+  profitFactor?: number;
+  winRate?: number;
+  lossRate?: number;
+  winningTrades?: number;
+  losingTrades?: number;
+  sortinoRatio?: number;
+  calmarRatio?: number;
+  expectancy?: number;
+  payoffRatio?: number;
+  winLossRatio?: number;
+  averageWin?: number;
+  averageLoss?: number;
+  largestWin?: number;
+  largestLoss?: number;
+  maxConsecutiveWins?: number;
+  maxConsecutiveLosses?: number;
+  averageHoldingPeriodSeconds?: number;
+  maxDrawdownPct?: number;
+  maxDrawdownAmount?: number;
+}
+
+export interface TradeItemPayload {
+  ticket: number;
+  symbol: string;
+  side: string;
+  volume: number;
+  openTime: string;
+  openPrice: number;
+  closeTime?: string | null;
+  closePrice: number;
+  profit: number;
+  returnPct: number;
+  commission?: number;
+  swap?: number;
+  stopLoss?: number;
+  takeProfit?: number;
+  exitReason?: string;
+  slippageTicks?: number;
+  executionVenue?: string;
+}
+
+export interface EquityPointPayload {
+  timestamp: string;
+  equity: number;
+  balance: number;
+  drawdownPct: number;
+}
+
+export interface PopulationIndividualPayload {
+  id: string;
+  individualIndex: number;
+  fitness: number;
+  diversity: number;
+  genes: number[];
+  parameters: Record<string, any>;
+  totalReturn: number;
+  sharpeRatio: number;
+  maxDrawdown: number;
+  winRate: number;
+  profitFactor: number;
+  tradeCount: number;
+  trades?: TradeItemPayload[];
+  equityCurve?: EquityPointPayload[];
+  dna?: WinningDnaPayload;
+}
+
+export interface GenerationProgressPayload {
+  generation: number;
+  bestFitness: number;
+  averageFitness: number;
+  diversity?: number;
+  populationDiversity?: number;
+  isHyperMutation?: boolean;
+  populations?: PopulationIndividualPayload[];
+}
+
 export interface FlowRunPayload {
   id: string;
   engineInstanceId: string;
@@ -41,6 +138,9 @@ export interface FlowRunPayload {
   createdAt: string;
   completedAt?: string | null;
   configurationJson?: string | null;
+  winningDnaJson?: string | null;
+  winningDna?: WinningDnaPayload | null;
+  resultPayloadJson?: string | null;
   metrics?: RunMetricsPayload | null;
   interventionsCount: number;
   gapsCount: number;
@@ -142,6 +242,11 @@ export interface RunReportPayload {
     recordedAt?: string;
   }>;
   comparable?: boolean;
+  winningDna?: WinningDnaPayload | null;
+  detailedMetrics?: DetailedMetricsPayload | null;
+  trades?: TradeItemPayload[] | null;
+  equityCurve?: EquityPointPayload[] | null;
+  generationProgress?: GenerationProgressPayload[] | null;
 }
 
 export interface RankedRunResultPayload {

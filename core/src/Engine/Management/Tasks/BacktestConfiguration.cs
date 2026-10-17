@@ -6,6 +6,7 @@
 
 namespace Engine.Management.Tasks;
 
+using System.Globalization;
 using System.Text.Json;
 
 /// <summary>
@@ -70,13 +71,67 @@ internal sealed record BacktestConfiguration
         string adapterName = ConfigurationParser.GetString(dict, "AdapterName");
         if (string.IsNullOrWhiteSpace(adapterName))
         {
-            adapterName = ConfigurationParser.GetString(dict, "adapter", "PaperBroker");
+            if (dict.TryGetValue("adapter", out object? aVal))
+            {
+                if (aVal is string s && !string.IsNullOrWhiteSpace(s))
+                {
+                    adapterName = s;
+                }
+                else if (aVal is JsonElement je)
+                {
+                    if (je.ValueKind == JsonValueKind.String)
+                    {
+                        adapterName = je.GetString() ?? "";
+                    }
+                    else if (je.ValueKind == JsonValueKind.Object &&
+                             (je.TryGetProperty("name", out var np) || je.TryGetProperty("Name", out np)))
+                    {
+                        adapterName = np.GetString() ?? "";
+                    }
+                }
+                else if (aVal is Dictionary<string, object> ad &&
+                         (ad.TryGetValue("name", out var n) || ad.TryGetValue("Name", out n)))
+                {
+                    adapterName = n?.ToString() ?? "";
+                }
+            }
+            if (string.IsNullOrWhiteSpace(adapterName))
+            {
+                adapterName = ConfigurationParser.GetString(dict, "adapter", "PaperBroker");
+            }
         }
 
         string strategyName = ConfigurationParser.GetString(dict, "StrategyName");
         if (string.IsNullOrWhiteSpace(strategyName))
         {
-            strategyName = ConfigurationParser.GetString(dict, "strategy", "TrendFollowing");
+            if (dict.TryGetValue("strategy", out object? sVal))
+            {
+                if (sVal is string s && !string.IsNullOrWhiteSpace(s))
+                {
+                    strategyName = s;
+                }
+                else if (sVal is JsonElement je)
+                {
+                    if (je.ValueKind == JsonValueKind.String)
+                    {
+                        strategyName = je.GetString() ?? "";
+                    }
+                    else if (je.ValueKind == JsonValueKind.Object &&
+                             (je.TryGetProperty("name", out var np) || je.TryGetProperty("Name", out np)))
+                    {
+                        strategyName = np.GetString() ?? "";
+                    }
+                }
+                else if (sVal is Dictionary<string, object> sd &&
+                         (sd.TryGetValue("name", out var n) || sd.TryGetValue("Name", out n)))
+                {
+                    strategyName = n?.ToString() ?? "";
+                }
+            }
+            if (string.IsNullOrWhiteSpace(strategyName))
+            {
+                strategyName = ConfigurationParser.GetString(dict, "strategy", "TrendFollowing");
+            }
         }
 
         string[] symbols = ConfigurationParser.GetStringArray(dict, "Symbols");
@@ -93,6 +148,44 @@ internal sealed record BacktestConfiguration
             timeframes = !string.IsNullOrWhiteSpace(barSize) ? [barSize] : ["1m"];
         }
 
+        double[] genes = ConfigurationParser.GetDoubleArray(dict, nameof(Genes), Array.Empty<double>());
+        if (genes.Length == 0 && (dict.TryGetValue("WinningDna", out object? dnaVal) || dict.TryGetValue("winningDna", out dnaVal)))
+        {
+            if (dnaVal is JsonElement je && je.ValueKind == JsonValueKind.Object && (je.TryGetProperty("genes", out var gJe) || je.TryGetProperty(nameof(Genes), out gJe)) && gJe.ValueKind == JsonValueKind.Array)
+            {
+                genes = gJe.EnumerateArray().Select(x => x.GetDouble()).ToArray();
+            }
+            else if (dnaVal is Dictionary<string, object> dnaDict && (dnaDict.TryGetValue("genes", out object? gList) || dnaDict.TryGetValue(nameof(Genes), out gList)))
+            {
+                if (gList is IEnumerable<double> ed)
+                {
+                    genes = ed.ToArray();
+                }
+                else if (gList is IEnumerable<object> eo)
+                {
+                    genes = eo.Select(x => Convert.ToDouble(x, CultureInfo.InvariantCulture)).ToArray();
+                }
+            }
+        }
+        if (genes.Length == 0 && (dict.TryGetValue("strategy", out object? stratVal) || dict.TryGetValue("Strategy", out stratVal)))
+        {
+            if (stratVal is JsonElement je && je.ValueKind == JsonValueKind.Object && (je.TryGetProperty("genes", out var gJe) || je.TryGetProperty(nameof(Genes), out gJe)) && gJe.ValueKind == JsonValueKind.Array)
+            {
+                genes = gJe.EnumerateArray().Select(x => x.GetDouble()).ToArray();
+            }
+            else if (stratVal is Dictionary<string, object> stratDict && (stratDict.TryGetValue("genes", out object? gList) || stratDict.TryGetValue(nameof(Genes), out gList)))
+            {
+                if (gList is IEnumerable<double> ed)
+                {
+                    genes = ed.ToArray();
+                }
+                else if (gList is IEnumerable<object> eo)
+                {
+                    genes = eo.Select(x => Convert.ToDouble(x, CultureInfo.InvariantCulture)).ToArray();
+                }
+            }
+        }
+
         return new BacktestConfiguration
         {
             AdapterName = adapterName,
@@ -107,7 +200,7 @@ internal sealed record BacktestConfiguration
             MaxParallelThreads = ConfigurationParser.GetInt(dict, "MaxParallelThreads", 0),
             LatencyTicks = ConfigurationParser.GetLong(dict, "LatencyTicks", 0),
             WarmupWindowCount = ConfigurationParser.GetInt(dict, "WarmupWindowCount", 0),
-            Genes = ConfigurationParser.GetDoubleArray(dict, "Genes", Array.Empty<double>()),
+            Genes = genes,
             GeneInitializationSeed = dict.TryGetValue("GeneInitializationSeed", out object? seedObj) && seedObj is int seed ? seed : (int?)null,
             NeuralNetworkName = dict.TryGetValue("NeuralNetworkName", out object? nnObj) ? nnObj?.ToString() : null,
             Timeframes = timeframes,

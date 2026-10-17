@@ -32,7 +32,7 @@ public sealed class AuthEndpointsTests
     private static Uri Relative(string url) => new(url, UriKind.Relative);
 
     [Fact]
-    public async Task Login_WithDevCredentials_SucceedsWithoutPreconfiguredApiKey()
+    public async Task Login_WithUnregisteredUser_FailsWithUnauthorized()
     {
         using var factory = new CloudWebApplicationFactory();
         using HttpClient anonymousClient = factory.CreateClient();
@@ -47,13 +47,7 @@ public sealed class AuthEndpointsTests
             .PostAsJsonAsync(Relative("/api/auth/login"), loginPayload, JsonOptions)
             .ConfigureAwait(true);
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        AuthSessionResponse? session = await ReadJsonAsync<AuthSessionResponse>(response).ConfigureAwait(true);
-        Assert.NotNull(session);
-        Assert.False(string.IsNullOrWhiteSpace(session.Token));
-        Assert.Equal("admin-trader", session.User.UserName);
-        Assert.Equal(UserRole.Admin, session.User.Role);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
@@ -81,8 +75,8 @@ public sealed class AuthEndpointsTests
         Assert.NotNull(session);
         Assert.Equal("quant_researcher", session.User.UserName);
         Assert.Equal("Alpha Capital Management", session.User.AccountName);
-        Assert.Equal(UserRole.Developer, session.User.Role);
-        Assert.Equal(SubscriptionTier.Pro, session.User.SubscriptionTier);
+        Assert.Equal(UserRole.Operator, session.User.Role);
+        Assert.Equal(SubscriptionTier.Free, session.User.SubscriptionTier);
 
         // Subsequent login with matching password succeeds
         var loginPayload = new

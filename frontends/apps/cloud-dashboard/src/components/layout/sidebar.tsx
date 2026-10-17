@@ -15,6 +15,7 @@ import {
   User,
   Terminal,
   X,
+  Radio,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '@/context/auth-context';
@@ -43,7 +44,14 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
       href: '/instances',
       label: 'Engine Fleet',
       icon: Server,
-      active: pathname.startsWith('/instances'),
+      active: pathname.startsWith('/instances') && !pathname.includes('/live'),
+      visible: true,
+    },
+    {
+      href: '/live',
+      label: 'Live Trading Manager',
+      icon: Radio,
+      active: pathname.startsWith('/live') || pathname.includes('/live'),
       visible: true,
     },
     {

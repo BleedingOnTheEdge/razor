@@ -25,13 +25,8 @@ internal sealed class StopLiveHandler : CommandHandlerBase
 
     public override async Task HandleAsync(CloudCommand command, CancellationToken cancellationToken)
     {
-        string? taskId = null;
-        if (command.Parameters is Dictionary<string, object> dict && dict.TryGetValue("TaskId", out object? idObj))
-        {
-            taskId = idObj?.ToString();
-        }
-
-        if (string.IsNullOrEmpty(taskId))
+        string? taskId = TryGetParameterString(command.Parameters, "TaskId");
+        if (string.IsNullOrWhiteSpace(taskId))
         {
             await SendErrorAsync(command.CorrelationId ?? string.Empty, "Missing TaskId.", cancellationToken).ConfigureAwait(false);
             return;

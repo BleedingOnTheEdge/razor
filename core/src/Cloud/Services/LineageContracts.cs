@@ -86,6 +86,124 @@ internal sealed record ReportAggregateMetrics(
     double? BestFitness);
 
 /// <summary>
+/// Selected slot configurations for a candidate DNA.
+/// </summary>
+internal sealed record ReportDnaSlots(string Strategy, string Adapter, string? NeuralNetwork = null);
+
+/// <summary>
+/// Execution parameters for candidate DNA evaluation.
+/// </summary>
+internal sealed record ReportDnaExecution(
+    IReadOnlyList<string> Symbols,
+    IReadOnlyList<string> Timeframes,
+    double InitialBalance,
+    double Leverage,
+    string AccountCurrency);
+
+/// <summary>
+/// A portable winning DNA representing an optimal chromosome and configuration candidate.
+/// </summary>
+internal sealed record ReportWinningDna(
+    IReadOnlyList<double> Genes,
+    IReadOnlyDictionary<string, object> Parameters,
+    ReportDnaSlots Slots,
+    ReportDnaExecution Execution,
+    double Fitness,
+    Guid? SourceRunId = null);
+
+/// <summary>
+/// Exhaustive institutional trading and risk metrics.
+/// </summary>
+internal sealed record ReportDetailedMetrics(
+    decimal GrossProfit,
+    decimal GrossLoss,
+    double ProfitFactor,
+    double WinRate,
+    double LossRate,
+    int WinningTrades,
+    int LosingTrades,
+    double SortinoRatio,
+    double CalmarRatio,
+    decimal Expectancy,
+    decimal AverageWin,
+    decimal AverageLoss,
+    double WinLossRatio,
+    decimal LargestWin,
+    decimal LargestLoss,
+    int MaxConsecutiveWins,
+    int MaxConsecutiveLosses,
+    double AverageHoldingPeriodSeconds,
+    double MaxDrawdownPct,
+    decimal MaxDrawdownAmount)
+{
+    /// <summary>Gets the payoff ratio alias (WinLossRatio) for client reporting compatibility.</summary>
+    public double PayoffRatio => WinLossRatio;
+}
+
+/// <summary>
+/// An executed trade fill record.
+/// </summary>
+internal sealed record ReportTradeItem(
+    long Ticket,
+    string Symbol,
+    string Side,
+    double Volume,
+    double OpenPrice,
+    string OpenTime,
+    double ClosePrice,
+    string CloseTime,
+    decimal Profit,
+    double ReturnPct,
+    decimal Commission,
+    decimal Swap,
+    double StopLoss,
+    double TakeProfit,
+    string ExitReason);
+
+/// <summary>
+/// A time-series point on the balance and equity curve.
+/// </summary>
+internal sealed record ReportEquityPoint(
+    string Timestamp,
+    decimal Balance,
+    decimal Equity,
+    double DrawdownPct);
+
+/// <summary>
+/// Detailed evaluation report of an individual within an optimization population generation.
+/// </summary>
+internal sealed record ReportPopulationIndividual(
+    string Id,
+    int IndividualIndex,
+    double Fitness,
+    double Diversity,
+    IReadOnlyList<double> Genes,
+    IReadOnlyDictionary<string, object> Parameters,
+    double TotalReturn,
+    double SharpeRatio,
+    double MaxDrawdown,
+    double WinRate,
+    double ProfitFactor,
+    int TradeCount,
+    IReadOnlyList<ReportTradeItem>? Trades = null,
+    IReadOnlyList<ReportEquityPoint>? EquityCurve = null);
+
+/// <summary>
+/// Progression status for one generation of genetic optimization.
+/// </summary>
+internal sealed record ReportGenerationProgress(
+    int Generation,
+    double BestFitness,
+    double AverageFitness,
+    double Diversity,
+    bool IsHyperMutation,
+    IReadOnlyList<ReportPopulationIndividual>? Populations = null)
+{
+    /// <summary>Gets the population diversity alias for client reporting compatibility.</summary>
+    public double PopulationDiversity => Diversity;
+}
+
+/// <summary>
 /// An auditable user-facing report of a flow run conforming to reporting integrity rules (003-040).
 /// </summary>
 /// <param name="RunId">The identifier of the run.</param>
@@ -108,6 +226,12 @@ internal sealed record ReportAggregateMetrics(
 /// <param name="CreatedAt">When the run was created.</param>
 /// <param name="CompletedAt">When the run completed, if applicable.</param>
 /// <param name="ConfigurationJson">The execution specifications and parameters.</param>
+/// <param name="WinningDnaJson">The raw serialized winning DNA JSON.</param>
+/// <param name="WinningDna">The structured winning DNA candidate.</param>
+/// <param name="DetailedMetrics">Exhaustive institutional metrics.</param>
+/// <param name="Trades">Itemized execution trade fills.</param>
+/// <param name="EquityCurve">Sampled equity and balance time-series curve.</param>
+/// <param name="GenerationProgress">Generation-by-generation evolution metrics.</param>
 internal sealed record RunReport(
     Guid RunId,
     Guid EngineInstanceId,
@@ -128,7 +252,13 @@ internal sealed record RunReport(
     ReportAggregateMetrics? Aggregates,
     IReadOnlyList<InterventionSpecification> Interventions,
     string? WarningMessage = null,
-    string? ConfigurationJson = null);
+    string? ConfigurationJson = null,
+    string? WinningDnaJson = null,
+    ReportWinningDna? WinningDna = null,
+    ReportDetailedMetrics? DetailedMetrics = null,
+    IReadOnlyList<ReportTradeItem>? Trades = null,
+    IReadOnlyList<ReportEquityPoint>? EquityCurve = null,
+    IReadOnlyList<ReportGenerationProgress>? GenerationProgress = null);
 
 /// <summary>
 /// Target metric for benchmarking and ranking runs.

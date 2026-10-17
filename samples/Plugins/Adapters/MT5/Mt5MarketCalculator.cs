@@ -1,4 +1,4 @@
-using Abstractions.Shared;
+using Sdk.Shared;
 
 namespace Samples.Plugins.Adapters.MT5;
 
@@ -97,5 +97,11 @@ internal sealed class Mt5MarketCalculator : IMarketCalculator
         double pointValue = props.TickValue / props.TickSize; // profit per point per contract
         double notional = volume * props.ContractSize;
         return notional * pointValue * swapRate * days;
+    }
+
+    /// <inheritdoc/>
+    public double CalculateSlippage(SymbolProperties props, OrderType type, double volume, double price)
+    {
+        return 0.0;
     }
 }

@@ -99,7 +99,7 @@ export function LicenseAcquisitionCard({
             )}
 
             <a
-              href="http://localhost:3002/instances"
+              href={`${process.env.NEXT_PUBLIC_DASHBOARD_URL || 'http://localhost:3002'}/instances`}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 text-xs font-mono text-indigo-400 hover:text-indigo-300 pt-1"

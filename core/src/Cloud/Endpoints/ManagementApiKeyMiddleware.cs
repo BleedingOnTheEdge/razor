@@ -6,6 +6,7 @@
 
 namespace Cloud.Endpoints;
 
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
@@ -63,12 +64,22 @@ internal static class ManagementApiKeyMiddleware
                 return;
             }
 
-            // Public endpoints that unauthenticated users can access
-            if (context.Request.Path.StartsWithSegments("/api/health", StringComparison.Ordinal)
+            // Public endpoints that unauthenticated users can access:
+            // 1. Health checks and auth (login/register)
+            // 2. Read-only (GET/HEAD) marketplace, community, and event stream endpoints
+            bool isGetOrHead = string.IsNullOrEmpty(context.Request.Method)
+                || HttpMethods.IsGet(context.Request.Method)
+                || HttpMethods.IsHead(context.Request.Method);
+            bool isPublicRoute =
+                context.Request.Path.StartsWithSegments("/api/health", StringComparison.Ordinal)
                 || context.Request.Path.StartsWithSegments("/api/auth", StringComparison.Ordinal)
-                || context.Request.Path.StartsWithSegments("/api/marketplace", StringComparison.Ordinal)
-                || context.Request.Path.StartsWithSegments("/api/community", StringComparison.Ordinal)
-                || context.Request.Path.StartsWithSegments("/api/events/stream", StringComparison.Ordinal))
+                || (isGetOrHead && (
+                    context.Request.Path.StartsWithSegments("/api/marketplace", StringComparison.Ordinal)
+                    || context.Request.Path.StartsWithSegments("/api/community", StringComparison.Ordinal)
+                    || context.Request.Path.StartsWithSegments("/api/events/stream", StringComparison.Ordinal)
+                ));
+
+            if (isPublicRoute)
             {
                 await next(context).ConfigureAwait(false);
                 return;
@@ -76,6 +87,17 @@ internal static class ManagementApiKeyMiddleware
 
             if (!context.Request.Path.StartsWithSegments(ProtectedPrefix, StringComparison.Ordinal) || IsAuthorised(context, expectedKey))
             {
+                if (IsAuthorised(context, expectedKey))
+                {
+                    var identity = new ClaimsIdentity(
+                        [
+                            new Claim(ClaimTypes.Name, "ManagementKey"),
+                            new Claim(ClaimTypes.Role, "Admin")
+                        ],
+                        "ApiKey");
+                    context.User = new ClaimsPrincipal(identity);
+                }
+
                 await next(context).ConfigureAwait(false);
                 return;
             }

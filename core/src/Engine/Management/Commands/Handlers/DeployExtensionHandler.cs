@@ -34,9 +34,67 @@ internal sealed class DeployExtensionHandler : CommandHandlerBase
         }
 
         string name = nameObj?.ToString()!;
-        byte[] data = dataObj as byte[] ?? Array.Empty<byte>();
+        byte[] data;
+        if (dataObj is byte[] rawBytes)
+        {
+            data = rawBytes;
+        }
+        else if (dataObj is string base64Str)
+        {
+            try
+            {
+                data = Convert.FromBase64String(base64Str);
+            }
+            catch (FormatException)
+            {
+                await SendErrorAsync(command.CorrelationId ?? string.Empty, "BinaryData must be a valid Base64 string.", cancellationToken).ConfigureAwait(false);
+                return;
+            }
+        }
+        else if (dataObj is System.Text.Json.JsonElement elem)
+        {
+            if (elem.ValueKind == System.Text.Json.JsonValueKind.String)
+            {
+                try
+                {
+                    data = elem.GetBytesFromBase64();
+                }
+                catch (FormatException)
+                {
+                    await SendErrorAsync(command.CorrelationId ?? string.Empty, "BinaryData must be a valid Base64 string.", cancellationToken).ConfigureAwait(false);
+                    return;
+                }
+            }
+            else if (elem.ValueKind == System.Text.Json.JsonValueKind.Array)
+            {
+                data = elem.EnumerateArray().Select(e => e.GetByte()).ToArray();
+            }
+            else
+            {
+                data = [];
+            }
+        }
+        else if (dataObj is IEnumerable<byte> byteSeq)
+        {
+            data = byteSeq.ToArray();
+        }
+        else if (dataObj is IEnumerable<object> objSeq)
+        {
+            data = objSeq.Select(Convert.ToByte).ToArray();
+        }
+        else
+        {
+            data = [];
+        }
 
-        await _extensionManager.DeployExtensionAsync(name, data, cancellationToken).ConfigureAwait(false);
-        await SendSuccessAsync(command.CorrelationId ?? string.Empty, new { Name = name }, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await _extensionManager.DeployExtensionAsync(name, data, cancellationToken).ConfigureAwait(false);
+            await SendSuccessAsync(command.CorrelationId ?? string.Empty, new { Name = name }, cancellationToken).ConfigureAwait(false);
+        }
+        catch (ArgumentException ex)
+        {
+            await SendErrorAsync(command.CorrelationId ?? string.Empty, ex.Message, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

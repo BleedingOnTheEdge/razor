@@ -156,20 +156,21 @@ function killConflictingProcessOnPort(port) {
       }
       return true;
     } else {
+      let pids = '';
       try {
-        execSync(`fuser -k -9 ${port}/tcp 2>/dev/null`);
+        pids = execSync(`lsof -ti TCP:${port} -sTCP:LISTEN 2>/dev/null`, {
+          encoding: 'utf-8',
+        }).trim();
       } catch {
-        // ignore
+        // No lsof or no process
       }
-      const pids = execSync(`lsof -ti TCP:${port} -sTCP:LISTEN 2>/dev/null`, {
-        encoding: 'utf-8',
-      }).trim();
+
       if (pids) {
         for (const pidStr of pids.split(/\s+/)) {
           const pid = parseInt(pidStr, 10);
           if (pid && pid !== process.pid) {
             try {
-              process.kill(pid, 'SIGKILL');
+              process.kill(pid, 'SIGTERM');
             } catch {
               // ignore
             }

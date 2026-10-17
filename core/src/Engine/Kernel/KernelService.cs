@@ -63,10 +63,6 @@ internal sealed partial class KernelService : IKernelService, IDisposable
         LoggerMessage.Define<string>(LogLevel.Information, 8, "Optimization {TaskId} cancelled.");
     private static readonly Action<ILogger, string, Exception?> _logOptimizationFailed =
         LoggerMessage.Define<string>(LogLevel.Error, 9, "Optimization {TaskId} failed.");
-    private static readonly Action<ILogger, Exception?> _logPauseLiveNotImplemented =
-        LoggerMessage.Define(LogLevel.Warning, 10, "PauseLive not implemented; ignoring.");
-    private static readonly Action<ILogger, Exception?> _logResumeLiveNotImplemented =
-        LoggerMessage.Define(LogLevel.Warning, 11, "ResumeLive not implemented; ignoring.");
     private static readonly Action<ILogger, string, string, Exception?> _logBacktestDataFetchFailed =
         LoggerMessage.Define<string, string>(LogLevel.Error, 12, "Failed to fetch historical data for symbol {Symbol} in backtest {TaskId}.");
     private static readonly Action<ILogger, string, Exception?> _logLiveTickHandlerError =
@@ -90,7 +86,8 @@ internal sealed partial class KernelService : IKernelService, IDisposable
         List<MemoryMappedTickList>? MappedTickLists = null,
         Func<ChromosomeKernel, CancellationToken, Task<double>>? Evaluator = null,
         ManualResetEventSlim? PauseGate = null,
-        bool IsSteppable = false)
+        bool IsSteppable = false,
+        BacktestProgress? LastProgress = null)
     {
         public void DisposeCts()
         {

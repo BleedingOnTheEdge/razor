@@ -1,8 +1,10 @@
 // Chronos/src/Samples/Plugins/Strategies/CfdSmtDivergence/CfdSmtDivergenceStrategy.cs
 
 using System.Collections.Concurrent;
-using Abstractions.Shared;
-using Abstractions.Strategies;
+using System.Diagnostics.CodeAnalysis;
+using Sdk.Shared;
+using Sdk.Slots.NeuralNetwork;
+using Kernel.NeuralNetworks;
 
 namespace Samples.Plugins.Strategies.CfdSmtDivergence;
 
@@ -17,6 +19,8 @@ namespace Samples.Plugins.Strategies.CfdSmtDivergence;
 /// - Optional feed‑forward neural network that filters divergence signals.
 /// - Genome size &gt; 30 (49 genes originally, now 12 property genes + 36 NN weights = 48 genes).
 /// </summary>
+[SuppressMessage("Design", "CA1812:Avoid uninstantiated internal classes",
+    Justification = "Instantiated by the plugin loader via reflection discovery.")]
 internal sealed class CfdSmtDivergenceStrategy : StrategyBase
 {
     // ---------------------------------------------------------------
@@ -137,7 +141,9 @@ internal sealed class CfdSmtDivergenceStrategy : StrategyBase
     public override Task OnStopAsync() => Task.CompletedTask;
 
     /// <inheritdoc/>
-    public override Task OnTickAsync(Tick tick) => Task.CompletedTask;
+    public override void OnTick(string symbol, Tick tick)
+    {
+    }
 
     // ---------------------------------------------------------------
     // Gene injection (fixed order and NN injection)
@@ -165,14 +171,14 @@ internal sealed class CfdSmtDivergenceStrategy : StrategyBase
         // Handle NN
         if (UseNeuralNetworkGene != 0)
         {
-            if (NeuralNet == null)
-                NeuralNet = new FeedForwardNetwork(NeuralTopology, ActivationFunction.Tanh);
+            if (NeuralNetwork == null)
+                NeuralNetwork = new FeedForwardNetwork(NeuralTopology, FeedForwardNetwork.ActivationFunction.Tanh);
             // Inject the NN weight genes that come after the property genes
-            GeneInjector.InjectNeuralGenes(NeuralNet, genes, propertyGeneCount);
+            GeneInjector.InjectNeuralGenes(NeuralNetwork, genes, propertyGeneCount);
         }
         else
         {
-            NeuralNet = null;
+            NeuralNetwork = null;
         }
     }
 
@@ -243,10 +249,10 @@ internal sealed class CfdSmtDivergenceStrategy : StrategyBase
 
         if (!bearish && !bullish) return;
 
-        if (UseNeuralNetworkGene != 0 && NeuralNet != null)
+        if (UseNeuralNetworkGene != 0 && NeuralNetwork != null)
         {
             double[] inputs = BuildNeuralInputs(symA, bearish, bullish, prevA, currA);
-            double[] outputs = NeuralNet.FeedForward(inputs);
+            double[] outputs = NeuralNetwork.Predict(inputs);
             if (outputs.Length == 0 || outputs[0] <= 0)
                 return;
         }

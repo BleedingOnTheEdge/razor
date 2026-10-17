@@ -71,8 +71,20 @@ internal sealed class FlowRunView
     /// <summary>Gets or sets the best fitness score.</summary>
     public double? BestFitness { get; set; }
 
+    /// <summary>Gets or sets the nested metrics payload for frontend contract compatibility.</summary>
+    public RunMetricsView? Metrics { get; set; }
+
     /// <summary>Gets or sets the execution parameters, slot configurations, and hook specifications.</summary>
     public string? ConfigurationJson { get; set; }
+
+    /// <summary>Gets or sets the winning DNA configuration JSON from an optimization run.</summary>
+    public string? WinningDnaJson { get; set; }
+
+    /// <summary>Gets or sets the deserialized winning DNA payload.</summary>
+    public object? WinningDna { get; set; }
+
+    /// <summary>Gets or sets the detailed execution result payload JSON (trades, equity curve, granular metrics).</summary>
+    public string? ResultPayloadJson { get; set; }
 
     /// <summary>
     /// Creates a view model from a <see cref="FlowRun"/> entity.
@@ -86,6 +98,30 @@ internal sealed class FlowRunView
         var forkPoint = (run.ForkPointStep.HasValue || run.ForkPointGeneration.HasValue || run.ForkPointWindowIndex.HasValue)
             ? new ForkPoint(run.ForkPointStep, run.ForkPointGeneration, run.ForkPointWindowIndex)
             : null;
+
+        var metrics = (run.NetProfit.HasValue || run.TotalReturn.HasValue || run.SharpeRatio.HasValue || run.MaxDrawdown.HasValue || run.TradeCount.HasValue || run.BestFitness.HasValue)
+            ? new RunMetricsView
+            {
+                NetProfit = run.NetProfit,
+                TotalReturn = run.TotalReturn,
+                SharpeRatio = run.SharpeRatio,
+                MaxDrawdown = run.MaxDrawdown,
+                TradeCount = run.TradeCount,
+                BestFitness = run.BestFitness
+            }
+            : null;
+
+        object? winningDna = null;
+        if (!string.IsNullOrWhiteSpace(run.WinningDnaJson))
+        {
+            try
+            {
+                winningDna = System.Text.Json.JsonSerializer.Deserialize<object>(run.WinningDnaJson);
+            }
+            catch
+            {
+            }
+        }
 
         return new FlowRunView
         {
@@ -108,7 +144,35 @@ internal sealed class FlowRunView
             MaxDrawdown = run.MaxDrawdown,
             TradeCount = run.TradeCount,
             BestFitness = run.BestFitness,
-            ConfigurationJson = run.ConfigurationJson
+            Metrics = metrics,
+            ConfigurationJson = run.ConfigurationJson,
+            WinningDnaJson = run.WinningDnaJson,
+            WinningDna = winningDna,
+            ResultPayloadJson = run.ResultPayloadJson
         };
     }
+}
+
+/// <summary>
+/// Nested metrics payload view for frontend contract compatibility.
+/// </summary>
+internal sealed class RunMetricsView
+{
+    /// <summary>Gets or sets the net profit.</summary>
+    public decimal? NetProfit { get; set; }
+
+    /// <summary>Gets or sets the total return percentage.</summary>
+    public decimal? TotalReturn { get; set; }
+
+    /// <summary>Gets or sets the Sharpe ratio.</summary>
+    public double? SharpeRatio { get; set; }
+
+    /// <summary>Gets or sets the maximum drawdown percentage.</summary>
+    public double? MaxDrawdown { get; set; }
+
+    /// <summary>Gets or sets the executed trade count.</summary>
+    public int? TradeCount { get; set; }
+
+    /// <summary>Gets or sets the best fitness score.</summary>
+    public double? BestFitness { get; set; }
 }

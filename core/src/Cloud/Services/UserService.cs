@@ -75,11 +75,11 @@ internal sealed partial class UserService(
                 AccountId = account.Id,
                 Account = account,
                 UserName = name,
-                PasswordHash = "SHA256:DEMO_DEV_HASH",
                 Role = name.Contains("admin", StringComparison.OrdinalIgnoreCase) ? UserRole.Admin : UserRole.Developer,
                 CreatedAt = now,
                 IsActive = true
             };
+            user.PasswordHash = passwordHasher.HashPassword(user, "admin123");
 
             var license = new License
             {
@@ -150,25 +150,21 @@ internal sealed partial class UserService(
             .FirstOrDefaultAsync(u => u.UserName == name, cancellationToken)
             .ConfigureAwait(false);
 
-        // If user does not exist, auto-provision developer/operator in dev mode
+        // Unknown users must fail authentication
         if (user is null)
         {
-            UserRole defaultRole = name.Contains("admin", StringComparison.OrdinalIgnoreCase)
-                ? UserRole.Admin
-                : (name.Contains("trader", StringComparison.OrdinalIgnoreCase) ? UserRole.Trader : UserRole.Operator);
-            user = await ProvisionUserInternalAsync(db, name, password, null, defaultRole, SubscriptionTier.Free, cancellationToken)
-                .ConfigureAwait(false);
+            return null;
         }
-        else
+
+        if (string.IsNullOrEmpty(user.PasswordHash))
         {
-            if (!string.IsNullOrEmpty(user.PasswordHash) && !user.PasswordHash.StartsWith("SHA256:DEMO_DEV_HASH", StringComparison.Ordinal))
-            {
-                var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
-                if (result == Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed)
-                {
-                    return null;
-                }
-            }
+            return null;
+        }
+
+        var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
+        if (result == Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed)
+        {
+            return null;
         }
 
         if (!user.IsActive)

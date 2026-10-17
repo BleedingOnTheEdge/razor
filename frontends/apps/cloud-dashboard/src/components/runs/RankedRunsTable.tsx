@@ -101,7 +101,7 @@ export function RankedRunsTable({
                     </Link>
                   </td>
                   <td className="px-6 py-4 text-cyan-700 font-bold">
-                    {item.score.toFixed(4)} ({item.metric})
+                    {item.score != null ? item.score.toFixed(4) : '—'} ({item.metric})
                   </td>
                   <td className="px-6 py-4">
                     <span className="px-2 py-0.5 rounded text-[10px] bg-zinc-100 text-zinc-700 font-medium">

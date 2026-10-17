@@ -36,9 +36,9 @@ internal sealed class GetLiveMetricsHandler : CommandHandlerBase
     {
         var telemetrySnapshot = _telemetry.GetMetricsSnapshot();
 
-        if (command.Parameters is not Dictionary<string, object> dict ||
-            !dict.TryGetValue("TaskId", out object? idObj) ||
-            string.IsNullOrWhiteSpace(idObj?.ToString()))
+        string? taskId = TryGetParameterString(command.Parameters, "TaskId");
+
+        if (string.IsNullOrWhiteSpace(taskId))
         {
             var generalMetrics = new
             {
@@ -53,7 +53,6 @@ internal sealed class GetLiveMetricsHandler : CommandHandlerBase
             return;
         }
 
-        string taskId = idObj.ToString()!;
         var task = _taskManager.GetTask(taskId);
 
         if (task is LiveTask liveTask)

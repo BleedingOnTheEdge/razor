@@ -103,4 +103,10 @@ internal sealed class FlowRun
 
     /// <summary>Gets or sets the serialized execution parameters, slot configurations, and hook specifications.</summary>
     public string? ConfigurationJson { get; set; }
+
+    /// <summary>Gets or sets the winning DNA configuration from an optimization run.</summary>
+    public string? WinningDnaJson { get; set; }
+
+    /// <summary>Gets or sets the detailed execution result payload JSON (trades, equity curve, granular metrics).</summary>
+    public string? ResultPayloadJson { get; set; }
 }

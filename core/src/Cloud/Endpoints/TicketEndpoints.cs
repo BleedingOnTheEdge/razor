@@ -129,6 +129,13 @@ internal sealed class CreateTicketEndpoint(TicketService tickets) : Endpoint<Cre
     /// <inheritdoc/>
     public override async Task HandleAsync(CreateTicketRequest req, CancellationToken ct)
     {
+        if (string.IsNullOrWhiteSpace(req.Title) || string.IsNullOrWhiteSpace(req.Description))
+        {
+            AddError("Title and Description cannot be empty.");
+            await Send.ErrorsAsync(StatusCodes.Status400BadRequest, ct).ConfigureAwait(false);
+            return;
+        }
+
         Ticket ticket = await tickets.CreateTicketAsync(
             req.AccountId == Guid.Empty ? Guid.NewGuid() : req.AccountId,
             req.UserId == Guid.Empty ? Guid.NewGuid() : req.UserId,
@@ -194,6 +201,13 @@ internal sealed class AddTicketMessageEndpoint(TicketService tickets) : Endpoint
     /// <inheritdoc/>
     public override async Task HandleAsync(AddTicketMessageRequest req, CancellationToken ct)
     {
+        if (string.IsNullOrWhiteSpace(req.Message))
+        {
+            AddError("Ticket message cannot be empty.");
+            await Send.ErrorsAsync(StatusCodes.Status400BadRequest, ct).ConfigureAwait(false);
+            return;
+        }
+
         Guid ticketId = Route<Guid>("ticketId");
         TicketMessage? msg = await tickets.AddMessageAsync(
             ticketId,

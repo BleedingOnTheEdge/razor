@@ -59,10 +59,80 @@ internal sealed partial class TaskManager
                 initialState = st;
             }
 
+            string resolvedAdapter = GetString(dict, "AdapterName");
+            if (string.IsNullOrWhiteSpace(resolvedAdapter))
+            {
+                if (TryGetValueIgnoreCase(dict, "adapter", out object? aVal))
+                {
+                    if (aVal is System.Text.Json.JsonElement aJe)
+                    {
+                        if (aJe.ValueKind == System.Text.Json.JsonValueKind.String)
+                        {
+                            resolvedAdapter = aJe.GetString() ?? "";
+                        }
+                        else if (aJe.ValueKind == System.Text.Json.JsonValueKind.Object &&
+                                 (aJe.TryGetProperty("name", out var np) || aJe.TryGetProperty("Name", out np)))
+                        {
+                            resolvedAdapter = np.GetString() ?? "";
+                        }
+                    }
+                    else if (aVal is Dictionary<string, object> aDict)
+                    {
+                        if ((aDict.TryGetValue("name", out object? np) || aDict.TryGetValue("Name", out np)) && np != null)
+                        {
+                            resolvedAdapter = np.ToString() ?? "";
+                        }
+                    }
+                    else if (aVal is string asStr)
+                    {
+                        resolvedAdapter = asStr;
+                    }
+                }
+            }
+            if (string.IsNullOrWhiteSpace(resolvedAdapter))
+            {
+                resolvedAdapter = "PaperBroker";
+            }
+
+            string resolvedStrategy = GetString(dict, "StrategyName");
+            if (string.IsNullOrWhiteSpace(resolvedStrategy))
+            {
+                if (TryGetValueIgnoreCase(dict, "strategy", out object? sVal))
+                {
+                    if (sVal is System.Text.Json.JsonElement sJe)
+                    {
+                        if (sJe.ValueKind == System.Text.Json.JsonValueKind.String)
+                        {
+                            resolvedStrategy = sJe.GetString() ?? "";
+                        }
+                        else if (sJe.ValueKind == System.Text.Json.JsonValueKind.Object &&
+                                 (sJe.TryGetProperty("name", out var np) || sJe.TryGetProperty("Name", out np)))
+                        {
+                            resolvedStrategy = np.GetString() ?? "";
+                        }
+                    }
+                    else if (sVal is Dictionary<string, object> sDict)
+                    {
+                        if ((sDict.TryGetValue("name", out object? np) || sDict.TryGetValue("Name", out np)) && np != null)
+                        {
+                            resolvedStrategy = np.ToString() ?? "";
+                        }
+                    }
+                    else if (sVal is string ssStr)
+                    {
+                        resolvedStrategy = ssStr;
+                    }
+                }
+            }
+            if (string.IsNullOrWhiteSpace(resolvedStrategy))
+            {
+                resolvedStrategy = "TrendFollowing";
+            }
+
             var optInput = new OptimizationInput
             {
-                AdapterName = GetString(dict, "AdapterName"),
-                StrategyName = GetString(dict, "StrategyName"),
+                AdapterName = resolvedAdapter,
+                StrategyName = resolvedStrategy,
                 StrategyConfig = config,
                 Leverage = GetDouble(dict, "Leverage", 100),
                 InitialBalance = GetDouble(dict, "InitialBalance", 10000),
@@ -89,18 +159,18 @@ internal sealed partial class TaskManager
             var adapter = _extensionManager.ActiveAdapter;
             if (adapter is null)
             {
-                string adapterName = !string.IsNullOrWhiteSpace(optInput.AdapterName) ? optInput.AdapterName : "PaperBroker";
-                adapter = _extensionManager.CreateTransientAdapter(adapterName)
+                adapter = _extensionManager.CreateTransientAdapter(resolvedAdapter)
                     ?? _extensionManager.CreateTransientAdapter("PaperBroker")
+                    ?? _extensionManager.CreateTransientAdapter("MockPaperTradingAdapter")
                     ?? throw new InvalidOperationException("No active adapter found.");
             }
 
             var strategy = _extensionManager.ActiveStrategy;
             if (strategy is null)
             {
-                string strategyName = !string.IsNullOrWhiteSpace(optInput.StrategyName) ? optInput.StrategyName : "TrendFollowing";
-                strategy = _extensionManager.CreateTransientStrategy(strategyName)
+                strategy = _extensionManager.CreateTransientStrategy(resolvedStrategy)
                     ?? _extensionManager.CreateTransientStrategy("TrendFollowing")
+                    ?? _extensionManager.CreateTransientStrategy("TrendFollowingStrategy")
                     ?? throw new InvalidOperationException("No active strategy found.");
             }
 
@@ -143,23 +213,70 @@ internal sealed partial class TaskManager
         }
     }
 
+    private static bool TryGetValueIgnoreCase(Dictionary<string, object> dict, string key, out object? value)
+    {
+        if (dict.TryGetValue(key, out value))
+        {
+            return true;
+        }
+
+        foreach (var kvp in dict)
+        {
+            if (string.Equals(kvp.Key, key, StringComparison.OrdinalIgnoreCase))
+            {
+                value = kvp.Value;
+                return true;
+            }
+        }
+
+        value = null;
+        return false;
+    }
+
     // Helper methods for parsing config dictionary
     internal static string GetString(Dictionary<string, object> dict, string key, string fallback = "")
     {
-        if (dict.TryGetValue(key, out object? value) && value is string s)
+        if (TryGetValueIgnoreCase(dict, key, out object? value))
         {
-            return s;
+            if (value is string s)
+            {
+                return s;
+            }
+
+            if (value is System.Text.Json.JsonElement je)
+            {
+                if (je.ValueKind == System.Text.Json.JsonValueKind.String)
+                {
+                    return je.GetString() ?? fallback;
+                }
+                return je.ToString();
+            }
+
+            if (value != null)
+            {
+                return value.ToString() ?? fallback;
+            }
         }
         return fallback;
     }
 
     internal static double GetDouble(Dictionary<string, object> dict, string key, double fallback = 0)
     {
-        if (dict.TryGetValue(key, out object? value))
+        if (TryGetValueIgnoreCase(dict, key, out object? value))
         {
             if (value is double d)
             {
                 return d;
+            }
+
+            if (value is float f)
+            {
+                return f;
+            }
+
+            if (value is decimal dec)
+            {
+                return (double)dec;
             }
 
             if (value is int i)
@@ -172,6 +289,18 @@ internal sealed partial class TaskManager
                 return l;
             }
 
+            if (value is System.Text.Json.JsonElement je)
+            {
+                if (je.ValueKind == System.Text.Json.JsonValueKind.Number && je.TryGetDouble(out var dVal))
+                {
+                    return dVal;
+                }
+                if (je.ValueKind == System.Text.Json.JsonValueKind.String && double.TryParse(je.GetString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var psVal))
+                {
+                    return psVal;
+                }
+            }
+
             if (value is string s && double.TryParse(s, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var parsed))
             {
                 return parsed;
@@ -182,7 +311,7 @@ internal sealed partial class TaskManager
 
     internal static int GetInt(Dictionary<string, object> dict, string key, int fallback = 0)
     {
-        if (dict.TryGetValue(key, out object? value))
+        if (TryGetValueIgnoreCase(dict, key, out object? value))
         {
             if (value is int i)
             {
@@ -192,6 +321,23 @@ internal sealed partial class TaskManager
             if (value is long l)
             {
                 return (int)l;
+            }
+
+            if (value is double d)
+            {
+                return (int)d;
+            }
+
+            if (value is System.Text.Json.JsonElement je)
+            {
+                if (je.ValueKind == System.Text.Json.JsonValueKind.Number && je.TryGetInt32(out var iVal))
+                {
+                    return iVal;
+                }
+                if (je.ValueKind == System.Text.Json.JsonValueKind.String && int.TryParse(je.GetString(), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var psVal))
+                {
+                    return psVal;
+                }
             }
 
             if (value is string s && int.TryParse(s, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var parsed))
@@ -204,16 +350,26 @@ internal sealed partial class TaskManager
 
     internal static string[] GetStringArray(Dictionary<string, object> dict, string key, string[] fallback)
     {
-        if (dict.TryGetValue(key, out object? value))
+        if (TryGetValueIgnoreCase(dict, key, out object? value))
         {
+            if (value is string[] sa)
+            {
+                return sa;
+            }
+
             if (value is object[] arr)
             {
                 return arr.Select(x => x.ToString()!).ToArray();
             }
 
+            if (value is IEnumerable<string> es)
+            {
+                return es.ToArray();
+            }
+
             if (value is System.Text.Json.JsonElement jsonElement && jsonElement.ValueKind == System.Text.Json.JsonValueKind.Array)
             {
-                return jsonElement.EnumerateArray().Select(x => x.GetString()!).ToArray();
+                return jsonElement.EnumerateArray().Select(x => x.ValueKind == System.Text.Json.JsonValueKind.String ? (x.GetString() ?? string.Empty) : x.ToString()).ToArray();
             }
         }
         return fallback;
@@ -221,11 +377,23 @@ internal sealed partial class TaskManager
 
     internal static DateTime GetDateTime(Dictionary<string, object> dict, string key, DateTime fallback)
     {
-        if (dict.TryGetValue(key, out object? value))
+        if (TryGetValueIgnoreCase(dict, key, out object? value))
         {
             if (value is DateTime dt)
             {
                 return dt;
+            }
+
+            if (value is System.Text.Json.JsonElement je)
+            {
+                if (je.ValueKind == System.Text.Json.JsonValueKind.String && je.TryGetDateTime(out var dtVal))
+                {
+                    return DateTime.SpecifyKind(dtVal, DateTimeKind.Utc);
+                }
+                if (je.ValueKind == System.Text.Json.JsonValueKind.String && DateTime.TryParse(je.GetString(), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal, out var pVal))
+                {
+                    return DateTime.SpecifyKind(pVal, DateTimeKind.Utc);
+                }
             }
 
             if (value is string s && DateTime.TryParse(s, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal, out var parsed))
@@ -238,21 +406,32 @@ internal sealed partial class TaskManager
 
     internal static bool GetBool(Dictionary<string, object> dict, string key, bool fallback = false)
     {
-        if (dict.TryGetValue(key, out object? value))
+        if (TryGetValueIgnoreCase(dict, key, out object? value))
         {
             if (value is bool b)
             {
                 return b;
             }
 
+            if (value is System.Text.Json.JsonElement element)
+            {
+                if (element.ValueKind == System.Text.Json.JsonValueKind.True)
+                {
+                    return true;
+                }
+                if (element.ValueKind == System.Text.Json.JsonValueKind.False)
+                {
+                    return false;
+                }
+                if (element.ValueKind == System.Text.Json.JsonValueKind.String && bool.TryParse(element.GetString(), out var pb))
+                {
+                    return pb;
+                }
+            }
+
             if (value is string s && bool.TryParse(s, out var parsed))
             {
                 return parsed;
-            }
-
-            if (value is System.Text.Json.JsonElement element && (element.ValueKind == System.Text.Json.JsonValueKind.True || element.ValueKind == System.Text.Json.JsonValueKind.False))
-            {
-                return element.GetBoolean();
             }
         }
         return fallback;

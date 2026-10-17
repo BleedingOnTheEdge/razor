@@ -1,8 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { getApiClient, type RunReportPayload } from '@/lib/api-client';
+import {
+  getApiClient,
+  type RunReportPayload,
+  type EngineInstancePayload,
+  type TradeItemPayload,
+  type EquityPointPayload,
+  type WinningDnaPayload,
+} from '@/lib/api-client';
 import { useToast } from '@/components/ui/toast';
 import {
   getRunStatusBadge,
@@ -23,6 +30,16 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { CompleteRunModal } from './CompleteRunModal';
+import { LaunchRunModal } from '@/components/runs/LaunchRunModal';
+import { GranularTradeDetailModal } from '@/components/trades/GranularTradeDetailModal';
+import { GenerationDetailModal } from '@/components/optimization/GenerationDetailModal';
+import { PopulationBacktestModal } from '@/components/optimization/PopulationBacktestModal';
+import { WinningDnaCard } from './WinningDnaCard';
+import { EquityCurveChart } from './EquityCurveChart';
+import { DetailedMetricsGrid } from './DetailedMetricsGrid';
+import { TradeHistoryTable } from './TradeHistoryTable';
+import { GenerationalConvergenceChart } from './GenerationalConvergenceChart';
+import type { GenerationProgressPayload, PopulationIndividualPayload } from '@/lib/api-client';
 
 export function RunReportContent({ runId }: { runId: string }) {
   const toast = useToast();
@@ -30,6 +47,21 @@ export function RunReportContent({ runId }: { runId: string }) {
   const [report, setReport] = useState<RunReportPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Engine Instances for LaunchRunModal
+  const [instances, setInstances] = useState<EngineInstancePayload[]>([]);
+  const [launchModalOpen, setLaunchModalOpen] = useState(false);
+  const [launchKind, setLaunchKind] = useState<'Backtest' | 'Optimization' | 'WalkForward' | 'Live'>('Backtest');
+  const [launchInstanceId, setLaunchInstanceId] = useState('');
+  const [injectedDna, setInjectedDna] = useState<WinningDnaPayload | null>(null);
+
+  // DNA Copy State
+  const [copiedDna, setCopiedDna] = useState(false);
+
+  // Modals for GA Generations, Populations & Granular Trade Telemetry
+  const [selectedTrade, setSelectedTrade] = useState<TradeItemPayload | null>(null);
+  const [selectedGeneration, setSelectedGeneration] = useState<GenerationProgressPayload | null>(null);
+  const [selectedPopulation, setSelectedPopulation] = useState<PopulationIndividualPayload | null>(null);
 
   // Complete Run Modal state
   const [completeModalOpen, setCompleteModalOpen] = useState(false);
@@ -65,8 +97,22 @@ export function RunReportContent({ runId }: { runId: string }) {
     }
   }
 
+  async function loadInstances() {
+    try {
+      const client = getApiClient();
+      const { data } = await client.GET('/api/instances', {});
+      if (data && data.length > 0) {
+        setInstances(data);
+        setLaunchInstanceId(data[0].instanceId);
+      }
+    } catch {
+      // Ignored non-fatal instance prefetch
+    }
+  }
+
   useEffect(() => {
     loadReport();
+    loadInstances();
   }, [runId]);
 
   async function handlePauseRun() {
@@ -122,6 +168,25 @@ export function RunReportContent({ runId }: { runId: string }) {
     }
   }
 
+  function handleCopyDna() {
+    if (!report?.winningDna) return;
+    navigator.clipboard.writeText(JSON.stringify(report.winningDna, null, 2));
+    setCopiedDna(true);
+    toast.success('DNA Copied', 'Portable Winning DNA JSON copied to clipboard.');
+    setTimeout(() => setCopiedDna(false), 2000);
+  }
+
+  function handleLaunchWithDna(kind: 'Backtest' | 'Live') {
+    if (instances.length === 0) {
+      toast.info('No Instances', 'Connect an engine instance to dispatch execution.');
+    }
+    setLaunchKind(kind);
+    if (report?.engineInstanceId && instances.some((i) => i.instanceId === report.engineInstanceId)) {
+      setLaunchInstanceId(report.engineInstanceId);
+    }
+    setLaunchModalOpen(true);
+  }
+
   const metrics = report?.aggregates || report?.metrics || (report ? {
     netProfit: (report as any).netProfit,
     totalReturn: (report as any).totalReturn,
@@ -130,9 +195,11 @@ export function RunReportContent({ runId }: { runId: string }) {
     tradeCount: (report as any).tradeCount,
     bestFitness: (report as any).bestFitness,
   } : null);
+
   const isComparable = report?.isComparable ?? report?.comparable ?? true;
   const statusBadge = report?.status ? getRunStatusBadge(report.status) : null;
   const relBadge = report?.relation ? getRunRelationBadge(report.relation) : null;
+
 
   return (
     <div className="space-y-6 max-w-6xl">
@@ -333,6 +400,40 @@ export function RunReportContent({ runId }: { runId: string }) {
             </div>
           </div>
 
+          {/* Winning Strategy DNA Card (1-Click Backtest / Live Deploy) */}
+          {report.winningDna && (
+            <WinningDnaCard
+              winningDna={report.winningDna}
+              copiedDna={copiedDna}
+              onCopyDna={handleCopyDna}
+              onLaunchWithDna={handleLaunchWithDna}
+            />
+          )}
+
+          {/* Interactive SVG Equity & Drawdown Curve */}
+          {report.equityCurve && report.equityCurve.length > 0 && (
+            <EquityCurveChart equityPoints={report.equityCurve} />
+          )}
+
+          {/* Detailed Institutional Metrics & Risk Analytics */}
+          {report.detailedMetrics && (
+            <DetailedMetricsGrid detailedMetrics={report.detailedMetrics} />
+          )}
+
+          {/* Itemized Granular Trade Fill History */}
+          {report.trades && report.trades.length > 0 && (
+            <TradeHistoryTable trades={report.trades} onSelectTrade={setSelectedTrade} />
+          )}
+
+          {/* Generational Progression (for GA Optimization Runs) */}
+          {report.generationProgress && report.generationProgress.length > 0 && (
+            <GenerationalConvergenceChart
+              generationProgress={report.generationProgress}
+              selectedGeneration={selectedGeneration}
+              onSelectGeneration={setSelectedGeneration}
+            />
+          )}
+
           {/* Append-Only Interventions Audit Log */}
           <div className="p-6 rounded-xl bg-white border border-zinc-200 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
@@ -433,6 +534,66 @@ export function RunReportContent({ runId }: { runId: string }) {
         setBestFitness={setBestFitness}
         submittingComplete={submittingComplete}
         onSubmit={handleCompleteSubmit}
+      />
+
+      {/* Launch Run Modal (with winning DNA injection) */}
+      <LaunchRunModal
+        isOpen={launchModalOpen}
+        onClose={() => {
+          setLaunchModalOpen(false);
+          setInjectedDna(null);
+        }}
+        instances={instances}
+        launchInstanceId={launchInstanceId}
+        setLaunchInstanceId={setLaunchInstanceId}
+        launchKind={launchKind}
+        setLaunchKind={setLaunchKind}
+        initialDna={injectedDna || report?.winningDna || undefined}
+        onRunLaunched={(newRun) => {
+          if (typeof window !== 'undefined') {
+            window.location.assign(`/runs/${newRun.id}`);
+          }
+        }}
+      />
+
+      {/* Generation Detail Modal (evaluated chromosome candidates) */}
+      <GenerationDetailModal
+        isOpen={!!selectedGeneration}
+        onClose={() => setSelectedGeneration(null)}
+        generation={selectedGeneration}
+        onSelectIndividual={(individual) => {
+          setSelectedPopulation(individual);
+        }}
+      />
+
+      {/* Population Backtest Detail Modal (equity curve & trades of candidate) */}
+      <PopulationBacktestModal
+        isOpen={!!selectedPopulation}
+        onClose={() => setSelectedPopulation(null)}
+        individual={selectedPopulation}
+        generationNumber={selectedGeneration?.generation ?? 1}
+        onSelectTrade={(trade) => {
+          setSelectedTrade(trade);
+        }}
+        onRunAsBacktest={(individual) => {
+          const constructedDna: WinningDnaPayload = individual.dna || {
+            genes: individual.genes || [],
+            parameters: individual.parameters || {},
+            fitness: individual.fitness || 0,
+            slots: report?.winningDna?.slots || null,
+            execution: report?.winningDna?.execution || null,
+          };
+          setInjectedDna(constructedDna);
+          setLaunchKind('Backtest');
+          setLaunchModalOpen(true);
+        }}
+      />
+
+      {/* Granular Trade Telemetry & Execution Ladder Modal */}
+      <GranularTradeDetailModal
+        isOpen={!!selectedTrade}
+        onClose={() => setSelectedTrade(null)}
+        trade={selectedTrade}
       />
     </div>
   );

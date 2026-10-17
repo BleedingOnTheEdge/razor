@@ -255,11 +255,17 @@ internal sealed class ExtensionManager : IExtensionManager, IDisposable
             throw new ArgumentException("Invalid extension name or binary data.");
         }
 
-        _logDeployingExtension(_logger, name, binaryData.Length, null);
+        string safeName = Path.GetFileName(name);
+        if (string.IsNullOrWhiteSpace(safeName))
+        {
+            throw new ArgumentException("Invalid extension name.");
+        }
+
+        _logDeployingExtension(_logger, safeName, binaryData.Length, null);
 
         await Task.Run(() =>
         {
-            var extensionPath = Path.Combine(_basePath, "Plugins", $"{name}.dll");
+            var extensionPath = Path.Combine(_basePath, "Plugins", $"{safeName}.dll");
             var directory = Path.GetDirectoryName(extensionPath);
             if (directory != null)
             {
@@ -269,16 +275,27 @@ internal sealed class ExtensionManager : IExtensionManager, IDisposable
             File.WriteAllBytes(extensionPath, binaryData);
         }, cancellationToken).ConfigureAwait(false);
 
-        _logExtensionDeployed(_logger, name, null);
+        _logExtensionDeployed(_logger, safeName, null);
     }
 
     /// <inheritdoc/>
     public async Task RemoveExtensionAsync(string name, CancellationToken cancellationToken)
     {
-        _logRemovingExtension(_logger, name, null);
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Invalid extension name.");
+        }
+
+        string safeName = Path.GetFileName(name);
+        if (string.IsNullOrWhiteSpace(safeName))
+        {
+            throw new ArgumentException("Invalid extension name.");
+        }
+
+        _logRemovingExtension(_logger, safeName, null);
         await Task.Run(() =>
         {
-            var extensionPath = Path.Combine(_basePath, "Plugins", $"{name}.dll");
+            var extensionPath = Path.Combine(_basePath, "Plugins", $"{safeName}.dll");
             if (File.Exists(extensionPath))
             {
                 File.Delete(extensionPath);

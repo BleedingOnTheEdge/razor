@@ -36,6 +36,7 @@ internal sealed class StreamClientEventsEndpoint(IClientEventBroadcaster broadca
     public override void Configure()
     {
         Get("/api/events/stream");
+        AllowAnonymous();
         Summary(summary =>
         {
             summary.Summary = "Stream real-time events via SSE";
@@ -66,8 +67,16 @@ internal sealed class StreamClientEventsEndpoint(IClientEventBroadcaster broadca
                     .FlushAsync(cancellationToken)
                     .ConfigureAwait(false);
             }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
             catch (Exception)
             {
+                if (cancellationToken.IsCancellationRequested || HttpContext.RequestAborted.IsCancellationRequested)
+                {
+                    break;
+                }
                 // Guard stream against transient serialization faults
             }
         }

@@ -169,7 +169,7 @@ export default function MyLicensesPage() {
                   <span>{formatTimestamp(lic.acquiredAt)}</span>
                 </span>
                 <a
-                  href="http://localhost:3002/instances"
+                  href={`${process.env.NEXT_PUBLIC_DASHBOARD_URL || 'http://localhost:3002'}/instances`}
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center gap-1 text-indigo-400 hover:text-indigo-300"

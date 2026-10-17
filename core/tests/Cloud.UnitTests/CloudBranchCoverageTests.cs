@@ -173,6 +173,17 @@ public sealed class CloudBranchCoverageTests
         await pipeline(unauthCtx).ConfigureAwait(true);
         Assert.Equal(StatusCodes.Status401Unauthorized, unauthCtx.Response.StatusCode);
 
+        // 4b. Mutation endpoints to marketplace, community, tickets fail 401 without key
+        string[] unauthMutations = ["/api/marketplace/items", "/api/community/threads", "/api/tickets"];
+        foreach (string mutPath in unauthMutations)
+        {
+            var mutCtx = new DefaultHttpContext();
+            mutCtx.Request.Method = HttpMethods.Post;
+            mutCtx.Request.Path = mutPath;
+            await pipeline(mutCtx).ConfigureAwait(true);
+            Assert.Equal(StatusCodes.Status401Unauthorized, mutCtx.Response.StatusCode);
+        }
+
         // 5. Protected endpoint with valid HeaderName passes
         var headerCtx = new DefaultHttpContext();
         headerCtx.Request.Path = "/api/instances";

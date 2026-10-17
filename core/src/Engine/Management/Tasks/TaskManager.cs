@@ -306,6 +306,7 @@ internal sealed partial class TaskManager : ITaskManager, IDisposable
                 string adapterName = !string.IsNullOrWhiteSpace(btConfig.AdapterName) ? btConfig.AdapterName : "PaperBroker";
                 adapter = _extensionManager.CreateTransientAdapter(adapterName)
                     ?? _extensionManager.CreateTransientAdapter("PaperBroker")
+                    ?? _extensionManager.CreateTransientAdapter("MockPaperTradingAdapter")
                     ?? throw new InvalidOperationException("No active adapter found.");
             }
 
@@ -315,6 +316,7 @@ internal sealed partial class TaskManager : ITaskManager, IDisposable
                 string strategyName = !string.IsNullOrWhiteSpace(btConfig.StrategyName) ? btConfig.StrategyName : "TrendFollowing";
                 strategy = _extensionManager.CreateTransientStrategy(strategyName)
                     ?? _extensionManager.CreateTransientStrategy("TrendFollowing")
+                    ?? _extensionManager.CreateTransientStrategy("TrendFollowingStrategy")
                     ?? throw new InvalidOperationException("No active strategy found.");
             }
 

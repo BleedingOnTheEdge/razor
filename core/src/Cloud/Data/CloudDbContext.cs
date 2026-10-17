@@ -234,6 +234,8 @@ internal sealed class CloudDbContext : DbContext
             run.Property(r => r.Continuity).HasConversion<string>().HasMaxLength(32);
             run.Property(r => r.RandomPosition).HasMaxLength(4096);
             run.Property(r => r.ConfigurationJson).HasMaxLength(16384);
+            run.Property(r => r.WinningDnaJson).HasMaxLength(65536);
+            run.Property(r => r.ResultPayloadJson);
             run.HasIndex(r => r.EngineInstanceId);
             run.HasIndex(r => r.ParentRunId);
             run.HasOne(r => r.ParentRun).WithMany(p => p!.ChildRuns).HasForeignKey(r => r.ParentRunId).OnDelete(DeleteBehavior.Restrict);

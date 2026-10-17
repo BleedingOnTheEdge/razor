@@ -184,11 +184,6 @@ internal sealed partial class TaskManager
                 InitialState = state.OptimizerState
             };
 
-            var adapter = _extensionManager.ActiveAdapter
-                ?? throw new InvalidOperationException("No active adapter found.");
-            var strategy = _extensionManager.ActiveStrategy
-                ?? throw new InvalidOperationException("No active strategy found.");
-
             string kernelTaskId = await _kernelService.StartOptimizationAsync(optInput, cancellationToken).ConfigureAwait(false);
 
             var task = new OptimizationTask(

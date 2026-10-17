@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Play, Sliders, Shield, Zap, X, Calendar, Settings2 } from 'lucide-react';
+import { Play, Sliders, Shield, Zap, X, Calendar, Settings2, Dna, ClipboardPaste, Trash2, Check } from 'lucide-react';
 import { formatHash } from '@razor/ui-kit';
-import { getApiClient, type EngineInstancePayload, type FlowRunPayload } from '@/lib/api-client';
+import { getApiClient, type EngineInstancePayload, type FlowRunPayload, type WinningDnaPayload } from '@/lib/api-client';
 import { useToast } from '@/components/ui/toast';
 
 export interface LaunchRunModalProps {
@@ -12,10 +12,11 @@ export interface LaunchRunModalProps {
   instances: EngineInstancePayload[];
   launchInstanceId?: string;
   setLaunchInstanceId?: (id: string) => void;
-  launchKind?: 'Backtest' | 'Optimization' | 'WalkForward';
-  setLaunchKind?: (kind: 'Backtest' | 'Optimization' | 'WalkForward') => void;
+  launchKind?: 'Backtest' | 'Optimization' | 'WalkForward' | 'Live';
+  setLaunchKind?: (kind: 'Backtest' | 'Optimization' | 'WalkForward' | 'Live') => void;
   launchSeed?: number;
   setLaunchSeed?: (seed: number) => void;
+  initialDna?: WinningDnaPayload;
   launching?: boolean;
   onSubmit?: (e: React.FormEvent) => Promise<void>;
   onRunLaunched?: (run: FlowRunPayload) => void;
@@ -37,6 +38,7 @@ export function LaunchRunModal({
   setLaunchKind: extSetKind,
   launchSeed: extSeed,
   setLaunchSeed: extSetSeed,
+  initialDna,
   launching: extLaunching,
   onSubmit: extOnSubmit,
   onRunLaunched,
@@ -46,9 +48,14 @@ export function LaunchRunModal({
   const [selectedInstanceId, setSelectedInstanceId] = useState<string>(
     extInstId || (instances.length > 0 ? instances[0].instanceId : '')
   );
-  const [runKind, setRunKind] = useState<'Backtest' | 'Optimization' | 'WalkForward'>(extKind || 'Backtest');
+  const [runKind, setRunKind] = useState<'Backtest' | 'Optimization' | 'WalkForward' | 'Live'>(extKind || 'Backtest');
   const [seed, setSeed] = useState<number>(extSeed ?? 42);
   const [submitting, setSubmitting] = useState(false);
+
+  // Active DNA state & direct paste
+  const [activeDna, setActiveDna] = useState<WinningDnaPayload | null>(initialDna || null);
+  const [isDnaDrawerOpen, setIsDnaDrawerOpen] = useState(false);
+  const [rawDnaText, setRawDnaText] = useState('');
 
   // Active extension profile
   const [detectedStrategy, setDetectedStrategy] = useState<string>('TrendFollowing');
@@ -105,15 +112,120 @@ export function LaunchRunModal({
       .then(({ data }) => {
         if (!active || !data) return;
         const d = data as any;
-        if (d.activeSelections?.strategy) setDetectedStrategy(d.activeSelections.strategy);
-        if (d.activeSelections?.adapter) setDetectedAdapter(d.activeSelections.adapter);
+        if (d.activeSelections?.strategy && !initialDna?.slots?.strategy) setDetectedStrategy(d.activeSelections.strategy);
+        if (d.activeSelections?.adapter && !initialDna?.slots?.adapter) setDetectedAdapter(d.activeSelections.adapter);
         if (Array.isArray(d.activeSelections?.hookPlugins) && d.activeSelections.hookPlugins.length > 0) {
           setDetectedHooks(d.activeSelections.hookPlugins);
         }
       })
       .catch(() => {});
     return () => { active = false; };
-  }, [selectedInstanceId, isOpen]);
+  }, [selectedInstanceId, isOpen, initialDna]);
+
+  function applyDnaPayload(dnaInput: any) {
+    const d: WinningDnaPayload = dnaInput?.winningDna || dnaInput?.dna || dnaInput;
+    if (!d || typeof d !== 'object') {
+      throw new Error('Input is not a valid JSON object.');
+    }
+    if (!d.genes && !d.parameters && !d.slots) {
+      throw new Error('DNA object must contain genes, parameters, or slots.');
+    }
+
+    setRunKind('Backtest');
+    extSetKind?.('Backtest');
+
+    if (d.slots?.strategy) {
+      setDetectedStrategy(d.slots.strategy);
+    }
+    if (d.slots?.adapter) {
+      setDetectedAdapter(d.slots.adapter);
+    }
+    const params = d.parameters || {};
+    if (params.FastPeriod != null || params.fastPeriod != null) {
+      setFastPeriod(Number(params.FastPeriod ?? params.fastPeriod));
+    }
+    if (params.SlowPeriod != null || params.slowPeriod != null) {
+      setSlowPeriod(Number(params.SlowPeriod ?? params.slowPeriod));
+    }
+    if (params.StopLossPct != null || params.stopLossPct != null) {
+      setStopLossPct(Number(params.StopLossPct ?? params.stopLossPct));
+    }
+    if (params.TakeProfitPct != null || params.takeProfitPct != null) {
+      setTakeProfitPct(Number(params.TakeProfitPct ?? params.takeProfitPct));
+    }
+    if (params.Leverage != null || params.leverage != null) {
+      setLeverage(Number(params.Leverage ?? params.leverage));
+    }
+    if (d.execution) {
+      if (d.execution.symbols && d.execution.symbols.length > 0) {
+        setSymbol(d.execution.symbols[0]);
+      }
+      if (d.execution.timeframes && d.execution.timeframes.length > 0) {
+        setBarSize(d.execution.timeframes[0]);
+      }
+      if (d.execution.initialBalance) {
+        setInitialCapital(Number(d.execution.initialBalance));
+      }
+      if (d.execution.leverage) {
+        setLeverage(Number(d.execution.leverage));
+      }
+    }
+
+    const foundSeed = (d as any).seed ?? (d as any).baseSeed ?? (d as any).masterSeed ?? (d as any).geneticSeed ?? (d as any).execution?.seed;
+    if (foundSeed != null && !isNaN(Number(foundSeed))) {
+      const s = Number(foundSeed);
+      setSeed(s);
+      extSetSeed?.(s);
+    }
+
+    setActiveDna(d);
+    setIsDnaDrawerOpen(false);
+    setRawDnaText('');
+    toast.success('Strategy DNA Applied', `Imported ${d.slots?.strategy || 'TrendFollowing'} with ${d.genes?.length || 0} genes. Auto-configured for Backtest.`);
+  }
+
+  useEffect(() => {
+    if (!initialDna || !isOpen) return;
+    try {
+      applyDnaPayload(initialDna);
+    } catch {
+      // Fallback
+      setActiveDna(initialDna);
+    }
+  }, [initialDna, isOpen]);
+
+  async function handlePasteFromClipboard() {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text || !text.trim()) {
+        toast.error('Clipboard Empty', 'No text found in system clipboard.');
+        return;
+      }
+      setRawDnaText(text);
+      const parsed = JSON.parse(text);
+      applyDnaPayload(parsed);
+    } catch (err) {
+      toast.error('Clipboard / Parse Error', err instanceof Error ? err.message : 'Failed to parse JSON from clipboard.');
+    }
+  }
+
+  function handleApplyRawDna() {
+    try {
+      if (!rawDnaText.trim()) {
+        toast.error('Empty DNA', 'Paste DNA JSON into the textarea first.');
+        return;
+      }
+      const parsed = JSON.parse(rawDnaText);
+      applyDnaPayload(parsed);
+    } catch (err) {
+      toast.error('Invalid JSON', err instanceof Error ? err.message : 'Please check your JSON format.');
+    }
+  }
+
+  function handleClearDna() {
+    setActiveDna(null);
+    toast.info('DNA Cleared', 'Active winning DNA removed. Standard strategy parameters active.');
+  }
 
   function applyPreset(p: typeof PRESETS[number]) {
     setInitialCapital(p.cfg.capital);
@@ -160,9 +272,20 @@ export function LaunchRunModal({
       Generations: Number(generations),
       PopulationSize: Number(populationSize),
       MutationRate: Number(mutationRate),
+      Genes: activeDna?.genes || undefined,
+      WinningDna: activeDna || undefined,
       // Structured sections
       market: { symbol, barSize, initialCapital: Number(initialCapital), startDate: startIso, endDate: endIso },
-      strategy: { name: detectedStrategy, fastPeriod: Number(fastPeriod), slowPeriod: Number(slowPeriod), stopLossPct: Number(stopLossPct), takeProfitPct: Number(takeProfitPct), leverage: Number(leverage) },
+      strategy: {
+        name: detectedStrategy,
+        fastPeriod: Number(fastPeriod),
+        slowPeriod: Number(slowPeriod),
+        stopLossPct: Number(stopLossPct),
+        takeProfitPct: Number(takeProfitPct),
+        leverage: Number(leverage),
+        genes: activeDna?.genes,
+        parameters: activeDna?.parameters,
+      },
       adapter: { name: detectedAdapter, slippageBps: 2, feeBps: 5 },
       hooks: { active: detectedHooks, maxDrawdownPct: Number(maxDrawdownPct), maxPositionPct: Number(maxPositionPct), orderRateLimit: Number(orderRateLimit) },
       optimization: runKind === 'Optimization' ? { generations: Number(generations), populationSize: Number(populationSize), mutationRate: Number(mutationRate), objectiveMetric } : undefined,
@@ -215,6 +338,102 @@ export function LaunchRunModal({
           </button>
         </div>
 
+        {/* DNA Injected Banner */}
+        {activeDna && (
+          <div className="p-3 rounded-xl bg-purple-50 border border-purple-200 flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="p-1.5 rounded-lg bg-purple-100 text-purple-700">
+                <Dna className="w-4 h-4" />
+              </div>
+              <div className="text-xs font-mono">
+                <div className="font-bold text-purple-900 flex items-center gap-2">
+                  <span>Strategy DNA Injected for Exact Backtest</span>
+                  <span className="px-1.5 py-0.5 rounded bg-purple-200/70 text-purple-800 text-[10px]">
+                    Fitness {activeDna.fitness != null ? activeDna.fitness.toFixed(3) : '—'}
+                  </span>
+                </div>
+                <p className="text-purple-700 font-sans text-[11px] mt-0.5">
+                  Strategy <strong>{detectedStrategy}</strong> & broker <strong>{detectedAdapter}</strong> with {activeDna.genes?.length ?? 0} chromosome genes loaded.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleClearDna}
+              className="p-1.5 rounded-lg text-purple-600 hover:text-rose-700 hover:bg-purple-100 text-xs font-mono transition-colors flex items-center gap-1"
+              title="Remove injected DNA"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Clear</span>
+            </button>
+          </div>
+        )}
+
+        {/* Live Execution Mode Banner */}
+        {runKind === 'Live' && (
+          <div className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200 text-emerald-900 text-xs font-mono flex items-center gap-2">
+            <Zap className="w-4 h-4 text-emerald-600 fill-current" />
+            <span>Live Execution: Real-time orders will be dispatched to broker adapter <strong>{detectedAdapter}</strong>.</span>
+          </div>
+        )}
+
+        {/* Direct DNA Paste Section */}
+        <div className="bg-purple-50/40 border border-purple-200/70 rounded-xl p-2.5 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="text-[11px] font-semibold text-purple-900 uppercase tracking-wider flex items-center gap-1.5">
+              <Dna className="w-3.5 h-3.5 text-purple-700" />
+              <span>Winning Strategy DNA Loader</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handlePasteFromClipboard}
+                className="px-2 py-1 rounded-md bg-purple-100 hover:bg-purple-200 text-purple-800 text-[11px] font-mono font-semibold transition-colors flex items-center gap-1 shadow-2xs"
+                title="Paste Winning DNA JSON from clipboard"
+              >
+                <ClipboardPaste className="w-3 h-3" />
+                <span>Load from Clipboard</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsDnaDrawerOpen(!isDnaDrawerOpen)}
+                className="px-2 py-1 rounded-md bg-white border border-purple-200 text-purple-700 hover:bg-purple-50 text-[11px] font-mono transition-colors"
+              >
+                {isDnaDrawerOpen ? 'Close JSON Input' : 'Paste Raw JSON'}
+              </button>
+            </div>
+          </div>
+
+          {isDnaDrawerOpen && (
+            <div className="pt-2 border-t border-purple-200/50 space-y-2">
+              <textarea
+                value={rawDnaText}
+                onChange={(e) => setRawDnaText(e.target.value)}
+                placeholder='Paste Winning DNA JSON e.g. { "genes": [14, 48, 0.02, 0.05, 1.0], "parameters": { "FastPeriod": 14, ... }, "slots": { "strategy": "TrendFollowing" } }'
+                className="w-full h-24 p-2 bg-white border border-purple-200 rounded-lg text-xs font-mono text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-purple-500"
+              />
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsDnaDrawerOpen(false)}
+                  className="px-2.5 py-1 rounded-lg text-zinc-600 hover:bg-zinc-100 text-xs font-mono"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplyRawDna}
+                  className="px-3 py-1 rounded-lg bg-purple-700 hover:bg-purple-800 text-white text-xs font-mono font-semibold flex items-center gap-1"
+                >
+                  <Check className="w-3 h-3" />
+                  <span>Apply DNA to Backtest</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Quick Presets */}
         <div className="bg-zinc-50 border border-zinc-200/80 rounded-xl p-2.5">
           <div className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
@@ -248,6 +467,7 @@ export function LaunchRunModal({
                 <option value="Backtest">Backtest (Historical Sim)</option>
                 <option value="Optimization">Optimization (Parameter Tuning)</option>
                 <option value="WalkForward">Walk-Forward (Out-of-sample)</option>
+                <option value="Live">Live (Real-Time Automated Trading)</option>
               </select>
             </div>
             <div>

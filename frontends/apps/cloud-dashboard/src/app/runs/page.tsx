@@ -43,7 +43,7 @@ export default function RunsPage() {
   // Launch Run Modal state
   const [launchModalOpen, setLaunchModalOpen] = useState(false);
   const [launchInstanceId, setLaunchInstanceId] = useState('');
-  const [launchKind, setLaunchKind] = useState<'Backtest' | 'Optimization' | 'WalkForward'>('Backtest');
+  const [launchKind, setLaunchKind] = useState<'Backtest' | 'Optimization' | 'WalkForward' | 'Live'>('Backtest');
   const [launchSeed, setLaunchSeed] = useState(42);
 
   // Tab: All Runs vs Ranked Runs
@@ -223,7 +223,7 @@ export default function RunsPage() {
             <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
               <div className="flex items-center gap-1.5">
                 <span className="text-zinc-500">Kind:</span>
-                {['ALL', 'Backtest', 'Optimization', 'WalkForward'].map((k) => (
+                {['ALL', 'Backtest', 'Optimization', 'WalkForward', 'Live'].map((k) => (
                   <button
                     key={k}
                     onClick={() => setKindFilter(k)}
@@ -317,10 +317,10 @@ export default function RunsPage() {
                           </span>
                         </td>
                         <td className="px-5 py-3.5 text-emerald-700 font-bold">
-                          {formatCurrency(run.metrics?.netProfit)}
+                          {formatCurrency(run.metrics?.netProfit ?? (run as any).netProfit)}
                         </td>
                         <td className="px-5 py-3.5 text-cyan-800 font-bold">
-                          {run.metrics?.sharpeRatio != null ? run.metrics.sharpeRatio.toFixed(2) : '—'}
+                          {(run.metrics?.sharpeRatio ?? (run as any).sharpeRatio) != null ? (run.metrics?.sharpeRatio ?? (run as any).sharpeRatio).toFixed(2) : '—'}
                         </td>
                         <td className="px-5 py-3.5 text-zinc-500">{formatTimestamp(run.createdAt)}</td>
                         <td className="px-5 py-3.5 text-right">

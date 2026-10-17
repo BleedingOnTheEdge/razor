@@ -167,15 +167,21 @@ public sealed class CloudGovernanceBranchTests
         var hasher = new PasswordHasher<User>();
         var users = new UserService(testDb, new CloudOptions(), TimeProvider.System, hasher);
 
-        // 1. AuthenticateAsync auto-provisions different roles based on name pattern
+        // 1. AuthenticateAsync fails for unknown users (no backdoor auto-provisioning)
+        AuthSessionResponse? unauth = await users.AuthenticateAsync("unknown-user", "pass").ConfigureAwait(true);
+        Assert.Null(unauth);
+
+        await users.RegisterUserAsync("auto-admin-dev", "pass", null, UserRole.Admin, SubscriptionTier.Free).ConfigureAwait(true);
         AuthSessionResponse? adminSess = await users.AuthenticateAsync("auto-admin-dev", "pass").ConfigureAwait(true);
         Assert.NotNull(adminSess);
         Assert.Equal(UserRole.Admin, adminSess.User.Role);
 
+        await users.RegisterUserAsync("auto-trader-01", "pass", null, UserRole.Trader, SubscriptionTier.Free).ConfigureAwait(true);
         AuthSessionResponse? traderSess = await users.AuthenticateAsync("auto-trader-01", "pass").ConfigureAwait(true);
         Assert.NotNull(traderSess);
         Assert.Equal(UserRole.Trader, traderSess.User.Role);
 
+        await users.RegisterUserAsync("cluster-worker-01", "pass", null, UserRole.Operator, SubscriptionTier.Free).ConfigureAwait(true);
         AuthSessionResponse? opSess = await users.AuthenticateAsync("cluster-worker-01", "pass").ConfigureAwait(true);
         Assert.NotNull(opSess);
         Assert.Equal(UserRole.Operator, opSess.User.Role);

@@ -234,11 +234,11 @@ internal sealed partial class EngineSession
             return Ignore(message.MessageType);
         }
 
-        bool recorded = await _commands
+        CommandProgressResult progressResult = await _commands
             .RecordProgressAsync(InstanceId!.Value, correlationId, payload.GetRawText(), cancellationToken)
             .ConfigureAwait(false);
 
-        if (!recorded)
+        if (!progressResult.Recorded)
         {
             CloudLog.ReportNotApplied(_logger, correlationId, message.MessageType);
         }
@@ -249,7 +249,7 @@ internal sealed partial class EngineSession
                 new ClientEvent(
                     "command_progress",
                     InstanceId!.Value,
-                    null,
+                    progressResult.RunId,
                     correlationId,
                     _timeProvider.GetUtcNow(),
                     payload.Clone()),
@@ -274,7 +274,7 @@ internal sealed partial class EngineSession
         string status = payload.ReadString("Status") ?? string.Empty;
         bool succeeded = string.Equals(status, "Success", StringComparison.Ordinal);
 
-        bool recorded = await _commands
+        CommandCompletionResult completion = await _commands
             .CompleteAsync(
                 InstanceId!.Value,
                 correlationId,
@@ -284,7 +284,7 @@ internal sealed partial class EngineSession
                 cancellationToken)
             .ConfigureAwait(false);
 
-        if (recorded)
+        if (completion.Recorded)
         {
             CloudLog.CommandFinished(_logger, correlationId, status);
         }
@@ -300,7 +300,7 @@ internal sealed partial class EngineSession
                 new ClientEvent(
                     "command_completed",
                     InstanceId!.Value,
-                    null,
+                    completion.RunId,
                     correlationId,
                     _timeProvider.GetUtcNow(),
                     new { Status = status, Succeeded = succeeded, Payload = clonedPayload }),
@@ -312,7 +312,7 @@ internal sealed partial class EngineSession
                     new ClientEvent(
                         "run_status",
                         InstanceId!.Value,
-                        null,
+                        completion.RunId,
                         correlationId,
                         _timeProvider.GetUtcNow(),
                         new { Status = "Completed", CommandStatus = status, Payload = clonedPayload }),

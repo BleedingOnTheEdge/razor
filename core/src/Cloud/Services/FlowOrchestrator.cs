@@ -25,7 +25,8 @@ internal sealed partial class FlowOrchestrator(
     TimeProvider timeProvider,
     ILogger<FlowOrchestrator> logger,
     IClientEventBroadcaster? eventBroadcaster = null,
-    CommandService? commandService = null)
+    CommandService? commandService = null,
+    Cloud.Engine.EngineSessionRegistry? sessionRegistry = null)
 {
     /// <summary>
     /// Starts a new original flow run.
@@ -73,12 +74,14 @@ internal sealed partial class FlowOrchestrator(
             {
                 RunKind.Optimization => 1300,
                 RunKind.WalkForward => 1300,
+                RunKind.Live => 1100,
                 _ => 1200
             };
             string cmdType = kind switch
             {
                 RunKind.Optimization => "StartOptimization",
                 RunKind.WalkForward => "StartOptimization",
+                RunKind.Live => "StartLive",
                 _ => "RunBacktest"
             };
 
@@ -102,6 +105,11 @@ internal sealed partial class FlowOrchestrator(
                 commandParamsJson,
                 timeoutSeconds: 300,
                 cancellationToken).ConfigureAwait(false);
+
+            if (sessionRegistry is not null)
+            {
+                await sessionRegistry.TryDeliverPendingCommandsAsync(instanceId, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         return run;
@@ -277,11 +285,15 @@ internal sealed partial class FlowOrchestrator(
     /// </summary>
     /// <param name="runId">The flow run identifier.</param>
     /// <param name="metrics">The final computed metrics.</param>
+    /// <param name="winningDnaJson">Optional winning DNA JSON representation.</param>
+    /// <param name="resultPayloadJson">Optional raw result payload JSON.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The completed flow run.</returns>
     public async Task<FlowRun> CompleteRunAsync(
         Guid runId,
         ReportAggregateMetrics metrics,
+        string? winningDnaJson = null,
+        string? resultPayloadJson = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(metrics);
@@ -302,6 +314,14 @@ internal sealed partial class FlowOrchestrator(
         run.MaxDrawdown = metrics.MaxDrawdown;
         run.TradeCount = metrics.TradeCount;
         run.BestFitness = metrics.BestFitness;
+        if (!string.IsNullOrWhiteSpace(winningDnaJson))
+        {
+            run.WinningDnaJson = winningDnaJson;
+        }
+        if (!string.IsNullOrWhiteSpace(resultPayloadJson))
+        {
+            run.ResultPayloadJson = resultPayloadJson;
+        }
 
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         LogCompletedRun(runId);

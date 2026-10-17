@@ -332,7 +332,7 @@ export default function MarketplaceUserProfilePage() {
 
               <div className="pt-2">
                 <a
-                  href="http://localhost:3002"
+                  href={process.env.NEXT_PUBLIC_DASHBOARD_URL || 'http://localhost:3002'}
                   target="_blank"
                   rel="noreferrer"
                   className="w-full py-2.5 px-3 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition-colors flex items-center justify-between"

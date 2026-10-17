@@ -11,11 +11,36 @@ import {
   formatTimestamp,
   formatHash,
 } from '@razor/ui-kit';
-import { ArrowLeft, RefreshCw, Server, Plus, SlidersHorizontal, Edit2, Key, ShieldAlert, Trash2, Terminal } from 'lucide-react';
-import { CommandDispatchSection, COMMAND_PRESETS } from './CommandDispatchSection';
+import {
+  ArrowLeft,
+  RefreshCw,
+  Server,
+  Plus,
+  SlidersHorizontal,
+  Edit2,
+  Key,
+  ShieldAlert,
+  Trash2,
+  Terminal,
+  LayoutDashboard,
+  Cpu,
+  Radio,
+  ArrowUpRight,
+  Activity,
+  Zap,
+  CheckCircle2,
+  Sliders,
+  Layers,
+  Search,
+} from 'lucide-react';
+import { CommandDispatchSection, COMMAND_PRESETS, type DispatchedCommand } from './CommandDispatchSection';
 import { SlotAssignmentModal } from './SlotAssignmentModal';
 import { InstanceActionModals } from './ManageEngineModals';
 import { CreatedCredentialsDialog } from './CreatedCredentialsDialog';
+import { InstanceOverviewTab } from './tabs/InstanceOverviewTab';
+import { InstanceTelemetryTab } from './tabs/InstanceTelemetryTab';
+import { InstanceExtensionsTab } from './tabs/InstanceExtensionsTab';
+import { InstanceStreamsTab } from './tabs/InstanceStreamsTab';
 
 type ManifestExtension = EngineInstanceDetailPayload['manifest'][number];
 
@@ -23,9 +48,13 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
   const toast = useToast();
 
   const [instance, setInstance] = useState<EngineInstanceDetailPayload | null>(null);
-  const [commands, setCommands] = useState<any[]>([]);
+  const [commands, setCommands] = useState<DispatchedCommand[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Tab State: Overview, Resources & Telemetry, Active Extensions, Commands, Live Streams
+  const [activeTab, setActiveTab] = useState<'overview' | 'telemetry' | 'extensions' | 'commands' | 'live'>('overview');
+  const [manifestFilter, setManifestFilter] = useState('');
 
   // Command dispatch state
   const [cmdId, setCmdId] = useState(1001);
@@ -64,7 +93,7 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
       }
 
       if (cmdsRes.data) {
-        setCommands(cmdsRes.data);
+        setCommands(cmdsRes.data as unknown as DispatchedCommand[]);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error communicating with Cloud API backend.');
@@ -86,7 +115,6 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
 
   async function handleDispatch(e: React.FormEvent) {
     e.preventDefault();
-    // Validate JSON parameters
     try {
       if (cmdParams.trim()) JSON.parse(cmdParams);
     } catch {
@@ -99,17 +127,24 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
       const client = getApiClient();
       const { data, error: err } = await client.POST('/api/instances/{instanceId}/commands', {
         params: { path: { instanceId } },
-        body: { commandId: Number(cmdId), commandType: cmdType, parameters: cmdParams, timeoutSeconds: 30 },
+        body: {
+          commandId: cmdId,
+          commandType: cmdType,
+          parameters: cmdParams.trim() ? cmdParams : '{}',
+        },
       });
 
       if (err) {
-        toast.error('Dispatch Failed', 'The backend rejected the engine command.');
-      } else if (data) {
-        toast.success('Command Dispatched', `Dispatched #${cmdId} (${cmdType}). Correlation: ${formatHash(data.correlationId, 6)}`);
-        await loadDetails();
+        toast.error('Dispatch Failed', typeof err === 'string' ? err : 'Server rejected the command');
+      } else {
+        toast.success(
+          'Command Dispatched',
+          `Queued ${cmdType} (#${cmdId}) [Correlation: ${formatHash(data?.correlationId || '', 6)}]`
+        );
+        loadDetails();
       }
     } catch (e) {
-      toast.error('Dispatch Error', e instanceof Error ? e.message : 'Network communication error.');
+      toast.error('Dispatch Error', e instanceof Error ? e.message : 'Unknown communication error');
     } finally {
       setDispatching(false);
     }
@@ -118,40 +153,77 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
   async function handleSlotSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedExtensionName.trim()) {
-      toast.error('Missing Extension Name', 'Please select or type an extension name.');
+      toast.error('Validation Error', 'Please select or enter an extension name');
       return;
     }
 
     setUpdatingSlot(true);
     try {
       const client = getApiClient();
+      const currentSelections = instance?.activeSelections || {
+        adapter: null,
+        strategy: null,
+        neuralNetwork: null,
+        hookPlugins: [],
+      };
+
+      let newSelections = { ...currentSelections };
+
+      if (selectedSlotKind === 'Adapter') {
+        newSelections.adapter = isSlotActive ? selectedExtensionName : null;
+      } else if (selectedSlotKind === 'Strategy') {
+        newSelections.strategy = isSlotActive ? selectedExtensionName : null;
+      } else if (selectedSlotKind === 'NeuralNetwork') {
+        newSelections.neuralNetwork = isSlotActive ? selectedExtensionName : null;
+      } else if (selectedSlotKind === 'HookPlugin') {
+        const hooks = new Set(newSelections.hookPlugins || []);
+        if (isSlotActive) {
+          hooks.add(selectedExtensionName);
+        } else {
+          hooks.delete(selectedExtensionName);
+        }
+        newSelections.hookPlugins = Array.from(hooks);
+      }
+
       const { data, error: err } = await client.PUT('/api/instances/{instanceId}/profile/selections', {
         params: { path: { instanceId } },
-        body: { kind: selectedSlotKind, name: selectedExtensionName.trim(), isActive: isSlotActive },
+        body: {
+          kind: selectedSlotKind,
+          name: selectedExtensionName,
+          isActive: isSlotActive,
+        },
       });
 
       if (err) {
-        toast.error('Slot Update Failed', 'Engine profile rejected selection.');
-      } else if (data) {
-        toast.success('Slot Configured', `Updated ${selectedSlotKind} slot to ${selectedExtensionName}`);
+        toast.error('Failed to configure slot', typeof err === 'string' ? err : 'Internal error');
+      } else {
+        toast.success(
+          'Slot Configured',
+          `${selectedSlotKind} assigned to ${selectedExtensionName} (${isSlotActive ? 'Active' : 'Disabled'})`
+        );
         setSlotModalOpen(false);
-        await loadDetails();
+        loadDetails();
       }
     } catch (e) {
-      toast.error('Slot Update Error', e instanceof Error ? e.message : 'Network error.');
+      toast.error('Slot Error', e instanceof Error ? e.message : 'Unknown error');
     } finally {
       setUpdatingSlot(false);
     }
   }
 
-  function openSlotModal(kind: string, defaultName?: string) {
-    setSelectedSlotKind(kind as 'Adapter' | 'Strategy' | 'NeuralNetwork' | 'HookPlugin');
+  function openSlotModal(kind: 'Adapter' | 'Strategy' | 'NeuralNetwork' | 'HookPlugin', defaultName?: string) {
+    setSelectedSlotKind(kind);
     setSelectedExtensionName(defaultName || '');
     setIsSlotActive(true);
     setSlotModalOpen(true);
   }
 
   const badge = instance ? getInstanceStatusBadge(instance.status) : null;
+  const filteredManifest = (instance?.manifest || []).filter((ext) => {
+    if (!manifestFilter.trim()) return true;
+    const q = manifestFilter.toLowerCase();
+    return ext.name.toLowerCase().includes(q) || ext.kind.toLowerCase().includes(q);
+  });
 
   return (
     <div className="space-y-6 max-w-6xl">
@@ -166,9 +238,9 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
       </div>
 
       {/* Header */}
-      <div className="flex items-start justify-between pb-6 border-b border-zinc-800">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-6 border-b border-zinc-800">
         <div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
               <Server className="w-6 h-6 text-cyan-400" />
               <span>{instance?.name || instance?.engineId || 'Engine Instance'}</span>
@@ -196,7 +268,16 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
           <p className="text-xs font-mono text-zinc-400 mt-1">Instance ID: {instanceId}</p>
         </div>
 
+        {/* Action Toolbar */}
         <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={`/live?instanceId=${instanceId}`}
+            title="Open Dedicated Live Trading Manager"
+            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-zinc-950 font-bold text-xs font-mono transition-colors flex items-center gap-1.5 shadow-sm"
+          >
+            <Radio className="w-3.5 h-3.5 animate-pulse" />
+            <span>Live Manager</span>
+          </Link>
           <button
             onClick={() => {
               const savedKey = typeof window !== 'undefined' ? localStorage.getItem(`engine_key_${instanceId}`) : null;
@@ -261,6 +342,84 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
         </div>
       </div>
 
+      {/* Tab Navigation */}
+      <div className="flex border-b border-zinc-800 gap-1 overflow-x-auto no-scrollbar">
+        <button
+          type="button"
+          onClick={() => setActiveTab('overview')}
+          className={`px-4 py-2.5 text-xs font-mono font-medium flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
+            activeTab === 'overview'
+              ? 'border-cyan-400 text-cyan-400 bg-cyan-950/20'
+              : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
+          }`}
+        >
+          <LayoutDashboard className="w-4 h-4" />
+          <span>Overview</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('telemetry')}
+          className={`px-4 py-2.5 text-xs font-mono font-medium flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
+            activeTab === 'telemetry'
+              ? 'border-cyan-400 text-cyan-400 bg-cyan-950/20'
+              : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
+          }`}
+        >
+          <Cpu className="w-4 h-4" />
+          <span>Resources & Telemetry</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('extensions')}
+          className={`px-4 py-2.5 text-xs font-mono font-medium flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
+            activeTab === 'extensions'
+              ? 'border-cyan-400 text-cyan-400 bg-cyan-950/20'
+              : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
+          }`}
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+          <span>Active Extensions</span>
+          {instance?.manifest && (
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-zinc-800 text-zinc-300">
+              {instance.manifest.length}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('commands')}
+          className={`px-4 py-2.5 text-xs font-mono font-medium flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
+            activeTab === 'commands'
+              ? 'border-cyan-400 text-cyan-400 bg-cyan-950/20'
+              : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
+          }`}
+        >
+          <Terminal className="w-4 h-4" />
+          <span>Commands</span>
+          {commands.length > 0 && (
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-zinc-800 text-zinc-300">
+              {commands.length}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('live')}
+          className={`px-4 py-2.5 text-xs font-mono font-medium flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
+            activeTab === 'live'
+              ? 'border-emerald-400 text-emerald-400 bg-emerald-950/20'
+              : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
+          }`}
+        >
+          <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
+          <span>Live Streams</span>
+        </button>
+      </div>
+
       {loading && (
         <div className="py-12 text-center text-sm font-mono text-zinc-400">
           Loading engine configuration & state...
@@ -274,192 +433,58 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
       )}
 
       {instance && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column: Active Selections & Manifest */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Active Slots Card */}
-            <div className="p-6 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider font-mono flex items-center gap-2">
-                    <SlidersHorizontal className="w-4 h-4 text-cyan-400" />
-                    <span>Active Extension Profile Slots</span>
-                  </h3>
-                  <p className="text-xs text-zinc-400 mt-0.5 font-sans">
-                    Zero-downtime hot-swappable slots currently occupied on this running engine.
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => openSlotModal('Strategy')}
-                  className="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-zinc-950 font-bold text-xs font-mono transition-colors flex items-center gap-1.5"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Configure Slot</span>
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Adapter Slot */}
-                <div className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800/50 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono text-zinc-400">Adapter Slot</span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-blue-500/10 text-blue-400">
-                        Feed / Broker
-                      </span>
-                    </div>
-                    <span className="text-sm font-bold text-white mt-2 block font-mono">
-                      {instance.activeSelections?.adapter || 'None (Dormant)'}
-                    </span>
-                  </div>
-                  <div className="mt-4 pt-3 border-t border-zinc-800/50 flex justify-end">
-                    <button
-                      onClick={() => openSlotModal('Adapter', instance.activeSelections?.adapter || undefined)}
-                      className="text-xs font-mono text-cyan-400 hover:text-cyan-300 transition-colors"
-                    >
-                      Hot-Swap Adapter →
-                    </button>
-                  </div>
-                </div>
-
-                {/* Strategy Slot */}
-                <div className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800/50 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono text-zinc-400">Strategy Slot</span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400">
-                        Order Logic
-                      </span>
-                    </div>
-                    <span className="text-sm font-bold text-white mt-2 block font-mono">
-                      {instance.activeSelections?.strategy || 'None (Dormant)'}
-                    </span>
-                  </div>
-                  <div className="mt-4 pt-3 border-t border-zinc-800/50 flex justify-end">
-                    <button
-                      onClick={() => openSlotModal('Strategy', instance.activeSelections?.strategy || undefined)}
-                      className="text-xs font-mono text-cyan-400 hover:text-cyan-300 transition-colors"
-                    >
-                      Hot-Swap Strategy →
-                    </button>
-                  </div>
-                </div>
-
-                {/* Neural Network Slot */}
-                <div className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800/50 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono text-zinc-400">Neural Network Slot</span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-purple-500/10 text-purple-400">
-                        Inference
-                      </span>
-                    </div>
-                    <span className="text-sm font-bold text-white mt-2 block font-mono">
-                      {instance.activeSelections?.neuralNetwork || 'None'}
-                    </span>
-                  </div>
-                  <div className="mt-4 pt-3 border-t border-zinc-800/50 flex justify-end">
-                    <button
-                      onClick={() => openSlotModal('NeuralNetwork', instance.activeSelections?.neuralNetwork || undefined)}
-                      className="text-xs font-mono text-cyan-400 hover:text-cyan-300 transition-colors"
-                    >
-                      Hot-Swap Model →
-                    </button>
-                  </div>
-                </div>
-
-                {/* Hook Plugins Slot */}
-                <div className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800/50 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono text-zinc-400">Hook Plugins</span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-rose-500/10 text-rose-400">
-                        Interceptors
-                      </span>
-                    </div>
-                    <span className="text-sm font-bold text-white mt-2 block font-mono">
-                      {instance.activeSelections?.hookPlugins?.length || 0} loaded
-                    </span>
-                  </div>
-                  <div className="mt-4 pt-3 border-t border-zinc-800/50 flex justify-end">
-                    <button
-                      onClick={() => openSlotModal('HookPlugin')}
-                      className="text-xs font-mono text-cyan-400 hover:text-cyan-300 transition-colors"
-                    >
-                      Add Hook Plugin →
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Manifest Extensions Card */}
-            <div className="p-6 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider font-mono">
-                    Reported Extension Manifest
-                  </h3>
-                  <p className="text-xs text-zinc-400 mt-0.5 font-sans">
-                    All binaries and scripts discovered and registered by the engine during bootstrap.
-                  </p>
-                </div>
-                <span className="text-xs text-zinc-400 font-mono">
-                  {instance.manifest?.length || 0} registered
-                </span>
-              </div>
-
-              {!instance.manifest || instance.manifest.length === 0 ? (
-                <div className="py-8 text-center text-xs font-mono text-zinc-400">
-                  No extensions reported in engine manifest yet.
-                </div>
-              ) : (
-                <div className="divide-y divide-zinc-800/50">
-                  {instance.manifest.map((ext: ManifestExtension, idx: number) => {
-                    const kindBadge = getExtensionKindBadge(ext.kind);
-                    return (
-                      <div
-                        key={idx}
-                        className="py-3 flex items-center justify-between text-xs font-mono"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${kindBadge.className}`}>
-                            {kindBadge.label}
-                          </span>
-                          <span className="text-zinc-200 font-semibold">{ext.name}</span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <span className="text-zinc-400">{formatTimestamp(ext.reportedAt)}</span>
-                          <button
-                            onClick={() => openSlotModal(ext.kind, ext.name)}
-                            className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-cyan-400 text-[11px] transition-colors"
-                          >
-                            Assign Slot
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+        <>
+          {/* TAB 1: OVERVIEW */}
+          <div className={activeTab === 'overview' ? 'space-y-6' : 'hidden'}>
+            <InstanceOverviewTab
+              instanceId={instanceId}
+              instance={instance}
+              commands={commands}
+              onNavigateToExtensions={() => setActiveTab('extensions')}
+              onNavigateToCommands={() => setActiveTab('commands')}
+            />
           </div>
 
-          {/* Right Column: Command Dispatch & History */}
-          <CommandDispatchSection
-            cmdId={cmdId}
-            setCmdId={setCmdId}
-            cmdType={cmdType}
-            setCmdType={setCmdType}
-            cmdParams={cmdParams}
-            setCmdParams={setCmdParams}
-            dispatching={dispatching}
-            onDispatch={handleDispatch}
-            onApplyPreset={applyPreset}
-            commands={commands}
-          />
-        </div>
+          {/* TAB 2: RESOURCES & TELEMETRY */}
+          <div className={activeTab === 'telemetry' ? 'space-y-6' : 'hidden'}>
+            <InstanceTelemetryTab />
+          </div>
+
+          {/* TAB 3: ACTIVE EXTENSIONS & MANIFEST */}
+          <div className={activeTab === 'extensions' ? 'space-y-6' : 'hidden'}>
+            <InstanceExtensionsTab
+              instance={instance}
+              manifestFilter={manifestFilter}
+              setManifestFilter={setManifestFilter}
+              filteredManifest={filteredManifest}
+              onOpenSlotModal={openSlotModal}
+            />
+          </div>
+
+          {/* TAB 4: COMMANDS & DISPATCH */}
+          <div className={activeTab === 'commands' ? 'space-y-6' : 'hidden'}>
+            <CommandDispatchSection
+              cmdId={cmdId}
+              setCmdId={setCmdId}
+              cmdType={cmdType}
+              setCmdType={setCmdType}
+              cmdParams={cmdParams}
+              setCmdParams={setCmdParams}
+              dispatching={dispatching}
+              onDispatch={handleDispatch}
+              onApplyPreset={applyPreset}
+              commands={commands}
+            />
+          </div>
+
+          {/* TAB 5: LIVE STREAMS & TELEMETRY */}
+          <div className={activeTab === 'live' ? 'space-y-6' : 'hidden'}>
+            <InstanceStreamsTab
+              instanceId={instanceId}
+              instance={instance}
+            />
+          </div>
+        </>
       )}
 
       {/* Modal: Slot Assignment */}
@@ -480,11 +505,16 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
 
       {/* Modals: Manage Engine (Rename, Rotate Key, Revoke Key, Decommission) */}
       <InstanceActionModals
-        instanceId={instanceId} instanceName={instance?.name}
-        renameOpen={renameOpen} setRenameOpen={setRenameOpen}
-        rotateOpen={rotateOpen} setRotateOpen={setRotateOpen}
-        revokeOpen={revokeOpen} setRevokeOpen={setRevokeOpen}
-        deleteOpen={deleteOpen} setDeleteOpen={setDeleteOpen}
+        instanceId={instanceId}
+        instanceName={instance?.name}
+        renameOpen={renameOpen}
+        setRenameOpen={setRenameOpen}
+        rotateOpen={rotateOpen}
+        setRotateOpen={setRotateOpen}
+        revokeOpen={revokeOpen}
+        setRevokeOpen={setRevokeOpen}
+        deleteOpen={deleteOpen}
+        setDeleteOpen={setDeleteOpen}
         onRenamed={(newName) => setInstance((prev) => (prev ? { ...prev, name: newName } : null))}
         onReload={loadDetails}
       />

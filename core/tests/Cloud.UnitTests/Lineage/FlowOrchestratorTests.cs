@@ -7,6 +7,7 @@
 namespace Cloud.UnitTests.Lineage;
 
 using Cloud.Data;
+using Cloud.Endpoints;
 using Cloud.Services;
 using Cloud.UnitTests.TestSupport;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -242,6 +243,45 @@ public sealed class FlowOrchestratorTests : IDisposable
         var specWithSeed = new ReplaySpecification(parent.Id, new ForkPoint { Step = 1 }, [], 999, "R1");
         FlowRun replayed = await _sut.ReplayAsync(specWithSeed);
         Assert.Equal(999, replayed.BaseSeed);
+    }
+
+    [Fact]
+    public void FlowRunView_FromEntity_ExposesBothFlatAndNestedMetrics()
+    {
+        var run = new FlowRun
+        {
+            Id = Guid.NewGuid(),
+            EngineInstanceId = Guid.NewGuid(),
+            Kind = RunKind.Backtest,
+            Status = RunStatus.Completed,
+            CreatedAt = DateTimeOffset.UtcNow,
+            CompletedAt = DateTimeOffset.UtcNow.AddMinutes(5),
+            NetProfit = 1500.50m,
+            TotalReturn = 15.0m,
+            SharpeRatio = 2.45,
+            MaxDrawdown = 3.2,
+            TradeCount = 42,
+            BestFitness = 0.98
+        };
+
+        FlowRunView view = FlowRunView.FromEntity(run);
+
+        // Assert root-level fields
+        Assert.Equal(1500.50m, view.NetProfit);
+        Assert.Equal(15.0m, view.TotalReturn);
+        Assert.Equal(2.45, view.SharpeRatio);
+        Assert.Equal(3.2, view.MaxDrawdown);
+        Assert.Equal(42, view.TradeCount);
+        Assert.Equal(0.98, view.BestFitness);
+
+        // Assert nested Metrics payload
+        Assert.NotNull(view.Metrics);
+        Assert.Equal(1500.50m, view.Metrics.NetProfit);
+        Assert.Equal(15.0m, view.Metrics.TotalReturn);
+        Assert.Equal(2.45, view.Metrics.SharpeRatio);
+        Assert.Equal(3.2, view.Metrics.MaxDrawdown);
+        Assert.Equal(42, view.Metrics.TradeCount);
+        Assert.Equal(0.98, view.Metrics.BestFitness);
     }
 }
 

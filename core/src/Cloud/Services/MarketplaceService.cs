@@ -160,17 +160,20 @@ internal sealed class MarketplaceService(
             return null;
         }
 
-        Account? account = accountId != Guid.Empty
-            ? await db.Accounts.FirstOrDefaultAsync(a => a.Id == accountId, cancellationToken).ConfigureAwait(false)
-            : null;
-
-        if (account is null)
+        Account? account;
+        if (accountId != Guid.Empty)
         {
-            if (accountId != Guid.Empty)
+            account = await db.Accounts
+                .FirstOrDefaultAsync(a => a.Id == accountId, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (account is null)
             {
                 return null;
             }
-
+        }
+        else
+        {
             account = await db.Accounts.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
             if (account is null)
             {
