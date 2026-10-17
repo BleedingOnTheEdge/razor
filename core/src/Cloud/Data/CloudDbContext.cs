@@ -89,6 +89,9 @@ internal sealed class CloudDbContext : DbContext
     /// <summary>Gets the persistent system settings.</summary>
     public DbSet<SystemSetting> SystemSettings => Set<SystemSetting>();
 
+    /// <summary>Gets the temporary engine sharing delegations.</summary>
+    public DbSet<EngineShare> EngineShares => Set<EngineShare>();
+
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -109,6 +112,7 @@ internal sealed class CloudDbContext : DbContext
         ConfigureTicket(modelBuilder);
         ConfigureCommunityThread(modelBuilder);
         ConfigureSystemSetting(modelBuilder);
+        ConfigureEngineShare(modelBuilder);
     }
 
 
@@ -364,6 +368,22 @@ internal sealed class CloudDbContext : DbContext
             setting.Property(s => s.Description).HasMaxLength(512);
             setting.Property(s => s.Value).IsRequired();
             setting.HasIndex(s => s.Category);
+        });
+    }
+
+    private static void ConfigureEngineShare(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<EngineShare>(share =>
+        {
+            share.HasKey(s => s.Id);
+            share.Property(s => s.SharedWithEmail).HasMaxLength(256);
+            share.HasIndex(s => s.EngineInstanceId);
+            share.HasIndex(s => s.OwnerAccountId);
+            share.HasIndex(s => s.SharedWithUserId);
+            share.HasOne(s => s.EngineInstance)
+                .WithMany()
+                .HasForeignKey(s => s.EngineInstanceId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

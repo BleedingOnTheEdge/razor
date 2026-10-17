@@ -18,6 +18,12 @@ internal sealed class ListInstancesRequest
 {
     /// <summary>Gets or sets the optional account filter.</summary>
     public Guid? AccountId { get; set; }
+
+    /// <summary>Gets or sets the 1-based page number.</summary>
+    public int? Page { get; set; }
+
+    /// <summary>Gets or sets the page size.</summary>
+    public int? PageSize { get; set; }
 }
 
 /// <summary>
@@ -54,6 +60,12 @@ internal sealed class InstanceListItemView
 
     /// <summary>Gets or sets the count of reported manifest extensions.</summary>
     public int ManifestExtensionCount { get; set; }
+
+    /// <summary>Gets or sets whether this engine is shared with the user.</summary>
+    public bool IsShared { get; set; }
+
+    /// <summary>Gets or sets the expiration timestamp if shared.</summary>
+    public DateTimeOffset? ShareExpiresAt { get; set; }
 }
 
 /// <summary>
@@ -62,7 +74,7 @@ internal sealed class InstanceListItemView
 internal sealed class ListInstancesEndpoint(
     EngineRegistrationService registration,
     EngineSessionRegistry registry)
-    : Endpoint<ListInstancesRequest, IReadOnlyList<InstanceListItemView>>
+    : Endpoint<ListInstancesRequest, object>
 {
     /// <inheritdoc/>
     public override void Configure()
@@ -71,15 +83,29 @@ internal sealed class ListInstancesEndpoint(
         Summary(summary =>
         {
             summary.Summary = "List Engine instances";
-            summary.Description = "Returns registered instances with connectivity and catalogue counts, optionally filtered by account.";
+            summary.Description = "Returns registered instances with connectivity and catalogue counts, optionally filtered by account with server-side pagination.";
         });
     }
 
     /// <inheritdoc/>
     public override async Task HandleAsync(ListInstancesRequest request, CancellationToken cancellationToken)
     {
+        Guid? accountId = request.AccountId;
+        if (!accountId.HasValue && HttpContext.Request.Headers.TryGetValue("X-Account-Id", out var accVal) && Guid.TryParse(accVal, out var parsedAcc))
+        {
+            accountId = parsedAcc;
+        }
+
+        Guid? userId = null;
+        if (HttpContext.Request.Headers.TryGetValue("X-User-Id", out var userVal) && Guid.TryParse(userVal, out var parsedUser))
+        {
+            userId = parsedUser;
+        }
+
+        string? userEmail = HttpContext.Request.Headers.TryGetValue("X-User-Email", out var emailVal) ? emailVal.ToString() : null;
+
         IReadOnlyList<EngineInstance> instances = await registration
-            .ListAsync(request.AccountId, cancellationToken)
+            .ListAsync(accountId, userId, userEmail, cancellationToken)
             .ConfigureAwait(false);
 
         HashSet<Guid> connected = [.. registry.GetConnectedInstanceIds()];
@@ -95,9 +121,18 @@ internal sealed class ListInstancesEndpoint(
             CreatedAt = i.CreatedAt,
             LastSeenAt = i.LastSeenAt,
             IsConnected = connected.Contains(i.Id) || (i.LastSeenAt.HasValue && i.LastSeenAt.Value >= DateTimeOffset.UtcNow.AddSeconds(-45)),
-            ManifestExtensionCount = i.ManifestEntries.Count
+            ManifestExtensionCount = i.ManifestEntries.Count,
+            IsShared = accountId.HasValue && i.AccountId != accountId.Value
         })];
 
-        await Send.OkAsync(items, cancellationToken).ConfigureAwait(false);
+        if (request.Page.HasValue || request.PageSize.HasValue)
+        {
+            var paged = PagedResult.Create(items, request.Page, request.PageSize);
+            await Send.OkAsync(paged, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            await Send.OkAsync(items, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

@@ -34,66 +34,66 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
 
   const allLinks = [
     {
-      href: '/',
+      href: '/panel',
       label: 'System Overview',
       icon: LayoutDashboard,
-      active: pathname === '/',
+      active: pathname === '/panel' || pathname === '/',
       visible: true,
     },
     {
-      href: '/instances',
+      href: '/panel/instances',
       label: 'Engine Fleet',
       icon: Server,
-      active: pathname.startsWith('/instances') && !pathname.includes('/live'),
+      active: pathname.startsWith('/panel/instances') || (pathname.startsWith('/instances') && !pathname.includes('/live')),
       visible: true,
     },
     {
-      href: '/live',
+      href: '/panel/live',
       label: 'Live Trading Manager',
       icon: Radio,
-      active: pathname.startsWith('/live') || pathname.includes('/live'),
+      active: pathname.startsWith('/panel/live') || pathname.startsWith('/live'),
       visible: true,
     },
     {
-      href: '/maintenance',
-      label: 'Maintenance Console',
-      icon: Terminal,
-      active: pathname.startsWith('/maintenance'),
-      visible: true,
-    },
-    {
-      href: '/runs',
+      href: '/panel/runs',
       label: 'Flow Runs & Lineage',
       icon: Activity,
-      active: pathname.startsWith('/runs') || pathname.startsWith('/reports'),
+      active: pathname.startsWith('/panel/runs') || pathname.startsWith('/panel/reports') || pathname.startsWith('/runs') || pathname.startsWith('/reports'),
       visible: true,
     },
     {
-      href: '/admin',
+      href: '/panel/maintenance',
+      label: 'Maintenance Console',
+      icon: Terminal,
+      active: pathname.startsWith('/panel/maintenance') || pathname.startsWith('/maintenance'),
+      visible: true,
+    },
+    {
+      href: '/panel/admin',
       label: 'Admin Governance',
       icon: ShieldAlert,
-      active: pathname.startsWith('/admin'),
+      active: pathname.startsWith('/panel/admin') || pathname.startsWith('/admin'),
       visible: isAdmin,
     },
     {
-      href: '/settings',
+      href: '/panel/settings',
       label: 'Preferences',
       icon: Settings,
-      active: pathname.startsWith('/settings'),
+      active: pathname.startsWith('/panel/settings') || pathname.startsWith('/settings'),
       visible: isOperatorOrAdmin || !user,
     },
     {
-      href: '/profile',
+      href: '/panel/profile',
       label: 'User Profile',
       icon: User,
-      active: pathname.startsWith('/profile'),
+      active: pathname.startsWith('/panel/profile') || pathname.startsWith('/profile'),
       visible: true,
     },
     {
-      href: '/tickets',
+      href: '/panel/tickets',
       label: 'Support & Triage',
       icon: LifeBuoy,
-      active: pathname.startsWith('/tickets'),
+      active: pathname.startsWith('/panel/tickets') || pathname.startsWith('/tickets'),
       visible: true,
     },
   ];
@@ -101,17 +101,17 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
   const visibleLinks = allLinks.filter((l) => l.visible);
 
   const sidebarContent = (
-    <div className="flex flex-col justify-between h-full bg-white">
+    <div className="flex flex-col justify-between h-full bg-white border-r border-black font-mono">
       <div>
         {/* Brand */}
-        <div className="h-16 px-6 flex items-center justify-between border-b border-zinc-200">
+        <div className="h-16 px-6 flex items-center justify-between border-b border-black">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center font-bold text-zinc-950 shadow-md shadow-cyan-500/20">
+            <div className="w-8 h-8 bg-black text-white flex items-center justify-center font-bold text-base">
               R
             </div>
             <div>
-              <span className="font-bold tracking-tight text-zinc-900 block text-sm">RAZOR CLOUD</span>
-              <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono">Control Plane</span>
+              <span className="font-bold tracking-tight text-black block text-sm">RAZOR CLOUD</span>
+              <span className="text-[10px] text-black uppercase tracking-widest font-bold">Control Plane</span>
             </div>
           </div>
           {onClose && (
@@ -119,7 +119,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
               type="button"
               onClick={onClose}
               aria-label="Close menu"
-              className="md:hidden p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
+              className="md:hidden p-1.5 text-black hover:bg-black hover:text-white transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -136,13 +136,13 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
                 href={link.href}
                 onClick={onClose}
                 className={clsx(
-                  'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                  'flex items-center gap-3 px-3 py-2 text-sm font-bold border transition-colors',
                   link.active
-                    ? 'bg-cyan-50 text-cyan-700 font-semibold shadow-sm'
-                    : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
+                    ? 'bg-black text-white border-black'
+                    : 'bg-white text-black border-transparent hover:border-black hover:bg-zinc-100'
                 )}
               >
-                <Icon className={clsx('w-4 h-4', link.active ? 'text-cyan-600' : 'text-zinc-400')} />
+                <Icon className={clsx('w-4 h-4', link.active ? 'text-white' : 'text-black')} />
                 <span>{link.label}</span>
               </Link>
             );
@@ -152,30 +152,29 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
             href="http://localhost:3001"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
+            className="flex items-center justify-between px-3 py-2 text-sm font-bold border border-transparent hover:border-black hover:bg-zinc-100 text-black transition-colors"
           >
             <div className="flex items-center gap-3">
-              <ShoppingBag className="w-4 h-4 text-zinc-400" />
+              <ShoppingBag className="w-4 h-4 text-black" />
               <span>Marketplace</span>
             </div>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-100 font-mono text-zinc-500">:3001</span>
+            <span className="text-[10px] px-1.5 py-0.5 border border-black font-bold">:3001</span>
           </a>
         </nav>
       </div>
 
       {/* Footer Info */}
-      <div className="p-4 border-t border-zinc-200 bg-zinc-50/80">
-        <div className="flex items-center justify-between text-xs text-zinc-600">
-          <span className="flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-cyan-600" />
+      <div className="p-4 border-t border-black bg-white">
+        <div className="flex items-center justify-between text-xs text-black">
+          <span className="flex items-center gap-1.5 font-bold">
+            <ShieldCheck className="w-3.5 h-3.5 text-black" />
             <span>Engine Sockets</span>
           </span>
-          <span className="inline-flex items-center gap-1.5 font-mono text-zinc-700">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Listening
+          <span className="inline-flex items-center gap-1.5 font-bold text-green-600">
+            [ONLINE]
           </span>
         </div>
-        <div className="mt-2 text-[11px] text-zinc-500 font-mono">
+        <div className="mt-2 text-[11px] text-black font-bold">
           Cloud API v1.0 • .NET 10
         </div>
       </div>

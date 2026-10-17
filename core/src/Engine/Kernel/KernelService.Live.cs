@@ -119,6 +119,11 @@ internal sealed partial class KernelService
             };
             await strategy.OnConfigureAsync(spec).ConfigureAwait(false);
 
+            if (input.Genes is { Length: > 0 })
+            {
+                strategy.InjectGenes(input.Genes);
+            }
+
 #pragma warning disable CA2000
             tickWindow = new TickWindow(input.Symbols, new[] { TimeFrame.Tick });
 #pragma warning restore CA2000
@@ -157,7 +162,10 @@ internal sealed partial class KernelService
                 throw;
             }
 
-            strategy.InjectGenes(input.Genes);
+            if (input.Genes != null && input.Genes.Length > 0)
+            {
+                strategy.InjectGenes(input.Genes);
+            }
 
             await liveBroker.ConnectAndNotifyAsync(cancellationToken).ConfigureAwait(false);
             await liveBroker.InitializeLiveStateAsync(cancellationToken).ConfigureAwait(false);

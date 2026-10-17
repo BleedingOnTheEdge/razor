@@ -8,109 +8,149 @@
 
 html,
 body {
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace, ui-sans-serif, system-ui;
+  margin: 0;
+  padding: 0;
 }
 
-html.light .bg-zinc-950,
-html.light .bg-zinc-950\/90,
-html.light .bg-zinc-950\/80,
-html.light .bg-zinc-950\/70,
-html.light .bg-zinc-950\/60,
-html.light .bg-zinc-950\/50,
-html.light .bg-zinc-950\/40,
-html.light .bg-zinc-950\/30,
-html.light .bg-zinc-950\/20,
-html.light .bg-zinc-950\/10 {
+/* 1. Zero border-radius on all elements */
+*,
+*::before,
+*::after,
+button,
+input,
+select,
+textarea,
+div,
+section,
+main,
+header,
+footer,
+aside,
+span,
+table,
+tr,
+th,
+td,
+[class*="rounded"] {
+  border-radius: 0px !important;
+}
+
+/* 2. Drop all shadows */
+*,
+*::before,
+*::after,
+[class*="shadow"] {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* 3. Pure white content area background */
+main,
+section,
+.content-area,
+.bg-slate-50,
+.bg-slate-100,
+.bg-zinc-50,
+.bg-zinc-100,
+.bg-zinc-800,
+.bg-zinc-900,
+.bg-zinc-950,
+.bg-gray-50,
+.bg-gray-100,
+.bg-gray-800,
+.bg-gray-900 {
   background-color: #ffffff !important;
 }
 
-html.light .bg-zinc-900,
-html.light .bg-zinc-900\/90,
-html.light .bg-zinc-900\/80,
-html.light .bg-zinc-900\/70,
-html.light .bg-zinc-900\/60,
-html.light .bg-zinc-900\/50,
-html.light .bg-zinc-900\/40,
-html.light .bg-zinc-900\/30,
-html.light .bg-zinc-900\/20,
-html.light .bg-zinc-900\/10 {
-  background-color: #f1f5f9 !important;
+/* 4. Borders: 1px solid black */
+.border,
+.border-b,
+.border-t,
+.border-l,
+.border-r,
+[class*="border-"],
+table,
+th,
+td,
+input,
+select,
+textarea,
+hr {
+  border-color: #000000 !important;
 }
 
-html.light .bg-zinc-800,
-html.light .bg-zinc-800\/90,
-html.light .bg-zinc-800\/80,
-html.light .bg-zinc-800\/70,
-html.light .bg-zinc-800\/60,
-html.light .bg-zinc-800\/50,
-html.light .bg-zinc-800\/40,
-html.light .bg-zinc-800\/30,
-html.light .bg-zinc-800\/20,
-html.light .bg-zinc-850\/40 {
-  background-color: #e2e8f0 !important;
+/* 5. Typography palette: strictly Black, Red, Green */
+h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, td, th {
+  color: #000000;
 }
 
-html.light .border-zinc-800,
-html.light .border-zinc-800\/90,
-html.light .border-zinc-800\/80,
-html.light .border-zinc-800\/70,
-html.light .border-zinc-800\/60,
-html.light .border-zinc-800\/50,
-html.light .border-zinc-800\/40,
-html.light .border-zinc-800\/30,
-html.light .border-zinc-800\/20,
-html.light .border-zinc-700,
-html.light .border-zinc-700\/80,
-html.light .border-zinc-700\/60,
-html.light .border-zinc-700\/50,
-html.light .border-zinc-700\/40,
-html.light .border-zinc-700\/30,
-html.light .border-zinc-700\/20 {
-  border-color: #cbd5e1 !important;
+.text-white,
+.text-zinc-100,
+.text-zinc-200,
+.text-zinc-300,
+.text-zinc-400,
+.text-zinc-500,
+.text-slate-400,
+.text-slate-500,
+.text-slate-600,
+.text-slate-700,
+.text-slate-800,
+.text-slate-900,
+.text-gray-400,
+.text-gray-500,
+.text-gray-600,
+.text-gray-700 {
+  color: #000000 !important;
 }
 
-html.light input:not([type="checkbox"]):not([type="radio"]),
-html.light select,
-html.light textarea {
+/* Green for positive returns, profit, winning, success */
+.text-green-500,
+.text-green-600,
+.text-green-700,
+.text-emerald-500,
+.text-emerald-600,
+.text-emerald-700,
+.text-profit {
+  color: #16a34a !important;
+  font-weight: 700 !important;
+}
+
+/* Red for negative returns, loss, drawdown, errors */
+.text-red-500,
+.text-red-600,
+.text-red-700,
+.text-rose-500,
+.text-rose-600,
+.text-rose-700,
+.text-loss {
+  color: #dc2626 !important;
+  font-weight: 700 !important;
+}
+
+/* Form controls */
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
   background-color: #ffffff !important;
-  color: #0f172a !important;
-  border-color: #cbd5e1 !important;
+  color: #000000 !important;
+  border: 1px solid #000000 !important;
+  border-radius: 0px !important;
 }
 
-html.light input[type="checkbox"],
-html.light input[type="radio"] {
-  border-color: #cbd5e1 !important;
-  background-color: #f1f5f9 !important;
+/* Buttons */
+button {
+  border-radius: 0px !important;
 }
 
-html.light .text-white {
-  color: #0f172a !important;
+/* Table borders */
+table {
+  border-collapse: collapse;
+  width: 100%;
 }
 
-html.light .text-zinc-100 {
-  color: #0f172a !important;
-}
-
-html.light .text-zinc-200 {
-  color: #1e293b !important;
-}
-
-html.light .text-zinc-300 {
-  color: #334155 !important;
-}
-
-html.light .text-zinc-400 {
-  color: #64748b !important;
-}
-
-html.light .text-zinc-500 {
-  color: #94a3b8 !important;
-}
-
-body {
-  background-color: #f8fafc;
-  color: #0f172a;
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  transition: background-color 0.2s ease, color 0.2s ease;
+th, td {
+  border: 1px solid #000000;
 }

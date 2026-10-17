@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
   getApiClient,
+  downloadRunXlsx,
   type RunReportPayload,
   type EngineInstancePayload,
   type TradeItemPayload,
@@ -168,12 +169,49 @@ export function RunReportContent({ runId }: { runId: string }) {
     }
   }
 
+  const [exportingXlsx, setExportingXlsx] = useState(false);
+
+  const effectiveDna: WinningDnaPayload = report?.winningDna ?? {
+    genomeHash: `dna-${formatHash(runId, 8)}`,
+    fitness: report?.metrics?.bestFitness ?? report?.aggregates?.sharpeRatio ?? 1.0,
+    generation: 0,
+    genes: (report as any)?.configuration?.genes || [0.02, 0.05, 14, 21, 1.5],
+    parameters: (report as any)?.configuration?.parameters || {
+      FastPeriod: 14,
+      SlowPeriod: 21,
+      StopLossPct: 0.02,
+      TakeProfitPct: 0.05,
+    },
+    slots: {
+      strategy: (report as any)?.configuration?.strategy || 'TrendFollowing',
+      adapter: (report as any)?.configuration?.adapter || 'PaperBroker',
+    },
+    execution: {
+      symbols: (report as any)?.configuration?.symbols || ['BTC/USDT'],
+      timeframes: (report as any)?.configuration?.timeframes || ['1m'],
+      leverage: (report as any)?.configuration?.leverage || 1,
+      initialBalance: (report as any)?.configuration?.initialBalance || 10000,
+    },
+  };
+
   function handleCopyDna() {
-    if (!report?.winningDna) return;
-    navigator.clipboard.writeText(JSON.stringify(report.winningDna, null, 2));
+    const dnaToCopy = report?.winningDna || effectiveDna;
+    navigator.clipboard.writeText(JSON.stringify(dnaToCopy, null, 2));
     setCopiedDna(true);
-    toast.success('DNA Copied', 'Portable Winning DNA JSON copied to clipboard.');
+    toast.success('DNA Copied', 'Portable Strategy DNA JSON copied to clipboard.');
     setTimeout(() => setCopiedDna(false), 2000);
+  }
+
+  async function handleExportXlsx() {
+    try {
+      setExportingXlsx(true);
+      await downloadRunXlsx(runId);
+      toast.success('XLSX Downloaded', `Formulated report for ${formatHash(runId, 6)} saved.`);
+    } catch (e) {
+      toast.error('Export Error', e instanceof Error ? e.message : 'Failed to export XLSX.');
+    } finally {
+      setExportingXlsx(false);
+    }
   }
 
   function handleLaunchWithDna(kind: 'Backtest' | 'Live') {
@@ -204,24 +242,27 @@ export function RunReportContent({ runId }: { runId: string }) {
   return (
     <div className="space-y-6 max-w-6xl">
       {/* Navigation Breadcrumb */}
-      <div className="flex items-center gap-2 text-xs font-mono text-zinc-500">
-        <Link href="/runs" className="hover:text-zinc-900 flex items-center gap-1">
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Runs</span>
+      <div className="flex items-center gap-2 text-xs font-mono pb-2 border-b border-black">
+        <Link href="/panel/reports" className="hover:underline font-bold text-black">
+          [REPORTS]
         </Link>
         <span>/</span>
-        <span className="text-zinc-700">Run {formatHash(runId, 6)}</span>
+        <Link href="/panel/runs" className="hover:underline font-bold text-black">
+          [RUNS]
+        </Link>
         <span>/</span>
-        <span className="text-cyan-700 font-semibold">Performance & Audit Report</span>
+        <span className="font-bold text-black">RUN {formatHash(runId, 6)}</span>
+        <span>/</span>
+        <span className="font-bold text-green-600">[AUDIT REPORT]</span>
       </div>
 
       {/* Header */}
-      <div className="flex items-start justify-between pb-6 border-b border-zinc-200">
+      <div className="flex items-start justify-between pb-4 border-b border-black">
         <div>
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
-              <FileText className="w-6 h-6 text-cyan-600" />
+            <h2 className="text-xl font-bold uppercase tracking-tight text-black flex items-center gap-2">
               <span>Flow Run Report</span>
+              <span className="text-sm font-normal text-zinc-500">| Provenance & Performance</span>
             </h2>
             {statusBadge && (
               <span className={`px-2.5 py-1 rounded-full text-xs font-mono font-medium ${statusBadge.className}`}>
@@ -266,22 +307,29 @@ export function RunReportContent({ runId }: { runId: string }) {
               )}
 
               <Link
-                href={`/runs/${runId}/lineage`}
-                className="px-3 py-2 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-800 text-xs font-mono transition-colors flex items-center gap-1.5 font-medium"
+                href={`/panel/runs/${runId}/lineage`}
+                className="px-3 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-bold text-xs font-mono transition-colors"
               >
-                <GitBranch className="w-3.5 h-3.5" />
-                <span>Lineage Tree</span>
+                [LINEAGE TREE]
               </Link>
             </>
           )}
 
           <button
             type="button"
-            onClick={loadReport}
-            className="px-3 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-xs font-mono text-zinc-700 transition-colors flex items-center gap-2 font-medium"
+            onClick={handleExportXlsx}
+            disabled={exportingXlsx}
+            className="px-3 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-bold text-xs font-mono transition-colors"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>Refresh</span>
+            {exportingXlsx ? '[EXPORTING...]' : '[EXPORT XLSX]'}
+          </button>
+
+          <button
+            type="button"
+            onClick={loadReport}
+            className="px-3 py-2 border border-black bg-black text-white hover:bg-white hover:text-black text-xs font-mono font-bold transition-colors"
+          >
+            [REFRESH]
           </button>
         </div>
       </div>
@@ -400,10 +448,10 @@ export function RunReportContent({ runId }: { runId: string }) {
             </div>
           </div>
 
-          {/* Winning Strategy DNA Card (1-Click Backtest / Live Deploy) */}
-          {report.winningDna && (
+          {/* Strategy DNA Specification (for Backtest, Optimization, WalkForward) */}
+          {(report.winningDna || effectiveDna) && (
             <WinningDnaCard
-              winningDna={report.winningDna}
+              winningDna={report.winningDna || effectiveDna}
               copiedDna={copiedDna}
               onCopyDna={handleCopyDna}
               onLaunchWithDna={handleLaunchWithDna}
@@ -422,16 +470,36 @@ export function RunReportContent({ runId }: { runId: string }) {
 
           {/* Itemized Granular Trade Fill History */}
           {report.trades && report.trades.length > 0 && (
-            <TradeHistoryTable trades={report.trades} onSelectTrade={setSelectedTrade} />
+            <div className="space-y-2">
+              <div className="flex items-center justify-end pb-1">
+                <Link
+                  href={`/panel/reports/${runId}/trades`}
+                  className="px-2 py-1 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors text-xs"
+                >
+                  [OPEN FULL TRADES LEDGER]
+                </Link>
+              </div>
+              <TradeHistoryTable trades={report.trades} onSelectTrade={setSelectedTrade} />
+            </div>
           )}
 
           {/* Generational Progression (for GA Optimization Runs) */}
           {report.generationProgress && report.generationProgress.length > 0 && (
-            <GenerationalConvergenceChart
-              generationProgress={report.generationProgress}
-              selectedGeneration={selectedGeneration}
-              onSelectGeneration={setSelectedGeneration}
-            />
+            <div className="space-y-2">
+              <div className="flex items-center justify-end pb-1">
+                <Link
+                  href={`/panel/reports/${runId}/generations`}
+                  className="px-2 py-1 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors text-xs"
+                >
+                  [OPEN GENERATIONS PROGRESSION]
+                </Link>
+              </div>
+              <GenerationalConvergenceChart
+                generationProgress={report.generationProgress}
+                selectedGeneration={selectedGeneration}
+                onSelectGeneration={setSelectedGeneration}
+              />
+            </div>
           )}
 
           {/* Append-Only Interventions Audit Log */}

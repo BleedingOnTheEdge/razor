@@ -185,6 +185,21 @@ internal static class DatabaseSchemaCompatibility
                 "Upvotes" integer NOT NULL DEFAULT 0,
                 "CreatedAt" timestamp with time zone NOT NULL
             );
+
+            -- Ensure EngineShares table exists
+            CREATE TABLE IF NOT EXISTS "EngineShares" (
+                "Id" uuid PRIMARY KEY,
+                "EngineInstanceId" uuid NOT NULL REFERENCES "EngineInstances"("Id") ON DELETE CASCADE,
+                "OwnerAccountId" uuid NOT NULL,
+                "SharedWithUserId" uuid,
+                "SharedWithEmail" character varying(256) NOT NULL,
+                "CreatedAt" timestamp with time zone NOT NULL,
+                "ExpiresAtUtc" timestamp with time zone NOT NULL,
+                "CanRead" boolean NOT NULL DEFAULT true,
+                "CanControl" boolean NOT NULL DEFAULT true,
+                "CanRunFlows" boolean NOT NULL DEFAULT true,
+                "IsRevoked" boolean NOT NULL DEFAULT false
+            );
             """;
 
         await db.Database.ExecuteSqlRawAsync(sql, cancellationToken).ConfigureAwait(false);

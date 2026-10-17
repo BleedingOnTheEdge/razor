@@ -31,7 +31,9 @@ internal sealed class StartRunRequest
 /// <summary>
 /// Starts a new original flow run for an Engine instance (003-040).
 /// </summary>
-internal sealed class StartRunEndpoint(FlowOrchestrator orchestrator)
+internal sealed class StartRunEndpoint(
+    FlowOrchestrator orchestrator,
+    EngineRegistrationService registration)
     : Endpoint<StartRunRequest, FlowRunView>
 {
     /// <inheritdoc/>
@@ -48,6 +50,35 @@ internal sealed class StartRunEndpoint(FlowOrchestrator orchestrator)
     /// <inheritdoc/>
     public override async Task HandleAsync(StartRunRequest request, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
+        Guid? accountId = null;
+        if (HttpContext.Request.Headers.TryGetValue("X-Account-Id", out var accVal) && Guid.TryParse(accVal, out var parsedAcc))
+        {
+            accountId = parsedAcc;
+        }
+
+        Guid? userId = null;
+        if (HttpContext.Request.Headers.TryGetValue("X-User-Id", out var userVal) && Guid.TryParse(userVal, out var parsedUser))
+        {
+            userId = parsedUser;
+        }
+
+        string? userEmail = HttpContext.Request.Headers.TryGetValue("X-User-Email", out var emailVal) ? emailVal.ToString() : null;
+
+        if (accountId.HasValue || userId.HasValue || !string.IsNullOrEmpty(userEmail))
+        {
+            bool hasAccess = await registration
+                .CheckInstanceAccessAsync(request.InstanceId, accountId, userId, userEmail, "RunFlows", cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!hasAccess)
+            {
+                AddError("You do not have active flow execution permissions for this engine instance or your sharing grant has expired.");
+                await Send.ErrorsAsync(StatusCodes.Status403Forbidden, cancellationToken).ConfigureAwait(false);
+                return;
+            }
+        }
         try
         {
             FlowRun run = await orchestrator

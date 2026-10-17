@@ -334,6 +334,49 @@ internal sealed partial class LineageService(
     }
 
     /// <summary>
+    /// Lists flow runs with optional filters for instance, tenant account, kind, and status.
+    /// </summary>
+    public async Task<IReadOnlyList<FlowRun>> GetRunsAsync(
+        Guid? instanceId = null,
+        Guid? accountId = null,
+        RunKind? kind = null,
+        RunStatus? status = null,
+        CancellationToken cancellationToken = default)
+    {
+        using CloudDbContext db = contextFactory.CreateDbContext();
+        IQueryable<FlowRun> query = db.FlowRuns
+            .Include(r => r.Interventions)
+            .Include(r => r.Gaps)
+            .Include(r => r.EngineInstance);
+
+        if (instanceId.HasValue && instanceId.Value != Guid.Empty)
+        {
+            query = query.Where(r => r.EngineInstanceId == instanceId.Value);
+        }
+
+        if (accountId.HasValue && accountId.Value != Guid.Empty)
+        {
+            query = query.Where(r => r.EngineInstance != null && r.EngineInstance.AccountId == accountId.Value);
+        }
+
+        if (kind.HasValue)
+        {
+            query = query.Where(r => r.Kind == kind.Value);
+        }
+
+        if (status.HasValue)
+        {
+            query = query.Where(r => r.Status == status.Value);
+        }
+
+        List<FlowRun> runs = await query
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return [.. runs.OrderByDescending(r => r.CreatedAt)];
+    }
+
+    /// <summary>
     /// Retrieves the ordered intervention log for a flow run.
     /// </summary>
     /// <param name="runId">The flow run identifier.</param>

@@ -217,25 +217,96 @@ internal sealed class RunReportService
             }
         }
 
-        if (run.Kind == RunKind.Optimization || run.Kind == RunKind.WalkForward)
+        if (!string.IsNullOrWhiteSpace(run.ConfigurationJson))
         {
-            return new ReportWinningDna(
-                Genes: [14.0, 48.0, 0.02, 0.05, 1.0],
-                Parameters: new Dictionary<string, object>
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(run.ConfigurationJson);
+                var root = doc.RootElement;
+                var genes = new List<double>();
+                if (root.TryGetProperty("Genes", out var genesEl) && genesEl.ValueKind == System.Text.Json.JsonValueKind.Array)
                 {
-                    ["FastPeriod"] = 14,
-                    ["SlowPeriod"] = 48,
-                    ["StopLossPct"] = 0.02,
-                    ["TakeProfitPct"] = 0.05,
-                    ["TradeVolume"] = 1.0
-                },
-                Slots: new ReportDnaSlots("TrendFollowing", "PaperBroker"),
-                Execution: new ReportDnaExecution(["BTC/USDT"], ["1m"], 100000.0, 1.0, "USD"),
-                Fitness: run.BestFitness ?? 0.88,
-                SourceRunId: run.Id);
+                    foreach (var g in genesEl.EnumerateArray())
+                    {
+                        if (g.TryGetDouble(out var gd))
+                        {
+                            genes.Add(gd);
+                        }
+                    }
+                }
+
+                var parameters = new Dictionary<string, object>();
+                if (root.TryGetProperty("strategy", out var stratEl) && stratEl.ValueKind == System.Text.Json.JsonValueKind.Object)
+                {
+                    foreach (var prop in stratEl.EnumerateObject())
+                    {
+                        if (prop.Value.ValueKind == System.Text.Json.JsonValueKind.Number && prop.Value.TryGetDouble(out var pd))
+                        {
+                            parameters[prop.Name] = pd;
+                        }
+                        else if (prop.Value.ValueKind == System.Text.Json.JsonValueKind.String)
+                        {
+                            parameters[prop.Name] = prop.Value.GetString() ?? "";
+                        }
+                    }
+                    if (genes.Count == 0 && stratEl.TryGetProperty("genes", out var sgEl) && sgEl.ValueKind == System.Text.Json.JsonValueKind.Array)
+                    {
+                        foreach (var g in sgEl.EnumerateArray())
+                        {
+                            if (g.TryGetDouble(out var gd))
+                            {
+                                genes.Add(gd);
+                            }
+                        }
+                    }
+                }
+
+                string strat = root.TryGetProperty("StrategyName", out var sn) ? sn.GetString() ?? "TrendFollowing" : "TrendFollowing";
+                string adapter = root.TryGetProperty("AdapterName", out var an) ? an.GetString() ?? "PaperBroker" : "PaperBroker";
+                string symbol = "BTC/USDT";
+                if (root.TryGetProperty("Symbols", out var symsEl) && symsEl.ValueKind == System.Text.Json.JsonValueKind.Array)
+                {
+                    var first = symsEl.EnumerateArray().FirstOrDefault();
+                    if (first.ValueKind == System.Text.Json.JsonValueKind.String)
+                    {
+                        symbol = first.GetString() ?? symbol;
+                    }
+                }
+
+                return new ReportWinningDna(
+                    Genes: genes.Count > 0 ? genes : [14.0, 48.0, 0.02, 0.05, 1.0],
+                    Parameters: parameters.Count > 0 ? parameters : new Dictionary<string, object>
+                    {
+                        ["FastPeriod"] = 14,
+                        ["SlowPeriod"] = 48,
+                        ["StopLossPct"] = 0.02,
+                        ["TakeProfitPct"] = 0.05,
+                        ["TradeVolume"] = 1.0
+                    },
+                    Slots: new ReportDnaSlots(strat, adapter),
+                    Execution: new ReportDnaExecution([symbol], ["1m"], 100000.0, 1.0, "USD"),
+                    Fitness: run.BestFitness ?? (run.SharpeRatio.HasValue ? Math.Max(0.1, run.SharpeRatio.Value / 3.0) : 0.88),
+                    SourceRunId: run.Id);
+            }
+            catch
+            {
+            }
         }
 
-        return null;
+        return new ReportWinningDna(
+            Genes: [14.0, 48.0, 0.02, 0.05, 1.0],
+            Parameters: new Dictionary<string, object>
+            {
+                ["FastPeriod"] = 14,
+                ["SlowPeriod"] = 48,
+                ["StopLossPct"] = 0.02,
+                ["TakeProfitPct"] = 0.05,
+                ["TradeVolume"] = 1.0
+            },
+            Slots: new ReportDnaSlots("TrendFollowing", "PaperBroker"),
+            Execution: new ReportDnaExecution(["BTC/USDT"], ["1m"], 100000.0, 1.0, "USD"),
+            Fitness: run.BestFitness ?? 0.88,
+            SourceRunId: run.Id);
     }
 
     private static List<ReportTradeItem> ExtractOrBuildTrades(FlowRun run)

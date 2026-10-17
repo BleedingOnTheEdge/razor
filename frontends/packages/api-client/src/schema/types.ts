@@ -25,6 +25,8 @@ export interface EngineInstanceDetailPayload {
 }
 
 export interface WinningDnaPayload {
+  genomeHash?: string;
+  generation?: number;
   genes: number[];
   parameters: Record<string, number>;
   slots?: {

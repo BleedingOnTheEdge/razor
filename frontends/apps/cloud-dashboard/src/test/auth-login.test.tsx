@@ -76,7 +76,7 @@ describe('Cloud Dashboard LoginPage', () => {
           body: { userName: 'dev-operator', password: 'operator123' },
         })
       );
-      expect(mockPush).toHaveBeenCalledWith('/');
+      expect(mockPush).toHaveBeenCalledWith('/panel');
     });
   });
 });
