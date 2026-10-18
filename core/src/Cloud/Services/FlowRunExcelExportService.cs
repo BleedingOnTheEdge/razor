@@ -187,7 +187,7 @@ internal static class FlowRunExcelExportService
 
         // Row 3-9: Run Provenance
         AppendRowText(sb, 3, "Run ID", report.RunId.ToString());
-        AppendRowText(sb, 4, "Initial Capital ($)", initialCapStr);
+        AppendRowNumber(sb, 4, "Initial Capital ($)", initialCapStr);
         AppendRowText(sb, 5, "Execution Kind", report.Kind.ToString());
         AppendRowText(sb, 6, "Execution Status", report.Status.ToString());
         AppendRowText(sb, 7, "Base Seed", report.BaseSeed?.ToString(CultureInfo.InvariantCulture) ?? "42");
@@ -202,11 +202,11 @@ internal static class FlowRunExcelExportService
 
         // Formulated rows pointing to 'Trade Ledger'
         int lastTradeRow = tradeRows + 1; // Row 1 is header
-        AppendRowFormula(sb, 12, "Gross Profit ($)", string.Create(CultureInfo.InvariantCulture, $"SUMIF('Trade Ledger'!M2:M{lastTradeRow}, \">0\")"), grossProfit.ToString("F2", CultureInfo.InvariantCulture));
-        AppendRowFormula(sb, 13, "Gross Loss ($)", string.Create(CultureInfo.InvariantCulture, $"SUMIF('Trade Ledger'!M2:M{lastTradeRow}, \"<0\")"), grossLoss.ToString("F2", CultureInfo.InvariantCulture));
+        AppendRowFormula(sb, 12, "Gross Profit ($)", string.Create(CultureInfo.InvariantCulture, $"SUMIF('Trade Ledger'!M2:M{lastTradeRow},\">0\")"), grossProfit.ToString("F2", CultureInfo.InvariantCulture));
+        AppendRowFormula(sb, 13, "Gross Loss ($)", string.Create(CultureInfo.InvariantCulture, $"SUMIF('Trade Ledger'!M2:M{lastTradeRow},\"<0\")"), grossLoss.ToString("F2", CultureInfo.InvariantCulture));
         AppendRowFormula(sb, 14, "Net Profit ($)", string.Create(CultureInfo.InvariantCulture, $"SUM('Trade Ledger'!M2:M{lastTradeRow})"), netProfit.ToString("F2", CultureInfo.InvariantCulture));
         AppendRowFormula(sb, 15, "Total Executed Trades", string.Create(CultureInfo.InvariantCulture, $"COUNTA('Trade Ledger'!A2:A{lastTradeRow})"), tradeCount.ToString(CultureInfo.InvariantCulture));
-        AppendRowFormula(sb, 16, "Winning Trades", string.Create(CultureInfo.InvariantCulture, $"COUNTIF('Trade Ledger'!M2:M{lastTradeRow}, \">0\")"), ((int)(tradeCount * (winRate / 100.0))).ToString(CultureInfo.InvariantCulture));
+        AppendRowFormula(sb, 16, "Winning Trades", string.Create(CultureInfo.InvariantCulture, $"COUNTIF('Trade Ledger'!M2:M{lastTradeRow},\">0\")"), ((int)(tradeCount * (winRate / 100.0))).ToString(CultureInfo.InvariantCulture));
         AppendRowFormula(sb, 17, "Win Rate (%)", "B16/MAX(1,B15)*100", winRate.ToString("F2", CultureInfo.InvariantCulture));
         AppendRowFormula(sb, 18, "Profit Factor", "B12/MAX(0.0001,ABS(B13))", profitFactor.ToString("F2", CultureInfo.InvariantCulture));
         AppendRowFormula(sb, 19, "Return On Capital (%)", "B14/B4*100", ((netProfit / initialCapital) * 100.0).ToString("F2", CultureInfo.InvariantCulture));
@@ -361,9 +361,24 @@ internal static class FlowRunExcelExportService
         int rowIdx = 2;
         foreach (var gen in progress)
         {
-            string paramsSummary = report.WinningDna != null
-                ? string.Join(", ", report.WinningDna.Parameters.Select(p => $"{p.Key}={p.Value}"))
-                : "Fast=14, Slow=48, SL=2%, TP=5%";
+            ReportPopulationIndividual? topInd = null;
+            if (gen.Populations is { Count: > 0 } pops)
+            {
+                topInd = pops[0];
+                for (int i = 1; i < pops.Count; i++)
+                {
+                    if (pops[i].Fitness > topInd.Fitness)
+                    {
+                        topInd = pops[i];
+                    }
+                }
+            }
+
+            string paramsSummary = topInd != null && topInd.Parameters != null && topInd.Parameters.Count > 0
+                ? string.Join(", ", topInd.Parameters.Select(p => $"{p.Key}={p.Value}"))
+                : (report.WinningDna != null
+                    ? string.Join(", ", report.WinningDna.Parameters.Select(p => $"{p.Key}={p.Value}"))
+                    : "Fast=14, Slow=48, SL=2%, TP=5%");
 
             sb.AppendLine(CultureInfo.InvariantCulture, $"    <row r=\"{rowIdx}\">");
             sb.AppendLine(CultureInfo.InvariantCulture, $"      <c r=\"A{rowIdx}\"><v>{gen.Generation}</v></c>");

@@ -100,14 +100,14 @@ export default function PanelInstancesPage() {
   const onlineCount = instances.filter((i) => i.isConnected).length;
 
   return (
-    <div className="space-y-6 max-w-7xl font-mono text-xs">
+    <div className="space-y-6 max-w-7xl">
       {/* Top Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-black">
         <div>
           <h1 className="text-xl font-bold uppercase tracking-tight text-black">
             Engine Fleet & Node Management
           </h1>
-          <p className="text-black font-normal mt-1">
+          <p className="text-sm text-zinc-600 mt-1">
             Registered execution instances, WebSocket cluster telemetry, and temporary sharing delegations.
           </p>
         </div>
@@ -132,14 +132,14 @@ export default function PanelInstancesPage() {
       {/* Fleet Telemetry Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 border border-black bg-white">
         <div>
-          <span className="text-black font-bold block">Online Active Nodes</span>
-          <span className="text-2xl font-bold text-green-600 mt-1 block">
+          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 block">Online Active Nodes</span>
+          <span className="text-2xl font-bold text-green-600 font-mono mt-1 block">
             {onlineCount} / {instances.length}
           </span>
         </div>
         <div>
-          <span className="text-black font-bold block">Total Registered Engines</span>
-          <span className="text-2xl font-bold text-black mt-1 block">
+          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 block">Total Registered Engines</span>
+          <span className="text-2xl font-bold text-black font-mono mt-1 block">
             {totalCount || instances.length}
           </span>
         </div>
@@ -215,21 +215,21 @@ export default function PanelInstancesPage() {
       ) : (
         <div className="space-y-4">
           <div className="border border-black overflow-x-auto">
-            <table className="w-full text-left">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-black bg-white">
-                  <th className="p-3 font-bold text-black">Engine Instance</th>
-                  <th className="p-3 font-bold text-black">Status</th>
-                  <th className="p-3 font-bold text-black hidden sm:table-cell">Slug / EngineId</th>
-                  <th className="p-3 font-bold text-black hidden md:table-cell">Extensions</th>
-                  <th className="p-3 font-bold text-black hidden lg:table-cell">Created</th>
-                  <th className="p-3 font-bold text-black hidden sm:table-cell">Ownership</th>
-                  <th className="p-3 font-bold text-black text-right">Actions</th>
+                <tr className="border-b border-black bg-zinc-50 text-xs font-bold text-zinc-700 uppercase tracking-wider">
+                  <th className="p-3">Engine Instance</th>
+                  <th className="p-3">Status</th>
+                  <th className="p-3 hidden sm:table-cell">Slug / EngineId</th>
+                  <th className="p-3 hidden md:table-cell">Extensions</th>
+                  <th className="p-3 hidden lg:table-cell">Created</th>
+                  <th className="p-3 hidden sm:table-cell">Ownership</th>
+                  <th className="p-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-zinc-200 text-sm">
                 {filtered.map((inst) => (
-                  <tr key={inst.instanceId} className="border-b border-black hover:bg-zinc-50">
+                  <tr key={inst.instanceId} className="hover:bg-zinc-50 transition-colors">
                     <td className="p-3">
                       <Link
                         href={`/panel/instances/${inst.instanceId}`}

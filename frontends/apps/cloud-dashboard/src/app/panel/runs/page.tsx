@@ -94,6 +94,17 @@ export default function PanelRunsPage() {
     loadRuns();
   }, [page, pageSize, kindFilter, statusFilter]);
 
+  // Reactive auto-refresh when any run is in progress
+  useEffect(() => {
+    const hasRunning = runs.some((r) => r.status === 'Running');
+    if (hasRunning) {
+      const timer = setInterval(() => {
+        loadRuns();
+      }, 3000);
+      return () => clearInterval(timer);
+    }
+  }, [runs, page, pageSize, kindFilter, statusFilter]);
+
   async function handleExportXlsx(runId: string) {
     try {
       toast.info('Exporting', 'Compiling formulated Excel workbook...');
@@ -115,14 +126,14 @@ export default function PanelRunsPage() {
   });
 
   return (
-    <div className="space-y-6 max-w-7xl font-mono text-xs">
+    <div className="space-y-6 max-w-7xl">
       {/* Top Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-black">
         <div>
           <h1 className="text-xl font-bold uppercase tracking-tight text-black">
             Quantitative Flow Runs & Provenance DAG
           </h1>
-          <p className="text-black font-normal mt-1">
+          <p className="text-sm text-zinc-600 mt-1">
             Deterministic execution lifecycle, strategy DNA mutation trees, and institutional audit verification.
           </p>
         </div>
@@ -234,21 +245,21 @@ export default function PanelRunsPage() {
       ) : (
         <div className="space-y-4">
           <div className="border border-black overflow-x-auto">
-            <table className="w-full text-left">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-black bg-white">
-                  <th className="p-3 font-bold text-black">Run ID</th>
-                  <th className="p-3 font-bold text-black">Kind</th>
-                  <th className="p-3 font-bold text-black">Status</th>
-                  <th className="p-3 font-bold text-black hidden sm:table-cell">Engine Instance</th>
-                  <th className="p-3 font-bold text-black text-right hidden md:table-cell">Seed</th>
-                  <th className="p-3 font-bold text-black hidden lg:table-cell">Created At</th>
-                  <th className="p-3 font-bold text-black text-right">Actions</th>
+                <tr className="border-b border-black bg-zinc-50 text-xs font-bold text-zinc-700 uppercase tracking-wider">
+                  <th className="p-3">Run ID</th>
+                  <th className="p-3">Kind</th>
+                  <th className="p-3">Status</th>
+                  <th className="p-3 hidden sm:table-cell">Engine Instance</th>
+                  <th className="p-3 text-right hidden md:table-cell">Seed</th>
+                  <th className="p-3 hidden lg:table-cell">Created At</th>
+                  <th className="p-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-zinc-200 text-sm">
                 {filtered.map((r) => (
-                  <tr key={r.id} className="border-b border-black hover:bg-zinc-50">
+                  <tr key={r.id} className="hover:bg-zinc-50 transition-colors">
                     <td className="p-3">
                       <Link
                         href={`/panel/reports/${r.id}`}

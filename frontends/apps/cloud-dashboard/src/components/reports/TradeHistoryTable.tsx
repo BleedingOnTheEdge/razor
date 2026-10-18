@@ -64,30 +64,30 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto border border-black">
         <table className="w-full text-left text-xs font-mono border-collapse">
           <thead>
-            <tr className="border-b border-black text-black font-bold uppercase tracking-wider text-[10px]">
-              <th className="py-2.5 px-3">Ticket</th>
-              <th className="py-2.5 px-3">Symbol</th>
-              <th className="py-2.5 px-3">Side</th>
-              <th className="py-2.5 px-3">Volume</th>
-              <th className="py-2.5 px-3">Open (Time & Px)</th>
-              <th className="py-2.5 px-3">Close (Time & Px)</th>
-              <th className="py-2.5 px-3">PnL ($)</th>
-              <th className="py-2.5 px-3">Return</th>
-              <th className="py-2.5 px-3">Exit Reason</th>
+            <tr className="bg-zinc-50 border-b border-black text-zinc-700 font-bold uppercase tracking-wider text-[11px]">
+              <th className="py-3 px-3">Ticket</th>
+              <th className="py-3 px-3">Symbol</th>
+              <th className="py-3 px-3">Side</th>
+              <th className="py-3 px-3 text-right">Volume</th>
+              <th className="py-3 px-3">Open (Time & Px)</th>
+              <th className="py-3 px-3">Close (Time & Px)</th>
+              <th className="py-3 px-3 text-right">PnL ($)</th>
+              <th className="py-3 px-3 text-right">Return</th>
+              <th className="py-3 px-3 text-center">Exit Reason</th>
             </tr>
           </thead>
-          <tbody className="text-black divide-y divide-black">
+          <tbody className="text-black divide-y divide-zinc-200 bg-white">
             {currentTrades.map((t: TradeItemPayload) => (
               <tr
                 key={t.ticket}
                 onClick={() => onSelectTrade(t)}
-                className="hover:bg-zinc-100 cursor-pointer transition-colors group"
+                className="hover:bg-zinc-50 cursor-pointer transition-colors group"
                 title="Click to view granular trade fill telemetry"
               >
-                <td className="py-2.5 px-3 font-bold text-black group-hover:underline">#{t.ticket}</td>
+                <td className="py-3 px-3 font-bold text-black group-hover:underline">#{t.ticket}</td>
                 <td className="py-2.5 px-3 font-bold text-black">{t.symbol}</td>
                 <td className="py-2.5 px-3">
                   <span
@@ -100,23 +100,23 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
                     {t.side.toUpperCase()}
                   </span>
                 </td>
-                <td className="py-2.5 px-3 font-bold">{t.volume != null ? t.volume.toFixed(2) : '—'}</td>
-                <td className="py-2.5 px-3 text-[11px] text-black">
+                <td className="py-3 px-3 text-right font-bold">{t.volume != null ? t.volume.toFixed(2) : '—'}</td>
+                <td className="py-3 px-3 text-[11px] text-black">
                   <div>${typeof t.openPrice === 'number' ? t.openPrice.toLocaleString() : (t.openPrice ?? '—')}</div>
-                  <div className="text-[10px] text-zinc-600">{t.openTime}</div>
+                  <div className="text-[10px] text-zinc-500 font-mono">{t.openTime}</div>
                 </td>
-                <td className="py-2.5 px-3 text-[11px] text-black">
+                <td className="py-3 px-3 text-[11px] text-black">
                   <div>${typeof t.closePrice === 'number' ? t.closePrice.toLocaleString() : (t.closePrice ?? '—')}</div>
-                  <div className="text-[10px] text-zinc-600">{t.closeTime}</div>
+                  <div className="text-[10px] text-zinc-500 font-mono">{t.closeTime}</div>
                 </td>
-                <td className={`py-2.5 px-3 font-bold ${(t.profit ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <td className={`py-3 px-3 text-right font-bold ${(t.profit ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {t.profit != null ? (t.profit >= 0 ? `+${formatCurrency(t.profit)}` : formatCurrency(t.profit)) : '—'}
                 </td>
-                <td className={`py-2.5 px-3 font-bold ${(t.returnPct ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <td className={`py-3 px-3 text-right font-bold ${(t.returnPct ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {t.returnPct != null ? (t.returnPct >= 0 ? `+${t.returnPct.toFixed(2)}%` : `${t.returnPct.toFixed(2)}%`) : '—'}
                 </td>
-                <td className="py-2.5 px-3">
-                  <span className="px-2 py-0.5 border border-black bg-white text-black text-[10px] font-bold">
+                <td className="py-3 px-3 text-center">
+                  <span className={`px-2 py-0.5 border text-[10px] font-bold ${t.exitReason === 'TakeProfit' ? 'border-green-600 text-green-600' : 'border-red-600 text-red-600'}`}>
                     {t.exitReason}
                   </span>
                 </td>

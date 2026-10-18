@@ -35,15 +35,19 @@ internal sealed partial class KernelService
         _logOptimizationStarted(_logger, taskId, null);
 
         var adapter = !string.IsNullOrWhiteSpace(input.AdapterName)
-            ? (_extensionManager.CreateTransientAdapter(input.AdapterName) ?? _extensionManager.ActiveAdapter)
-            : _extensionManager.ActiveAdapter;
-        adapter ??= _extensionManager.CreateTransientAdapter("PaperBroker")
-            ?? _extensionManager.CreateTransientAdapter("MockPaperTradingAdapter")
+            ? (_extensionManager.CreateTransientAdapter(input.AdapterName)
+               ?? _extensionManager.CreateTransientAdapter("MockPaperTradingAdapter")
+               ?? _extensionManager.ActiveAdapter)
+            : (_extensionManager.ActiveAdapter ?? _extensionManager.CreateTransientAdapter("MockPaperTradingAdapter"));
+        adapter ??= _extensionManager.CreateTransientAdapter("MockPaperTradingAdapter")
+            ?? _extensionManager.CreateTransientAdapter("PaperBroker")
             ?? throw new InvalidOperationException("No active adapter found.");
 
         var strategy = !string.IsNullOrWhiteSpace(input.StrategyName)
-            ? (_extensionManager.CreateTransientStrategy(input.StrategyName) ?? _extensionManager.ActiveStrategy)
-            : _extensionManager.ActiveStrategy;
+            ? (_extensionManager.CreateTransientStrategy(input.StrategyName)
+               ?? _extensionManager.CreateTransientStrategy("TrendFollowing")
+               ?? _extensionManager.ActiveStrategy)
+            : (_extensionManager.ActiveStrategy ?? _extensionManager.CreateTransientStrategy("TrendFollowing"));
         strategy ??= _extensionManager.CreateTransientStrategy("TrendFollowing")
             ?? _extensionManager.CreateTransientStrategy("TrendFollowingStrategy")
             ?? throw new InvalidOperationException("No active strategy found.");

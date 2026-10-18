@@ -117,6 +117,16 @@ export function RunReportContent({ runId }: { runId: string }) {
     loadInstances();
   }, [runId]);
 
+  // Reactive auto-refresh polling while run is executing
+  useEffect(() => {
+    if (!report || report.status === 'Running') {
+      const timer = setInterval(() => {
+        loadReport();
+      }, 2500);
+      return () => clearInterval(timer);
+    }
+  }, [runId, report?.status]);
+
   async function handlePauseRun() {
     if (!report) return;
     setPausing(true);
@@ -345,6 +355,20 @@ export function RunReportContent({ runId }: { runId: string }) {
           </button>
         </div>
       </div>
+
+      {report?.status === 'Running' && (
+        <div className="p-4 border border-black bg-zinc-50 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 bg-black animate-pulse inline-block" />
+            <span className="text-sm font-bold uppercase tracking-wide text-black">
+              Execution In Progress — Automatically evaluating generations & simulating trades...
+            </span>
+          </div>
+          <span className="text-xs font-mono font-semibold text-zinc-600">
+            [LIVE TELEMETRY AUTO-REFRESHING]
+          </span>
+        </div>
+      )}
 
       {loading && (
         <div className="py-16 text-center text-xs font-mono text-black font-bold border border-black">

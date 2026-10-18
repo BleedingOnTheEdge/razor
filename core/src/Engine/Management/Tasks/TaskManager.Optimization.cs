@@ -89,9 +89,9 @@ internal sealed partial class TaskManager
                     }
                 }
             }
-            if (string.IsNullOrWhiteSpace(resolvedAdapter))
+            if (string.IsNullOrWhiteSpace(resolvedAdapter) || resolvedAdapter.Equals("PaperBroker", StringComparison.OrdinalIgnoreCase))
             {
-                resolvedAdapter = "PaperBroker";
+                resolvedAdapter = "MockPaperTradingAdapter";
             }
 
             string resolvedStrategy = GetString(dict, "StrategyName");

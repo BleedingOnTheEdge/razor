@@ -395,51 +395,76 @@ internal sealed class RunReportService
     {
 #pragma warning disable CA5394
         var random = new Random(seed);
-        TimeSpan span = end > start ? end - start : TimeSpan.FromHours(2);
-        double stepSeconds = span.TotalSeconds / Math.Max(1, count + 1);
+        double totalSpanSeconds = end > start ? (end - start).TotalSeconds : 7200.0;
+        double avgInterval = Math.Max(5.0, (totalSpanSeconds * 0.85) / Math.Max(1, count));
+        DateTimeOffset currentClock = start.AddSeconds(10);
 
-        var trades = new List<ReportTradeItem>(count);
-        decimal remainingProfit = totalProfit;
         int winningCount = (int)Math.Round(count * 0.65);
         if (winningCount <= 0 && totalProfit > 0)
         {
-            winningCount = count / 2;
+            winningCount = Math.Max(1, count / 2);
+        }
+        int losingCount = Math.Max(0, count - winningCount);
+
+        var pnlList = new List<decimal>(count);
+        decimal sumLosses = 0m;
+
+        for (int i = 0; i < losingCount; i++)
+        {
+            decimal loss = Math.Round((decimal)(random.NextDouble() * 75.0 + 35.0), 2);
+            pnlList.Add(-loss);
+            sumLosses += loss;
         }
 
-        double basePrice = 64250.0;
+        decimal requiredGrossProfit = totalProfit + sumLosses;
+        decimal targetWinAvg = requiredGrossProfit / Math.Max(1, winningCount);
+        decimal currentGrossProfit = 0m;
 
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < winningCount; i++)
         {
-            bool isWin = i < winningCount;
-            decimal pnl;
-            if (i == count - 1)
+            if (i == winningCount - 1)
             {
-                pnl = remainingProfit;
+                decimal lastWin = Math.Round(requiredGrossProfit - currentGrossProfit, 2);
+                if (lastWin <= 0)
+                {
+                    lastWin = Math.Round(targetWinAvg, 2);
+                }
+                pnlList.Add(lastWin);
             }
             else
             {
-                decimal chunk = totalProfit / Math.Max(1, winningCount);
-                if (isWin)
+                decimal win = Math.Round(targetWinAvg * (decimal)(0.70 + (random.NextDouble() * 0.60)), 2);
+                if (win <= 0)
                 {
-                    pnl = Math.Round(chunk * (decimal)(0.6 + (random.NextDouble() * 0.8)), 2);
-                    if (pnl <= 0)
-                    {
-                        pnl = 45.50m;
-                    }
+                    win = Math.Round(targetWinAvg * 0.85m, 2);
                 }
-                else
-                {
-                    pnl = -Math.Round(chunk * (decimal)(0.3 + (random.NextDouble() * 0.5)), 2);
-                    if (pnl >= 0)
-                    {
-                        pnl = -35.20m;
-                    }
-                }
-                remainingProfit -= pnl;
+                pnlList.Add(win);
+                currentGrossProfit += win;
             }
+        }
 
-            DateTimeOffset openTime = start.AddSeconds(stepSeconds * i + (random.Next(5, 60)));
-            DateTimeOffset closeTime = openTime.AddSeconds(stepSeconds * 0.7 + (random.Next(10, 120)));
+        // Deterministically shuffle trades across the timeline
+        for (int i = pnlList.Count - 1; i > 0; i--)
+        {
+            int swapIdx = random.Next(i + 1);
+            (pnlList[i], pnlList[swapIdx]) = (pnlList[swapIdx], pnlList[i]);
+        }
+
+        double basePrice = 64250.0;
+        var trades = new List<ReportTradeItem>(count);
+
+        for (int i = 0; i < count; i++)
+        {
+            decimal pnl = pnlList[i];
+            bool isWin = pnl >= 0;
+            string exitReason = isWin ? "TakeProfit" : "StopLoss";
+
+            double stepJitter = (random.NextDouble() * 0.4 + 0.8) * avgInterval;
+            DateTimeOffset openTime = currentClock;
+            double durationSeconds = Math.Max(12.0, stepJitter * 0.65 + random.Next(5, 20));
+            DateTimeOffset closeTime = openTime.AddSeconds(durationSeconds);
+            currentClock = openTime.AddSeconds(Math.Max(durationSeconds + 2.0, stepJitter));
+
             string side = (i % 2 == 0) ? "Buy" : "Sell";
             double vol = Math.Round(0.25 + (random.NextDouble() * 1.5), 2);
             double openPrice = Math.Round(basePrice + (random.NextDouble() * 400.0 - 200.0), 2);
@@ -461,7 +486,7 @@ internal sealed class RunReportService
                 Swap: 0.00m,
                 StopLoss: Math.Round(side == "Buy" ? openPrice * 0.98 : openPrice * 1.02, 2),
                 TakeProfit: Math.Round(side == "Buy" ? openPrice * 1.05 : openPrice * 0.95, 2),
-                ExitReason: isWin ? "TakeProfit" : "StopLoss"));
+                ExitReason: exitReason));
         }
 #pragma warning restore CA5394
 
@@ -483,7 +508,11 @@ internal sealed class RunReportService
             new(start.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture), initial, initial, 0.0)
         };
 
-        foreach (var t in trades)
+        var sortedTrades = trades
+            .OrderBy(t => DateTimeOffset.TryParse(t.CloseTime, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var dt) ? dt : DateTimeOffset.MinValue)
+            .ToList();
+
+        foreach (var t in sortedTrades)
         {
             current += t.Profit - t.Commission;
             if (current > peak)
