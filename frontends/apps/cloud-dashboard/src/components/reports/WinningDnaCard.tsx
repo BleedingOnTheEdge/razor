@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { ActionDropdown } from '@/components/ui/ActionDropdown';
 import type { WinningDnaPayload } from '@/lib/api-client';
 
 export interface WinningDnaCardProps {
@@ -17,7 +18,7 @@ export function WinningDnaCard({
   onLaunchWithDna,
 }: WinningDnaCardProps) {
   return (
-    <div className="p-6 border border-black bg-white space-y-4 font-mono text-xs">
+    <div className="p-4 sm:p-6 border border-black bg-white space-y-4 font-mono text-xs">
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-black">
         <div>
           <div className="flex items-center gap-2">
@@ -33,14 +34,14 @@ export function WinningDnaCard({
           </p>
         </div>
 
-        {/* 1-Click Action Buttons */}
-        <div className="flex items-center gap-2">
+        {/* Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={() => onLaunchWithDna('Backtest')}
-            className="px-3 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors"
+            onClick={onCopyDna}
+            className="px-3 py-1.5 border border-black bg-black text-white hover:bg-white hover:text-black font-bold transition-colors"
           >
-            [RUN AS BACKTEST]
+            {copiedDna ? '[COPIED TO CLIPBOARD]' : '[COPY STRATEGY DNA]'}
           </button>
 
           <button
@@ -51,13 +52,19 @@ export function WinningDnaCard({
             [DEPLOY TO LIVE]
           </button>
 
-          <button
-            type="button"
-            onClick={onCopyDna}
-            className="px-3 py-1.5 border border-black bg-black text-white hover:bg-white hover:text-black font-bold transition-colors"
-          >
-            {copiedDna ? '[COPIED TO CLIPBOARD]' : '[COPY STRATEGY DNA]'}
-          </button>
+          <ActionDropdown
+            label="[MORE ACTIONS ▾]"
+            items={[
+              {
+                label: '[RUN AS BACKTEST]',
+                onClick: () => onLaunchWithDna('Backtest'),
+              },
+              {
+                label: '[COPY FULL GENOME JSON]',
+                onClick: onCopyDna,
+              },
+            ]}
+          />
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import { getApiBaseUrl, getAuthHeaders, downloadRunXlsx } from '@/lib/api-client
 import { useToast } from '@/components/ui/toast';
 import { ServerPagination } from '@/components/ui/ServerPagination';
 import { LaunchRunModal } from '@/components/runs/LaunchRunModal';
+import { ActionDropdown } from '@/components/ui/ActionDropdown';
 import { formatCurrency, formatPercentage, formatTimestamp, formatHash } from '@razor/ui-kit';
 
 export default function PanelRunsPage() {
@@ -239,9 +240,9 @@ export default function PanelRunsPage() {
                   <th className="p-3 font-bold text-black">Run ID</th>
                   <th className="p-3 font-bold text-black">Kind</th>
                   <th className="p-3 font-bold text-black">Status</th>
-                  <th className="p-3 font-bold text-black">Engine Instance</th>
-                  <th className="p-3 font-bold text-black text-right">Seed</th>
-                  <th className="p-3 font-bold text-black">Created At</th>
+                  <th className="p-3 font-bold text-black hidden sm:table-cell">Engine Instance</th>
+                  <th className="p-3 font-bold text-black text-right hidden md:table-cell">Seed</th>
+                  <th className="p-3 font-bold text-black hidden lg:table-cell">Created At</th>
                   <th className="p-3 font-bold text-black text-right">Actions</th>
                 </tr>
               </thead>
@@ -255,6 +256,9 @@ export default function PanelRunsPage() {
                       >
                         {formatHash(r.id, 8)}
                       </Link>
+                      <span className="block lg:hidden text-[10px] text-black">
+                        {formatTimestamp(r.createdAt)}
+                      </span>
                     </td>
                     <td className="p-3 font-bold uppercase text-black">[{r.kind}]</td>
                     <td className="p-3">
@@ -270,7 +274,7 @@ export default function PanelRunsPage() {
                         [{r.status}]
                       </span>
                     </td>
-                    <td className="p-3">
+                    <td className="p-3 hidden sm:table-cell">
                       {r.engineInstanceId ? (
                         <Link
                           href={`/panel/instances/${r.engineInstanceId}`}
@@ -282,30 +286,29 @@ export default function PanelRunsPage() {
                         '—'
                       )}
                     </td>
-                    <td className="p-3 text-right font-bold text-black">{r.baseSeed ?? 42}</td>
-                    <td className="p-3 text-black">{formatTimestamp(r.createdAt)}</td>
+                    <td className="p-3 text-right font-bold text-black hidden md:table-cell">{r.baseSeed ?? 42}</td>
+                    <td className="p-3 text-black hidden lg:table-cell">{formatTimestamp(r.createdAt)}</td>
                     <td className="p-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         <Link
                           href={`/panel/reports/${r.id}`}
-                          className="px-2 py-1 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors"
+                          className="px-2.5 py-1 border border-black bg-black text-white hover:bg-white hover:text-black font-bold transition-colors text-xs"
                         >
                           [REPORT]
                         </Link>
-                        <Link
-                          href={`/panel/runs/${r.id}/lineage`}
-                          className="px-2 py-1 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors"
-                        >
-                          [LINEAGE]
-                        </Link>
-                        <button
-                          type="button"
-                          onClick={() => handleExportXlsx(r.id)}
-                          className="px-2 py-1 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors"
-                          title="Export XLSX"
-                        >
-                          [XLSX]
-                        </button>
+                        <ActionDropdown
+                          label="⋮"
+                          items={[
+                            {
+                              label: '[LINEAGE TREE]',
+                              href: `/panel/runs/${r.id}/lineage`,
+                            },
+                            {
+                              label: '[EXPORT XLSX]',
+                              onClick: () => handleExportXlsx(r.id),
+                            },
+                          ]}
+                        />
                       </div>
                     </td>
                   </tr>

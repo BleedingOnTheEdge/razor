@@ -40,6 +40,7 @@ import { EquityCurveChart } from './EquityCurveChart';
 import { DetailedMetricsGrid } from './DetailedMetricsGrid';
 import { TradeHistoryTable } from './TradeHistoryTable';
 import { GenerationalConvergenceChart } from './GenerationalConvergenceChart';
+import { ActionDropdown } from '@/components/ui/ActionDropdown';
 import type { GenerationProgressPayload, PopulationIndividualPayload } from '@/lib/api-client';
 
 export function RunReportContent({ runId }: { runId: string }) {
@@ -280,7 +281,7 @@ export function RunReportContent({ runId }: { runId: string }) {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {report && (
             <>
               {report.status === 'Running' && (
@@ -288,7 +289,7 @@ export function RunReportContent({ runId }: { runId: string }) {
                   type="button"
                   onClick={handlePauseRun}
                   disabled={pausing}
-                  className="px-3 py-2 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-xs font-mono transition-colors flex items-center gap-1.5 font-medium"
+                  className="px-3 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold text-xs font-mono transition-colors flex items-center gap-1.5"
                 >
                   <Pause className="w-3.5 h-3.5" />
                   <span>{pausing ? 'Pausing...' : 'Pause Run'}</span>
@@ -299,19 +300,12 @@ export function RunReportContent({ runId }: { runId: string }) {
                 <button
                   type="button"
                   onClick={() => setCompleteModalOpen(true)}
-                  className="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs font-mono transition-colors flex items-center gap-1.5 shadow-sm"
+                  className="px-3 py-1.5 border border-black bg-black text-white hover:bg-white hover:text-black font-bold text-xs font-mono transition-colors flex items-center gap-1.5"
                 >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-white" />
                   <span>Complete Run</span>
                 </button>
               )}
-
-              <Link
-                href={`/panel/runs/${runId}/lineage`}
-                className="px-3 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-bold text-xs font-mono transition-colors"
-              >
-                [LINEAGE TREE]
-              </Link>
             </>
           )}
 
@@ -319,15 +313,33 @@ export function RunReportContent({ runId }: { runId: string }) {
             type="button"
             onClick={handleExportXlsx}
             disabled={exportingXlsx}
-            className="px-3 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-bold text-xs font-mono transition-colors"
+            className="px-3 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold text-xs font-mono transition-colors"
           >
             {exportingXlsx ? '[EXPORTING...]' : '[EXPORT XLSX]'}
           </button>
 
+          <ActionDropdown
+            label="[MORE ACTIONS ▾]"
+            items={[
+              {
+                label: '[LINEAGE TREE]',
+                href: `/panel/runs/${runId}/lineage`,
+              },
+              {
+                label: '[REFRESH DATA]',
+                onClick: loadReport,
+              },
+              {
+                label: '[EXPORT XLSX WORKBOOK]',
+                onClick: handleExportXlsx,
+              },
+            ]}
+          />
+
           <button
             type="button"
             onClick={loadReport}
-            className="px-3 py-2 border border-black bg-black text-white hover:bg-white hover:text-black text-xs font-mono font-bold transition-colors"
+            className="hidden sm:inline-block px-3 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold text-xs font-mono transition-colors"
           >
             [REFRESH]
           </button>
@@ -335,25 +347,24 @@ export function RunReportContent({ runId }: { runId: string }) {
       </div>
 
       {loading && (
-        <div className="py-16 text-center text-sm font-mono text-zinc-500">
-          Compiling execution report from Cloud API...
+        <div className="py-16 text-center text-xs font-mono text-black font-bold border border-black">
+          [COMPILING EXECUTION REPORT FROM CLOUD API...]
         </div>
       )}
 
       {error && (
-        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-mono">
-          {error}
+        <div className="p-4 border border-black text-red-600 text-xs font-mono font-bold">
+          [REPORT ERROR]: {error}
         </div>
       )}
 
       {!loading && !report && !error && (
-        <div className="py-16 text-center rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50">
-          <FileText className="w-10 h-10 text-zinc-400 mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-zinc-800 font-mono">No Report Available</h3>
-          <p className="text-xs text-zinc-500 mt-1">This run is either still pending, missing, or has not yet emitted final execution metrics.</p>
+        <div className="py-16 text-center border border-black p-8 font-mono">
+          <h3 className="text-sm font-bold text-black uppercase">[NO REPORT AVAILABLE]</h3>
+          <p className="text-xs text-black mt-1 font-normal">This run is either still pending, missing, or has not yet emitted final execution metrics.</p>
           <div className="mt-4">
-            <Link href="/runs" className="px-3 py-1.5 rounded-lg bg-zinc-900 text-white text-xs font-semibold">
-              Return to Runs
+            <Link href="/panel/runs" className="px-3 py-1.5 border border-black bg-black text-white hover:bg-white hover:text-black text-xs font-bold transition-colors">
+              [RETURN TO RUNS]
             </Link>
           </div>
         </div>

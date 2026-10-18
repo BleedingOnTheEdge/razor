@@ -51,59 +51,70 @@ td,
 main,
 section,
 .content-area,
-.bg-slate-50,
-.bg-slate-100,
-.bg-zinc-50,
-.bg-zinc-100,
-.bg-zinc-800,
-.bg-zinc-900,
-.bg-zinc-950,
-.bg-gray-50,
-.bg-gray-100,
-.bg-gray-800,
-.bg-gray-900 {
+.bg-page {
   background-color: #ffffff !important;
 }
 
-/* 4. Borders: 1px solid black */
+/* 4. Borders: 1px solid black for defined borders; never override transparent/none */
 .border,
 .border-b,
 .border-t,
 .border-l,
 .border-r,
-[class*="border-"],
-table,
-th,
-td,
-input,
-select,
-textarea,
-hr {
+.border-x,
+.border-y {
   border-color: #000000 !important;
 }
 
-/* 5. Typography palette: strictly Black, Red, Green */
-h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, td, th {
+.border-transparent {
+  border-color: transparent !important;
+}
+
+.border-none,
+.border-0 {
+  border: none !important;
+}
+
+/* Form controls */
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #000000 !important;
+  border-radius: 0px !important;
+}
+
+/* Buttons */
+button {
+  border-radius: 0px !important;
+}
+
+/* Table styling: clean outer border and row borders without cell cage clutter */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+/* 5. Typography palette: strictly Black, Red, Green, with pure White on black backgrounds */
+h1, h2, h3, h4, h5, h6, p, label, li, td, th {
   color: #000000;
 }
 
+/* HIGH CONTRAST: Elements with black backgrounds MUST have pure white text and icons */
+.bg-black,
+.bg-black *,
+button.bg-black,
+button.bg-black *,
+a.bg-black,
+a.bg-black *,
 .text-white,
-.text-zinc-100,
-.text-zinc-200,
-.text-zinc-300,
-.text-zinc-400,
-.text-zinc-500,
-.text-slate-400,
-.text-slate-500,
-.text-slate-600,
-.text-slate-700,
-.text-slate-800,
-.text-slate-900,
-.text-gray-400,
-.text-gray-500,
-.text-gray-600,
-.text-gray-700 {
-  color: #000000 !important;
+.text-white *,
+.hover\:bg-black:hover,
+.hover\:bg-black:hover *,
+.hover\:text-white:hover,
+.group:hover .group-hover\:text-white {
+  color: #ffffff !important;
 }
 
 /* Green for positive returns, profit, winning, success */
@@ -128,29 +139,4 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, td, th {
 .text-loss {
   color: #dc2626 !important;
   font-weight: 700 !important;
-}
-
-/* Form controls */
-input:not([type="checkbox"]):not([type="radio"]),
-select,
-textarea {
-  background-color: #ffffff !important;
-  color: #000000 !important;
-  border: 1px solid #000000 !important;
-  border-radius: 0px !important;
-}
-
-/* Buttons */
-button {
-  border-radius: 0px !important;
-}
-
-/* Table borders */
-table {
-  border-collapse: collapse;
-  width: 100%;
-}
-
-th, td {
-  border: 1px solid #000000;
 }

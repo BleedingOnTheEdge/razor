@@ -297,25 +297,21 @@ export function LiveManagerContent() {
   const totalRealizedDaily = executedTrades.reduce((sum, t) => sum + (t.profit ?? 0), 0);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-mono text-xs">
       {/* Top Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-zinc-800">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-black">
         <div>
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-              <Radio className="w-6 h-6 animate-pulse" />
-            </div>
             <div>
               <div className="flex items-center gap-2.5">
-                <h2 className="text-2xl font-bold tracking-tight text-white font-mono">
+                <h2 className="text-xl font-bold tracking-tight text-black uppercase">
                   Live Trading & Flow Manager
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="px-2.5 py-0.5 border border-black text-xs font-bold bg-white text-green-600">
                   REAL-TIME VENUE
                 </span>
               </div>
-              <p className="text-xs text-zinc-400 font-sans mt-0.5">
+              <p className="text-xs text-black mt-1">
                 Supervise active algorithmic order routing, monitor tick telemetry, execute emergency stops, and audit granular fills.
               </p>
             </div>
@@ -324,15 +320,15 @@ export function LiveManagerContent() {
 
         {/* Engine Instance Selector & Status */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-1.5">
-            <Server className="w-4 h-4 text-cyan-400" />
+          <div className="flex items-center gap-2 bg-white border border-black px-3 py-1.5">
+            <span className="font-bold text-black">ENGINE:</span>
             <select
               value={selectedInstanceId}
               onChange={(e) => setSelectedInstanceId(e.target.value)}
-              className="bg-transparent text-xs font-mono text-white focus:outline-none cursor-pointer pr-2"
+              className="bg-transparent text-xs font-mono text-black font-bold focus:outline-none cursor-pointer pr-2"
             >
               {instances.map((inst) => (
-                <option key={inst.instanceId} value={inst.instanceId} className="bg-zinc-900 text-white">
+                <option key={inst.instanceId} value={inst.instanceId} className="bg-white text-black">
                   {inst.name || inst.engineId} ({inst.isConnected ? 'Connected' : 'Offline'})
                 </option>
               ))}
@@ -341,36 +337,35 @@ export function LiveManagerContent() {
 
           {currentInstance && (
             <Link
-              href={`/instances/${currentInstance.instanceId}`}
-              className="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
+              href={`/panel/instances/${currentInstance.instanceId}`}
+              className="px-2.5 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors"
               title="Open Engine Details"
             >
-              <ExternalLink className="w-4 h-4" />
+              [INSPECT ENGINE]
             </Link>
           )}
 
           <button
             type="button"
             onClick={loadInstances}
-            className="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
+            className="p-2 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors"
             title="Refresh Fleet State"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
       {/* Emergency & Quick Operational Controls Bar */}
-      <div className="p-4 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-xl flex flex-wrap items-center justify-between gap-4">
+      <div className="p-4 bg-white border border-black flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
           {/* EMERGENCY STOP BUTTON */}
           <button
             type="button"
             onClick={() => setEmergencyModalOpen(true)}
-            className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-mono font-bold text-xs transition-all shadow-lg hover:shadow-rose-600/30 flex items-center gap-2 active:scale-95"
+            className="px-4 py-2 border border-black bg-red-600 hover:bg-black text-white font-mono font-bold text-xs transition-colors"
           >
-            <AlertOctagon className="w-4 h-4 fill-white text-rose-600" />
-            <span>EMERGENCY STOP (2001)</span>
+            EMERGENCY STOP (2001)
           </button>
 
           {/* Pause / Resume Trading */}
@@ -378,14 +373,9 @@ export function LiveManagerContent() {
             type="button"
             onClick={handleToggleTradingPause}
             disabled={dispatchingCommand}
-            className={`px-3.5 py-2 rounded-xl font-mono text-xs font-semibold transition-all border flex items-center gap-2 ${
-              isTradingPaused
-                ? 'bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border-emerald-500/40'
-                : 'bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 border-amber-500/40'
-            }`}
+            className="px-3.5 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-mono font-bold text-xs transition-colors"
           >
-            {isTradingPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
-            <span>{isTradingPaused ? 'Resume Trading (1104)' : 'Pause Trading (1103)'}</span>
+            {isTradingPaused ? 'Resume Trading (1104)' : 'Pause Trading (1103)'}
           </button>
 
           {/* Position Sync */}
@@ -393,32 +383,30 @@ export function LiveManagerContent() {
             type="button"
             onClick={handlePositionSync}
             disabled={dispatchingCommand}
-            className="px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 font-mono text-xs font-medium transition-colors flex items-center gap-2"
+            className="px-3.5 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-mono font-bold text-xs transition-colors"
           >
-            <RefreshCw className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Sync Positions (1106)</span>
+            Sync Positions (1106)
           </button>
 
           {/* Risk Controls Configuration */}
           <button
             type="button"
             onClick={() => setRiskModalOpen(true)}
-            className="px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-cyan-950/50 text-cyan-300 border border-zinc-700 hover:border-cyan-500/40 font-mono text-xs font-medium transition-colors flex items-center gap-2"
+            className="px-3.5 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-mono font-bold text-xs transition-colors"
           >
-            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Risk Controls (1107)</span>
+            Risk Controls (1107)
           </button>
         </div>
 
         {/* Engine Connectivity Status Pill */}
         <div className="flex items-center gap-3 text-xs font-mono">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-400">
-            <span className="text-zinc-500">Venue Feed:</span>
-            <span className="text-emerald-400 font-bold">Binance Futures (Direct)</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 border border-black bg-white text-black">
+            <span className="text-zinc-600">Venue:</span>
+            <span className="text-black font-bold">Binance Futures (Direct)</span>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-400">
-            <span className="text-zinc-500">Latency:</span>
-            <span className="text-cyan-400 font-bold">2.8 ms</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 border border-black bg-white text-black">
+            <span className="text-zinc-600">Latency:</span>
+            <span className="text-green-600 font-bold">2.8 ms</span>
           </div>
         </div>
       </div>

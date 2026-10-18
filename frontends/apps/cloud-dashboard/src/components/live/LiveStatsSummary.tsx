@@ -18,51 +18,50 @@ export function LiveStatsSummary({
   maxDailyDrawdown,
 }: LiveStatsSummaryProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 font-mono">
       {/* Unrealized PnL */}
-      <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 shadow-sm">
-        <span className="text-xs font-mono text-zinc-400 block">Open Unrealized PnL</span>
-        <span className={`text-2xl font-bold mt-2 block font-mono ${totalUnrealized >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-          {formatCurrency(totalUnrealized)}
+      <div className="p-4 bg-white border border-black">
+        <span className="text-xs text-black font-bold block uppercase">Open Unrealized PnL</span>
+        <span className={`text-2xl font-bold mt-2 block ${totalUnrealized >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          {totalUnrealized >= 0 ? `+${formatCurrency(totalUnrealized)}` : formatCurrency(totalUnrealized)}
         </span>
-        <span className="text-[11px] text-zinc-500 mt-1 block font-mono">Floating Equity Shift</span>
+        <span className="text-[11px] text-zinc-600 mt-1 block">Floating Equity Shift</span>
       </div>
 
       {/* Realized Daily PnL */}
-      <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 shadow-sm">
-        <span className="text-xs font-mono text-zinc-400 block">Realized Daily PnL</span>
-        <span className={`text-2xl font-bold mt-2 block font-mono ${totalRealizedDaily >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-          {formatCurrency(totalRealizedDaily)}
+      <div className="p-4 bg-white border border-black">
+        <span className="text-xs text-black font-bold block uppercase">Realized Daily PnL</span>
+        <span className={`text-2xl font-bold mt-2 block ${totalRealizedDaily >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          {totalRealizedDaily >= 0 ? `+${formatCurrency(totalRealizedDaily)}` : formatCurrency(totalRealizedDaily)}
         </span>
-        <span className="text-[11px] text-zinc-500 mt-1 block font-mono">Closed Executed Fills</span>
+        <span className="text-[11px] text-zinc-600 mt-1 block">Closed Executed Fills</span>
       </div>
 
       {/* Open Positions Count */}
-      <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 shadow-sm">
-        <span className="text-xs font-mono text-zinc-400 block">Open Positions</span>
-        <span className="text-2xl font-bold text-white mt-2 block font-mono">
+      <div className="p-4 bg-white border border-black">
+        <span className="text-xs text-black font-bold block uppercase">Open Positions</span>
+        <span className="text-2xl font-bold text-black mt-2 block">
           {openPositionsCount} Active
         </span>
-        <span className="text-[11px] text-zinc-500 mt-1 block font-mono">Notional: ~$42.5k</span>
+        <span className="text-[11px] text-zinc-600 mt-1 block">Notional Exposure</span>
       </div>
 
       {/* Margin Utilization */}
-      <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 shadow-sm">
-        <span className="text-xs font-mono text-zinc-400 block">Margin Utilization</span>
-        <span className="text-2xl font-bold text-cyan-400 mt-2 block font-mono">
+      <div className="p-4 bg-white border border-black">
+        <span className="text-xs text-black font-bold block uppercase">Margin Utilization</span>
+        <span className="text-2xl font-bold text-black mt-2 block">
           18.5%
         </span>
-        <span className="text-[11px] text-zinc-500 mt-1 block font-mono">Leverage: 3.5x Cap</span>
+        <span className="text-[11px] text-zinc-600 mt-1 block">Leverage: 3.5x Cap</span>
       </div>
 
       {/* Risk Shield Status */}
-      <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 shadow-sm">
-        <span className="text-xs font-mono text-zinc-400 block">Circuit Breaker</span>
-        <span className="text-2xl font-bold text-emerald-400 mt-2 block font-mono flex items-center gap-1.5">
-          <ShieldCheck className="w-6 h-6 text-emerald-400" />
+      <div className="p-4 bg-white border border-black">
+        <span className="text-xs text-black font-bold block uppercase">Circuit Breaker</span>
+        <span className="text-2xl font-bold text-green-600 mt-2 block">
           Nominal
         </span>
-        <span className="text-[11px] text-zinc-500 mt-1 block font-mono">Daily DD: 0.8% / {maxDailyDrawdown}%</span>
+        <span className="text-[11px] text-zinc-600 mt-1 block">Daily DD: 0.8% / {maxDailyDrawdown}%</span>
       </div>
     </div>
   );

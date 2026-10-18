@@ -37,21 +37,19 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
   if (!trades || trades.length === 0) return null;
 
   return (
-    <div className="p-6 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-zinc-100">
+    <div className="p-6 bg-white border border-black space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-black">
         <div className="flex items-center gap-2">
-          <Layers className="w-4 h-4 text-zinc-700" />
-          <h3 className="text-sm font-bold text-zinc-900">
+          <h3 className="text-sm font-bold text-black uppercase">
             <span>Granular Trade Fill History</span>
-            <span className="ml-2 px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 text-xs font-mono">
+            <span className="ml-2 px-2 py-0.5 bg-black text-white text-xs font-mono font-bold">
               {filteredTrades.length} Fills
             </span>
           </h3>
         </div>
 
         {/* Search / Filter input */}
-        <div className="relative min-w-[220px]">
-          <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+        <div className="min-w-[220px]">
           <input
             type="text"
             value={tradeSearch}
@@ -60,16 +58,16 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
               setTradePage(1);
             }}
             placeholder="Search ticket, symbol, side, reason..."
-            className="w-full pl-8 pr-3 py-1 bg-zinc-50 border border-zinc-200 rounded-lg text-xs font-mono text-zinc-900 placeholder-zinc-400 focus:bg-white focus:outline-none"
+            className="w-full px-3 py-1.5 bg-white border border-black text-xs font-mono text-black placeholder-zinc-500 focus:outline-none"
           />
         </div>
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs font-mono divide-y divide-zinc-200">
+        <table className="w-full text-left text-xs font-mono border-collapse">
           <thead>
-            <tr className="text-zinc-500 uppercase tracking-wider text-[10px]">
+            <tr className="border-b border-black text-black font-bold uppercase tracking-wider text-[10px]">
               <th className="py-2.5 px-3">Ticket</th>
               <th className="py-2.5 px-3">Symbol</th>
               <th className="py-2.5 px-3">Side</th>
@@ -81,44 +79,44 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
               <th className="py-2.5 px-3">Exit Reason</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100 text-zinc-800">
+          <tbody className="text-black divide-y divide-black">
             {currentTrades.map((t: TradeItemPayload) => (
               <tr
                 key={t.ticket}
                 onClick={() => onSelectTrade(t)}
-                className="hover:bg-cyan-50/70 cursor-pointer transition-colors group"
+                className="hover:bg-zinc-100 cursor-pointer transition-colors group"
                 title="Click to view granular trade fill telemetry"
               >
-                <td className="py-2.5 px-3 font-bold text-cyan-700 group-hover:underline">#{t.ticket}</td>
-                <td className="py-2.5 px-3 font-bold text-zinc-900">{t.symbol}</td>
+                <td className="py-2.5 px-3 font-bold text-black group-hover:underline">#{t.ticket}</td>
+                <td className="py-2.5 px-3 font-bold text-black">{t.symbol}</td>
                 <td className="py-2.5 px-3">
                   <span
-                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                    className={`px-1.5 py-0.5 border border-black text-[10px] font-bold ${
                       t.side.toUpperCase() === 'BUY'
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                        : 'bg-rose-50 text-rose-700 border border-rose-200'
+                        ? 'text-green-600'
+                        : 'text-red-600'
                     }`}
                   >
                     {t.side.toUpperCase()}
                   </span>
                 </td>
-                <td className="py-2.5 px-3">{t.volume != null ? t.volume.toFixed(2) : '—'}</td>
-                <td className="py-2.5 px-3 text-[11px] text-zinc-600">
+                <td className="py-2.5 px-3 font-bold">{t.volume != null ? t.volume.toFixed(2) : '—'}</td>
+                <td className="py-2.5 px-3 text-[11px] text-black">
                   <div>${typeof t.openPrice === 'number' ? t.openPrice.toLocaleString() : (t.openPrice ?? '—')}</div>
-                  <div className="text-[10px] text-zinc-400">{t.openTime}</div>
+                  <div className="text-[10px] text-zinc-600">{t.openTime}</div>
                 </td>
-                <td className="py-2.5 px-3 text-[11px] text-zinc-600">
+                <td className="py-2.5 px-3 text-[11px] text-black">
                   <div>${typeof t.closePrice === 'number' ? t.closePrice.toLocaleString() : (t.closePrice ?? '—')}</div>
-                  <div className="text-[10px] text-zinc-400">{t.closeTime}</div>
+                  <div className="text-[10px] text-zinc-600">{t.closeTime}</div>
                 </td>
-                <td className={`py-2.5 px-3 font-bold ${(t.profit ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                <td className={`py-2.5 px-3 font-bold ${(t.profit ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {t.profit != null ? (t.profit >= 0 ? `+${formatCurrency(t.profit)}` : formatCurrency(t.profit)) : '—'}
                 </td>
-                <td className={`py-2.5 px-3 font-semibold ${(t.returnPct ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                <td className={`py-2.5 px-3 font-bold ${(t.returnPct ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {t.returnPct != null ? (t.returnPct >= 0 ? `+${t.returnPct.toFixed(2)}%` : `${t.returnPct.toFixed(2)}%`) : '—'}
                 </td>
                 <td className="py-2.5 px-3">
-                  <span className="px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 text-[10px]">
+                  <span className="px-2 py-0.5 border border-black bg-white text-black text-[10px] font-bold">
                     {t.exitReason}
                   </span>
                 </td>
@@ -130,8 +128,8 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
 
       {/* Pagination Controls */}
       {totalTradePages > 1 && (
-        <div className="flex items-center justify-between pt-3 border-t border-zinc-100 text-xs font-mono text-zinc-500">
-          <span>
+        <div className="flex items-center justify-between pt-3 border-t border-black text-xs font-mono text-black">
+          <span className="font-bold">
             Showing {((tradePage - 1) * tradesPerPage) + 1}–
             {Math.min(tradePage * tradesPerPage, filteredTrades.length)} of {filteredTrades.length} fills
           </span>
@@ -140,20 +138,20 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
               type="button"
               disabled={tradePage === 1}
               onClick={() => setTradePage((p) => Math.max(1, p - 1))}
-              className="p-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-50 disabled:opacity-40"
+              className="px-2 py-1 border border-black bg-white hover:bg-black hover:text-white font-bold disabled:opacity-40"
             >
-              <ChevronLeft className="w-3.5 h-3.5" />
+              PREV
             </button>
-            <span className="px-2 font-semibold text-zinc-800">
+            <span className="px-2 font-bold text-black">
               {tradePage} / {totalTradePages}
             </span>
             <button
               type="button"
               disabled={tradePage >= totalTradePages}
               onClick={() => setTradePage((p) => Math.min(totalTradePages, p + 1))}
-              className="p-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-50 disabled:opacity-40"
+              className="px-2 py-1 border border-black bg-white hover:bg-black hover:text-white font-bold disabled:opacity-40"
             >
-              <ChevronRight className="w-3.5 h-3.5" />
+              NEXT
             </button>
           </div>
         </div>

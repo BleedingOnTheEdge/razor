@@ -15,41 +15,38 @@ export function LiveTradeHistoryTable({
   onSelectTrade,
 }: LiveTradeHistoryTableProps) {
   return (
-    <div className="p-6 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 shadow-sm space-y-4">
-      <div className="flex items-center justify-between pb-3 border-b border-zinc-800/60">
-        <div className="flex items-center gap-2.5">
-          <Activity className="w-5 h-5 text-emerald-400" />
-          <div>
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
-              Live Executed Trade Fill Ledger ({trades.length})
-            </h3>
-            <p className="text-xs text-zinc-400 font-sans mt-0.5">
-              Every trade is clickable to inspect the granular telemetry modal (price ladder, duration, venue, slippage).
-            </p>
-          </div>
+    <div className="p-6 bg-white border border-black space-y-4 font-mono">
+      <div className="flex items-center justify-between pb-3 border-b border-black">
+        <div>
+          <h3 className="text-sm font-bold text-black uppercase">
+            Live Executed Trade Fill Ledger ({trades.length})
+          </h3>
+          <p className="text-xs text-black mt-0.5">
+            Every trade is clickable to inspect the granular telemetry modal (price ladder, duration, venue, slippage).
+          </p>
         </div>
-        <span className="text-xs font-mono text-zinc-400">
-          Realized Fills
+        <span className="text-xs text-black font-bold">
+          [REALIZED FILLS]
         </span>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-xs font-mono text-left">
+        <table className="w-full text-xs text-left border-collapse">
           <thead>
-            <tr className="border-b border-zinc-800 text-zinc-400">
-              <th className="pb-3 font-semibold">Ticket</th>
-              <th className="pb-3 font-semibold">Symbol</th>
-              <th className="pb-3 font-semibold">Side</th>
-              <th className="pb-3 font-semibold">Size</th>
-              <th className="pb-3 font-semibold">Open Price</th>
-              <th className="pb-3 font-semibold">Close Price</th>
-              <th className="pb-3 font-semibold">Realized PnL</th>
-              <th className="pb-3 font-semibold">Exit Reason</th>
-              <th className="pb-3 font-semibold">Execution Venue</th>
-              <th className="pb-3 font-semibold text-right">Close Time</th>
+            <tr className="border-b border-black text-black font-bold uppercase tracking-wider text-[10px]">
+              <th className="py-2.5 px-3">Ticket</th>
+              <th className="py-2.5 px-3">Symbol</th>
+              <th className="py-2.5 px-3">Side</th>
+              <th className="py-2.5 px-3">Size</th>
+              <th className="py-2.5 px-3">Open Price</th>
+              <th className="py-2.5 px-3">Close Price</th>
+              <th className="py-2.5 px-3">Realized PnL</th>
+              <th className="py-2.5 px-3">Exit Reason</th>
+              <th className="py-2.5 px-3">Execution Venue</th>
+              <th className="py-2.5 px-3 text-right">Close Time</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-800/50">
+          <tbody className="text-black divide-y divide-black">
             {trades.map((t) => {
               const isBuy = t.side.toUpperCase() === 'BUY';
               const isProfit = (t.profit ?? 0) >= 0;
@@ -57,36 +54,36 @@ export function LiveTradeHistoryTable({
                 <tr
                   key={t.ticket}
                   onClick={() => onSelectTrade(t)}
-                  className="hover:bg-zinc-850/60 transition-colors cursor-pointer group select-none"
+                  className="hover:bg-zinc-100 transition-colors cursor-pointer group select-none"
                 >
-                  <td className="py-3 font-bold text-zinc-300 group-hover:text-cyan-400">
+                  <td className="py-2.5 px-3 font-bold text-black group-hover:underline">
                     #{t.ticket}
                   </td>
-                  <td className="py-3 font-bold text-white">{t.symbol}</td>
-                  <td className="py-3">
+                  <td className="py-2.5 px-3 font-bold text-black">{t.symbol}</td>
+                  <td className="py-2.5 px-3">
                     <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        isBuy ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
+                      className={`px-1.5 py-0.5 border border-black text-[10px] font-bold ${
+                        isBuy ? 'text-green-600' : 'text-red-600'
                       }`}
                     >
                       {t.side}
                     </span>
                   </td>
-                  <td className="py-3 text-zinc-300">{t.volume}</td>
-                  <td className="py-3 text-zinc-300">{formatCurrency(t.openPrice)}</td>
-                  <td className="py-3 text-zinc-300">{formatCurrency(t.closePrice)}</td>
-                  <td className={`py-3 font-bold ${isProfit ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {formatCurrency(t.profit)}
+                  <td className="py-2.5 px-3 font-bold">{t.volume}</td>
+                  <td className="py-2.5 px-3">{formatCurrency(t.openPrice)}</td>
+                  <td className="py-2.5 px-3">{formatCurrency(t.closePrice)}</td>
+                  <td className={`py-2.5 px-3 font-bold ${isProfit ? 'text-green-600' : 'text-red-600'}`}>
+                    {t.profit != null ? (isProfit ? `+${formatCurrency(t.profit)}` : formatCurrency(t.profit)) : '—'}
                   </td>
-                  <td className="py-3">
-                    <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 text-[10px]">
+                  <td className="py-2.5 px-3">
+                    <span className="px-1.5 py-0.5 border border-black bg-white text-black text-[10px] font-bold">
                       {t.exitReason || 'NormalExit'}
                     </span>
                   </td>
-                  <td className="py-3 text-zinc-400 text-[11px]">
+                  <td className="py-2.5 px-3 text-[11px] text-zinc-700">
                     {t.executionVenue || 'Exchange DMA'}
                   </td>
-                  <td className="py-3 text-right text-zinc-400 text-[11px]">
+                  <td className="py-2.5 px-3 text-right text-[11px] text-zinc-700">
                     {formatTimestamp(t.closeTime || '')}
                   </td>
                 </tr>

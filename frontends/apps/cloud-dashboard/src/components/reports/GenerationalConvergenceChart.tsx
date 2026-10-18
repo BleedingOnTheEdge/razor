@@ -56,38 +56,33 @@ export function GenerationalConvergenceChart({
     : '';
 
   return (
-    <div className="p-6 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-5">
-      <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-purple-50 text-purple-700 border border-purple-100">
-            <Activity className="w-4 h-4" />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
-              <span>Genetic Algorithm Optimization Convergence</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-bold">
-                Interactive
-              </span>
-            </h3>
-            <p className="text-xs text-zinc-500 font-mono">
-              Best and average fitness evolution across {genList.length} generations. Click any generation or node to inspect candidates.
-            </p>
-          </div>
+    <div className="p-6 bg-white border border-black space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-black">
+        <div>
+          <h3 className="text-sm font-bold text-black uppercase flex items-center gap-2">
+            <span>Genetic Algorithm Optimization Convergence</span>
+            <span className="text-[10px] font-mono px-2 py-0.5 bg-black text-white font-bold">
+              INTERACTIVE
+            </span>
+          </h3>
+          <p className="text-xs text-black font-mono mt-0.5">
+            Best and average fitness evolution across {genList.length} generations. Click any generation to inspect candidates.
+          </p>
         </div>
         <div className="flex items-center gap-4 text-xs font-mono">
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-purple-600 inline-block" />
-            <span className="text-zinc-600">Best Fitness</span>
+            <span className="w-3 h-1 bg-black inline-block" />
+            <span className="text-black font-bold">Best Fitness</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-0.5 bg-zinc-400 inline-block border-t border-dashed border-zinc-400" />
-            <span className="text-zinc-500">Avg Fitness</span>
+            <span className="w-3 h-0.5 bg-zinc-600 inline-block border-t border-dashed border-zinc-600" />
+            <span className="text-zinc-600 font-bold">Avg Fitness</span>
           </div>
         </div>
       </div>
 
       {/* Convergence Curve SVG */}
-      <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 overflow-hidden shadow-inner">
+      <div className="bg-black p-4 border border-black overflow-hidden">
         <svg viewBox={`0 0 ${cWidth} ${cHeight}`} className="w-full h-36 overflow-visible select-none">
           {/* Horizontal grid lines */}
           {[0, 0.5, 1].map((pct, i) => {
@@ -95,8 +90,8 @@ export function GenerationalConvergenceChart({
             const val = minFit + pct * fitSpan;
             return (
               <g key={i}>
-                <line x1={pLeft} y1={y} x2={pLeft + plotW} y2={y} stroke="#27272a" strokeDasharray="3 3" />
-                <text x={pLeft - 6} y={y + 3} textAnchor="end" className="text-[10px] font-mono fill-zinc-500">
+                <line x1={pLeft} y1={y} x2={pLeft + plotW} y2={y} stroke="#333333" strokeDasharray="3 3" />
+                <text x={pLeft - 6} y={y + 3} textAnchor="end" className="text-[10px] font-mono fill-zinc-400">
                   {val.toFixed(3)}
                 </text>
               </g>
@@ -105,12 +100,12 @@ export function GenerationalConvergenceChart({
 
           {/* Avg Fitness Path */}
           {avgPath && (
-            <path d={avgPath} fill="none" stroke="#71717a" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.8" />
+            <path d={avgPath} fill="none" stroke="#71717a" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.9" />
           )}
 
           {/* Best Fitness Path */}
           {bestPath && (
-            <path d={bestPath} fill="none" stroke="#a855f7" strokeWidth="2.5" strokeLinecap="round" />
+            <path d={bestPath} fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
           )}
 
           {/* Interactive Points */}
@@ -128,8 +123,8 @@ export function GenerationalConvergenceChart({
                   r={isSelected ? 6 : 4}
                   className={`transition-all ${
                     isSelected
-                      ? 'fill-cyan-400 stroke-white stroke-2'
-                      : 'fill-purple-500 hover:fill-purple-300 stroke-zinc-900 stroke-1'
+                      ? 'fill-white stroke-black stroke-2'
+                      : 'fill-zinc-300 hover:fill-white stroke-black stroke-1'
                   }`}
                 />
               </g>
@@ -140,7 +135,7 @@ export function GenerationalConvergenceChart({
           {bestPoints.map((pt, i) => {
             if (genList.length > 10 && i % Math.ceil(genList.length / 10) !== 0 && i !== genList.length - 1) return null;
             return (
-              <text key={`lbl-${i}`} x={pt.x} y={cHeight - 6} textAnchor="middle" className="text-[9px] font-mono fill-zinc-500">
+              <text key={`lbl-${i}`} x={pt.x} y={cHeight - 6} textAnchor="middle" className="text-[9px] font-mono fill-zinc-400">
                 G{pt.g.generation}
               </text>
             );
@@ -157,39 +152,38 @@ export function GenerationalConvergenceChart({
               type="button"
               key={g.generation}
               onClick={() => onSelectGeneration(g)}
-              className={`p-3.5 rounded-xl border text-left transition-all font-mono text-xs cursor-pointer group ${
+              className={`p-3.5 border border-black text-left font-mono text-xs cursor-pointer transition-colors ${
                 isSelected
-                  ? 'bg-purple-50/90 border-purple-500 shadow-md ring-2 ring-purple-400/30'
-                  : 'bg-zinc-50/80 border-zinc-200 hover:bg-white hover:border-purple-300 hover:shadow-xs'
+                  ? 'bg-black text-white'
+                  : 'bg-white text-black hover:bg-zinc-100'
               }`}
             >
-              <div className="flex items-center justify-between text-zinc-500 text-[11px] mb-1.5">
-                <span className="font-bold text-zinc-700 group-hover:text-purple-700 transition-colors">
+              <div className="flex items-center justify-between text-[11px] mb-1.5">
+                <span className={`font-bold ${isSelected ? 'text-white' : 'text-black'}`}>
                   Generation #{g.generation}
                 </span>
-                <span className="flex items-center text-[10px] text-zinc-400 group-hover:text-purple-600">
-                  <span>Inspect</span>
-                  <ChevronRight className="w-3 h-3 ml-0.5 group-hover:translate-x-0.5 transition-transform" />
+                <span className={`text-[10px] font-bold ${isSelected ? 'text-white' : 'text-zinc-600'}`}>
+                  [INSPECT]
                 </span>
               </div>
               <div className="space-y-1">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-[10px] text-zinc-400">Best:</span>
-                  <span className="font-bold text-purple-900">
+                  <span className={`text-[10px] ${isSelected ? 'text-zinc-400' : 'text-zinc-600'}`}>Best:</span>
+                  <span className={`font-bold ${isSelected ? 'text-white' : 'text-black'}`}>
                     {g.bestFitness.toFixed(4)}
                   </span>
                 </div>
                 {g.averageFitness != null && (
                   <div className="flex items-baseline justify-between text-[11px]">
-                    <span className="text-[10px] text-zinc-400">Avg:</span>
-                    <span className="text-zinc-600 font-medium">
+                    <span className={`text-[10px] ${isSelected ? 'text-zinc-400' : 'text-zinc-600'}`}>Avg:</span>
+                    <span className={`font-bold ${isSelected ? 'text-zinc-300' : 'text-zinc-700'}`}>
                       {g.averageFitness.toFixed(4)}
                     </span>
                   </div>
                 )}
                 {(g.populationDiversity ?? g.diversity) != null && (
                   <div className="flex items-baseline justify-between text-[11px]">
-                    <span className="text-cyan-800 font-medium">
+                    <span className={`font-bold ${isSelected ? 'text-zinc-300' : 'text-black'}`}>
                       Diversity: {(g.populationDiversity ?? g.diversity)?.toFixed(2)}
                     </span>
                   </div>

@@ -323,111 +323,100 @@ export function LaunchRunModal({
   const busy = extLaunching || submitting;
 
   return (
-    <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white border border-zinc-200 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+    <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 font-mono text-xs">
+      <div className="bg-white border border-black max-w-2xl w-full p-6 space-y-4 max-h-[92vh] overflow-y-auto text-black">
+        <div className="flex items-center justify-between pb-3 border-b border-black">
           <div>
-            <h3 className="text-base font-bold text-zinc-900 flex items-center gap-2">
-              <Play className="w-4 h-4 text-cyan-600 fill-current" />
-              <span>Launch Deterministic Flow Run</span>
+            <h3 className="text-base font-bold text-black uppercase">
+              Launch Deterministic Flow Run
             </h3>
-            <p className="text-xs text-zinc-500 mt-0.5">Configure execution kind parameters, dates, broker adapter, and safety hooks.</p>
+            <p className="text-xs text-zinc-600 mt-0.5">Configure execution kind parameters, dates, broker adapter, and safety hooks.</p>
           </div>
-          <button type="button" onClick={onClose} className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100">
-            <X className="w-5 h-5" />
+          <button type="button" onClick={onClose} className="px-2 py-1 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors">
+            [CLOSE]
           </button>
         </div>
 
         {/* DNA Injected Banner */}
         {activeDna && (
-          <div className="p-3 rounded-xl bg-purple-50 border border-purple-200 flex items-start justify-between gap-3">
-            <div className="flex items-start gap-3">
-              <div className="p-1.5 rounded-lg bg-purple-100 text-purple-700">
-                <Dna className="w-4 h-4" />
+          <div className="p-3 bg-white border border-black flex items-start justify-between gap-3">
+            <div className="text-xs font-mono">
+              <div className="font-bold text-black uppercase flex items-center gap-2">
+                <span>Strategy DNA Injected for Exact Backtest</span>
+                <span className="px-1.5 py-0.5 border border-black bg-white text-black text-[10px]">
+                  Fitness {activeDna.fitness != null ? activeDna.fitness.toFixed(3) : '—'}
+                </span>
               </div>
-              <div className="text-xs font-mono">
-                <div className="font-bold text-purple-900 flex items-center gap-2">
-                  <span>Strategy DNA Injected for Exact Backtest</span>
-                  <span className="px-1.5 py-0.5 rounded bg-purple-200/70 text-purple-800 text-[10px]">
-                    Fitness {activeDna.fitness != null ? activeDna.fitness.toFixed(3) : '—'}
-                  </span>
-                </div>
-                <p className="text-purple-700 font-sans text-[11px] mt-0.5">
-                  Strategy <strong>{detectedStrategy}</strong> & broker <strong>{detectedAdapter}</strong> with {activeDna.genes?.length ?? 0} chromosome genes loaded.
-                </p>
-              </div>
+              <p className="text-zinc-700 text-[11px] mt-0.5">
+                Strategy <strong>{detectedStrategy}</strong> & broker <strong>{detectedAdapter}</strong> with {activeDna.genes?.length ?? 0} chromosome genes loaded.
+              </p>
             </div>
 
             <button
               type="button"
               onClick={handleClearDna}
-              className="p-1.5 rounded-lg text-purple-600 hover:text-rose-700 hover:bg-purple-100 text-xs font-mono transition-colors flex items-center gap-1"
+              className="px-2 py-1 border border-black bg-white hover:bg-black hover:text-white text-xs font-bold transition-colors"
               title="Remove injected DNA"
             >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Clear</span>
+              [CLEAR]
             </button>
           </div>
         )}
 
         {/* Live Execution Mode Banner */}
         {runKind === 'Live' && (
-          <div className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200 text-emerald-900 text-xs font-mono flex items-center gap-2">
-            <Zap className="w-4 h-4 text-emerald-600 fill-current" />
-            <span>Live Execution: Real-time orders will be dispatched to broker adapter <strong>{detectedAdapter}</strong>.</span>
+          <div className="p-2.5 bg-white border border-black text-green-600 font-bold text-xs flex items-center gap-2">
+            <span>[LIVE EXECUTION] Real-time orders will be dispatched to broker adapter: <strong>{detectedAdapter}</strong>.</span>
           </div>
         )}
 
         {/* Direct DNA Paste Section */}
-        <div className="bg-purple-50/40 border border-purple-200/70 rounded-xl p-2.5 space-y-2">
+        <div className="border border-black bg-white p-2.5 space-y-2">
           <div className="flex items-center justify-between">
-            <div className="text-[11px] font-semibold text-purple-900 uppercase tracking-wider flex items-center gap-1.5">
-              <Dna className="w-3.5 h-3.5 text-purple-700" />
-              <span>Winning Strategy DNA Loader</span>
+            <div className="text-[11px] font-bold text-black uppercase tracking-wider">
+              Winning Strategy DNA Loader
             </div>
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={handlePasteFromClipboard}
-                className="px-2 py-1 rounded-md bg-purple-100 hover:bg-purple-200 text-purple-800 text-[11px] font-mono font-semibold transition-colors flex items-center gap-1 shadow-2xs"
+                className="px-2 py-1 border border-black bg-white hover:bg-black hover:text-white text-[11px] font-bold transition-colors"
                 title="Paste Winning DNA JSON from clipboard"
               >
-                <ClipboardPaste className="w-3 h-3" />
-                <span>Load from Clipboard</span>
+                [LOAD FROM CLIPBOARD]
               </button>
               <button
                 type="button"
                 onClick={() => setIsDnaDrawerOpen(!isDnaDrawerOpen)}
-                className="px-2 py-1 rounded-md bg-white border border-purple-200 text-purple-700 hover:bg-purple-50 text-[11px] font-mono transition-colors"
+                className="px-2 py-1 border border-black bg-white hover:bg-black hover:text-white text-[11px] font-bold transition-colors"
               >
-                {isDnaDrawerOpen ? 'Close JSON Input' : 'Paste Raw JSON'}
+                {isDnaDrawerOpen ? '[CLOSE JSON INPUT]' : '[PASTE RAW JSON]'}
               </button>
             </div>
           </div>
 
           {isDnaDrawerOpen && (
-            <div className="pt-2 border-t border-purple-200/50 space-y-2">
+            <div className="pt-2 border-t border-black space-y-2">
               <textarea
                 value={rawDnaText}
                 onChange={(e) => setRawDnaText(e.target.value)}
                 placeholder='Paste Winning DNA JSON e.g. { "genes": [14, 48, 0.02, 0.05, 1.0], "parameters": { "FastPeriod": 14, ... }, "slots": { "strategy": "TrendFollowing" } }'
-                className="w-full h-24 p-2 bg-white border border-purple-200 rounded-lg text-xs font-mono text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                className="w-full h-24 p-2 bg-white border border-black text-xs font-mono text-black placeholder-zinc-500 focus:outline-none"
               />
               <div className="flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsDnaDrawerOpen(false)}
-                  className="px-2.5 py-1 rounded-lg text-zinc-600 hover:bg-zinc-100 text-xs font-mono"
+                  className="px-2.5 py-1 border border-black bg-white hover:bg-black hover:text-white text-xs font-bold"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleApplyRawDna}
-                  className="px-3 py-1 rounded-lg bg-purple-700 hover:bg-purple-800 text-white text-xs font-mono font-semibold flex items-center gap-1"
+                  className="px-3 py-1 border border-black bg-black text-white hover:bg-white hover:text-black text-xs font-bold"
                 >
-                  <Check className="w-3 h-3" />
-                  <span>Apply DNA to Backtest</span>
+                  Apply DNA to Backtest
                 </button>
               </div>
             </div>
@@ -435,16 +424,15 @@ export function LaunchRunModal({
         </div>
 
         {/* Quick Presets */}
-        <div className="bg-zinc-50 border border-zinc-200/80 rounded-xl p-2.5">
-          <div className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-            <Zap className="w-3.5 h-3.5 text-amber-500" />
-            <span>1-Click Configuration Presets</span>
+        <div className="border border-black bg-white p-2.5">
+          <div className="text-[11px] font-bold text-black uppercase tracking-wider mb-1.5">
+            1-Click Configuration Presets
           </div>
           <div className="grid grid-cols-3 gap-2">
             {PRESETS.map((p) => (
-              <button key={p.id} type="button" onClick={() => applyPreset(p)} className="px-2.5 py-1.5 rounded-lg bg-white border border-zinc-200 hover:border-zinc-300 text-left hover:bg-zinc-50 transition-colors">
-                <div className="text-xs font-semibold text-zinc-800">{p.label}</div>
-                <div className="text-[10px] text-zinc-400">{p.desc}</div>
+              <button key={p.id} type="button" onClick={() => applyPreset(p)} className="px-2.5 py-1.5 border border-black bg-white hover:bg-zinc-100 text-left transition-colors">
+                <div className="text-xs font-bold text-black">{p.label}</div>
+                <div className="text-[10px] text-zinc-600">{p.desc}</div>
               </button>
             ))}
           </div>
@@ -454,16 +442,16 @@ export function LaunchRunModal({
           {/* Target & Kind & Seed */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-zinc-700 font-semibold mb-1">Target Engine</label>
-              <select value={selectedInstanceId} onChange={(e) => { setSelectedInstanceId(e.target.value); extSetInstId?.(e.target.value); }} required className="w-full px-2.5 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:bg-white text-xs font-mono">
+              <label className="block text-black font-bold mb-1">Target Engine</label>
+              <select value={selectedInstanceId} onChange={(e) => { setSelectedInstanceId(e.target.value); extSetInstId?.(e.target.value); }} required className="w-full px-2.5 py-1.5 bg-white border border-black text-black focus:outline-none text-xs font-mono">
                 {instances.map((i) => (
                   <option key={i.instanceId} value={i.instanceId}>{i.name || i.engineId} ({formatHash(i.instanceId, 4)})</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-zinc-700 font-semibold mb-1">Execution Kind</label>
-              <select value={runKind} onChange={(e) => { const v = e.target.value as any; setRunKind(v); extSetKind?.(v); }} className="w-full px-2.5 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:bg-white text-xs font-semibold">
+              <label className="block text-black font-bold mb-1">Execution Kind</label>
+              <select value={runKind} onChange={(e) => { const v = e.target.value as any; setRunKind(v); extSetKind?.(v); }} className="w-full px-2.5 py-1.5 bg-white border border-black text-black focus:outline-none text-xs font-bold">
                 <option value="Backtest">Backtest (Historical Sim)</option>
                 <option value="Optimization">Optimization (Parameter Tuning)</option>
                 <option value="WalkForward">Walk-Forward (Out-of-sample)</option>
@@ -471,60 +459,58 @@ export function LaunchRunModal({
               </select>
             </div>
             <div>
-              <label className="block text-zinc-700 font-semibold mb-1">PRNG Base Seed</label>
-              <input type="number" value={seed} onChange={(e) => { const v = Number(e.target.value); setSeed(v); extSetSeed?.(v); }} required className="w-full px-2.5 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 focus:bg-white text-xs font-mono" />
+              <label className="block text-black font-bold mb-1">PRNG Base Seed</label>
+              <input type="number" value={seed} onChange={(e) => { const v = Number(e.target.value); setSeed(v); extSetSeed?.(v); }} required className="w-full px-2.5 py-1.5 bg-white border border-black text-black focus:outline-none text-xs font-mono" />
             </div>
           </div>
 
           {/* Date Range Selection with Presets */}
-          <div className="border-t border-zinc-100 pt-2.5">
+          <div className="border-t border-black pt-2.5">
             <div className="flex items-center justify-between mb-1.5">
-              <h4 className="text-xs font-semibold text-zinc-900 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-blue-600" />
-                <span>Simulation Date Range</span>
+              <h4 className="text-xs font-bold text-black uppercase">
+                Simulation Date Range
               </h4>
               <div className="flex items-center gap-1 font-mono text-[10px]">
-                <button type="button" onClick={() => setDateDaysAgo(7)} className="px-1.5 py-0.5 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-600">7D</button>
-                <button type="button" onClick={() => setDateDaysAgo(30)} className="px-1.5 py-0.5 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-600">30D</button>
-                <button type="button" onClick={() => setDateDaysAgo(90)} className="px-1.5 py-0.5 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-600">90D</button>
-                <button type="button" onClick={() => setDateDaysAgo(365)} className="px-1.5 py-0.5 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-600">1Y</button>
+                <button type="button" onClick={() => setDateDaysAgo(7)} className="px-1.5 py-0.5 border border-black bg-white hover:bg-black hover:text-white font-bold">7D</button>
+                <button type="button" onClick={() => setDateDaysAgo(30)} className="px-1.5 py-0.5 border border-black bg-white hover:bg-black hover:text-white font-bold">30D</button>
+                <button type="button" onClick={() => setDateDaysAgo(90)} className="px-1.5 py-0.5 border border-black bg-white hover:bg-black hover:text-white font-bold">90D</button>
+                <button type="button" onClick={() => setDateDaysAgo(365)} className="px-1.5 py-0.5 border border-black bg-white hover:bg-black hover:text-white font-bold">1Y</button>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2.5">
               <div>
-                <label className="block text-zinc-600 text-[11px] mb-1">Start Date</label>
-                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required className="w-full px-2 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 text-xs font-mono" />
+                <label className="block text-black text-[11px] font-bold mb-1">Start Date</label>
+                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required className="w-full px-2 py-1.5 bg-white border border-black text-black text-xs font-mono focus:outline-none" />
               </div>
               <div>
-                <label className="block text-zinc-600 text-[11px] mb-1">End Date</label>
-                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required className="w-full px-2 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 text-xs font-mono" />
+                <label className="block text-black text-[11px] font-bold mb-1">End Date</label>
+                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required className="w-full px-2 py-1.5 bg-white border border-black text-black text-xs font-mono focus:outline-none" />
               </div>
             </div>
           </div>
 
           {/* Execution Kind Specific Knobs */}
           {runKind === 'Optimization' && (
-            <div className="p-2.5 rounded-xl bg-purple-50/60 border border-purple-200 space-y-2">
-              <h4 className="text-xs font-semibold text-purple-900 flex items-center gap-1.5">
-                <Settings2 className="w-3.5 h-3.5 text-purple-700" />
-                <span>Genetic Algorithm Tuning Parameters</span>
+            <div className="p-2.5 border border-black bg-white space-y-2">
+              <h4 className="text-xs font-bold text-black uppercase">
+                Genetic Algorithm Tuning Parameters
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <div>
-                  <label className="block text-purple-800 text-[10px] mb-0.5">Generations</label>
-                  <input type="number" value={generations} onChange={(e) => setGenerations(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-purple-200 rounded-lg text-xs font-mono" />
+                  <label className="block text-black text-[10px] font-bold mb-0.5">Generations</label>
+                  <input type="number" value={generations} onChange={(e) => setGenerations(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-black text-black text-xs font-mono focus:outline-none" />
                 </div>
                 <div>
-                  <label className="block text-purple-800 text-[10px] mb-0.5">Population</label>
-                  <input type="number" value={populationSize} onChange={(e) => setPopulationSize(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-purple-200 rounded-lg text-xs font-mono" />
+                  <label className="block text-black text-[10px] font-bold mb-0.5">Population</label>
+                  <input type="number" value={populationSize} onChange={(e) => setPopulationSize(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-black text-black text-xs font-mono focus:outline-none" />
                 </div>
                 <div>
-                  <label className="block text-purple-800 text-[10px] mb-0.5">Mutation Rate</label>
-                  <input type="number" step="0.01" value={mutationRate} onChange={(e) => setMutationRate(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-purple-200 rounded-lg text-xs font-mono" />
+                  <label className="block text-black text-[10px] font-bold mb-0.5">Mutation Rate</label>
+                  <input type="number" step="0.01" value={mutationRate} onChange={(e) => setMutationRate(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-black text-black text-xs font-mono focus:outline-none" />
                 </div>
                 <div>
-                  <label className="block text-purple-800 text-[10px] mb-0.5">Objective</label>
-                  <select value={objectiveMetric} onChange={(e) => setObjectiveMetric(e.target.value)} className="w-full px-1.5 py-1 bg-white border border-purple-200 rounded-lg text-xs">
+                  <label className="block text-black text-[10px] font-bold mb-0.5">Objective</label>
+                  <select value={objectiveMetric} onChange={(e) => setObjectiveMetric(e.target.value)} className="w-full px-1.5 py-1 bg-white border border-black text-black text-xs focus:outline-none font-bold">
                     <option value="SharpeRatio">Sharpe Ratio</option>
                     <option value="NetProfit">Net Profit</option>
                     <option value="SortinoRatio">Sortino Ratio</option>
@@ -535,48 +521,46 @@ export function LaunchRunModal({
           )}
 
           {runKind === 'WalkForward' && (
-            <div className="p-2.5 rounded-xl bg-blue-50/60 border border-blue-200 space-y-2">
-              <h4 className="text-xs font-semibold text-blue-900 flex items-center gap-1.5">
-                <Settings2 className="w-3.5 h-3.5 text-blue-700" />
-                <span>Walk-Forward Cross-Validation Windows</span>
+            <div className="p-2.5 border border-black bg-white space-y-2">
+              <h4 className="text-xs font-bold text-black uppercase">
+                Walk-Forward Cross-Validation Windows
               </h4>
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-blue-800 text-[10px] mb-0.5">In-Sample (%)</label>
-                  <input type="number" value={inSamplePct} onChange={(e) => setInSamplePct(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-blue-200 rounded-lg text-xs font-mono" />
+                  <label className="block text-black text-[10px] font-bold mb-0.5">In-Sample (%)</label>
+                  <input type="number" value={inSamplePct} onChange={(e) => setInSamplePct(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-black text-black text-xs font-mono focus:outline-none" />
                 </div>
                 <div>
-                  <label className="block text-blue-800 text-[10px] mb-0.5">Out-Sample (%)</label>
-                  <input type="number" value={outOfSamplePct} onChange={(e) => setOutOfSamplePct(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-blue-200 rounded-lg text-xs font-mono" />
+                  <label className="block text-black text-[10px] font-bold mb-0.5">Out-Sample (%)</label>
+                  <input type="number" value={outOfSamplePct} onChange={(e) => setOutOfSamplePct(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-black text-black text-xs font-mono focus:outline-none" />
                 </div>
                 <div>
-                  <label className="block text-blue-800 text-[10px] mb-0.5">Window Splits</label>
-                  <input type="number" value={windowSplits} onChange={(e) => setWindowSplits(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-blue-200 rounded-lg text-xs font-mono" />
+                  <label className="block text-black text-[10px] font-bold mb-0.5">Window Splits</label>
+                  <input type="number" value={windowSplits} onChange={(e) => setWindowSplits(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-black text-black text-xs font-mono focus:outline-none" />
                 </div>
               </div>
             </div>
           )}
 
           {/* Profile Badge */}
-          <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-lg bg-zinc-50 border border-zinc-200 text-[11px]">
-            <span className="font-semibold text-zinc-600">Active Profile:</span>
-            <span className="px-2 py-0.5 rounded bg-cyan-100 text-cyan-800 font-mono">Strategy: {detectedStrategy}</span>
-            <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-mono">Adapter: {detectedAdapter}</span>
+          <div className="flex flex-wrap items-center gap-1.5 p-2 border border-black bg-white text-[11px]">
+            <span className="font-bold text-black">Active Profile:</span>
+            <span className="px-2 py-0.5 border border-black bg-white text-black font-mono font-bold">Strategy: {detectedStrategy}</span>
+            <span className="px-2 py-0.5 border border-black bg-white text-black font-mono font-bold">Adapter: {detectedAdapter}</span>
             {detectedHooks.map((h) => (
-              <span key={h} className="px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-mono">Hook: {h}</span>
+              <span key={h} className="px-2 py-0.5 border border-black bg-white text-black font-mono font-bold">Hook: {h}</span>
             ))}
           </div>
 
           {/* Market & Capital */}
-          <div className="border-t border-zinc-100 pt-2.5">
-            <h4 className="text-xs font-semibold text-zinc-900 mb-1.5 flex items-center gap-1.5">
-              <Sliders className="w-3.5 h-3.5 text-cyan-600" />
-              <span>Market & Capital Specifications</span>
+          <div className="border-t border-black pt-2.5">
+            <h4 className="text-xs font-bold text-black mb-1.5 uppercase">
+              Market & Capital Specifications
             </h4>
             <div className="grid grid-cols-3 gap-2.5">
               <div>
-                <label className="block text-zinc-600 mb-1">Symbol</label>
-                <select value={symbol} onChange={(e) => setSymbol(e.target.value)} className="w-full px-2 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 text-xs">
+                <label className="block text-black font-bold mb-1">Symbol</label>
+                <select value={symbol} onChange={(e) => setSymbol(e.target.value)} className="w-full px-2 py-1.5 bg-white border border-black text-black text-xs focus:outline-none">
                   <option value="BTC/USDT">BTC/USDT (Crypto)</option>
                   <option value="ETH/USDT">ETH/USDT (Crypto)</option>
                   <option value="SOL/USDT">SOL/USDT (Crypto)</option>
@@ -585,8 +569,8 @@ export function LaunchRunModal({
                 </select>
               </div>
               <div>
-                <label className="block text-zinc-600 mb-1">Bar Granularity</label>
-                <select value={barSize} onChange={(e) => setBarSize(e.target.value)} className="w-full px-2 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 text-xs">
+                <label className="block text-black font-bold mb-1">Bar Granularity</label>
+                <select value={barSize} onChange={(e) => setBarSize(e.target.value)} className="w-full px-2 py-1.5 bg-white border border-black text-black text-xs focus:outline-none">
                   <option value="1s">1 Second</option>
                   <option value="1m">1 Minute</option>
                   <option value="5m">5 Minutes</option>
@@ -596,72 +580,69 @@ export function LaunchRunModal({
                 </select>
               </div>
               <div>
-                <label className="block text-zinc-600 mb-1">Initial Capital ($)</label>
-                <input type="number" value={initialCapital} onChange={(e) => setInitialCapital(Number(e.target.value))} step={1000} className="w-full px-2 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 text-xs font-mono" />
+                <label className="block text-black font-bold mb-1">Initial Capital ($)</label>
+                <input type="number" value={initialCapital} onChange={(e) => setInitialCapital(Number(e.target.value))} step={1000} className="w-full px-2 py-1.5 bg-white border border-black text-black text-xs font-mono focus:outline-none" />
               </div>
             </div>
           </div>
 
           {/* Strategy Slot Parameters */}
-          <div className="border-t border-zinc-100 pt-2.5">
-            <h4 className="text-xs font-semibold text-zinc-900 mb-1.5 flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-amber-500" />
-              <span>Strategy Slot Knobs ({detectedStrategy})</span>
+          <div className="border-t border-black pt-2.5">
+            <h4 className="text-xs font-bold text-black mb-1.5 uppercase">
+              Strategy Slot Knobs ({detectedStrategy})
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
               <div>
-                <label className="block text-zinc-600 text-[10px] mb-1">Fast Period</label>
-                <input type="number" value={fastPeriod} onChange={(e) => setFastPeriod(Number(e.target.value))} className="w-full px-2 py-1 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 text-xs font-mono" />
+                <label className="block text-black text-[10px] font-bold mb-1">Fast Period</label>
+                <input type="number" value={fastPeriod} onChange={(e) => setFastPeriod(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-black text-black text-xs font-mono focus:outline-none" />
               </div>
               <div>
-                <label className="block text-zinc-600 text-[10px] mb-1">Slow Period</label>
-                <input type="number" value={slowPeriod} onChange={(e) => setSlowPeriod(Number(e.target.value))} className="w-full px-2 py-1 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 text-xs font-mono" />
+                <label className="block text-black text-[10px] font-bold mb-1">Slow Period</label>
+                <input type="number" value={slowPeriod} onChange={(e) => setSlowPeriod(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-black text-black text-xs font-mono focus:outline-none" />
               </div>
               <div>
-                <label className="block text-zinc-600 text-[10px] mb-1">Stop Loss %</label>
-                <input type="number" step="0.1" value={stopLossPct} onChange={(e) => setStopLossPct(Number(e.target.value))} className="w-full px-2 py-1 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 text-xs font-mono" />
+                <label className="block text-black text-[10px] font-bold mb-1">Stop Loss %</label>
+                <input type="number" step="0.1" value={stopLossPct} onChange={(e) => setStopLossPct(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-black text-black text-xs font-mono focus:outline-none" />
               </div>
               <div>
-                <label className="block text-zinc-600 text-[10px] mb-1">Take Profit %</label>
-                <input type="number" step="0.1" value={takeProfitPct} onChange={(e) => setTakeProfitPct(Number(e.target.value))} className="w-full px-2 py-1 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 text-xs font-mono" />
+                <label className="block text-black text-[10px] font-bold mb-1">Take Profit %</label>
+                <input type="number" step="0.1" value={takeProfitPct} onChange={(e) => setTakeProfitPct(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-black text-black text-xs font-mono focus:outline-none" />
               </div>
               <div>
-                <label className="block text-zinc-600 text-[10px] mb-1">Leverage</label>
-                <input type="number" step="0.5" value={leverage} onChange={(e) => setLeverage(Number(e.target.value))} className="w-full px-2 py-1 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 text-xs font-mono" />
+                <label className="block text-black text-[10px] font-bold mb-1">Leverage</label>
+                <input type="number" step="0.5" value={leverage} onChange={(e) => setLeverage(Number(e.target.value))} className="w-full px-2 py-1 bg-white border border-black text-black text-xs font-mono focus:outline-none" />
               </div>
             </div>
           </div>
 
           {/* Hooks Guardrails */}
-          <div className="border-t border-zinc-100 pt-2.5">
-            <h4 className="text-xs font-semibold text-zinc-900 mb-1.5 flex items-center gap-1.5">
-              <Shield className="w-3.5 h-3.5 text-purple-600" />
-              <span>Safety Hook Guardrails</span>
+          <div className="border-t border-black pt-2.5">
+            <h4 className="text-xs font-bold text-black mb-1.5 uppercase">
+              Safety Hook Guardrails
             </h4>
             <div className="grid grid-cols-3 gap-2.5">
               <div>
-                <label className="block text-zinc-600 text-[11px] mb-1">Max DD Limit (%)</label>
-                <input type="number" step="0.5" value={maxDrawdownPct} onChange={(e) => setMaxDrawdownPct(Number(e.target.value))} className="w-full px-2 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 text-xs font-mono" />
+                <label className="block text-black text-[11px] font-bold mb-1">Max DD Limit (%)</label>
+                <input type="number" step="0.5" value={maxDrawdownPct} onChange={(e) => setMaxDrawdownPct(Number(e.target.value))} className="w-full px-2 py-1.5 bg-white border border-black text-black text-xs font-mono focus:outline-none" />
               </div>
               <div>
-                <label className="block text-zinc-600 text-[11px] mb-1">Max Position (%)</label>
-                <input type="number" step="1" value={maxPositionPct} onChange={(e) => setMaxPositionPct(Number(e.target.value))} className="w-full px-2 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 text-xs font-mono" />
+                <label className="block text-black text-[11px] font-bold mb-1">Max Position (%)</label>
+                <input type="number" step="1" value={maxPositionPct} onChange={(e) => setMaxPositionPct(Number(e.target.value))} className="w-full px-2 py-1.5 bg-white border border-black text-black text-xs font-mono focus:outline-none" />
               </div>
               <div>
-                <label className="block text-zinc-600 text-[11px] mb-1">Throttle (req/s)</label>
-                <input type="number" value={orderRateLimit} onChange={(e) => setOrderRateLimit(Number(e.target.value))} className="w-full px-2 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 text-xs font-mono" />
+                <label className="block text-black text-[11px] font-bold mb-1">Throttle (req/s)</label>
+                <input type="number" value={orderRateLimit} onChange={(e) => setOrderRateLimit(Number(e.target.value))} className="w-full px-2 py-1.5 bg-white border border-black text-black text-xs font-mono focus:outline-none" />
               </div>
             </div>
           </div>
 
           {/* Buttons */}
-          <div className="pt-2 border-t border-zinc-100 flex items-center justify-end gap-2.5">
-            <button type="button" onClick={onClose} className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-medium rounded-lg text-xs">
+          <div className="pt-3 border-t border-black flex items-center justify-end gap-2.5">
+            <button type="button" onClick={onClose} className="px-4 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-bold text-xs transition-colors">
               Cancel
             </button>
-            <button type="submit" disabled={busy} className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white font-semibold rounded-lg flex items-center gap-2 text-xs shadow-sm">
-              <Play className="w-3.5 h-3.5 fill-current" />
-              <span>{busy ? 'Launching...' : 'Start Execution'}</span>
+            <button type="submit" disabled={busy} className="px-4 py-2 border border-black bg-black hover:bg-white hover:text-black text-white font-bold text-xs transition-colors disabled:opacity-50">
+              <span>{busy ? '[LAUNCHING...]' : '[START EXECUTION]'}</span>
             </button>
           </div>
         </form>

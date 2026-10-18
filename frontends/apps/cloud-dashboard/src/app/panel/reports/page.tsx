@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getApiBaseUrl, getAuthHeaders, downloadRunXlsx } from '@/lib/api-client';
 import { useToast } from '@/components/ui/toast';
 import { ServerPagination } from '@/components/ui/ServerPagination';
+import { ActionDropdown } from '@/components/ui/ActionDropdown';
 import { formatCurrency, formatPercentage, formatHash, formatTimestamp, getRunStatusBadge } from '@razor/ui-kit';
 
 interface ReportListItem {
@@ -254,12 +255,12 @@ export default function ReportsListingPage() {
                   <th className="p-3 font-bold text-black">Run / Report ID</th>
                   <th className="p-3 font-bold text-black">Kind</th>
                   <th className="p-3 font-bold text-black">Status</th>
-                  <th className="p-3 font-bold text-black">Engine Instance</th>
+                  <th className="p-3 font-bold text-black hidden sm:table-cell">Engine Instance</th>
                   <th className="p-3 font-bold text-black text-right">Net Profit</th>
-                  <th className="p-3 font-bold text-black text-right">Return %</th>
-                  <th className="p-3 font-bold text-black text-right">Sharpe</th>
-                  <th className="p-3 font-bold text-black text-right">Max DD</th>
-                  <th className="p-3 font-bold text-black text-right">Trades</th>
+                  <th className="p-3 font-bold text-black text-right hidden sm:table-cell">Return %</th>
+                  <th className="p-3 font-bold text-black text-right hidden md:table-cell">Sharpe</th>
+                  <th className="p-3 font-bold text-black text-right hidden md:table-cell">Max DD</th>
+                  <th className="p-3 font-bold text-black text-right hidden lg:table-cell">Trades</th>
                   <th className="p-3 font-bold text-black text-right">Actions</th>
                 </tr>
               </thead>
@@ -301,7 +302,7 @@ export default function ReportsListingPage() {
                           [{r.status}]
                         </span>
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 hidden sm:table-cell">
                         {r.engineInstanceId ? (
                           <Link
                             href={`/panel/instances/${r.engineInstanceId}`}
@@ -321,43 +322,44 @@ export default function ReportsListingPage() {
                         {formatCurrency(profit)}
                       </td>
                       <td
-                        className={`p-3 text-right font-bold ${
+                        className={`p-3 text-right font-bold hidden sm:table-cell ${
                           ret > 0 ? 'text-green-600' : ret < 0 ? 'text-red-600' : 'text-black'
                         }`}
                       >
                         {formatPercentage(ret)}
                       </td>
-                      <td className="p-3 text-right font-bold text-black">
+                      <td className="p-3 text-right font-bold text-black hidden md:table-cell">
                         {sharpe != null ? sharpe.toFixed(2) : '—'}
                       </td>
-                      <td className="p-3 text-right font-bold text-red-600">
+                      <td className="p-3 text-right font-bold text-red-600 hidden md:table-cell">
                         {formatPercentage(dd, false)}
                       </td>
-                      <td className="p-3 text-right font-bold text-black">{trades}</td>
+                      <td className="p-3 text-right font-bold text-black hidden lg:table-cell">{trades}</td>
                       <td className="p-3 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <Link
                             href={`/panel/reports/${r.id}`}
-                            className="px-2 py-1 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors"
+                            className="px-2.5 py-1 border border-black bg-black text-white hover:bg-white hover:text-black font-bold transition-colors text-xs"
                           >
                             [VIEW]
                           </Link>
-                          <button
-                            type="button"
-                            onClick={() => handleExportXlsx(r.id)}
-                            className="px-2 py-1 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors"
-                            title="Export to XLSX Spreadsheet"
-                          >
-                            [XLSX]
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleCopyDna(r)}
-                            className="px-2 py-1 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors"
-                            title="Copy Strategy DNA"
-                          >
-                            [DNA]
-                          </button>
+                          <ActionDropdown
+                            label="⋮"
+                            items={[
+                              {
+                                label: '[EXPORT XLSX]',
+                                onClick: () => handleExportXlsx(r.id),
+                              },
+                              {
+                                label: '[COPY STRATEGY DNA]',
+                                onClick: () => handleCopyDna(r),
+                              },
+                              {
+                                label: '[VIEW LINEAGE]',
+                                href: `/panel/runs/${r.id}/lineage`,
+                              },
+                            ]}
+                          />
                         </div>
                       </td>
                     </tr>

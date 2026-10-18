@@ -7,6 +7,7 @@ import { useToast } from '@/components/ui/toast';
 import { useAuth } from '@/context/auth-context';
 import { ServerPagination } from '@/components/ui/ServerPagination';
 import { ShareEngineModal } from '@/components/instances/ShareEngineModal';
+import { ActionDropdown } from '@/components/ui/ActionDropdown';
 import { formatTimestamp, formatHash } from '@razor/ui-kit';
 
 interface EngineInstanceItem {
@@ -219,10 +220,10 @@ export default function PanelInstancesPage() {
                 <tr className="border-b border-black bg-white">
                   <th className="p-3 font-bold text-black">Engine Instance</th>
                   <th className="p-3 font-bold text-black">Status</th>
-                  <th className="p-3 font-bold text-black">Slug / EngineId</th>
-                  <th className="p-3 font-bold text-black">Extensions</th>
-                  <th className="p-3 font-bold text-black">Created</th>
-                  <th className="p-3 font-bold text-black">Ownership</th>
+                  <th className="p-3 font-bold text-black hidden sm:table-cell">Slug / EngineId</th>
+                  <th className="p-3 font-bold text-black hidden md:table-cell">Extensions</th>
+                  <th className="p-3 font-bold text-black hidden lg:table-cell">Created</th>
+                  <th className="p-3 font-bold text-black hidden sm:table-cell">Ownership</th>
                   <th className="p-3 font-bold text-black text-right">Actions</th>
                 </tr>
               </thead>
@@ -247,17 +248,17 @@ export default function PanelInstancesPage() {
                         <span className="font-bold text-black">[OFFLINE]</span>
                       )}
                     </td>
-                    <td className="p-3 font-bold text-black">{inst.engineId}</td>
-                    <td className="p-3 font-bold text-black">
+                    <td className="p-3 font-bold text-black hidden sm:table-cell">{inst.engineId}</td>
+                    <td className="p-3 font-bold text-black hidden md:table-cell">
                       {inst.manifestExtensionCount} active
                     </td>
-                    <td className="p-3 text-black">
+                    <td className="p-3 text-black hidden lg:table-cell">
                       {formatTimestamp(inst.createdAt)}
                     </td>
-                    <td className="p-3">
+                    <td className="p-3 hidden sm:table-cell">
                       {inst.isShared ? (
                         <span className="font-bold text-black" title={`Expires: ${inst.shareExpiresAt}`}>
-                          [SHARED WITH ME]
+                          [SHARED]
                         </span>
                       ) : (
                         <span className="font-bold text-black">[OWNER]</span>
@@ -267,31 +268,33 @@ export default function PanelInstancesPage() {
                       <div className="flex items-center justify-end gap-1.5">
                         <Link
                           href={`/panel/instances/${inst.instanceId}`}
-                          className="px-2 py-1 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors"
+                          className="px-2.5 py-1 border border-black bg-black text-white hover:bg-white hover:text-black font-bold transition-colors text-xs"
                         >
                           [INSPECT]
                         </Link>
-                        <Link
-                          href={`/panel/instances/${inst.instanceId}/live`}
-                          className="px-2 py-1 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors"
-                        >
-                          [LIVE]
-                        </Link>
-                        {!inst.isShared && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedInstanceForShare({
-                                id: inst.instanceId,
-                                name: inst.name || inst.engineId,
-                              });
-                              setShareModalOpen(true);
-                            }}
-                            className="px-2 py-1 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors"
-                          >
-                            [SHARE]
-                          </button>
-                        )}
+                        <ActionDropdown
+                          label="⋮"
+                          items={[
+                            {
+                              label: '[LIVE MANAGER]',
+                              href: `/panel/instances/${inst.instanceId}/live`,
+                            },
+                            ...(!inst.isShared
+                              ? [
+                                  {
+                                    label: '[SHARE ENGINE]',
+                                    onClick: () => {
+                                      setSelectedInstanceForShare({
+                                        id: inst.instanceId,
+                                        name: inst.name || inst.engineId,
+                                      });
+                                      setShareModalOpen(true);
+                                    },
+                                  },
+                                ]
+                              : []),
+                          ]}
+                        />
                       </div>
                     </td>
                   </tr>
