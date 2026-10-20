@@ -30,42 +30,43 @@ export function LivePositionsTable({
   onClosePosition,
 }: LivePositionsTableProps) {
   return (
-    <div className="p-6 bg-white border border-black space-y-4 font-mono">
-      <div className="flex items-center justify-between pb-3 border-b border-black">
+    <div className="p-6 bg-white border border-slate-200 rounded-xl shadow-sm space-y-4 font-sans">
+      <div className="flex items-center justify-between pb-3 border-b border-slate-200">
         <div>
-          <h3 className="text-sm font-bold text-black uppercase">
-            Active Open Positions ({positions.length})
+          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <Layers className="w-5 h-5 text-indigo-600" />
+            <span>Active Open Positions ({positions.length})</span>
           </h3>
-          <p className="text-xs text-black mt-0.5">
+          <p className="text-sm text-slate-500 mt-0.5">
             Market orders live on broker book. Click any position row to inspect granular fill ladder chart.
           </p>
         </div>
-        <span className="text-xs text-black font-bold">
-          [MARK PRICE: REAL-TIME TICK STREAM]
+        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 font-mono">
+          Mark Price: Real-time tick stream
         </span>
       </div>
 
       {positions.length === 0 ? (
-        <div className="py-12 text-center text-xs text-black font-bold border border-black bg-white">
+        <div className="py-12 text-center text-sm text-slate-500 rounded-xl border border-slate-200 bg-slate-50/50">
           No open positions on active broker book. All capital currently in cash reserve.
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs text-left border-collapse">
+        <div className="overflow-x-auto rounded-xl border border-slate-200">
+          <table className="w-full text-sm text-left border-collapse">
             <thead>
-              <tr className="border-b border-black text-black font-bold uppercase tracking-wider text-[10px]">
-                <th className="py-2.5 px-3">Ticket</th>
-                <th className="py-2.5 px-3">Symbol</th>
-                <th className="py-2.5 px-3">Side</th>
-                <th className="py-2.5 px-3">Size</th>
-                <th className="py-2.5 px-3">Open Price</th>
-                <th className="py-2.5 px-3">Mark Price</th>
-                <th className="py-2.5 px-3">Unrealized PnL</th>
-                <th className="py-2.5 px-3">Stop Loss / TP</th>
-                <th className="py-2.5 px-3 text-right">Actions</th>
+              <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider text-xs">
+                <th className="py-3 px-4">Ticket</th>
+                <th className="py-3 px-4">Symbol</th>
+                <th className="py-3 px-4">Side</th>
+                <th className="py-3 px-4">Size</th>
+                <th className="py-3 px-4">Open Price</th>
+                <th className="py-3 px-4">Mark Price</th>
+                <th className="py-3 px-4">Unrealized PnL</th>
+                <th className="py-3 px-4">Stop Loss / TP</th>
+                <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="text-black divide-y divide-black">
+            <tbody className="divide-y divide-slate-100 bg-white font-mono text-xs">
               {positions.map((pos) => {
                 const isBuy = pos.side === 'BUY';
                 const isProfit = pos.unrealizedPnl >= 0;
@@ -90,37 +91,37 @@ export function LivePositionsTable({
                         commission: 1.5,
                       });
                     }}
-                    className="hover:bg-zinc-100 transition-colors cursor-pointer group"
+                    className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
                   >
-                    <td className="py-2.5 px-3 font-bold text-black group-hover:underline">
+                    <td className="py-3.5 px-4 font-bold text-indigo-700 group-hover:underline">
                       #{pos.ticket}
                     </td>
-                    <td className="py-2.5 px-3 font-bold text-black">{pos.symbol}</td>
-                    <td className="py-2.5 px-3">
+                    <td className="py-3.5 px-4 font-semibold text-slate-900 font-sans">{pos.symbol}</td>
+                    <td className="py-3.5 px-4 font-sans">
                       <span
-                        className={`px-1.5 py-0.5 border border-black text-[10px] font-bold ${
-                          isBuy ? 'text-green-600' : 'text-red-600'
+                        className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                          isBuy ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
                         }`}
                       >
                         {pos.side}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3 font-bold">{pos.volume}</td>
-                    <td className="py-2.5 px-3">{formatCurrency(pos.openPrice)}</td>
-                    <td className="py-2.5 px-3 font-bold text-black">{formatCurrency(pos.markPrice)}</td>
-                    <td className={`py-2.5 px-3 font-bold ${isProfit ? 'text-green-600' : 'text-red-600'}`}>
+                    <td className="py-3.5 px-4 font-medium text-slate-800">{pos.volume}</td>
+                    <td className="py-3.5 px-4 text-slate-700">{formatCurrency(pos.openPrice)}</td>
+                    <td className="py-3.5 px-4 font-semibold text-slate-900">{formatCurrency(pos.markPrice)}</td>
+                    <td className={`py-3.5 px-4 font-bold ${isProfit ? 'text-emerald-700' : 'text-rose-700'}`}>
                       {formatCurrency(pos.unrealizedPnl)}
                     </td>
-                    <td className="py-2.5 px-3 text-[11px] text-zinc-700">
+                    <td className="py-3.5 px-4 text-slate-500 font-sans text-xs">
                       <span>SL: {pos.stopLoss ? formatCurrency(pos.stopLoss) : '—'}</span>
                       <span className="mx-1">•</span>
                       <span>TP: {pos.takeProfit ? formatCurrency(pos.takeProfit) : '—'}</span>
                     </td>
-                    <td className="py-2.5 px-3 text-right" onClick={(e) => e.stopPropagation()}>
+                    <td className="py-3.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
                       <button
                         type="button"
                         onClick={() => onClosePosition(pos)}
-                        className="px-2.5 py-1 border border-black bg-white hover:bg-red-600 hover:text-white text-red-600 text-[11px] font-bold transition-colors"
+                        className="px-3 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-medium font-sans transition-colors shadow-2xs"
                       >
                         Flatten / Close
                       </button>

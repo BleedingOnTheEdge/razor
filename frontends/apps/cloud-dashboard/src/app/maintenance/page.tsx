@@ -2,11 +2,12 @@
 
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Terminal, RefreshCw, Send, CheckCircle2, Clock, AlertTriangle, ArrowRight, Server } from 'lucide-react';
-import { Card, Button, Badge, formatTimestamp, formatHash } from '@razor/ui-kit';
-import { getApiClient } from '@/lib/api-client';
+import { Terminal, RefreshCw, Send, CheckCircle2, Clock, AlertTriangle, ArrowRight, Server, Eye } from 'lucide-react';
+import { formatTimestamp, formatHash } from '@razor/ui-kit';
+import { getApiBaseUrl, getAuthHeaders, getApiClient } from '@/lib/api-client';
 import { useToast } from '@/components/ui/toast';
 import { COMMAND_PRESETS, type DispatchedCommand } from '@/components/instances/CommandDispatchSection';
+import { CommandEventDetailModal } from '@/components/instances/CommandEventDetailModal';
 
 interface EngineInstanceItem {
   instanceId: string;
@@ -34,6 +35,10 @@ function MaintenanceContent() {
   const [commands, setCommands] = useState<DispatchedCommand[]>([]);
   const [loadingCommands, setLoadingCommands] = useState<boolean>(false);
 
+  // Modal inspection state
+  const [selectedCommandForDetail, setSelectedCommandForDetail] = useState<DispatchedCommand | null>(null);
+  const [eventDetailModalOpen, setEventDetailModalOpen] = useState(false);
+
   useEffect(() => {
     loadInstances();
   }, []);
@@ -47,12 +52,16 @@ function MaintenanceContent() {
   async function loadInstances() {
     setLoadingInstances(true);
     try {
-      const client = getApiClient();
-      const { data, error } = await client.GET('/api/instances');
-      if (data && Array.isArray(data)) {
-        setInstances(data);
-        if (!selectedInstanceId && data.length > 0) {
-          setSelectedInstanceId(data[0].instanceId);
+      const baseUrl = getApiBaseUrl();
+      const headers = getAuthHeaders();
+      const res = await fetch(`${baseUrl}/api/instances`, { headers });
+      const rawData = await res.json();
+      const items: EngineInstanceItem[] = Array.isArray(rawData) ? rawData : rawData.items || [];
+
+      if (items.length > 0) {
+        setInstances(items);
+        if (!selectedInstanceId || !items.some((i) => i.instanceId === selectedInstanceId)) {
+          setSelectedInstanceId(items[0].instanceId);
         }
       }
     } catch {
@@ -65,13 +74,12 @@ function MaintenanceContent() {
   async function loadCommands(instanceId: string) {
     setLoadingCommands(true);
     try {
-      const client = getApiClient();
-      const { data } = await client.GET('/api/instances/{instanceId}/commands', {
-        params: { path: { instanceId } },
-      });
-      if (data && Array.isArray(data)) {
-        setCommands(data as unknown as DispatchedCommand[]);
-      }
+      const baseUrl = getApiBaseUrl();
+      const headers = getAuthHeaders();
+      const res = await fetch(`${baseUrl}/api/instances/${instanceId}/commands`, { headers });
+      const rawData = await res.json();
+      const items = Array.isArray(rawData) ? rawData : rawData.items || [];
+      setCommands(items as DispatchedCommand[]);
     } catch {
       // Ignored non-critical failure
     } finally {
@@ -119,53 +127,60 @@ function MaintenanceContent() {
   }
 
   const selectedEngine = instances.find((i) => i.instanceId === selectedInstanceId);
+  const isSelectedOnline = selectedEngine
+    ? selectedEngine.isConnected || selectedEngine.status === 'Active' || selectedEngine.status === 'Healthy'
+    : false;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto font-mono text-xs text-black">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-zinc-200">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-black">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2.5">
-            <Terminal className="w-6 h-6 text-cyan-600" />
+          <h1 className="text-xl font-bold tracking-tight text-black flex items-center gap-2 uppercase">
+            <Terminal className="w-5 h-5 text-black" />
             <span>Maintenance & Command Dispatch Console</span>
           </h1>
-          <p className="text-sm text-zinc-600 mt-1">
+          <p className="text-xs text-black font-normal mt-1 font-sans">
             Execute operational diagnostics, state-machine transitions, and hot-reload commands across engine instances.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="secondary"
+          <button
+            type="button"
             onClick={() => {
               loadInstances();
               if (selectedInstanceId) loadCommands(selectedInstanceId);
             }}
             disabled={loadingInstances || loadingCommands}
-            className="flex items-center gap-1.5 text-xs font-mono"
+            className="px-3 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors flex items-center gap-1.5"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loadingInstances || loadingCommands ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
-          </Button>
+            <span>[REFRESH]</span>
+          </button>
         </div>
       </div>
 
       {/* Target Node Selector */}
-      <Card className="p-5 border-zinc-200 bg-white shadow-sm space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="p-4 border border-black bg-white space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Server className="w-4 h-4 text-cyan-600" />
-            <span className="text-xs font-semibold text-zinc-900 uppercase tracking-wider font-mono">
+            <Server className="w-4 h-4 text-black" />
+            <span className="font-bold text-black uppercase">
               Target Engine Node
             </span>
           </div>
           {selectedEngine && (
             <div className="flex items-center gap-2">
-              <Badge variant={selectedEngine.isConnected ? 'success' : 'neutral'} dot>
-                {selectedEngine.isConnected ? 'Online & Active' : 'Offline'}
-              </Badge>
-              <span className="text-xs text-zinc-500 font-mono">
-                ID: {formatHash(selectedEngine.instanceId, 6)}
+              <span
+                className={`px-2 py-0.5 font-bold border border-black ${
+                  isSelectedOnline ? 'bg-green-50 text-green-700' : 'bg-zinc-100 text-black'
+                }`}
+              >
+                {isSelectedOnline ? '[ONLINE & ACTIVE]' : '[OFFLINE]'}
+              </span>
+              <span className="text-black">
+                ID: {formatHash(selectedEngine.instanceId, 8)}
               </span>
             </div>
           )}
@@ -174,34 +189,37 @@ function MaintenanceContent() {
         <select
           value={selectedInstanceId}
           onChange={(e) => setSelectedInstanceId(e.target.value)}
-          className="w-full px-3 py-2 bg-zinc-50 border border-zinc-300 rounded-lg text-sm text-zinc-900 focus:outline-none focus:border-cyan-500 font-mono"
+          className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
         >
-          {instances.map((inst) => (
-            <option key={inst.instanceId} value={inst.instanceId}>
-              {inst.name} ({inst.engineId || inst.instanceId}) — {inst.isConnected ? '● Connected' : '○ Offline'}
-            </option>
-          ))}
+          {instances.map((inst) => {
+            const isOnline = inst.isConnected || inst.status === 'Active' || inst.status === 'Healthy';
+            return (
+              <option key={inst.instanceId} value={inst.instanceId}>
+                {inst.name} ({inst.engineId || inst.instanceId}) — {isOnline ? '● Connected' : '○ Offline'}
+              </option>
+            );
+          })}
         </select>
-      </Card>
+      </div>
 
       {/* Dispatch Controls Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Form & Presets (2 cols) */}
         <div className="lg:col-span-2 space-y-6">
-          <Card className="p-6 border-zinc-200 bg-white shadow-sm space-y-5">
+          <div className="p-5 border border-black bg-white space-y-4">
             <div>
-              <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider font-mono flex items-center gap-2">
-                <Send className="w-4 h-4 text-cyan-600" />
+              <h2 className="text-sm font-bold text-black uppercase tracking-wider flex items-center gap-2">
+                <Send className="w-4 h-4 text-black" />
                 <span>Command Execution Form</span>
               </h2>
-              <p className="text-xs text-zinc-500 mt-0.5">
+              <p className="text-xs text-black font-normal mt-0.5 font-sans">
                 Select a preset or configure custom opcode and payload parameters.
               </p>
             </div>
 
             {/* Presets */}
-            <div className="space-y-2">
-              <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider block">
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-bold text-black uppercase tracking-wider block">
                 Standard Control Presets
               </span>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -210,45 +228,45 @@ function MaintenanceContent() {
                     key={preset.id}
                     type="button"
                     onClick={() => handleApplyPreset(preset)}
-                    className={`p-2.5 rounded-lg border text-left transition-all flex flex-col justify-between ${
+                    className={`p-2.5 border text-left transition-colors flex flex-col justify-between ${
                       cmdId === preset.id
-                        ? 'border-cyan-500 bg-cyan-50/70 text-cyan-900 ring-1 ring-cyan-500'
-                        : 'border-zinc-200 bg-zinc-50 hover:bg-zinc-100 text-zinc-700'
+                        ? 'border-black bg-black text-white font-bold'
+                        : 'border-black bg-white hover:bg-zinc-100 text-black'
                     }`}
                   >
-                    <span className="text-xs font-bold font-mono">{preset.label}</span>
-                    <span className="text-[10px] text-zinc-500 mt-1 line-clamp-1">{preset.description}</span>
+                    <span className="font-bold">{preset.label}</span>
+                    <span className="text-[10px] opacity-80 mt-1 line-clamp-1">{preset.description}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            <form onSubmit={handleDispatch} className="space-y-4 pt-2 border-t border-zinc-100 font-mono text-xs">
+            <form onSubmit={handleDispatch} className="space-y-4 pt-3 border-t border-black">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-zinc-700 mb-1 font-semibold">Numeric Opcode</label>
+                  <label className="block text-black mb-1 font-bold uppercase">Numeric Opcode</label>
                   <input
                     type="number"
                     value={cmdId}
                     onChange={(e) => setCmdId(Number(e.target.value))}
                     required
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-300 rounded-lg text-zinc-900 focus:outline-none focus:border-cyan-500"
+                    className="w-full px-3 py-2 bg-white border border-black text-black focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-zinc-700 mb-1 font-semibold">Command Type</label>
+                  <label className="block text-black mb-1 font-bold uppercase">Command Type</label>
                   <input
                     type="text"
                     value={cmdType}
                     onChange={(e) => setCmdType(e.target.value)}
                     required
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-300 rounded-lg text-zinc-900 focus:outline-none focus:border-cyan-500"
+                    className="w-full px-3 py-2 bg-white border border-black text-black focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-zinc-700 mb-1 font-semibold">Timeout (Seconds)</label>
+                  <label className="block text-black mb-1 font-bold uppercase">Timeout (Seconds)</label>
                   <input
                     type="number"
                     value={timeoutSeconds}
@@ -256,74 +274,90 @@ function MaintenanceContent() {
                     min={1}
                     max={300}
                     required
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-300 rounded-lg text-zinc-900 focus:outline-none focus:border-cyan-500"
+                    className="w-full px-3 py-2 bg-white border border-black text-black focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-zinc-700 mb-1 font-semibold">Parameters JSON Payload</label>
+                <label className="block text-black mb-1 font-bold uppercase">Parameters JSON Payload</label>
                 <textarea
                   value={cmdParams}
                   onChange={(e) => setCmdParams(e.target.value)}
                   rows={4}
-                  className="w-full p-3 bg-zinc-50 border border-zinc-300 rounded-lg text-zinc-900 focus:outline-none focus:border-cyan-500 text-xs font-mono"
+                  className="w-full p-3 bg-white border border-black text-black focus:outline-none text-xs font-mono"
                   placeholder="{}"
                 />
               </div>
 
-              <Button
+              <button
                 type="submit"
                 disabled={dispatching || !selectedInstanceId}
-                className="w-full sm:w-auto px-6 py-2.5 text-xs font-mono bg-cyan-600 hover:bg-cyan-700 text-white"
+                className="w-full sm:w-auto px-6 py-2.5 border border-black bg-white hover:bg-black hover:text-white disabled:opacity-50 text-black font-bold transition-colors"
               >
-                {dispatching ? 'Dispatching Wire Protocol...' : `Transmit ${cmdType} Command →`}
-              </Button>
+                {dispatching ? '[DISPATCHING WIRE PROTOCOL...]' : `[TRANSMIT ${cmdType.toUpperCase()} COMMAND →]`}
+              </button>
             </form>
-          </Card>
+          </div>
         </div>
 
         {/* Right Column: Execution History Log (1 col) */}
         <div>
-          <Card className="p-5 border-zinc-200 bg-white shadow-sm space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-100">
-              <span className="text-xs font-bold font-mono text-zinc-900 uppercase tracking-wider">
-                Command Log
+          <div className="p-5 border border-black bg-white space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-black">
+              <span className="text-xs font-bold text-black uppercase tracking-wider">
+                Event Log ({commands.length})
               </span>
-              <span className="text-[11px] text-zinc-500 font-mono">
-                {commands.length} records
+              <span className="text-[11px] text-zinc-600 font-sans">
+                Click to inspect payload
               </span>
             </div>
 
             {commands.length === 0 ? (
-              <div className="py-8 text-center text-xs text-zinc-500 font-mono">
-                No recent commands recorded for this node.
+              <div className="py-8 text-center text-xs text-black border border-black">
+                [NO RECENT COMMANDS RECORDED FOR THIS NODE]
               </div>
             ) : (
               <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
                 {commands.map((cmd) => (
                   <div
                     key={cmd.commandId}
-                    className="p-3 rounded-lg border border-zinc-200 bg-zinc-50/70 text-xs font-mono space-y-1"
+                    onClick={() => {
+                      setSelectedCommandForDetail(cmd);
+                      setEventDetailModalOpen(true);
+                    }}
+                    className="p-3 border border-black bg-white hover:bg-zinc-50 cursor-pointer text-xs space-y-1 transition-colors"
+                    title="Click to inspect response and parameters"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-zinc-900">{cmd.commandType}</span>
-                      <span className="text-[10px] text-zinc-500">#{cmd.numericCommandId}</span>
+                      <span className="font-bold text-black">{cmd.commandType}</span>
+                      <span className="font-bold text-black">#{cmd.numericCommandId}</span>
                     </div>
-                    <div className="flex items-center justify-between text-[11px] text-zinc-500">
-                      <span>{cmd.status}</span>
+                    <div className="flex items-center justify-between text-[11px] text-zinc-700">
+                      <span className="font-bold">[{cmd.status?.toUpperCase()}]</span>
                       <span>{formatTimestamp(cmd.submittedAt)}</span>
                     </div>
-                    <div className="text-[10px] text-zinc-400 truncate">
-                      Corr: {formatHash(cmd.correlationId, 8)}
+                    <div className="text-[10px] text-zinc-600 truncate flex items-center justify-between">
+                      <span>Corr: {formatHash(cmd.correlationId, 8)}</span>
+                      <span className="text-black font-bold">[INSPECT]</span>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </Card>
+          </div>
         </div>
       </div>
+
+      {/* Command & Event Response Detail Modal */}
+      <CommandEventDetailModal
+        command={selectedCommandForDetail}
+        isOpen={eventDetailModalOpen}
+        onClose={() => {
+          setEventDetailModalOpen(false);
+          setSelectedCommandForDetail(null);
+        }}
+      />
     </div>
   );
 }
@@ -332,8 +366,8 @@ export default function MaintenancePage() {
   return (
     <Suspense
       fallback={
-        <div className="p-8 text-center text-sm font-mono text-zinc-500">
-          Loading Maintenance Console...
+        <div className="p-8 text-center text-sm font-bold text-black font-mono">
+          [LOADING MAINTENANCE CONSOLE...]
         </div>
       }
     >

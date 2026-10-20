@@ -35,13 +35,17 @@ internal sealed record LiveConfiguration
 
         if (config is Dictionary<string, object> d)
         {
-            dict = d;
+            dict = new Dictionary<string, object>(d, StringComparer.OrdinalIgnoreCase);
         }
         else if (config is string jsonStr && !string.IsNullOrWhiteSpace(jsonStr))
         {
             try
             {
-                dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(jsonStr);
+                var parsed = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(jsonStr);
+                if (parsed != null)
+                {
+                    dict = new Dictionary<string, object>(parsed, StringComparer.OrdinalIgnoreCase);
+                }
             }
             catch
             {
@@ -51,7 +55,11 @@ internal sealed record LiveConfiguration
         {
             try
             {
-                dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(je.GetRawText());
+                var parsed = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(je.GetRawText());
+                if (parsed != null)
+                {
+                    dict = new Dictionary<string, object>(parsed, StringComparer.OrdinalIgnoreCase);
+                }
             }
             catch
             {

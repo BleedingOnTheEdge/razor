@@ -211,7 +211,7 @@ internal static class DatabaseSeeder
                     Email = $"{devName}@dev.razor.io",
                     DisplayName = $"Platform Developer #{i:D2}",
                     Bio = $"Ecosystem additive author producing certified quantitative modules on {tier} subscription.",
-                    Role = UserRole.Developer,
+                    Role = UserRole.Trader,
                     IsActive = true,
                     CreatedAt = now
                 };

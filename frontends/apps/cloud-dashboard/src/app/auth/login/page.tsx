@@ -36,7 +36,7 @@ export default function AuthLoginPage() {
     }
   };
 
-  const handleQuickDemo = async (preset: 'admin' | 'operator' | 'developer' | 'trader') => {
+  const handleQuickDemo = async (preset: 'admin' | 'operator' | 'trader') => {
     setError(null);
     setIsSubmitting(true);
     try {
@@ -188,7 +188,7 @@ export default function AuthLoginPage() {
               <span className="text-[10px] border border-black px-1">1-CLICK</span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
               <button
                 type="button"
                 disabled={isSubmitting}
@@ -213,19 +213,6 @@ export default function AuthLoginPage() {
                   <span>Operator</span>
                 </div>
                 <div className="text-[10px] mt-0.5">Instance Manager</div>
-              </button>
-
-              <button
-                type="button"
-                disabled={isSubmitting}
-                onClick={() => handleQuickDemo('developer')}
-                className="p-2.5 bg-white hover:bg-black hover:text-white border border-black text-left transition-colors group"
-              >
-                <div className="flex items-center gap-1.5 font-bold">
-                  <Key className="w-3.5 h-3.5" />
-                  <span>Developer</span>
-                </div>
-                <div className="text-[10px] mt-0.5">Additive Publisher</div>
               </button>
 
               <button

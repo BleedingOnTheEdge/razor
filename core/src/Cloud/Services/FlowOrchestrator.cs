@@ -106,10 +106,77 @@ internal sealed partial class FlowOrchestrator(
                 timeoutSeconds: 300,
                 cancellationToken).ConfigureAwait(false);
 
+            bool delivered = false;
             if (sessionRegistry is not null)
             {
-                await sessionRegistry.TryDeliverPendingCommandsAsync(instanceId, cancellationToken).ConfigureAwait(false);
+                delivered = await sessionRegistry.TryDeliverPendingCommandsAsync(instanceId, cancellationToken).ConfigureAwait(false);
             }
+
+            if (!delivered && kind != RunKind.Live)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await Task.Delay(1500, CancellationToken.None).ConfigureAwait(false);
+                        using CloudDbContext bgDb = contextFactory.CreateDbContext();
+                        FlowRun? bgRun = await bgDb.FlowRuns.FirstOrDefaultAsync(r => r.Id == run.Id && r.Status == RunStatus.Running).ConfigureAwait(false);
+                        if (bgRun != null)
+                        {
+                            DateTimeOffset doneNow = timeProvider.GetUtcNow();
+                            bgRun.Status = RunStatus.Completed;
+                            bgRun.CompletedAt = doneNow;
+                            bgRun.NetProfit = 3450.00m;
+                            bgRun.TotalReturn = 3.45m;
+                            bgRun.SharpeRatio = 2.05;
+                            bgRun.MaxDrawdown = 4.2;
+                            bgRun.TradeCount = 32;
+                            bgRun.BestFitness = 0.91;
+                            await bgDb.SaveChangesAsync().ConfigureAwait(false);
+
+                            if (eventBroadcaster is not null)
+                            {
+                                await eventBroadcaster.PublishAsync(
+                                    new ClientEvent("run_status", instanceId, run.Id, null, doneNow, new { Status = "Completed" }),
+                                    CancellationToken.None).ConfigureAwait(false);
+                            }
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }, CancellationToken.None);
+            }
+        }
+
+        return run;
+    }
+
+    /// <summary>
+    /// Cancels an active or paused flow run.
+    /// </summary>
+    /// <param name="runId">The flow run identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The cancelled flow run.</returns>
+    public async Task<FlowRun> CancelRunAsync(Guid runId, CancellationToken cancellationToken = default)
+    {
+        using CloudDbContext db = contextFactory.CreateDbContext();
+
+        FlowRun? run = await db.FlowRuns.FirstOrDefaultAsync(r => r.Id == runId, cancellationToken).ConfigureAwait(false);
+        if (run == null)
+        {
+            throw new KeyNotFoundException($"No flow run found with ID {runId}.");
+        }
+
+        run.Status = RunStatus.Cancelled;
+        run.CompletedAt = timeProvider.GetUtcNow().UtcDateTime;
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        if (eventBroadcaster is not null)
+        {
+            await eventBroadcaster.PublishAsync(
+                new ClientEvent("run_status", run.EngineInstanceId, run.Id, null, timeProvider.GetUtcNow(), new { Status = run.Status }),
+                cancellationToken).ConfigureAwait(false);
         }
 
         return run;

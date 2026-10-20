@@ -39,7 +39,7 @@ internal sealed class User
     public bool IsActive { get; set; } = true;
 
     /// <summary>Gets or sets the user's role and permission level.</summary>
-    public UserRole Role { get; set; } = UserRole.Developer;
+    public UserRole Role { get; set; } = UserRole.Trader;
 
     /// <summary>Gets or sets the user's contact email address.</summary>
     public string? Email { get; set; }
@@ -52,4 +52,28 @@ internal sealed class User
 
     /// <summary>Gets or sets the user's profile biography.</summary>
     public string? Bio { get; set; }
+
+    /// <summary>Gets or sets the phone country code prefix.</summary>
+    public string? PhoneCountryCode { get; set; }
+
+    /// <summary>Gets or sets the primary mobile phone number.</summary>
+    public string? PhoneNumber { get; set; }
+
+    /// <summary>Gets or sets a secondary contact email.</summary>
+    public string? SecondaryEmail { get; set; }
+
+    /// <summary>Gets or sets whether two-factor authentication is enabled.</summary>
+    public bool TwoFactorEnabled { get; set; }
+
+    /// <summary>Gets or sets the linked Telegram username or chat ID.</summary>
+    public string? TelegramHandle { get; set; }
+
+    /// <summary>Gets or sets whether exports/reports sync with Google Drive.</summary>
+    public bool GoogleDriveLinked { get; set; }
+
+    /// <summary>Gets or sets whether exports/reports sync with Microsoft OneDrive.</summary>
+    public bool OneDriveLinked { get; set; }
+
+    /// <summary>Gets or sets whether OTP login is enabled via SMS or messenger.</summary>
+    public bool SmsOtpEnabled { get; set; }
 }

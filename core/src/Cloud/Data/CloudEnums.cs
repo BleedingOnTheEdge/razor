@@ -84,9 +84,6 @@ internal enum UserRole
     /// <summary>Operations engineer managing instance lifecycle and telemetry.</summary>
     Operator,
 
-    /// <summary>Community developer developing extensions and running algorithms.</summary>
-    Developer,
-
     /// <summary>Institutional trader executing live capital orders.</summary>
     Trader
 }

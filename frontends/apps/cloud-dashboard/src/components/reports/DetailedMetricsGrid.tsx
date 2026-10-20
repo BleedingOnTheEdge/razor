@@ -10,27 +10,37 @@ export interface DetailedMetricsGridProps {
 }
 
 export function DetailedMetricsGrid({ detailedMetrics }: DetailedMetricsGridProps) {
+  const recoveryFactor = (detailedMetrics as any).recoveryFactor ?? (
+    detailedMetrics.grossProfit && detailedMetrics.largestLoss
+      ? (detailedMetrics.grossProfit / Math.abs(detailedMetrics.largestLoss))
+      : null
+  );
+
   return (
-    <div className="p-6 bg-white border border-black space-y-4">
+    <div className="p-5 bg-white border border-black space-y-4 font-mono text-xs text-black">
       <div className="flex items-center justify-between pb-3 border-b border-black">
-        <h3 className="text-sm font-bold text-black uppercase">
-          Institutional Analytics & Risk Dimensions
+        <h3 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+          <BarChart3 className="w-4 h-4 text-black" />
+          <span>Institutional Analytics & Risk Dimensions</span>
         </h3>
-        <span className="text-xs font-mono text-black font-bold">[MULTI-FACTOR AUDITED]</span>
+        <span className="text-[11px] font-bold px-2 py-0.5 border border-black bg-zinc-50 text-black">
+          Multi-Factor Audited
+        </span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 text-xs font-mono">
-        <div className="p-3 bg-white border border-black">
-          <span className="text-[11px] text-zinc-600 block">Profit Factor</span>
-          <span className={`text-base font-bold mt-1 block ${(detailedMetrics.profitFactor ?? 0) >= 1.5 ? 'text-green-600' : 'text-black'}`}>
+      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
+        {/* ROW 1: 7 Dimensions */}
+        <div className="p-3 border border-black bg-zinc-50">
+          <span className="text-[11px] font-bold text-black uppercase tracking-wider block">Profit Factor</span>
+          <span className={`text-base font-bold mt-1.5 block font-mono ${(detailedMetrics.profitFactor ?? 0) >= 1.5 ? 'text-green-600' : 'text-black'}`}>
             {detailedMetrics.profitFactor != null ? detailedMetrics.profitFactor.toFixed(2) : '—'}
           </span>
-          <span className="text-[10px] text-zinc-600">Gross W / Gross L</span>
+          <span className="text-[10px] text-zinc-500 mt-1 block font-sans">Gross W / Gross L</span>
         </div>
 
-        <div className="p-3 bg-white border border-black">
-          <span className="text-[11px] text-zinc-600 block">Win Rate</span>
-          <span className="text-base font-bold mt-1 block text-black">
+        <div className="p-3 border border-black bg-zinc-50">
+          <span className="text-[11px] font-bold text-black uppercase tracking-wider block">Win Rate</span>
+          <span className="text-base font-bold mt-1.5 block font-mono text-black">
             {(() => {
               const wr = detailedMetrics.winRate;
               if (wr == null) return '—';
@@ -38,98 +48,108 @@ export function DetailedMetricsGrid({ detailedMetrics }: DetailedMetricsGridProp
               return `${pct.toFixed(1)}%`;
             })()}
           </span>
-          <span className="text-[10px] text-zinc-600">Winning Fills</span>
+          <span className="text-[10px] text-zinc-500 mt-1 block font-sans">Winning Fills</span>
         </div>
 
-        <div className="p-3 bg-white border border-black">
-          <span className="text-[11px] text-zinc-600 block">Sortino Ratio</span>
-          <span className="text-base font-bold mt-1 block text-black">
+        <div className="p-3 border border-black bg-zinc-50">
+          <span className="text-[11px] font-bold text-black uppercase tracking-wider block">Sortino Ratio</span>
+          <span className="text-base font-bold mt-1.5 block font-mono text-black">
             {detailedMetrics.sortinoRatio != null ? detailedMetrics.sortinoRatio.toFixed(2) : '—'}
           </span>
-          <span className="text-[10px] text-zinc-600">Downside Adjusted</span>
+          <span className="text-[10px] text-zinc-500 mt-1 block font-sans">Downside Adjusted</span>
         </div>
 
-        <div className="p-3 bg-white border border-black">
-          <span className="text-[11px] text-zinc-600 block">Calmar Ratio</span>
-          <span className="text-base font-bold mt-1 block text-black">
+        <div className="p-3 border border-black bg-zinc-50">
+          <span className="text-[11px] font-bold text-black uppercase tracking-wider block">Calmar Ratio</span>
+          <span className="text-base font-bold mt-1.5 block font-mono text-black">
             {detailedMetrics.calmarRatio != null ? detailedMetrics.calmarRatio.toFixed(2) : '—'}
           </span>
-          <span className="text-[10px] text-zinc-600">Return / MaxDD</span>
+          <span className="text-[10px] text-zinc-500 mt-1 block font-sans">Return / MaxDD</span>
         </div>
 
-        <div className="p-3 bg-white border border-black">
-          <span className="text-[11px] text-zinc-600 block">Expectancy</span>
-          <span className={`text-base font-bold mt-1 block ${(detailedMetrics.expectancy ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+        <div className="p-3 border border-black bg-zinc-50">
+          <span className="text-[11px] font-bold text-black uppercase tracking-wider block">Expectancy</span>
+          <span className={`text-base font-bold mt-1.5 block font-mono ${(detailedMetrics.expectancy ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
             {detailedMetrics.expectancy != null ? formatCurrency(detailedMetrics.expectancy) : '—'}
           </span>
-          <span className="text-[10px] text-zinc-600">Per Executed Trade</span>
+          <span className="text-[10px] text-zinc-500 mt-1 block font-sans">Per Executed Trade</span>
         </div>
 
-        <div className="p-3 bg-white border border-black">
-          <span className="text-[11px] text-zinc-600 block">Payoff Ratio</span>
-          <span className="text-base font-bold mt-1 block text-black">
+        <div className="p-3 border border-black bg-zinc-50">
+          <span className="text-[11px] font-bold text-black uppercase tracking-wider block">Payoff Ratio</span>
+          <span className="text-base font-bold mt-1.5 block font-mono text-black">
             {(() => {
               const payoff = detailedMetrics.payoffRatio ?? detailedMetrics.winLossRatio;
               return payoff != null ? payoff.toFixed(2) : '—';
             })()}
           </span>
-          <span className="text-[10px] text-zinc-600">Avg Win / Avg Loss</span>
+          <span className="text-[10px] text-zinc-500 mt-1 block font-sans">Avg Win / Avg Loss</span>
         </div>
 
-        <div className="p-3 bg-white border border-black">
-          <span className="text-[11px] text-zinc-600 block">Max Streak</span>
-          <span className="text-base font-bold mt-1 block text-black">
+        <div className="p-3 border border-black bg-zinc-50">
+          <span className="text-[11px] font-bold text-black uppercase tracking-wider block">Max Streak</span>
+          <span className="text-base font-bold mt-1.5 block font-mono text-black">
             {detailedMetrics.maxConsecutiveWins ?? 0}W / {detailedMetrics.maxConsecutiveLosses ?? 0}L
           </span>
-          <span className="text-[10px] text-zinc-600">Win / Loss Runs</span>
+          <span className="text-[10px] text-zinc-500 mt-1 block font-sans">Win / Loss Runs</span>
         </div>
 
-        <div className="p-3 bg-white border border-black">
-          <span className="text-[11px] text-zinc-600 block">Average Win</span>
-          <span className="text-base font-bold mt-1 block text-green-600">
+        {/* ROW 2: 7 Dimensions (Completed 7th Card) */}
+        <div className="p-3 border border-black bg-zinc-50">
+          <span className="text-[11px] font-bold text-black uppercase tracking-wider block">Average Win</span>
+          <span className="text-base font-bold mt-1.5 block font-mono text-green-600">
             {detailedMetrics.averageWin != null ? formatCurrency(detailedMetrics.averageWin) : '—'}
           </span>
-          <span className="text-[10px] text-zinc-600">Realized Profit</span>
+          <span className="text-[10px] text-zinc-500 mt-1 block font-sans">Realized Profit</span>
         </div>
 
-        <div className="p-3 bg-white border border-black">
-          <span className="text-[11px] text-zinc-600 block">Average Loss</span>
-          <span className="text-base font-bold mt-1 block text-red-600">
+        <div className="p-3 border border-black bg-zinc-50">
+          <span className="text-[11px] font-bold text-black uppercase tracking-wider block">Average Loss</span>
+          <span className="text-base font-bold mt-1.5 block font-mono text-red-600">
             {detailedMetrics.averageLoss != null ? formatCurrency(detailedMetrics.averageLoss) : '—'}
           </span>
-          <span className="text-[10px] text-zinc-600">Realized Deficit</span>
+          <span className="text-[10px] text-zinc-500 mt-1 block font-sans">Realized Deficit</span>
         </div>
 
-        <div className="p-3 bg-white border border-black">
-          <span className="text-[11px] text-zinc-600 block">Largest Win</span>
-          <span className="text-base font-bold mt-1 block text-green-600">
+        <div className="p-3 border border-black bg-zinc-50">
+          <span className="text-[11px] font-bold text-black uppercase tracking-wider block">Largest Win</span>
+          <span className="text-base font-bold mt-1.5 block font-mono text-green-600">
             {detailedMetrics.largestWin != null ? formatCurrency(detailedMetrics.largestWin) : '—'}
           </span>
-          <span className="text-[10px] text-zinc-600">Peak Single Trade</span>
+          <span className="text-[10px] text-zinc-500 mt-1 block font-sans">Peak Single Trade</span>
         </div>
 
-        <div className="p-3 bg-white border border-black">
-          <span className="text-[11px] text-zinc-600 block">Largest Loss</span>
-          <span className="text-base font-bold mt-1 block text-red-600">
+        <div className="p-3 border border-black bg-zinc-50">
+          <span className="text-[11px] font-bold text-black uppercase tracking-wider block">Largest Loss</span>
+          <span className="text-base font-bold mt-1.5 block font-mono text-red-600">
             {detailedMetrics.largestLoss != null ? formatCurrency(detailedMetrics.largestLoss) : '—'}
           </span>
-          <span className="text-[10px] text-zinc-600">Deepest Drawdown Fill</span>
+          <span className="text-[10px] text-zinc-500 mt-1 block font-sans">Deepest Drawdown Fill</span>
         </div>
 
-        <div className="p-3 bg-white border border-black">
-          <span className="text-[11px] text-zinc-600 block">Gross Profit</span>
-          <span className="text-base font-bold mt-1 block text-green-600">
+        <div className="p-3 border border-black bg-zinc-50">
+          <span className="text-[11px] font-bold text-black uppercase tracking-wider block">Gross Profit</span>
+          <span className="text-base font-bold mt-1.5 block font-mono text-green-600">
             {detailedMetrics.grossProfit != null ? formatCurrency(detailedMetrics.grossProfit) : '—'}
           </span>
-          <span className="text-[10px] text-zinc-600">Cumulative Gains</span>
+          <span className="text-[10px] text-zinc-500 mt-1 block font-sans">Cumulative Gains</span>
         </div>
 
-        <div className="p-3 bg-white border border-black">
-          <span className="text-[11px] text-zinc-600 block">Gross Loss</span>
-          <span className="text-base font-bold mt-1 block text-red-600">
+        <div className="p-3 border border-black bg-zinc-50">
+          <span className="text-[11px] font-bold text-black uppercase tracking-wider block">Gross Loss</span>
+          <span className="text-base font-bold mt-1.5 block font-mono text-red-600">
             {detailedMetrics.grossLoss != null ? formatCurrency(detailedMetrics.grossLoss) : '—'}
           </span>
-          <span className="text-[10px] text-zinc-600">Cumulative Losses</span>
+          <span className="text-[10px] text-zinc-500 mt-1 block font-sans">Cumulative Losses</span>
+        </div>
+
+        {/* 14th Metric: Recovery Factor */}
+        <div className="p-3 border border-black bg-zinc-50">
+          <span className="text-[11px] font-bold text-black uppercase tracking-wider block">Recovery Factor</span>
+          <span className={`text-base font-bold mt-1.5 block font-mono ${(recoveryFactor ?? 0) >= 1.5 ? 'text-green-600' : 'text-black'}`}>
+            {recoveryFactor != null ? Number(recoveryFactor).toFixed(2) : '—'}
+          </span>
+          <span className="text-[10px] text-zinc-500 mt-1 block font-sans">Profit / Max Loss</span>
         </div>
       </div>
     </div>

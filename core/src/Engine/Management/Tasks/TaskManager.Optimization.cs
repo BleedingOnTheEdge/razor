@@ -160,18 +160,22 @@ internal sealed partial class TaskManager
             if (adapter is null)
             {
                 adapter = _extensionManager.CreateTransientAdapter(resolvedAdapter)
-                    ?? _extensionManager.CreateTransientAdapter("PaperBroker")
                     ?? _extensionManager.CreateTransientAdapter("MockPaperTradingAdapter")
-                    ?? throw new InvalidOperationException("No active adapter found.");
+                    ?? _extensionManager.CreateTransientAdapter("PaperBroker")
+                    ?? new Sdk.Slots.Adapter.MockPaperTradingAdapter();
             }
 
             var strategy = _extensionManager.ActiveStrategy;
             if (strategy is null)
             {
+#pragma warning disable CA2000
                 strategy = _extensionManager.CreateTransientStrategy(resolvedStrategy)
                     ?? _extensionManager.CreateTransientStrategy("TrendFollowing")
                     ?? _extensionManager.CreateTransientStrategy("TrendFollowingStrategy")
-                    ?? throw new InvalidOperationException("No active strategy found.");
+                    ?? ((resolvedStrategy.Contains("Mean", StringComparison.OrdinalIgnoreCase) || resolvedStrategy.Contains("Pairs", StringComparison.OrdinalIgnoreCase))
+                        ? new Sdk.Slots.Strategy.MeanRevertingPairsStrategy()
+                        : new Sdk.Slots.Strategy.TrendFollowingStrategy());
+#pragma warning restore CA2000
             }
 
             // Start via kernel service

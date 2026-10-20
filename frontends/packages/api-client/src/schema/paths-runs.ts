@@ -51,6 +51,17 @@ export interface RunPaths {
       };
     };
   };
+  '/api/runs/{runId}/cancel': {
+    post: {
+      parameters: {
+        path: { runId: string };
+      };
+      responses: {
+        200: { content: { 'application/json': FlowRunPayload } };
+        404: { content: { 'application/json': unknown } };
+      };
+    };
+  };
   '/api/runs/{runId}/pause': {
     post: {
       parameters: {

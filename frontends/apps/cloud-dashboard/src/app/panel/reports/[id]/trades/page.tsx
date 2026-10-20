@@ -88,11 +88,11 @@ export default function RunTradesListingPage() {
       {/* Navigation Breadcrumb */}
       <div className="flex items-center gap-2 pb-2 border-b border-black">
         <Link href="/panel/reports" className="hover:underline font-bold">
-          [REPORTS]
+          REPORTS
         </Link>
         <span>/</span>
         <Link href={`/panel/reports/${runId}`} className="hover:underline font-bold">
-          [RUN {formatHash(runId, 6)}]
+          RUN {formatHash(runId, 6)}
         </Link>
         <span>/</span>
         <span className="font-bold">[EXECUTED TRADES LEDGER]</span>
@@ -112,7 +112,7 @@ export default function RunTradesListingPage() {
           href={`/panel/reports/${runId}`}
           className="px-3 py-2 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors"
         >
-          [RETURN TO REPORT]
+          RETURN TO REPORT
         </Link>
       </div>
 
@@ -169,11 +169,11 @@ export default function RunTradesListingPage() {
         </div>
       ) : error ? (
         <div className="p-4 border border-black text-red-600 font-bold">
-          [ERROR]: {error}
+          ERROR: {error}
         </div>
       ) : trades.length === 0 ? (
         <div className="py-16 text-center border border-black p-8 font-bold">
-          [NO TRADES RECORDED FOR THIS FLOW RUN]
+          NO TRADES RECORDED FOR THIS FLOW RUN
         </div>
       ) : (
         <div className="space-y-4">

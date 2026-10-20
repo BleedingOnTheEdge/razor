@@ -20,6 +20,9 @@ internal sealed class FlowRunView
     /// <summary>Gets or sets the target Engine instance identifier.</summary>
     public Guid EngineInstanceId { get; set; }
 
+    /// <summary>Gets or sets the target Engine instance display name.</summary>
+    public string? EngineInstanceName { get; set; }
+
     /// <summary>Gets or sets the flow kind.</summary>
     public RunKind Kind { get; set; }
 
@@ -127,6 +130,7 @@ internal sealed class FlowRunView
         {
             Id = run.Id,
             EngineInstanceId = run.EngineInstanceId,
+            EngineInstanceName = run.EngineInstance?.Name,
             Kind = run.Kind,
             Status = run.Status,
             ParentRunId = run.ParentRunId,

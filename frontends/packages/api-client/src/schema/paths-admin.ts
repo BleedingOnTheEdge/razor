@@ -206,4 +206,55 @@ export interface AdminAndProfilePaths {
       };
     };
   };
+  '/api/admin/impersonate/{userId}': {
+    post: {
+      parameters: {
+        path: { userId: string };
+      };
+      responses: {
+        200: { content: { 'application/json': AuthSessionPayload } };
+        403: { content: { 'application/json': { message?: string } } };
+        404: { content: { 'application/json': unknown } };
+      };
+    };
+  };
+  '/api/admin/users/{userId}/subscription': {
+    put: {
+      parameters: {
+        path: { userId: string };
+      };
+      requestBody: {
+        content: {
+          'application/json': {
+            userId?: string;
+            tier: 'Free' | 'Pro' | 'Enterprise';
+          };
+        };
+      };
+      responses: {
+        200: { content: { 'application/json': UserProfilePayload } };
+        404: { content: { 'application/json': unknown } };
+      };
+    };
+  };
+  '/api/admin/users/{userId}/reset-password': {
+    post: {
+      parameters: {
+        path: { userId: string };
+      };
+      requestBody: {
+        content: {
+          'application/json': {
+            userId?: string;
+            newPassword: string;
+          };
+        };
+      };
+      responses: {
+        200: { content: { 'application/json': { message: string } } };
+        400: { content: { 'application/json': { message?: string } } };
+        404: { content: { 'application/json': unknown } };
+      };
+    };
+  };
 }

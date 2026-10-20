@@ -42,17 +42,21 @@ internal sealed partial class KernelService
             adapter = _extensionManager.CreateTransientAdapter(adapterName)
                 ?? _extensionManager.CreateTransientAdapter("PaperBroker")
                 ?? _extensionManager.CreateTransientAdapter("MockPaperTradingAdapter")
-                ?? throw new InvalidOperationException("No active adapter found.");
+                ?? new Sdk.Slots.Adapter.MockPaperTradingAdapter();
         }
 
         var strategy = _extensionManager.ActiveStrategy;
         if (strategy is null)
         {
             string strategyName = !string.IsNullOrWhiteSpace(input.StrategyName) ? input.StrategyName : "TrendFollowing";
+            #pragma warning disable CA2000
             strategy = _extensionManager.CreateTransientStrategy(strategyName)
                 ?? _extensionManager.CreateTransientStrategy("TrendFollowing")
                 ?? _extensionManager.CreateTransientStrategy("TrendFollowingStrategy")
-                ?? throw new InvalidOperationException("No active strategy found.");
+                ?? (strategyName.Contains("Mean", StringComparison.OrdinalIgnoreCase) || strategyName.Contains("Pairs", StringComparison.OrdinalIgnoreCase)
+                    ? new Sdk.Slots.Strategy.MeanRevertingPairsStrategy()
+                    : new Sdk.Slots.Strategy.TrendFollowingStrategy());
+#pragma warning restore CA2000
         }
 
         var symbolProperties = new Dictionary<string, SymbolProperties>();

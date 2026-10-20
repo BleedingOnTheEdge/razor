@@ -41,11 +41,21 @@ internal static class DatabaseSchemaCompatibility
             ALTER TABLE IF EXISTS "Accounts" ADD COLUMN IF NOT EXISTS "SubscriptionTier" character varying(32) NOT NULL DEFAULT 'Free';
 
             -- Ensure Users table has all enterprise profile columns
-            ALTER TABLE IF EXISTS "Users" ADD COLUMN IF NOT EXISTS "Role" character varying(32) NOT NULL DEFAULT 'Developer';
+            ALTER TABLE IF EXISTS "Users" ADD COLUMN IF NOT EXISTS "Role" character varying(32) NOT NULL DEFAULT 'Trader';
+            -- Normalize legacy Developer roles to Trader
+            UPDATE "Users" SET "Role" = 'Trader' WHERE "Role" = 'Developer' OR "Role" = 'developer';
             ALTER TABLE IF EXISTS "Users" ADD COLUMN IF NOT EXISTS "Email" character varying(256);
             ALTER TABLE IF EXISTS "Users" ADD COLUMN IF NOT EXISTS "DisplayName" character varying(128);
             ALTER TABLE IF EXISTS "Users" ADD COLUMN IF NOT EXISTS "AvatarUrl" character varying(512);
             ALTER TABLE IF EXISTS "Users" ADD COLUMN IF NOT EXISTS "Bio" character varying(1024);
+            ALTER TABLE IF EXISTS "Users" ADD COLUMN IF NOT EXISTS "PhoneCountryCode" character varying(8);
+            ALTER TABLE IF EXISTS "Users" ADD COLUMN IF NOT EXISTS "PhoneNumber" character varying(32);
+            ALTER TABLE IF EXISTS "Users" ADD COLUMN IF NOT EXISTS "SecondaryEmail" character varying(256);
+            ALTER TABLE IF EXISTS "Users" ADD COLUMN IF NOT EXISTS "TwoFactorEnabled" boolean NOT NULL DEFAULT false;
+            ALTER TABLE IF EXISTS "Users" ADD COLUMN IF NOT EXISTS "TelegramHandle" character varying(128);
+            ALTER TABLE IF EXISTS "Users" ADD COLUMN IF NOT EXISTS "GoogleDriveLinked" boolean NOT NULL DEFAULT false;
+            ALTER TABLE IF EXISTS "Users" ADD COLUMN IF NOT EXISTS "OneDriveLinked" boolean NOT NULL DEFAULT false;
+            ALTER TABLE IF EXISTS "Users" ADD COLUMN IF NOT EXISTS "SmsOtpEnabled" boolean NOT NULL DEFAULT false;
 
             -- Ensure SystemSettings table exists
             CREATE TABLE IF NOT EXISTS "SystemSettings" (

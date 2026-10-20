@@ -158,7 +158,7 @@ public sealed class AdminAndGovernanceEdgeCaseTests
             {
                 UserName = "dev_to_operator",
                 Password = "Password123!",
-                Role = UserRole.Developer
+                Role = UserRole.Trader
             },
             JsonOptions).ConfigureAwait(true);
         AuthSessionResponse? session = await regResp.Content.ReadFromJsonAsync<AuthSessionResponse>(JsonOptions).ConfigureAwait(true);

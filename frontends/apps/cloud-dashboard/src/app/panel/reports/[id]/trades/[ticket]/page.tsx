@@ -48,18 +48,18 @@ export default function GranularTradeDetailPage() {
       {/* Navigation Breadcrumb */}
       <div className="flex items-center gap-2 pb-2 border-b border-black">
         <Link href="/panel/reports" className="hover:underline font-bold">
-          [REPORTS]
+          REPORTS
         </Link>
         <span>/</span>
         <Link href={`/panel/reports/${runId}`} className="hover:underline font-bold">
-          [RUN {formatHash(runId, 6)}]
+          RUN {formatHash(runId, 6)}
         </Link>
         <span>/</span>
         <Link href={`/panel/reports/${runId}/trades`} className="hover:underline font-bold">
-          [TRADES]
+          TRADES
         </Link>
         <span>/</span>
-        <span className="font-bold">[TICKET #{ticket}]</span>
+        <span className="font-bold">TICKET #{ticket}</span>
       </div>
 
       {/* Header */}
@@ -78,24 +78,24 @@ export default function GranularTradeDetailPage() {
             href={`/panel/reports/${runId}/trades`}
             className="px-3 py-2 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors"
           >
-            [ALL TRADES]
+            ALL TRADES
           </Link>
           <Link
             href={`/panel/reports/${runId}`}
             className="px-3 py-2 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors"
           >
-            [REPORT OVERVIEW]
+            REPORT OVERVIEW
           </Link>
         </div>
       </div>
 
       {loading ? (
         <div className="py-16 text-center text-black font-bold border border-black">
-          [COMPILING TRADE #{ticket} AUDIT DATA FROM CLOUD API...]
+          COMPILING TRADE #{ticket} AUDIT DATA FROM CLOUD API...
         </div>
       ) : error ? (
         <div className="p-4 border border-black text-red-600 font-bold">
-          [ERROR]: {error}
+          ERROR: {error}
         </div>
       ) : !trade ? (
         <div className="py-16 text-center border border-black p-8 font-bold">

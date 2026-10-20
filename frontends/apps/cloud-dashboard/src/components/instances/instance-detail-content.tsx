@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getApiClient } from '@/lib/api-client';
 import type { EngineInstanceDetailPayload } from '@razor/api-client';
 import { useToast } from '@/components/ui/toast';
 import {
   getInstanceStatusBadge,
-  getExtensionKindBadge,
   formatTimestamp,
   formatHash,
 } from '@razor/ui-kit';
@@ -15,28 +14,23 @@ import {
   ArrowLeft,
   RefreshCw,
   Server,
-  Plus,
+  Radio,
+  Terminal,
+  Cpu,
   SlidersHorizontal,
-  Edit2,
   Key,
   ShieldAlert,
   Trash2,
-  Terminal,
-  LayoutDashboard,
-  Cpu,
-  Radio,
-  ArrowUpRight,
-  Activity,
-  Zap,
-  CheckCircle2,
+  Edit2,
   Sliders,
-  Layers,
-  Search,
+  Send,
 } from 'lucide-react';
+import { ActionDropdown, type ActionDropdownItem } from '@/components/ui/ActionDropdown';
 import { CommandDispatchSection, COMMAND_PRESETS, type DispatchedCommand } from './CommandDispatchSection';
 import { SlotAssignmentModal } from './SlotAssignmentModal';
 import { InstanceActionModals } from './ManageEngineModals';
 import { CreatedCredentialsDialog } from './CreatedCredentialsDialog';
+import { CommandEventDetailModal } from './CommandEventDetailModal';
 import { InstanceOverviewTab } from './tabs/InstanceOverviewTab';
 import { InstanceTelemetryTab } from './tabs/InstanceTelemetryTab';
 import { InstanceExtensionsTab } from './tabs/InstanceExtensionsTab';
@@ -51,9 +45,6 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
   const [commands, setCommands] = useState<DispatchedCommand[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Tab State: Overview, Resources & Telemetry, Active Extensions, Commands, Live Streams
-  const [activeTab, setActiveTab] = useState<'overview' | 'telemetry' | 'extensions' | 'commands' | 'live'>('overview');
   const [manifestFilter, setManifestFilter] = useState('');
 
   // Command dispatch state
@@ -61,6 +52,10 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
   const [cmdType, setCmdType] = useState('Ping');
   const [cmdParams, setCmdParams] = useState('{}');
   const [dispatching, setDispatching] = useState(false);
+
+  // Command detail modal state
+  const [selectedCommandForDetail, setSelectedCommandForDetail] = useState<DispatchedCommand | null>(null);
+  const [eventDetailModalOpen, setEventDetailModalOpen] = useState(false);
 
   // Slot assignment modal state
   const [slotModalOpen, setSlotModalOpen] = useState(false);
@@ -160,31 +155,6 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
     setUpdatingSlot(true);
     try {
       const client = getApiClient();
-      const currentSelections = instance?.activeSelections || {
-        adapter: null,
-        strategy: null,
-        neuralNetwork: null,
-        hookPlugins: [],
-      };
-
-      let newSelections = { ...currentSelections };
-
-      if (selectedSlotKind === 'Adapter') {
-        newSelections.adapter = isSlotActive ? selectedExtensionName : null;
-      } else if (selectedSlotKind === 'Strategy') {
-        newSelections.strategy = isSlotActive ? selectedExtensionName : null;
-      } else if (selectedSlotKind === 'NeuralNetwork') {
-        newSelections.neuralNetwork = isSlotActive ? selectedExtensionName : null;
-      } else if (selectedSlotKind === 'HookPlugin') {
-        const hooks = new Set(newSelections.hookPlugins || []);
-        if (isSlotActive) {
-          hooks.add(selectedExtensionName);
-        } else {
-          hooks.delete(selectedExtensionName);
-        }
-        newSelections.hookPlugins = Array.from(hooks);
-      }
-
       const { data, error: err } = await client.PUT('/api/instances/{instanceId}/profile/selections', {
         params: { path: { instanceId } },
         body: {
@@ -218,6 +188,11 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
     setSlotModalOpen(true);
   }
 
+  function handleSelectCommandForDetail(cmd: DispatchedCommand) {
+    setSelectedCommandForDetail(cmd);
+    setEventDetailModalOpen(true);
+  }
+
   const badge = instance ? getInstanceStatusBadge(instance.status) : null;
   const filteredManifest = (instance?.manifest || []).filter((ext) => {
     if (!manifestFilter.trim()) return true;
@@ -225,233 +200,204 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
     return ext.name.toLowerCase().includes(q) || ext.kind.toLowerCase().includes(q);
   });
 
+  const manageDropdownItems: ActionDropdownItem[] = [
+    {
+      label: '[RUN COMMAND CREDENTIALS]',
+      onClick: () => {
+        const savedKey = typeof window !== 'undefined' ? localStorage.getItem(`engine_key_${instanceId}`) : null;
+        setCredsModalData({
+          instanceId,
+          engineId: instance?.engineId || 'engine-worker-01',
+          apiKey: savedKey || '<YOUR_GENERATED_API_KEY>',
+        });
+      },
+    },
+    {
+      label: '[MAINTENANCE CONSOLE]',
+      href: `/panel/maintenance?instanceId=${instanceId}`,
+    },
+    {
+      label: '[RENAME ENGINE]',
+      onClick: () => setRenameOpen(true),
+    },
+    {
+      label: '[CONFIGURE SLOTS]',
+      onClick: () => openSlotModal('Strategy'),
+    },
+    {
+      label: '[ROTATE API KEY]',
+      onClick: () => setRotateOpen(true),
+    },
+    {
+      label: '[REVOKE API KEY]',
+      onClick: () => setRevokeOpen(true),
+      danger: true,
+    },
+    {
+      label: '[DECOMMISSION ENGINE]',
+      onClick: () => setDeleteOpen(true),
+      danger: true,
+    },
+  ];
+
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-6xl font-mono">
       {/* Back Link */}
-      <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
-        <Link href="/instances" className="hover:text-zinc-200 flex items-center gap-1">
+      <div className="flex items-center gap-2 text-xs text-black">
+        <Link href="/panel/instances" className="hover:underline flex items-center gap-1 font-bold">
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Fleet</span>
+          <span>[BACK TO FLEET]</span>
         </Link>
         <span>/</span>
-        <span className="text-zinc-300">Engine {instance?.name || formatHash(instanceId, 6)}</span>
+        <span className="font-bold">Engine {instance?.name || formatHash(instanceId, 6)}</span>
       </div>
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-6 border-b border-zinc-800">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-4 border-b border-black">
         <div>
           <div className="flex flex-wrap items-center gap-3">
-            <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-              <Server className="w-6 h-6 text-cyan-400" />
+            <h1 className="text-2xl font-bold tracking-tight text-black flex items-center gap-2">
+              <Server className="w-6 h-6 text-black shrink-0" />
               <span>{instance?.name || instance?.engineId || 'Engine Instance'}</span>
-            </h2>
+            </h1>
             {badge && (
-              <span className={`px-2.5 py-1 rounded-full text-xs font-mono font-medium ${badge.className}`}>
-                {badge.label}
+              <span className="px-2.5 py-1 text-xs font-bold border border-black bg-zinc-50 text-black">
+                [{badge.label?.toUpperCase()}]
               </span>
             )}
-            <span
-              className={`px-2.5 py-1 rounded-full text-xs font-mono font-medium flex items-center gap-1.5 ${
-                instance?.isConnected
-                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                  : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
-              }`}
-            >
+            <span className="px-2.5 py-1 text-xs font-bold border border-black bg-zinc-50 text-black flex items-center gap-1.5">
               <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  instance?.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'
+                className={`w-2 h-2 ${
+                  instance?.isConnected ? 'bg-green-600' : 'bg-black'
                 }`}
               />
-              {instance?.isConnected ? 'Connected' : 'Offline'}
+              {instance?.isConnected ? '[CONNECTED]' : '[OFFLINE]'}
             </span>
           </div>
-          <p className="text-xs font-mono text-zinc-400 mt-1">Instance ID: {instanceId}</p>
+          <p className="text-xs text-black mt-1">Instance ID: {instanceId}</p>
         </div>
 
-        {/* Action Toolbar */}
+        {/* Action Toolbar: Live Manager, Refresh, and Hamburger Dropdown */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* Live Manager: Always visible outside */}
           <Link
-            href={`/live?instanceId=${instanceId}`}
+            href={`/panel/live?instanceId=${instanceId}`}
             title="Open Dedicated Live Trading Manager"
-            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-zinc-950 font-bold text-xs font-mono transition-colors flex items-center gap-1.5 shadow-sm"
+            className="px-3.5 py-1.5 border border-black bg-green-600 hover:bg-green-700 text-white font-bold text-xs transition-colors flex items-center gap-1.5"
           >
-            <Radio className="w-3.5 h-3.5 animate-pulse" />
-            <span>Live Manager</span>
+            <Radio className="w-3.5 h-3.5" />
+            <span>[LIVE MANAGER]</span>
           </Link>
-          <button
-            onClick={() => {
-              const savedKey = typeof window !== 'undefined' ? localStorage.getItem(`engine_key_${instanceId}`) : null;
-              setCredsModalData({
-                instanceId,
-                engineId: instance?.engineId || 'engine-worker-01',
-                apiKey: savedKey || '<YOUR_GENERATED_API_KEY>',
-              });
-            }}
-            title="View Engine Launch Command"
-            className="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700/60 text-xs font-mono text-emerald-400 transition-colors flex items-center gap-1.5"
-          >
-            <Terminal className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Run Command</span>
-          </button>
-          <Link
-            href={`/maintenance?instanceId=${instanceId}`}
-            title="Open Maintenance & Command Dispatch Console"
-            className="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-cyan-950/60 border border-zinc-700/60 hover:border-cyan-500/40 text-xs font-mono text-cyan-300 transition-colors flex items-center gap-1.5"
-          >
-            <Terminal className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Maintenance Console</span>
-          </Link>
-          <button
-            onClick={() => setRenameOpen(true)}
-            title="Rename Engine Instance"
-            className="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-750 border border-zinc-700/60 text-xs font-mono text-zinc-300 transition-colors flex items-center gap-1.5"
-          >
-            <Edit2 className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Rename</span>
-          </button>
-          <button
-            onClick={() => setRotateOpen(true)}
-            title="Rotate Engine API Key"
-            className="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-amber-500/10 border border-zinc-700/60 hover:border-amber-500/30 text-xs font-mono text-amber-300 transition-colors flex items-center gap-1.5"
-          >
-            <Key className="w-3.5 h-3.5" />
-            <span>Rotate Key</span>
-          </button>
-          <button
-            onClick={() => setRevokeOpen(true)}
-            title="Revoke Engine API Key"
-            className="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-rose-500/10 border border-zinc-700/60 hover:border-rose-500/30 text-xs font-mono text-rose-300 transition-colors flex items-center gap-1.5"
-          >
-            <ShieldAlert className="w-3.5 h-3.5" />
-            <span>Revoke</span>
-          </button>
-          <button
-            onClick={() => setDeleteOpen(true)}
-            title="Decommission Engine Instance"
-            className="p-1.5 rounded-lg bg-zinc-800 hover:bg-rose-500/10 border border-zinc-700/60 hover:border-rose-500/30 text-xs font-mono text-rose-400 transition-colors flex items-center gap-1"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
+
+          {/* Refresh: Always visible outside */}
           <button
             onClick={loadDetails}
-            className="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-mono text-zinc-300 transition-colors flex items-center gap-1.5"
+            className="px-3 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black text-xs font-bold transition-colors flex items-center gap-1.5"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            <span>Refresh</span>
+            <span>[REFRESH]</span>
           </button>
+
+          {/* Grouped Actions Hamburger Dropdown */}
+          <ActionDropdown
+            label="[MANAGE ENGINE ▾]"
+            items={manageDropdownItems}
+            align="right"
+          />
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="flex border-b border-zinc-800 gap-1 overflow-x-auto no-scrollbar">
-        <button
-          type="button"
-          onClick={() => setActiveTab('overview')}
-          className={`px-4 py-2.5 text-xs font-mono font-medium flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
-            activeTab === 'overview'
-              ? 'border-cyan-400 text-cyan-400 bg-cyan-950/20'
-              : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
-          }`}
+      {/* Quick Section Anchor Jump Navigation Bar */}
+      <div className="sticky top-0 z-20 bg-white py-2 border-b border-black flex items-center gap-2 overflow-x-auto text-xs font-bold">
+        <a
+          href="#overview"
+          className="px-3 py-1 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors"
         >
-          <LayoutDashboard className="w-4 h-4" />
-          <span>Overview</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('telemetry')}
-          className={`px-4 py-2.5 text-xs font-mono font-medium flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
-            activeTab === 'telemetry'
-              ? 'border-cyan-400 text-cyan-400 bg-cyan-950/20'
-              : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
-          }`}
+          # OVERVIEW
+        </a>
+        <a
+          href="#telemetry"
+          className="px-3 py-1 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors"
         >
-          <Cpu className="w-4 h-4" />
-          <span>Resources & Telemetry</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('extensions')}
-          className={`px-4 py-2.5 text-xs font-mono font-medium flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
-            activeTab === 'extensions'
-              ? 'border-cyan-400 text-cyan-400 bg-cyan-950/20'
-              : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
-          }`}
+          # TELEMETRY
+        </a>
+        <a
+          href="#extensions"
+          className="px-3 py-1 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors"
         >
-          <SlidersHorizontal className="w-4 h-4" />
-          <span>Active Extensions</span>
-          {instance?.manifest && (
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-zinc-800 text-zinc-300">
-              {instance.manifest.length}
-            </span>
-          )}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('commands')}
-          className={`px-4 py-2.5 text-xs font-mono font-medium flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
-            activeTab === 'commands'
-              ? 'border-cyan-400 text-cyan-400 bg-cyan-950/20'
-              : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
-          }`}
+          # EXTENSIONS ({instance?.manifest?.length || 0})
+        </a>
+        <a
+          href="#commands"
+          className="px-3 py-1 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors"
         >
-          <Terminal className="w-4 h-4" />
-          <span>Commands</span>
-          {commands.length > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-zinc-800 text-zinc-300">
-              {commands.length}
-            </span>
-          )}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('live')}
-          className={`px-4 py-2.5 text-xs font-mono font-medium flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
-            activeTab === 'live'
-              ? 'border-emerald-400 text-emerald-400 bg-emerald-950/20'
-              : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40'
-          }`}
+          # COMMANDS ({commands.length})
+        </a>
+        <a
+          href="#livestreams"
+          className="px-3 py-1 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors"
         >
-          <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
-          <span>Live Streams</span>
-        </button>
+          # LIVE STREAM
+        </a>
       </div>
 
       {loading && (
-        <div className="py-12 text-center text-sm font-mono text-zinc-400">
-          Loading engine configuration & state...
+        <div className="py-12 text-center text-sm font-bold text-black border border-black">
+          [LOADING ENGINE CONFIGURATION & TELEMETRY STATE...]
         </div>
       )}
 
       {error && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm font-mono">
-          {error}
+        <div className="p-4 border border-black text-red-600 text-sm font-bold">
+          [ERROR]: {error}
         </div>
       )}
 
       {instance && (
-        <>
-          {/* TAB 1: OVERVIEW */}
-          <div className={activeTab === 'overview' ? 'space-y-6' : 'hidden'}>
+        <div className="space-y-8">
+          {/* SECTION 1: OVERVIEW */}
+          <section id="overview" className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-black">
+              <h2 className="text-base font-bold text-black uppercase tracking-wider flex items-center gap-2">
+                <Server className="w-4 h-4 text-black" />
+                <span>Section 1: Engine Overview & Operational Status</span>
+              </h2>
+            </div>
             <InstanceOverviewTab
               instanceId={instanceId}
               instance={instance}
               commands={commands}
-              onNavigateToExtensions={() => setActiveTab('extensions')}
-              onNavigateToCommands={() => setActiveTab('commands')}
+              onNavigateToExtensions={() => {
+                const el = document.getElementById('extensions');
+                el?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              onNavigateToCommands={() => {
+                const el = document.getElementById('commands');
+                el?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              onSelectCommand={handleSelectCommandForDetail}
             />
-          </div>
+          </section>
 
-          {/* TAB 2: RESOURCES & TELEMETRY */}
-          <div className={activeTab === 'telemetry' ? 'space-y-6' : 'hidden'}>
+          {/* SECTION 2: TELEMETRY & RESOURCES */}
+          <section id="telemetry" className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-black">
+              <h2 className="text-base font-bold text-black uppercase tracking-wider flex items-center gap-2">
+                <Cpu className="w-4 h-4 text-black" />
+                <span>Section 2: Computational Resources & Telemetry</span>
+              </h2>
+            </div>
             <InstanceTelemetryTab />
-          </div>
+          </section>
 
-          {/* TAB 3: ACTIVE EXTENSIONS & MANIFEST */}
-          <div className={activeTab === 'extensions' ? 'space-y-6' : 'hidden'}>
+          {/* SECTION 3: EXTENSIONS & SLOTS */}
+          <section id="extensions" className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-black">
+              <h2 className="text-base font-bold text-black uppercase tracking-wider flex items-center gap-2">
+                <SlidersHorizontal className="w-4 h-4 text-black" />
+                <span>Section 3: Extension Manifest & Active Slot Profiles</span>
+              </h2>
+            </div>
             <InstanceExtensionsTab
               instance={instance}
               manifestFilter={manifestFilter}
@@ -459,10 +405,16 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
               filteredManifest={filteredManifest}
               onOpenSlotModal={openSlotModal}
             />
-          </div>
+          </section>
 
-          {/* TAB 4: COMMANDS & DISPATCH */}
-          <div className={activeTab === 'commands' ? 'space-y-6' : 'hidden'}>
+          {/* SECTION 4: COMMANDS & EVENT RESPONSES */}
+          <section id="commands" className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-black">
+              <h2 className="text-base font-bold text-black uppercase tracking-wider flex items-center gap-2">
+                <Terminal className="w-4 h-4 text-black" />
+                <span>Section 4: Wire Command Dispatcher & Response Inspector</span>
+              </h2>
+            </div>
             <CommandDispatchSection
               cmdId={cmdId}
               setCmdId={setCmdId}
@@ -474,24 +426,40 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
               onDispatch={handleDispatch}
               onApplyPreset={applyPreset}
               commands={commands}
+              onSelectCommand={handleSelectCommandForDetail}
             />
-          </div>
+          </section>
 
-          {/* TAB 5: LIVE STREAMS & TELEMETRY */}
-          <div className={activeTab === 'live' ? 'space-y-6' : 'hidden'}>
+          {/* SECTION 5: LIVE STREAMS */}
+          <section id="livestreams" className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-black">
+              <h2 className="text-base font-bold text-black uppercase tracking-wider flex items-center gap-2">
+                <Radio className="w-4 h-4 text-black" />
+                <span>Section 5: Real-Time Tick & Event Stream Channel</span>
+              </h2>
+            </div>
             <InstanceStreamsTab
               instanceId={instanceId}
               instance={instance}
             />
-          </div>
-        </>
+          </section>
+        </div>
       )}
 
-      {/* Modal: Slot Assignment */}
+      {/* Command & Event Response Detail Modal */}
+      <CommandEventDetailModal
+        command={selectedCommandForDetail}
+        isOpen={eventDetailModalOpen}
+        onClose={() => {
+          setEventDetailModalOpen(false);
+          setSelectedCommandForDetail(null);
+        }}
+      />
+
+      {/* Slot Assignment Modal */}
       <SlotAssignmentModal
         isOpen={slotModalOpen}
         onClose={() => setSlotModalOpen(false)}
-        instanceId={instanceId}
         selectedSlotKind={selectedSlotKind}
         setSelectedSlotKind={setSelectedSlotKind}
         selectedExtensionName={selectedExtensionName}
@@ -500,30 +468,34 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
         setIsSlotActive={setIsSlotActive}
         updatingSlot={updatingSlot}
         onSubmit={handleSlotSubmit}
-        manifest={instance?.manifest}
+        manifest={instance?.manifest || []}
       />
 
-      {/* Modals: Manage Engine (Rename, Rotate Key, Revoke Key, Decommission) */}
-      <InstanceActionModals
-        instanceId={instanceId}
-        instanceName={instance?.name}
-        renameOpen={renameOpen}
-        setRenameOpen={setRenameOpen}
-        rotateOpen={rotateOpen}
-        setRotateOpen={setRotateOpen}
-        revokeOpen={revokeOpen}
-        setRevokeOpen={setRevokeOpen}
-        deleteOpen={deleteOpen}
-        setDeleteOpen={setDeleteOpen}
-        onRenamed={(newName) => setInstance((prev) => (prev ? { ...prev, name: newName } : null))}
-        onReload={loadDetails}
-      />
-
-      {/* Modal: Launch Command & Issued Credentials */}
+      {/* Credentials Dialog */}
       <CreatedCredentialsDialog
         credentials={credsModalData}
         onClose={() => setCredsModalData(null)}
       />
+
+      {/* Manage Engine Modals */}
+      {instance && (
+        <InstanceActionModals
+          instanceId={instanceId}
+          instanceName={instance.name}
+          renameOpen={renameOpen}
+          setRenameOpen={setRenameOpen}
+          rotateOpen={rotateOpen}
+          setRotateOpen={setRotateOpen}
+          revokeOpen={revokeOpen}
+          setRevokeOpen={setRevokeOpen}
+          deleteOpen={deleteOpen}
+          setDeleteOpen={setDeleteOpen}
+          onRenamed={(newName) => {
+            if (instance) setInstance({ ...instance, name: newName });
+          }}
+          onReload={loadDetails}
+        />
+      )}
     </div>
   );
 }

@@ -63,22 +63,22 @@ export default function PopulationIndividualDetailPage() {
       {/* Navigation Breadcrumb */}
       <div className="flex items-center gap-2 pb-2 border-b border-black">
         <Link href="/panel/reports" className="hover:underline font-bold">
-          [REPORTS]
+          REPORTS
         </Link>
         <span>/</span>
         <Link href={`/panel/reports/${runId}`} className="hover:underline font-bold">
-          [RUN {formatHash(runId, 6)}]
+          RUN {formatHash(runId, 6)}
         </Link>
         <span>/</span>
         <Link href={`/panel/reports/${runId}/generations`} className="hover:underline font-bold">
-          [GENERATIONS]
+          GENERATIONS
         </Link>
         <span>/</span>
         <Link href={`/panel/reports/${runId}/generations/${genId}`} className="hover:underline font-bold">
-          [GEN {genId}]
+          GEN {genId}
         </Link>
         <span>/</span>
-        <span className="font-bold">[CANDIDATE #{popId}]</span>
+        <span className="font-bold">CANDIDATE #{popId}</span>
       </div>
 
       {/* Header */}
@@ -115,7 +115,7 @@ export default function PopulationIndividualDetailPage() {
         </div>
       ) : error ? (
         <div className="p-4 border border-black text-red-600 font-bold">
-          [ERROR]: {error}
+          ERROR: {error}
         </div>
       ) : !individual ? (
         <div className="py-16 text-center border border-black p-8 font-bold">

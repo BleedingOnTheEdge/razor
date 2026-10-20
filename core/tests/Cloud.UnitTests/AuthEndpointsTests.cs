@@ -61,7 +61,7 @@ public sealed class AuthEndpointsTests
             UserName = "quant_researcher",
             Password = "securePassword123!",
             AccountName = "Alpha Capital Management",
-            Role = UserRole.Developer,
+            Role = UserRole.Trader,
             SubscriptionTier = SubscriptionTier.Pro
         };
 

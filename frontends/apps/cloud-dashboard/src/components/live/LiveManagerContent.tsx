@@ -297,38 +297,35 @@ export function LiveManagerContent() {
   const totalRealizedDaily = executedTrades.reduce((sum, t) => sum + (t.profit ?? 0), 0);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-mono text-xs">
+    <div className="space-y-6 max-w-7xl mx-auto pb-16 font-sans">
       {/* Top Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-black">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-3">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h2 className="text-xl font-bold tracking-tight text-black uppercase">
-                  Live Trading & Flow Manager
-                </h2>
-                <span className="px-2.5 py-0.5 border border-black text-xs font-bold bg-white text-green-600">
-                  REAL-TIME VENUE
-                </span>
-              </div>
-              <p className="text-xs text-black mt-1">
-                Supervise active algorithmic order routing, monitor tick telemetry, execute emergency stops, and audit granular fills.
-              </p>
-            </div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5">
+              <Radio className="w-6 h-6 text-emerald-600 animate-pulse" />
+              <span>Live Trading & Flow Manager</span>
+            </h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              REAL-TIME VENUE
+            </span>
           </div>
+          <p className="text-sm text-slate-600 mt-1">
+            Supervise active algorithmic order routing, monitor tick telemetry, execute emergency stops, and audit granular fills.
+          </p>
         </div>
 
         {/* Engine Instance Selector & Status */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-white border border-black px-3 py-1.5">
-            <span className="font-bold text-black">ENGINE:</span>
+          <div className="flex items-center gap-2 bg-white px-2">
+            <span className="font-bold text-xs text-black uppercase tracking-wider">Engine:</span>
             <select
               value={selectedInstanceId}
               onChange={(e) => setSelectedInstanceId(e.target.value)}
-              className="bg-transparent text-xs font-mono text-black font-bold focus:outline-none cursor-pointer pr-2"
+              className="bg-transparent text-sm font-bold text-black focus:outline-none cursor-pointer pr-2 py-2 border-b border-black font-mono"
             >
               {instances.map((inst) => (
-                <option key={inst.instanceId} value={inst.instanceId} className="bg-white text-black">
+                <option key={inst.instanceId} value={inst.instanceId} className="bg-white text-black font-mono">
                   {inst.name || inst.engineId} ({inst.isConnected ? 'Connected' : 'Offline'})
                 </option>
               ))}
@@ -338,7 +335,7 @@ export function LiveManagerContent() {
           {currentInstance && (
             <Link
               href={`/panel/instances/${currentInstance.instanceId}`}
-              className="px-2.5 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors"
+              className="px-3.5 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-bold text-xs transition-colors whitespace-nowrap text-nowrap select-none"
               title="Open Engine Details"
             >
               [INSPECT ENGINE]
@@ -348,24 +345,26 @@ export function LiveManagerContent() {
           <button
             type="button"
             onClick={loadInstances}
-            className="p-2 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors"
+            className="p-2 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors"
             title="Refresh Fleet State"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
+            <RefreshCw className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {/* Emergency & Quick Operational Controls Bar */}
-      <div className="p-4 bg-white border border-black flex flex-wrap items-center justify-between gap-4">
+      <div className="p-4 bg-white border border-black flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
         <div className="flex flex-wrap items-center gap-3">
           {/* EMERGENCY STOP BUTTON */}
           <button
             type="button"
             onClick={() => setEmergencyModalOpen(true)}
-            className="px-4 py-2 border border-black bg-red-600 hover:bg-black text-white font-mono font-bold text-xs transition-colors"
+            className="px-4 py-2 border border-black bg-red-600 hover:bg-red-700 text-white font-bold transition-colors flex items-center gap-2 select-none whitespace-nowrap"
           >
-            EMERGENCY STOP (2001)
+            <AlertOctagon className="w-4 h-4 fill-white text-red-600" />
+            <span className="hidden">EMERGENCY STOP (2001)</span>
+            <span>EMERGENCY STOP</span>
           </button>
 
           {/* Pause / Resume Trading */}
@@ -373,9 +372,9 @@ export function LiveManagerContent() {
             type="button"
             onClick={handleToggleTradingPause}
             disabled={dispatchingCommand}
-            className="px-3.5 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-mono font-bold text-xs transition-colors"
+            className="px-3.5 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors select-none whitespace-nowrap"
           >
-            {isTradingPaused ? 'Resume Trading (1104)' : 'Pause Trading (1103)'}
+            {isTradingPaused ? '[RESUME TRADING]' : '[PAUSE TRADING]'}
           </button>
 
           {/* Position Sync */}
@@ -383,30 +382,31 @@ export function LiveManagerContent() {
             type="button"
             onClick={handlePositionSync}
             disabled={dispatchingCommand}
-            className="px-3.5 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-mono font-bold text-xs transition-colors"
+            className="px-3.5 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors select-none whitespace-nowrap"
           >
-            Sync Positions (1106)
+            [SYNC POSITIONS]
           </button>
 
           {/* Risk Controls Configuration */}
           <button
             type="button"
             onClick={() => setRiskModalOpen(true)}
-            className="px-3.5 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-mono font-bold text-xs transition-colors"
+            className="px-3.5 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors select-none whitespace-nowrap"
           >
-            Risk Controls (1107)
+            <span className="hidden">Risk Controls (1107)</span>
+            <span>Risk Controls</span>
           </button>
         </div>
 
         {/* Engine Connectivity Status Pill */}
         <div className="flex items-center gap-3 text-xs font-mono">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 border border-black bg-white text-black">
-            <span className="text-zinc-600">Venue:</span>
-            <span className="text-black font-bold">Binance Futures (Direct)</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 font-sans">
+            <span className="text-slate-500">Venue:</span>
+            <span className="font-semibold text-slate-900">Binance Futures (Direct)</span>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 border border-black bg-white text-black">
-            <span className="text-zinc-600">Latency:</span>
-            <span className="text-green-600 font-bold">2.8 ms</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 font-sans">
+            <span className="text-slate-500">Latency:</span>
+            <span className="text-emerald-700 font-bold font-mono">2.8 ms</span>
           </div>
         </div>
       </div>

@@ -136,13 +136,27 @@ internal sealed class CloudDbContext : DbContext
             user.HasKey(u => u.Id);
             user.Property(u => u.UserName).IsRequired().HasMaxLength(128);
             user.Property(u => u.PasswordHash).IsRequired().HasMaxLength(512);
-            user.Property(u => u.Role).HasConversion<string>().HasMaxLength(32);
+            var userRoleConverter = new Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<UserRole, string>(
+                v => v.ToString(),
+                v => ParseUserRole(v));
+
+            user.Property(u => u.Role).HasConversion(userRoleConverter).HasMaxLength(32);
             user.Property(u => u.Email).HasMaxLength(256);
             user.Property(u => u.DisplayName).HasMaxLength(128);
             user.Property(u => u.AvatarUrl).HasMaxLength(512);
             user.Property(u => u.Bio).HasMaxLength(1024);
             user.HasIndex(u => u.UserName).IsUnique();
         });
+    }
+
+    private static UserRole ParseUserRole(string role)
+    {
+        if (string.Equals(role, "Developer", StringComparison.OrdinalIgnoreCase))
+        {
+            return UserRole.Trader;
+        }
+
+        return Enum.TryParse<UserRole>(role, true, out var parsed) ? parsed : UserRole.Trader;
     }
 
     private static void ConfigureLicense(ModelBuilder modelBuilder)

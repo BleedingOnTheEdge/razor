@@ -56,11 +56,23 @@ internal sealed class CommandService(
         try
         {
             using JsonDocument pDoc = JsonDocument.Parse(parametersJson);
-            if ((pDoc.RootElement.TryGetProperty("RunId", out JsonElement rElem) ||
-                 pDoc.RootElement.TryGetProperty("FlowRunId", out rElem)) &&
-                rElem.TryGetGuid(out Guid g))
+            if (pDoc.RootElement.ValueKind == JsonValueKind.Object)
             {
-                return g;
+                foreach (var prop in pDoc.RootElement.EnumerateObject())
+                {
+                    if (prop.Name.Equals("RunId", StringComparison.OrdinalIgnoreCase) ||
+                        prop.Name.Equals("FlowRunId", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (prop.Value.ValueKind == JsonValueKind.String && Guid.TryParse(prop.Value.GetString(), out Guid g))
+                        {
+                            return g;
+                        }
+                        if (prop.Value.TryGetGuid(out Guid g2))
+                        {
+                            return g2;
+                        }
+                    }
+                }
             }
         }
         catch
@@ -287,7 +299,7 @@ internal sealed class CommandService(
             FlowRun? flowRun = null;
             if (resolvedRunId.HasValue)
             {
-                flowRun = await db.FlowRuns.FirstOrDefaultAsync(r => r.Id == resolvedRunId.Value && r.Status == RunStatus.Running, cancellationToken).ConfigureAwait(false);
+                flowRun = await db.FlowRuns.FirstOrDefaultAsync(r => r.Id == resolvedRunId.Value, cancellationToken).ConfigureAwait(false);
             }
 
             if (flowRun is null)

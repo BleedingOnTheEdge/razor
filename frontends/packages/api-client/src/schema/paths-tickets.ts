@@ -18,6 +18,11 @@ export interface TicketAndCommunityPaths {
         query?: {
           targetType?: 'SystemManager' | 'AdditiveDeveloper';
           status?: 'Open' | 'InProgress' | 'Resolved' | 'Closed';
+          priority?: 'Low' | 'Medium' | 'High' | 'Critical';
+          category?: 'Bug' | 'FeatureRequest' | 'Billing' | 'Incident' | 'General';
+          search?: string;
+          page?: number;
+          pageSize?: number;
           targetItemId?: string;
           accountId?: string;
         };

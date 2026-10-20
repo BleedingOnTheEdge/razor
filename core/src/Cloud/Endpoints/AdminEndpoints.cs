@@ -232,3 +232,132 @@ internal sealed class DeleteUserEndpoint(UserService users)
         }
     }
 }
+
+internal sealed class UpdateUserSubscriptionRequest
+{
+    public Guid UserId { get; set; }
+    public SubscriptionTier Tier { get; set; }
+}
+
+internal sealed class ResetUserPasswordRequest
+{
+    public Guid UserId { get; set; }
+    public string NewPassword { get; set; } = string.Empty;
+}
+
+internal sealed class ImpersonateUserRequest
+{
+    public Guid UserId { get; set; }
+}
+
+/// <summary>
+/// Updates a user's subscription tier.
+/// </summary>
+internal sealed class UpdateUserSubscriptionEndpoint(UserService users)
+    : Endpoint<UpdateUserSubscriptionRequest, UserProfileView>
+{
+    public override void Configure()
+    {
+        Put("/api/admin/users/{userId}/subscription");
+        Summary(s =>
+        {
+            s.Summary = "Update user subscription tier";
+            s.Description = "Changes user subscription tier and recalculates quota limits.";
+        });
+    }
+
+    public override async Task HandleAsync(UpdateUserSubscriptionRequest req, CancellationToken ct)
+    {
+        UserProfileView? updated = await users.UpdateUserSubscriptionAsync(req.UserId, req.Tier, ct).ConfigureAwait(false);
+        if (updated is null)
+        {
+            await Send.NotFoundAsync(ct).ConfigureAwait(false);
+            return;
+        }
+
+        await Send.OkAsync(updated, ct).ConfigureAwait(false);
+    }
+}
+
+/// <summary>
+/// Resets a user's password.
+/// </summary>
+internal sealed class ResetUserPasswordEndpoint(UserService users)
+    : Endpoint<ResetUserPasswordRequest>
+{
+    public override void Configure()
+    {
+        Post("/api/admin/users/{userId}/reset-password");
+        Summary(s =>
+        {
+            s.Summary = "Reset user password";
+            s.Description = "Sets a new login password for a user account.";
+        });
+    }
+
+    public override async Task HandleAsync(ResetUserPasswordRequest req, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(req.NewPassword))
+        {
+            ThrowError("New password cannot be empty.");
+            return;
+        }
+
+        bool success = await users.ResetUserPasswordAsync(req.UserId, req.NewPassword, ct).ConfigureAwait(false);
+        if (!success)
+        {
+            await Send.NotFoundAsync(ct).ConfigureAwait(false);
+            return;
+        }
+
+        await Send.OkAsync(new { message = "Password successfully reset." }, ct).ConfigureAwait(false);
+    }
+}
+
+/// <summary>
+/// Initiates an impersonation session for administrators or operators.
+/// </summary>
+internal sealed class ImpersonateUserEndpoint(UserService users)
+    : Endpoint<ImpersonateUserRequest, AuthSessionResponse>
+{
+    public override void Configure()
+    {
+        Post("/api/admin/impersonate/{userId}");
+        Summary(s =>
+        {
+            s.Summary = "Impersonate user";
+            s.Description = "Generates a scoped authentication token to impersonate a target user.";
+        });
+    }
+
+    public override async Task HandleAsync(ImpersonateUserRequest req, CancellationToken ct)
+    {
+        Guid actorUserId = Guid.Empty;
+        if (HttpContext.Request.Headers.TryGetValue("X-User-Id", out var userHeader) && Guid.TryParse(userHeader, out var parsedActor))
+        {
+            actorUserId = parsedActor;
+        }
+
+        if (actorUserId == Guid.Empty)
+        {
+            UserProfileView defaultAdmin = await users.GetOrCreateDefaultUserAsync(null, ct).ConfigureAwait(false);
+            actorUserId = defaultAdmin.UserId;
+        }
+
+        try
+        {
+            AuthSessionResponse? session = await users.CreateImpersonationSessionAsync(actorUserId, req.UserId, ct).ConfigureAwait(false);
+            if (session is null)
+            {
+                await Send.NotFoundAsync(ct).ConfigureAwait(false);
+                return;
+            }
+
+            await Send.OkAsync(session, ct).ConfigureAwait(false);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            ThrowError(ex.Message, StatusCodes.Status403Forbidden);
+        }
+    }
+}

@@ -25,10 +25,14 @@ export interface EngineInstanceDetailPayload {
 }
 
 export interface WinningDnaPayload {
+  id?: string;
   genomeHash?: string;
   generation?: number;
   genes: number[];
-  parameters: Record<string, number>;
+  parameters?: Record<string, number>;
+  fitnessScore?: number;
+  annualizedReturnPct?: number;
+  winRatePct?: number;
   slots?: {
     strategy?: string | null;
     adapter?: string | null;
@@ -297,6 +301,17 @@ export interface UserProfilePayload {
   email?: string | null;
   avatarUrl?: string | null;
   bio?: string | null;
+  phoneCountryCode?: string | null;
+  phoneNumber?: string | null;
+  secondaryEmail?: string | null;
+  twoFactorEnabled?: boolean;
+  telegramHandle?: string | null;
+  googleDriveLinked?: boolean;
+  oneDriveLinked?: boolean;
+  smsOtpEnabled?: boolean;
+  isImpersonating?: boolean;
+  impersonatedBy?: string | null;
+  isOperatorRestricted?: boolean;
   role: 'SuperAdmin' | 'Admin' | 'Operator' | 'Developer' | 'Trader';
   isActive?: boolean;
   subscriptionTier: 'Free' | 'Pro' | 'Enterprise';
@@ -375,6 +390,21 @@ export interface ClusterSettingsPayload {
   metricsRetentionDays: number;
   auditLogRetentionDays: number;
   detailedBehaviorLogging: boolean;
+  telegramBotToken?: string;
+  telegramDefaultChannel?: string;
+  discordWebhookUrl?: string;
+  slackWebhookUrl?: string;
+  enableMessengerAlerts?: boolean;
+  smsProvider?: string;
+  smsApiKey?: string;
+  smsSenderNumber?: string;
+  enableSmsAlerts?: boolean;
+  paymentProvider?: string;
+  paymentPublicKey?: string;
+  paymentSecretKey?: string;
+  paymentWebhookSecret?: string;
+  paymentCurrency?: string;
+  subscriptionTiersJson?: string;
 }
 
 export interface UpdateProfileRequestPayload {
@@ -383,4 +413,12 @@ export interface UpdateProfileRequestPayload {
   email?: string;
   avatarUrl?: string;
   bio?: string;
+  phoneCountryCode?: string;
+  phoneNumber?: string;
+  secondaryEmail?: string;
+  twoFactorEnabled?: boolean;
+  telegramHandle?: string;
+  googleDriveLinked?: boolean;
+  oneDriveLinked?: boolean;
+  smsOtpEnabled?: boolean;
 }

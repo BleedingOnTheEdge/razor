@@ -28,7 +28,18 @@ internal sealed record UserProfileView(
     string? Bio = null,
     bool CanManageUsers = false,
     bool CanManageSettings = false,
-    bool IsSuperAdmin = false);
+    bool IsSuperAdmin = false,
+    string? PhoneCountryCode = null,
+    string? PhoneNumber = null,
+    string? SecondaryEmail = null,
+    bool TwoFactorEnabled = false,
+    string? TelegramHandle = null,
+    bool GoogleDriveLinked = false,
+    bool OneDriveLinked = false,
+    bool SmsOtpEnabled = false,
+    bool IsImpersonating = false,
+    string? ImpersonatedBy = null,
+    bool IsOperatorRestricted = false);
 
 /// <summary>Represents an authentication session response.</summary>
 internal sealed record AuthSessionResponse(
@@ -75,7 +86,7 @@ internal sealed partial class UserService(
                 AccountId = account.Id,
                 Account = account,
                 UserName = name,
-                Role = name.Contains("admin", StringComparison.OrdinalIgnoreCase) ? UserRole.Admin : UserRole.Developer,
+                Role = name.Contains("admin", StringComparison.OrdinalIgnoreCase) ? UserRole.Admin : UserRole.Trader,
                 CreatedAt = now,
                 IsActive = true
             };
@@ -273,7 +284,7 @@ internal sealed partial class UserService(
         bool isSuperAdmin = user.Role is UserRole.SuperAdmin;
         bool canManageFleet = user.Role is UserRole.SuperAdmin or UserRole.Admin or UserRole.Operator;
         bool canExecuteLive = tier is SubscriptionTier.Pro or SubscriptionTier.Enterprise;
-        bool canPublishMarketplace = user.Role is UserRole.SuperAdmin or UserRole.Admin or UserRole.Developer;
+        bool canPublishMarketplace = user.Role is UserRole.SuperAdmin or UserRole.Admin or UserRole.Trader;
         bool canManageUsers = user.Role is UserRole.SuperAdmin or UserRole.Admin;
         bool canManageSettings = user.Role is UserRole.SuperAdmin;
 
@@ -295,6 +306,14 @@ internal sealed partial class UserService(
             user.Bio,
             canManageUsers,
             canManageSettings,
-            isSuperAdmin);
+            isSuperAdmin,
+            user.PhoneCountryCode,
+            user.PhoneNumber,
+            user.SecondaryEmail,
+            user.TwoFactorEnabled,
+            user.TelegramHandle,
+            user.GoogleDriveLinked,
+            user.OneDriveLinked,
+            user.SmsOtpEnabled);
     }
 }

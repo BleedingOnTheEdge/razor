@@ -41,16 +41,20 @@ internal sealed partial class KernelService
             : (_extensionManager.ActiveAdapter ?? _extensionManager.CreateTransientAdapter("MockPaperTradingAdapter"));
         adapter ??= _extensionManager.CreateTransientAdapter("MockPaperTradingAdapter")
             ?? _extensionManager.CreateTransientAdapter("PaperBroker")
-            ?? throw new InvalidOperationException("No active adapter found.");
+            ?? new Sdk.Slots.Adapter.MockPaperTradingAdapter();
 
         var strategy = !string.IsNullOrWhiteSpace(input.StrategyName)
             ? (_extensionManager.CreateTransientStrategy(input.StrategyName)
                ?? _extensionManager.CreateTransientStrategy("TrendFollowing")
                ?? _extensionManager.ActiveStrategy)
             : (_extensionManager.ActiveStrategy ?? _extensionManager.CreateTransientStrategy("TrendFollowing"));
+#pragma warning disable CA2000
         strategy ??= _extensionManager.CreateTransientStrategy("TrendFollowing")
             ?? _extensionManager.CreateTransientStrategy("TrendFollowingStrategy")
-            ?? throw new InvalidOperationException("No active strategy found.");
+            ?? (input.StrategyName != null && (input.StrategyName.Contains("Mean", StringComparison.OrdinalIgnoreCase) || input.StrategyName.Contains("Pairs", StringComparison.OrdinalIgnoreCase))
+                ? new Sdk.Slots.Strategy.MeanRevertingPairsStrategy()
+                : new Sdk.Slots.Strategy.TrendFollowingStrategy());
+#pragma warning restore CA2000
 
         var symbolProperties = new Dictionary<string, SymbolProperties>();
         var tickStreams = new List<IReadOnlyList<Tick>>();

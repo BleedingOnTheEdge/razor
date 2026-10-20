@@ -120,8 +120,9 @@ export function getRunStatusBadge(status: RunStatus | string): {
         className: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
       };
     case 'Failed':
+    case 'Faulted':
       return {
-        label: 'Failed',
+        label: 'Faulted',
         className: 'bg-rose-500/10 text-rose-400 border border-rose-500/20',
       };
     case 'Cancelled':

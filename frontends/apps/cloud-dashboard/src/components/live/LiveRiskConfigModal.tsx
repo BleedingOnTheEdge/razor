@@ -34,83 +34,84 @@ export function LiveRiskConfigModal({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 font-mono text-xs"
+      className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 font-sans text-sm"
       onClick={onClose}
     >
       <div
-        className="bg-white border border-black max-w-md w-full p-6 space-y-5 text-black"
+        className="bg-white border border-slate-200 rounded-2xl shadow-xl max-w-md w-full p-6 space-y-5 text-slate-900 animate-in fade-in-0 zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between pb-3 border-b border-black">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-200">
           <div>
-            <h3 className="text-base font-bold text-black uppercase">
-              Dynamic Risk Limits (1107)
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-indigo-600" />
+              <span>Dynamic Risk Limits (1107)</span>
             </h3>
-            <p className="text-xs text-zinc-600 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Circuit breaker loss ceilings and position caps
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="px-2 py-1 border border-black bg-white hover:bg-black hover:text-white font-bold"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
           >
-            [CLOSE]
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="space-y-4 text-xs font-mono">
+        <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="block text-black font-bold mb-1">Max Daily Drawdown (%)</label>
+            <label className="block text-slate-700 font-medium text-xs mb-1.5">Max Daily Drawdown (%)</label>
             <input
               type="number"
               step="0.1"
               value={maxDailyDrawdown}
               onChange={(e) => setMaxDailyDrawdown(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 font-mono text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
               required
             />
-            <span className="text-[10px] text-zinc-600">Halts orders if daily peak-to-trough exceeds this %.</span>
+            <span className="text-xs text-slate-400 mt-1 block">Halts orders if daily peak-to-trough exceeds this %.</span>
           </div>
 
           <div>
-            <label className="block text-black font-bold mb-1">Max Concurrent Open Positions</label>
+            <label className="block text-slate-700 font-medium text-xs mb-1.5">Max Concurrent Open Positions</label>
             <input
               type="number"
               value={maxPositions}
               onChange={(e) => setMaxPositions(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 font-mono text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
               required
             />
-            <span className="text-[10px] text-zinc-600">Upper bound on simultaneous exposure tickets.</span>
+            <span className="text-xs text-slate-400 mt-1 block">Upper bound on simultaneous exposure tickets.</span>
           </div>
 
           <div>
-            <label className="block text-black font-bold mb-1">Per-Trade Loss Cap ($)</label>
+            <label className="block text-slate-700 font-medium text-xs mb-1.5">Per-Trade Loss Cap ($)</label>
             <input
               type="number"
               value={perTradeLossCap}
               onChange={(e) => setPerTradeLossCap(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 font-mono text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
               required
             />
-            <span className="text-[10px] text-zinc-600">Hard stop loss liquidation dollar threshold.</span>
+            <span className="text-xs text-slate-400 mt-1 block">Hard stop loss liquidation dollar threshold.</span>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-black">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors"
+              className="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 text-slate-700 font-medium text-sm transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isDispatching}
-              className="px-4 py-2 border border-black bg-black text-white hover:bg-white hover:text-black font-bold transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm transition-colors disabled:opacity-50 shadow-sm"
             >
-              {isDispatching ? '[APPLYING...]' : 'Apply Risk Controls'}
+              {isDispatching ? 'Applying Limits...' : 'Apply Risk Controls'}
             </button>
           </div>
         </form>

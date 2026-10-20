@@ -22,6 +22,14 @@ internal sealed class UpdateProfileRequest
     public string? Email { get; set; }
     public string? AvatarUrl { get; set; }
     public string? Bio { get; set; }
+    public string? PhoneCountryCode { get; set; }
+    public string? PhoneNumber { get; set; }
+    public string? SecondaryEmail { get; set; }
+    public bool? TwoFactorEnabled { get; set; }
+    public string? TelegramHandle { get; set; }
+    public bool? GoogleDriveLinked { get; set; }
+    public bool? OneDriveLinked { get; set; }
+    public bool? SmsOtpEnabled { get; set; }
 }
 
 /// <summary>
@@ -95,6 +103,14 @@ internal sealed class UpdateUserProfileEndpoint(UserService users)
             req.Email,
             req.AvatarUrl,
             req.Bio,
+            req.PhoneCountryCode,
+            req.PhoneNumber,
+            req.SecondaryEmail,
+            req.TwoFactorEnabled,
+            req.TelegramHandle,
+            req.GoogleDriveLinked,
+            req.OneDriveLinked,
+            req.SmsOtpEnabled,
             ct).ConfigureAwait(false);
 
         if (updated is null)

@@ -163,20 +163,36 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
         </nav>
       </div>
 
-      {/* Footer Info */}
-      <div className="p-4 border-t border-black bg-white">
-        <div className="flex items-center justify-between text-xs text-black">
-          <span className="flex items-center gap-1.5 font-bold">
-            <ShieldCheck className="w-3.5 h-3.5 text-black" />
-            <span>Engine Sockets</span>
-          </span>
-          <span className="inline-flex items-center gap-1.5 font-bold text-green-600">
-            [ONLINE]
-          </span>
-        </div>
-        <div className="mt-2 text-[11px] text-black font-bold">
-          Cloud API v1.0 • .NET 10
-        </div>
+      {/* Mini Profile Footer */}
+      <div className="p-3 border-t border-black bg-white">
+        {user ? (
+          <Link
+            href="/panel/profile"
+            onClick={onClose}
+            className="flex items-center gap-3 p-1.5 border border-transparent hover:border-black hover:bg-zinc-50 transition-colors group"
+            title="View User Profile"
+          >
+            <div className="w-8 h-8 rounded-full border border-black bg-zinc-100 flex items-center justify-center font-bold text-black text-xs shrink-0">
+              {user.displayName ? user.displayName.slice(0, 2).toUpperCase() : user.userName.slice(0, 2).toUpperCase()}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-bold text-black truncate group-hover:underline">
+                {user.displayName || user.userName}
+              </div>
+              <div className="text-[10px] text-zinc-600 font-bold uppercase truncate">
+                {user.role} • {user.subscriptionTier || 'Free'}
+              </div>
+            </div>
+          </Link>
+        ) : (
+          <Link
+            href="/auth/login"
+            onClick={onClose}
+            className="flex items-center justify-center gap-2 p-2 border border-black bg-black text-white text-xs font-bold hover:bg-zinc-800 transition-colors"
+          >
+            Sign In
+          </Link>
+        )}
       </div>
     </div>
   );

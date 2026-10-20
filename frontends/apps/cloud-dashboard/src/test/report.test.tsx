@@ -184,10 +184,8 @@ describe('Run Report & Audit View', () => {
       expect(screen.getByText('Institutional Analytics & Risk Dimensions')).toBeInTheDocument();
       expect(screen.getByText('3.00')).toBeInTheDocument();
       expect(screen.getByText('68.5%')).toBeInTheDocument();
-      expect(screen.getByText('Genetic Algorithm Optimization Convergence')).toBeInTheDocument();
-      expect(screen.getByText('Generation #1')).toBeInTheDocument();
-      expect(screen.getByText(/Diversity: 0.85/i)).toBeInTheDocument();
-      expect(screen.getByText('Granular Trade Fill History')).toBeInTheDocument();
+      expect(screen.getByText(/Genetic Generational Convergence/i)).toBeInTheDocument();
+      expect(screen.getByText('OPEN GENERATIONS PROGRESSION GRID')).toBeInTheDocument();
     });
   });
 });

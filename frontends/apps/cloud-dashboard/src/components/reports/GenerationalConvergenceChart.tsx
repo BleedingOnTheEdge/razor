@@ -24,11 +24,11 @@ export function GenerationalConvergenceChart({
   const fitSpan = Math.max(0.0001, maxFit - minFit);
 
   const cWidth = 800;
-  const cHeight = 140;
-  const pLeft = 45;
-  const pRight = 20;
-  const pTop = 15;
-  const pBottom = 25;
+  const cHeight = 160;
+  const pLeft = 55;
+  const pRight = 25;
+  const pTop = 20;
+  const pBottom = 30;
   const plotW = cWidth - pLeft - pRight;
   const plotH = cHeight - pTop - pBottom;
 
@@ -56,42 +56,43 @@ export function GenerationalConvergenceChart({
     : '';
 
   return (
-    <div className="p-6 bg-white border border-black space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-black">
+    <div className="p-6 bg-white border border-slate-200 rounded-xl shadow-sm space-y-5 font-sans">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-slate-200">
         <div>
-          <h3 className="text-sm font-bold text-black uppercase flex items-center gap-2">
+          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <Activity className="w-5 h-5 text-indigo-600" />
             <span>Genetic Algorithm Optimization Convergence</span>
-            <span className="text-[10px] font-mono px-2 py-0.5 bg-black text-white font-bold">
-              INTERACTIVE
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+              Interactive
             </span>
           </h3>
-          <p className="text-xs text-black font-mono mt-0.5">
-            Best and average fitness evolution across {genList.length} generations. Click any generation to inspect candidates.
+          <p className="text-sm text-slate-600 mt-1">
+            Best and average fitness evolution across {genList.length} generations. Click any generation below to inspect individual chromosomes.
           </p>
         </div>
-        <div className="flex items-center gap-4 text-xs font-mono">
-          <div className="flex items-center gap-1.5">
-            <span className="w-3 h-1 bg-black inline-block" />
-            <span className="text-black font-bold">Best Fitness</span>
+        <div className="flex items-center gap-5 text-xs font-medium">
+          <div className="flex items-center gap-2">
+            <span className="w-4 h-1 bg-slate-900 rounded-full inline-block" />
+            <span className="text-slate-800 font-semibold">Best Fitness</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-3 h-0.5 bg-zinc-600 inline-block border-t border-dashed border-zinc-600" />
-            <span className="text-zinc-600 font-bold">Avg Fitness</span>
+          <div className="flex items-center gap-2">
+            <span className="w-4 h-0.5 bg-slate-400 inline-block border-t border-dashed border-slate-500" />
+            <span className="text-slate-600">Avg Fitness</span>
           </div>
         </div>
       </div>
 
-      {/* Convergence Curve SVG */}
-      <div className="bg-black p-4 border border-black overflow-hidden">
-        <svg viewBox={`0 0 ${cWidth} ${cHeight}`} className="w-full h-36 overflow-visible select-none">
+      {/* Convergence Curve SVG Canvas */}
+      <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 overflow-hidden select-none">
+        <svg viewBox={`0 0 ${cWidth} ${cHeight}`} className="w-full h-44 overflow-visible select-none">
           {/* Horizontal grid lines */}
           {[0, 0.5, 1].map((pct, i) => {
             const y = pTop + plotH * (1 - pct);
             const val = minFit + pct * fitSpan;
             return (
               <g key={i}>
-                <line x1={pLeft} y1={y} x2={pLeft + plotW} y2={y} stroke="#333333" strokeDasharray="3 3" />
-                <text x={pLeft - 6} y={y + 3} textAnchor="end" className="text-[10px] font-mono fill-zinc-400">
+                <line x1={pLeft} y1={y} x2={pLeft + plotW} y2={y} stroke="#e2e8f0" strokeDasharray="4 4" strokeWidth="1" />
+                <text x={pLeft - 8} y={y + 4} textAnchor="end" className="text-[11px] font-mono fill-slate-500">
                   {val.toFixed(3)}
                 </text>
               </g>
@@ -100,12 +101,12 @@ export function GenerationalConvergenceChart({
 
           {/* Avg Fitness Path */}
           {avgPath && (
-            <path d={avgPath} fill="none" stroke="#71717a" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.9" />
+            <path d={avgPath} fill="none" stroke="#64748b" strokeWidth="2" strokeDasharray="5 5" opacity="0.85" />
           )}
 
           {/* Best Fitness Path */}
           {bestPath && (
-            <path d={bestPath} fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
+            <path d={bestPath} fill="none" stroke="#0f172a" strokeWidth="2.5" strokeLinecap="round" />
           )}
 
           {/* Interactive Points */}
@@ -123,8 +124,8 @@ export function GenerationalConvergenceChart({
                   r={isSelected ? 6 : 4}
                   className={`transition-all ${
                     isSelected
-                      ? 'fill-white stroke-black stroke-2'
-                      : 'fill-zinc-300 hover:fill-white stroke-black stroke-1'
+                      ? 'fill-indigo-600 stroke-white stroke-2'
+                      : 'fill-slate-900 group-hover:fill-indigo-600 stroke-white stroke-1.5'
                   }`}
                 />
               </g>
@@ -133,9 +134,9 @@ export function GenerationalConvergenceChart({
 
           {/* X Axis generation markers */}
           {bestPoints.map((pt, i) => {
-            if (genList.length > 10 && i % Math.ceil(genList.length / 10) !== 0 && i !== genList.length - 1) return null;
+            if (genList.length > 12 && i % Math.ceil(genList.length / 10) !== 0 && i !== genList.length - 1) return null;
             return (
-              <text key={`lbl-${i}`} x={pt.x} y={cHeight - 6} textAnchor="middle" className="text-[9px] font-mono fill-zinc-400">
+              <text key={`lbl-${i}`} x={pt.x} y={cHeight - 8} textAnchor="middle" className="text-[11px] font-mono fill-slate-500">
                 G{pt.g.generation}
               </text>
             );
@@ -152,38 +153,38 @@ export function GenerationalConvergenceChart({
               type="button"
               key={g.generation}
               onClick={() => onSelectGeneration(g)}
-              className={`p-3.5 border border-black text-left font-mono text-xs cursor-pointer transition-colors ${
+              className={`p-3.5 rounded-xl border text-left font-sans text-xs cursor-pointer transition-all ${
                 isSelected
-                  ? 'bg-black text-white'
-                  : 'bg-white text-black hover:bg-zinc-100'
+                  ? 'bg-slate-900 text-white border-slate-900 shadow-md ring-2 ring-indigo-500/30'
+                  : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300 hover:bg-slate-50/80 shadow-xs'
               }`}
             >
-              <div className="flex items-center justify-between text-[11px] mb-1.5">
-                <span className={`font-bold ${isSelected ? 'text-white' : 'text-black'}`}>
+              <div className="flex items-center justify-between text-xs font-semibold mb-2">
+                <span className={isSelected ? 'text-white' : 'text-slate-900'}>
                   Generation #{g.generation}
                 </span>
-                <span className={`text-[10px] font-bold ${isSelected ? 'text-white' : 'text-zinc-600'}`}>
-                  [INSPECT]
+                <span className={`text-[11px] font-medium font-mono px-1.5 py-0.5 rounded ${isSelected ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-600'}`}>
+                  Inspect
                 </span>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1 font-mono text-xs">
                 <div className="flex items-baseline justify-between">
-                  <span className={`text-[10px] ${isSelected ? 'text-zinc-400' : 'text-zinc-600'}`}>Best:</span>
-                  <span className={`font-bold ${isSelected ? 'text-white' : 'text-black'}`}>
+                  <span className={isSelected ? 'text-slate-400' : 'text-slate-500'}>Best:</span>
+                  <span className={`font-bold ${isSelected ? 'text-emerald-400' : 'text-emerald-700'}`}>
                     {g.bestFitness.toFixed(4)}
                   </span>
                 </div>
                 {g.averageFitness != null && (
-                  <div className="flex items-baseline justify-between text-[11px]">
-                    <span className={`text-[10px] ${isSelected ? 'text-zinc-400' : 'text-zinc-600'}`}>Avg:</span>
-                    <span className={`font-bold ${isSelected ? 'text-zinc-300' : 'text-zinc-700'}`}>
+                  <div className="flex items-baseline justify-between">
+                    <span className={isSelected ? 'text-slate-400' : 'text-slate-500'}>Avg:</span>
+                    <span className={isSelected ? 'text-slate-300' : 'text-slate-700'}>
                       {g.averageFitness.toFixed(4)}
                     </span>
                   </div>
                 )}
                 {(g.populationDiversity ?? g.diversity) != null && (
-                  <div className="flex items-baseline justify-between text-[11px]">
-                    <span className={`font-bold ${isSelected ? 'text-zinc-300' : 'text-black'}`}>
+                  <div className="flex items-baseline justify-between pt-1 border-t border-slate-100">
+                    <span className={`font-medium ${isSelected ? 'text-slate-200' : 'text-slate-700'}`}>
                       Diversity: {(g.populationDiversity ?? g.diversity)?.toFixed(2)}
                     </span>
                   </div>

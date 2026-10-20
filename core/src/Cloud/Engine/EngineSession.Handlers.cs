@@ -318,6 +318,18 @@ internal sealed partial class EngineSession
                         new { Status = "Completed", CommandStatus = status, Payload = clonedPayload }),
                     cancellationToken).ConfigureAwait(false);
             }
+            else
+            {
+                await _eventBroadcaster.PublishAsync(
+                    new ClientEvent(
+                        "run_status",
+                        InstanceId!.Value,
+                        completion.RunId,
+                        correlationId,
+                        _timeProvider.GetUtcNow(),
+                        new { Status = "Faulted", CommandStatus = status, Error = payload.ReadString("Error") ?? status, Payload = clonedPayload }),
+                    cancellationToken).ConfigureAwait(false);
+            }
         }
 
         return EngineSessionSignal.Continue;

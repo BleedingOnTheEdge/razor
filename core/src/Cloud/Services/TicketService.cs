@@ -18,12 +18,15 @@ internal sealed class TicketService(
     TimeProvider timeProvider,
     IClientEventBroadcaster? eventBroadcaster = null)
 {
-    /// <summary>Lists tickets with optional filters for target routing, status, and associated extension.</summary>
+    /// <summary>Lists tickets with optional filters for target routing, status, priority, category, and search.</summary>
     public async Task<IReadOnlyList<Ticket>> GetTicketsAsync(
         TicketTargetType? targetType = null,
         TicketStatus? status = null,
         Guid? targetItemId = null,
         Guid? accountId = null,
+        string? search = null,
+        TicketPriority? priority = null,
+        TicketCategory? category = null,
         CancellationToken cancellationToken = default)
     {
         using CloudDbContext db = contextFactory.CreateDbContext();
@@ -40,6 +43,16 @@ internal sealed class TicketService(
             q = q.Where(t => t.Status == status.Value);
         }
 
+        if (priority.HasValue)
+        {
+            q = q.Where(t => t.Priority == priority.Value);
+        }
+
+        if (category.HasValue)
+        {
+            q = q.Where(t => t.Category == category.Value);
+        }
+
         if (targetItemId.HasValue)
         {
             q = q.Where(t => t.TargetItemId == targetItemId.Value);
@@ -50,21 +63,39 @@ internal sealed class TicketService(
             q = q.Where(t => t.AccountId == accountId.Value);
         }
 
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            string pattern = $"%{search.Trim()}%";
+            q = q.Where(t => EF.Functions.Like(t.Title, pattern) || EF.Functions.Like(t.Description, pattern) || EF.Functions.Like(t.AuthorName, pattern));
+        }
+
         List<Ticket> list = await q.ToListAsync(cancellationToken)
             .ConfigureAwait(false);
+
+        foreach (Ticket t in list)
+        {
+            t.Messages = [.. t.Messages.OrderByDescending(m => m.CreatedAt)];
+        }
 
         return [.. list.OrderByDescending(t => t.UpdatedAt)];
     }
 
-    /// <summary>Retrieves a ticket by identifier including its full message thread.</summary>
+    /// <summary>Retrieves a ticket by identifier including its full message thread sorted descending.</summary>
     public async Task<Ticket?> GetTicketByIdAsync(Guid ticketId, CancellationToken cancellationToken = default)
     {
         using CloudDbContext db = contextFactory.CreateDbContext();
 
-        return await db.Tickets
+        Ticket? ticket = await db.Tickets
             .Include(t => t.Messages)
             .FirstOrDefaultAsync(t => t.Id == ticketId, cancellationToken)
             .ConfigureAwait(false);
+
+        if (ticket is not null)
+        {
+            ticket.Messages = [.. ticket.Messages.OrderByDescending(m => m.CreatedAt)];
+        }
+
+        return ticket;
     }
 
     /// <summary>Submits a new support ticket.</summary>

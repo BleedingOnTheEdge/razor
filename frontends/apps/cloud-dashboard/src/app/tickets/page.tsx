@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getApiClient } from '@/lib/api-client';
-import type { TicketPayload } from '@razor/api-client';
+import type { TicketPayload, TicketMessagePayload } from '@razor/api-client';
 import {
   LifeBuoy,
   CheckCircle2,
@@ -13,6 +13,10 @@ import {
   Filter,
   Loader2,
   Plus,
+  Search,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { useToast } from '@/components/ui/toast';
 import { CreateTicketModal } from '@/components/tickets/CreateTicketModal';
@@ -21,13 +25,31 @@ export default function OperatorTicketsPage() {
   const [tickets, setTickets] = useState<TicketPayload[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTicket, setSelectedTicket] = useState<TicketPayload | null>(null);
+
+  // Filters & Search
+  const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [priorityFilter, setPriorityFilter] = useState<string>('All');
+  const [categoryFilter, setCategoryFilter] = useState<string>('All');
+
+  // Sorting
+  const [sortBy, setSortBy] = useState<'updatedAt' | 'createdAt' | 'priority' | 'status'>('updatedAt');
+  const [sortDirection, setSortDirection] = useState<'DESC' | 'ASC'>('DESC');
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Lazy loading messages
+  const [visibleMessagesCount, setVisibleMessagesCount] = useState(5);
+
+  // Reply Composer
   const [replyText, setReplyText] = useState('');
   const [operatorName, setOperatorName] = useState('Senior Operations Engineer');
   const [submittingReply, setSubmittingReply] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+
   const toast = useToast();
 
   const loadTickets = async () => {
@@ -38,6 +60,11 @@ export default function OperatorTicketsPage() {
         params: {
           query: {
             status: statusFilter === 'All' ? undefined : (statusFilter as TicketPayload['status']),
+            priority: priorityFilter === 'All' ? undefined : (priorityFilter as TicketPayload['priority']),
+            category: categoryFilter === 'All' ? undefined : (categoryFilter as TicketPayload['category']),
+            search: searchQuery.trim() || undefined,
+            page,
+            pageSize,
           },
         },
       });
@@ -57,8 +84,17 @@ export default function OperatorTicketsPage() {
   };
 
   useEffect(() => {
+    setPage(1);
+  }, [statusFilter, priorityFilter, categoryFilter, searchQuery]);
+
+  useEffect(() => {
     void loadTickets();
-  }, [statusFilter]);
+  }, [statusFilter, priorityFilter, categoryFilter, page, pageSize]);
+
+  // Reset lazy load count on ticket selection change
+  useEffect(() => {
+    setVisibleMessagesCount(5);
+  }, [selectedTicket?.id]);
 
   const handleStatusTransition = async (ticketId: string, newStatus: TicketPayload['status']) => {
     try {
@@ -107,33 +143,65 @@ export default function OperatorTicketsPage() {
     }
   };
 
-  const filteredTickets = tickets.filter((t) =>
-    priorityFilter === 'All' ? true : t.priority === priorityFilter
-  );
+  // Client multi-param sorting
+  const sortedTickets = useMemo(() => {
+    const list = [...tickets];
+    const priorityWeights: Record<string, number> = { Critical: 4, High: 3, Medium: 2, Low: 1 };
 
+    list.sort((a, b) => {
+      let cmp = 0;
+      if (sortBy === 'updatedAt') {
+        cmp = new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      } else if (sortBy === 'createdAt') {
+        cmp = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      } else if (sortBy === 'priority') {
+        cmp = (priorityWeights[b.priority] || 0) - (priorityWeights[a.priority] || 0);
+      } else if (sortBy === 'status') {
+        cmp = a.status.localeCompare(b.status);
+      }
+      return sortDirection === 'DESC' ? cmp : -cmp;
+    });
+
+    return list;
+  }, [tickets, sortBy, sortDirection]);
+
+  // Messages in selected ticket sorted DESC by datetime (newest first)
+  const sortedMessages = useMemo(() => {
+    if (!selectedTicket?.messages) return [];
+    return [...selectedTicket.messages].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }, [selectedTicket?.messages]);
+
+  const visibleMessages = sortedMessages.slice(0, visibleMessagesCount);
+
+  // High-level counts
   const openCount = tickets.filter((t) => t.status === 'Open').length;
   const inProgressCount = tickets.filter((t) => t.status === 'InProgress').length;
   const incidentCount = tickets.filter((t) => t.category === 'Incident' || t.priority === 'Critical').length;
   const resolvedCount = tickets.filter((t) => t.status === 'Resolved' || t.status === 'Closed').length;
 
   return (
-    <div className="space-y-6 max-w-7xl font-sans">
+    <div className="space-y-6 max-w-7xl font-mono text-black">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-zinc-200">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-black">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
-            <LifeBuoy className="w-6 h-6 text-cyan-600" />
-            <span>Operations Support & Incident Triage</span>
-          </h2>
-          <p className="text-xs text-zinc-500 mt-1">
-            Cluster operational requests, developer inquiries, and production incidents triage console.
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider mb-1">
+            <LifeBuoy className="w-4 h-4 text-black" />
+            <span>INCIDENT TRIAGE & OPERATIONS SUPPORT</span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight uppercase">
+            Operations Support & Incident Triage
+          </h1>
+          <p className="text-xs text-black mt-1">
+            Production incident triage, execution anomalies, and developer assistance tickets.
           </p>
         </div>
 
         <button
           type="button"
           onClick={() => setCreateModalOpen(true)}
-          className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-sm self-start md:self-auto"
+          className="px-4 py-2 border border-black bg-black text-white hover:bg-zinc-800 text-xs font-bold uppercase flex items-center gap-2 rounded-none transition-colors self-start md:self-auto"
         >
           <Plus className="w-4 h-4" />
           <span>New Ticket</span>
@@ -142,177 +210,266 @@ export default function OperatorTicketsPage() {
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="p-4 rounded-xl bg-white border border-zinc-200 shadow-sm space-y-1">
-          <div className="flex items-center justify-between text-xs text-zinc-500">
+        <div className="p-4 border border-black bg-white space-y-1">
+          <div className="flex items-center justify-between text-xs font-bold uppercase text-black">
             <span>Awaiting Triage</span>
-            <Clock className="w-3.5 h-3.5 text-blue-600" />
+            <Clock className="w-3.5 h-3.5" />
           </div>
-          <p className="text-2xl font-bold font-mono text-zinc-900">{openCount}</p>
+          <p className="text-2xl font-bold font-mono text-black">{openCount}</p>
         </div>
 
-        <div className="p-4 rounded-xl bg-white border border-zinc-200 shadow-sm space-y-1">
-          <div className="flex items-center justify-between text-xs text-zinc-500">
+        <div className="p-4 border border-black bg-white space-y-1">
+          <div className="flex items-center justify-between text-xs font-bold uppercase text-black">
             <span>Active Investigations</span>
-            <Clock className="w-3.5 h-3.5 text-amber-600" />
+            <Clock className="w-3.5 h-3.5" />
           </div>
-          <p className="text-2xl font-bold font-mono text-amber-700">{inProgressCount}</p>
+          <p className="text-2xl font-bold font-mono text-black">{inProgressCount}</p>
         </div>
 
-        <div className="p-4 rounded-xl bg-rose-50/70 border border-rose-200 shadow-sm space-y-1">
-          <div className="flex items-center justify-between text-xs text-rose-700 font-medium">
+        <div className="p-4 border border-black bg-white space-y-1">
+          <div className="flex items-center justify-between text-xs font-bold uppercase text-black">
             <span>Critical / Incidents</span>
-            <ShieldAlert className="w-3.5 h-3.5 text-rose-600" />
+            <ShieldAlert className="w-3.5 h-3.5" />
           </div>
-          <p className="text-2xl font-bold font-mono text-rose-800">{incidentCount}</p>
+          <p className="text-2xl font-bold font-mono text-red-600">{incidentCount}</p>
         </div>
 
-        <div className="p-4 rounded-xl bg-white border border-zinc-200 shadow-sm space-y-1">
-          <div className="flex items-center justify-between text-xs text-zinc-500">
+        <div className="p-4 border border-black bg-white space-y-1">
+          <div className="flex items-center justify-between text-xs font-bold uppercase text-black">
             <span>Resolved / Closed</span>
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <CheckCircle2 className="w-3.5 h-3.5" />
           </div>
-          <p className="text-2xl font-bold font-mono text-emerald-700">{resolvedCount}</p>
+          <p className="text-2xl font-bold font-mono text-green-600">{resolvedCount}</p>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-3 rounded-xl border border-zinc-200 shadow-sm">
-        <div className="flex items-center gap-1.5 overflow-x-auto text-xs font-mono">
-          <span className="text-zinc-500 mr-1 flex items-center gap-1">
-            <Filter className="w-3 h-3" /> Status:
-          </span>
-          {['All', 'Open', 'InProgress', 'Resolved', 'Closed'].map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setStatusFilter(s)}
-              className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
-                statusFilter === s
-                  ? 'bg-zinc-900 text-white font-semibold'
-                  : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
-              }`}
+      {/* Multi-Param Filter & Sort Control Bar */}
+      <div className="p-4 border border-black bg-white space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+          {/* Search */}
+          <div className="relative w-full sm:w-72">
+            <Search className="w-4 h-4 text-black absolute left-2.5 top-2.5" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && loadTickets()}
+              placeholder="SEARCH TICKETS..."
+              className="w-full pl-8 pr-3 py-1.5 bg-white border border-black text-xs font-mono text-black focus:outline-none focus:ring-1 focus:ring-black rounded-none uppercase placeholder:text-zinc-400"
+            />
+          </div>
+
+          {/* Sort Controls */}
+          <div className="flex items-center gap-2">
+            <span className="font-bold uppercase text-[11px] flex items-center gap-1">
+              <ArrowUpDown className="w-3.5 h-3.5" /> Sort:
+            </span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="px-2 py-1.5 bg-white border border-black text-xs font-bold uppercase rounded-none"
             >
-              {s}
+              <option value="updatedAt">Updated At</option>
+              <option value="createdAt">Created At</option>
+              <option value="priority">Priority</option>
+              <option value="status">Status</option>
+            </select>
+            <button
+              onClick={() => setSortDirection(sortDirection === 'DESC' ? 'ASC' : 'DESC')}
+              className="px-2.5 py-1.5 border border-black bg-white hover:bg-black hover:text-white font-bold uppercase text-xs transition-colors"
+            >
+              {sortDirection}
             </button>
-          ))}
+          </div>
         </div>
 
-        <div className="flex items-center gap-1.5 text-xs font-mono">
-          <span className="text-zinc-500 mr-1">Priority:</span>
-          {['All', 'Critical', 'High', 'Medium', 'Low'].map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setPriorityFilter(p)}
-              className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
-                priorityFilter === p
-                  ? 'bg-amber-100 text-amber-900 font-semibold border border-amber-300'
-                  : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
-              }`}
-            >
-              {p}
-            </button>
-          ))}
+        {/* Filter Pills */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-black text-xs">
+          {/* Status */}
+          <div className="flex items-center gap-1 overflow-x-auto">
+            <span className="font-bold uppercase text-[10px] mr-1">Status:</span>
+            {['All', 'Open', 'InProgress', 'Resolved', 'Closed'].map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setStatusFilter(s)}
+                className={`px-2 py-0.5 border border-black uppercase text-[10px] font-bold transition-colors ${
+                  statusFilter === s ? 'bg-black text-white' : 'bg-white text-black hover:bg-zinc-100'
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+
+          {/* Priority */}
+          <div className="flex items-center gap-1 overflow-x-auto">
+            <span className="font-bold uppercase text-[10px] mr-1">Priority:</span>
+            {['All', 'Critical', 'High', 'Medium', 'Low'].map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setPriorityFilter(p)}
+                className={`px-2 py-0.5 border border-black uppercase text-[10px] font-bold transition-colors ${
+                  priorityFilter === p ? 'bg-black text-white' : 'bg-white text-black hover:bg-zinc-100'
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+
+          {/* Category */}
+          <div className="flex items-center gap-1 overflow-x-auto">
+            <span className="font-bold uppercase text-[10px] mr-1">Category:</span>
+            {['All', 'Incident', 'Bug', 'FeatureRequest', 'Billing', 'General'].map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCategoryFilter(c)}
+                className={`px-2 py-0.5 border border-black uppercase text-[10px] font-bold transition-colors ${
+                  categoryFilter === c ? 'bg-black text-white' : 'bg-white text-black hover:bg-zinc-100'
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Main Grid: Ticket List + Detail / Reply View */}
+      {/* Main Layout: Ticket List + Triage & Message Stream */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Ticket List */}
         <div className="lg:col-span-5 space-y-3">
           {loading ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-3 text-zinc-500 bg-white border border-zinc-200 rounded-2xl shadow-sm">
-              <Loader2 className="w-6 h-6 animate-spin text-cyan-600" />
-              <p className="text-xs font-mono">Loading tickets...</p>
+            <div className="py-20 flex flex-col items-center justify-center gap-3 border border-black bg-white p-6">
+              <Loader2 className="w-6 h-6 animate-spin text-black" />
+              <p className="text-xs font-bold uppercase">Loading tickets...</p>
             </div>
-          ) : filteredTickets.length === 0 ? (
-            <div className="py-16 text-center border border-dashed border-zinc-200 rounded-2xl p-6 bg-zinc-50">
-              <LifeBuoy className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
-              <p className="text-xs font-medium text-zinc-600">No matching tickets in queue</p>
+          ) : sortedTickets.length === 0 ? (
+            <div className="py-16 text-center border border-black p-6 bg-white space-y-2">
+              <LifeBuoy className="w-8 h-8 text-black mx-auto" />
+              <p className="text-xs font-bold uppercase">No matching tickets in queue</p>
             </div>
           ) : (
-            filteredTickets.map((t) => (
+            sortedTickets.map((t) => (
               <div
                 key={t.id}
                 onClick={() => setSelectedTicket(t)}
-                className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                className={`p-4 border transition-all cursor-pointer ${
                   selectedTicket?.id === t.id
-                    ? 'bg-white border-cyan-500 shadow-md ring-2 ring-cyan-100'
-                    : 'bg-white hover:border-zinc-300 border-zinc-200 shadow-sm'
+                    ? 'border-black bg-zinc-100 ring-2 ring-black'
+                    : 'border-black bg-white hover:bg-zinc-50'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase font-semibold ${
+                      className={`px-2 py-0.5 border border-black text-[10px] font-bold uppercase ${
                         t.status === 'Open'
-                          ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                          ? 'bg-white text-black'
                           : t.status === 'InProgress'
-                          ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                          ? 'bg-black text-white'
                           : t.status === 'Resolved'
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          : 'bg-zinc-100 text-zinc-600'
+                          ? 'bg-green-600 text-white'
+                          : 'bg-zinc-200 text-black'
                       }`}
                     >
                       {t.status}
                     </span>
-                    <span className="text-[10px] font-mono text-zinc-500">
+                    <span className="text-[10px] font-bold uppercase text-black">
                       [{t.category}]
                     </span>
                   </div>
 
                   <span
-                    className={`text-[10px] font-mono font-bold uppercase ${
+                    className={`text-[10px] font-bold uppercase ${
                       t.priority === 'Critical'
-                        ? 'text-rose-600'
+                        ? 'text-red-600'
                         : t.priority === 'High'
-                        ? 'text-amber-700'
-                        : 'text-zinc-500'
+                        ? 'text-black underline'
+                        : 'text-black'
                     }`}
                   >
                     {t.priority}
                   </span>
                 </div>
 
-                <h4 className="text-sm font-semibold text-zinc-900 truncate">{t.title}</h4>
-                <p className="text-xs text-zinc-500 line-clamp-2 mt-1">{t.description}</p>
+                <h4 className="text-xs font-bold text-black uppercase truncate">{t.title}</h4>
+                <p className="text-xs text-black line-clamp-2 mt-1">{t.description}</p>
 
-                <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 mt-3 pt-2 border-t border-zinc-100">
-                  <span>Author: {t.authorName}</span>
+                <div className="flex items-center justify-between text-[10px] text-black mt-3 pt-2 border-t border-black">
+                  <span>@{t.authorName}</span>
                   <span>{new Date(t.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
             ))
           )}
+
+          {/* Pagination Controls */}
+          <div className="flex items-center justify-between p-3 border border-black bg-white text-xs">
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className="p-1 border border-black bg-white hover:bg-black hover:text-white transition-colors disabled:opacity-30"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+              <span className="font-bold uppercase px-2">Page {page}</span>
+              <button
+                onClick={() => setPage((p) => p + 1)}
+                disabled={tickets.length < pageSize}
+                className="p-1 border border-black bg-white hover:bg-black hover:text-white transition-colors disabled:opacity-30"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase">Rows:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+                className="px-1.5 py-0.5 border border-black bg-white text-xs font-bold rounded-none"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        {/* Selected Ticket Triage Details */}
+        {/* Selected Ticket Triage Details & DESC Message Stream */}
         <div className="lg:col-span-7">
           {selectedTicket ? (
-            <div className="bg-white border border-zinc-200 rounded-2xl p-6 space-y-6 shadow-sm sticky top-6">
-              {/* Header & Quick Action Buttons */}
-              <div className="space-y-4 border-b border-zinc-100 pb-5">
+            <div className="border border-black bg-white p-6 space-y-6">
+              {/* Header & Status Actions */}
+              <div className="space-y-4 border-b border-black pb-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="px-2.5 py-0.5 rounded text-[10px] font-mono bg-zinc-100 text-cyan-800 border border-zinc-200">
+                      <span className="px-2 py-0.5 border border-black bg-white text-[10px] font-bold uppercase">
                         Target: {selectedTicket.targetType}
                       </span>
-                      <span className="text-xs font-mono text-zinc-500">
+                      <span className="text-xs font-bold uppercase">
                         Category: {selectedTicket.category}
                       </span>
                     </div>
-                    <h3 className="text-lg font-bold text-zinc-900">{selectedTicket.title}</h3>
+                    <h3 className="text-base font-bold uppercase text-black">{selectedTicket.title}</h3>
                   </div>
 
-                  {/* Triage Status Transitions */}
-                  <div className="flex items-center gap-2">
+                  {/* Transitions */}
+                  <div className="flex items-center gap-1.5">
                     {selectedTicket.status !== 'InProgress' && selectedTicket.status !== 'Closed' && (
                       <button
                         type="button"
                         onClick={() => handleStatusTransition(selectedTicket.id, 'InProgress')}
                         disabled={updatingStatus}
-                        className="px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-mono transition-colors cursor-pointer font-medium"
+                        className="px-3 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black text-xs font-bold uppercase transition-colors"
                       >
                         Mark In-Progress
                       </button>
@@ -322,7 +479,7 @@ export default function OperatorTicketsPage() {
                         type="button"
                         onClick={() => handleStatusTransition(selectedTicket.id, 'Resolved')}
                         disabled={updatingStatus}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-mono transition-colors cursor-pointer font-medium"
+                        className="px-3 py-1.5 border border-black bg-white hover:bg-green-600 hover:text-white text-black text-xs font-bold uppercase transition-colors"
                       >
                         Resolve
                       </button>
@@ -332,7 +489,7 @@ export default function OperatorTicketsPage() {
                         type="button"
                         onClick={() => handleStatusTransition(selectedTicket.id, 'Closed')}
                         disabled={updatingStatus}
-                        className="px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-mono transition-colors cursor-pointer font-medium"
+                        className="px-3 py-1.5 border border-black bg-white hover:bg-red-600 hover:text-white text-black text-xs font-bold uppercase transition-colors"
                       >
                         Close
                       </button>
@@ -341,7 +498,7 @@ export default function OperatorTicketsPage() {
                         type="button"
                         onClick={() => handleStatusTransition(selectedTicket.id, 'Open')}
                         disabled={updatingStatus}
-                        className="px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 text-xs font-mono transition-colors cursor-pointer font-medium"
+                        className="px-3 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black text-xs font-bold uppercase transition-colors"
                       >
                         Reopen
                       </button>
@@ -349,61 +506,25 @@ export default function OperatorTicketsPage() {
                   </div>
                 </div>
 
-                <div className="text-xs font-mono text-zinc-500 flex items-center gap-4">
-                  <span>Author: <strong className="text-zinc-800">{selectedTicket.authorName}</strong></span>
-                  <span>Priority: <strong className={selectedTicket.priority === 'Critical' ? 'text-rose-600' : 'text-zinc-700'}>{selectedTicket.priority}</strong></span>
+                <div className="text-xs text-black flex flex-wrap items-center gap-4 pt-1">
+                  <span>Author: <strong className="uppercase">@{selectedTicket.authorName}</strong></span>
+                  <span>Priority: <strong className={`uppercase ${selectedTicket.priority === 'Critical' ? 'text-red-600 font-bold' : ''}`}>{selectedTicket.priority}</strong></span>
                   <span>Opened: {new Date(selectedTicket.createdAt).toLocaleString()}</span>
                 </div>
               </div>
 
-              {/* Message History */}
-              <div className="space-y-4 max-h-[440px] overflow-y-auto pr-2">
-                <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-4 space-y-2">
-                  <div className="text-xs font-semibold text-zinc-700">Initial Description:</div>
-                  <p className="text-xs text-zinc-800 leading-relaxed whitespace-pre-wrap font-sans">
-                    {selectedTicket.description}
-                  </p>
-                </div>
-
-                {selectedTicket.messages && selectedTicket.messages.map((m) => (
-                  <div
-                    key={m.id}
-                    className={`border rounded-xl p-4 space-y-2 ${
-                      m.authorRole === 'Operator'
-                        ? 'bg-cyan-50/50 border-cyan-200 ml-4'
-                        : 'bg-zinc-50 border-zinc-200 mr-4'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-zinc-900">{m.authorName}</span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-zinc-200 text-zinc-800 font-bold">
-                          {m.authorRole}
-                        </span>
-                      </div>
-                      <span className="text-[10px] font-mono text-zinc-400">
-                        {new Date(m.createdAt).toLocaleString()}
-                      </span>
-                    </div>
-                    <p className="text-xs text-zinc-800 leading-relaxed whitespace-pre-wrap font-sans">
-                      {m.message}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Operator Reply Composer */}
-              <form onSubmit={handleSendReply} className="space-y-3 pt-3 border-t border-zinc-100">
+              {/* Instant Reply Composer placed at TOP of stream so NO scrolling required */}
+              <form onSubmit={handleSendReply} className="border border-black p-4 bg-zinc-50 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-zinc-900 flex items-center gap-1.5">
-                    <MessageSquare className="w-4 h-4 text-cyan-600" />
-                    <span>Post Operator Update</span>
+                  <span className="text-xs font-bold uppercase text-black flex items-center gap-1.5">
+                    <MessageSquare className="w-4 h-4 text-black" />
+                    <span>Post Response (Appends Immediately to Stream)</span>
                   </span>
                   <input
                     type="text"
                     value={operatorName}
                     onChange={(e) => setOperatorName(e.target.value)}
-                    className="bg-zinc-50 border border-zinc-200 rounded-lg px-2.5 py-1 text-[11px] font-mono text-zinc-800 focus:outline-none focus:bg-white"
+                    className="bg-white border border-black px-2.5 py-1 text-[11px] font-mono text-black focus:outline-none uppercase font-bold"
                     placeholder="Operator Name"
                   />
                 </div>
@@ -412,8 +533,8 @@ export default function OperatorTicketsPage() {
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   rows={3}
-                  placeholder="Draft resolution notes, instructions for the developer, or internal findings..."
-                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-3 text-xs text-zinc-900 focus:outline-none focus:bg-white focus:border-cyan-600 font-sans"
+                  placeholder="Draft resolution notes, instructions for the trader, or internal telemetry findings..."
+                  className="w-full bg-white border border-black p-3 text-xs text-black focus:outline-none focus:ring-1 focus:ring-black font-mono leading-relaxed rounded-none"
                   required
                 />
 
@@ -421,7 +542,7 @@ export default function OperatorTicketsPage() {
                   <button
                     type="submit"
                     disabled={submittingReply}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs transition-all disabled:opacity-50 cursor-pointer shadow-sm"
+                    className="flex items-center gap-2 px-5 py-2 border border-black bg-black text-white hover:bg-zinc-800 text-xs font-bold uppercase transition-all disabled:opacity-50 rounded-none"
                   >
                     {submittingReply ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -432,11 +553,69 @@ export default function OperatorTicketsPage() {
                   </button>
                 </div>
               </form>
+
+              {/* Message History - Sorted DESC (Newest first) with Lazy Loading */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between pb-1 border-b border-black">
+                  <span className="text-xs font-bold uppercase tracking-wider text-black">
+                    Thread Message Stream ({sortedMessages.length} responses • DESC chronologically)
+                  </span>
+                  {sortedMessages.length > visibleMessagesCount && (
+                    <button
+                      type="button"
+                      onClick={() => setVisibleMessagesCount((c) => c + 5)}
+                      className="px-2.5 py-1 border border-black bg-white hover:bg-black hover:text-white text-[10px] font-bold uppercase transition-colors"
+                    >
+                      Load Older Messages (+5)
+                    </button>
+                  )}
+                </div>
+
+                {visibleMessages.length === 0 ? (
+                  <p className="text-xs text-black italic p-4 border border-black bg-white">
+                    No operator replies yet. Initial request below:
+                  </p>
+                ) : (
+                  visibleMessages.map((m) => (
+                    <div
+                      key={m.id}
+                      className={`border border-black p-4 space-y-2 ${
+                        m.authorRole === 'Operator' ? 'bg-white' : 'bg-zinc-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold uppercase text-black">@{m.authorName}</span>
+                          <span className="px-1.5 py-0.5 border border-black text-[9px] font-bold uppercase bg-white">
+                            {m.authorRole}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-black">
+                          {new Date(m.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-xs text-black leading-relaxed whitespace-pre-wrap">
+                        {m.message}
+                      </p>
+                    </div>
+                  ))
+                )}
+
+                {/* Initial Description Card at Bottom of stream */}
+                <div className="border border-black p-4 bg-zinc-100 space-y-1">
+                  <div className="text-[10px] font-bold uppercase text-black">Initial Description:</div>
+                  <p className="text-xs text-black leading-relaxed whitespace-pre-wrap">
+                    {selectedTicket.description}
+                  </p>
+                </div>
+              </div>
             </div>
           ) : (
-            <div className="h-full min-h-[300px] flex flex-col items-center justify-center border border-dashed border-zinc-200 rounded-2xl p-8 text-center text-zinc-400 bg-zinc-50/50">
-              <LifeBuoy className="w-8 h-8 mb-2 text-zinc-400" />
-              <p className="text-xs font-medium text-zinc-600">Select a ticket from the triage queue to view details and respond</p>
+            <div className="min-h-[300px] flex flex-col items-center justify-center border border-black p-8 text-center bg-white space-y-2">
+              <LifeBuoy className="w-8 h-8 text-black" />
+              <p className="text-xs font-bold uppercase text-black">
+                Select a ticket from the queue to view details and post replies
+              </p>
             </div>
           )}
         </div>

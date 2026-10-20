@@ -38,6 +38,35 @@ internal sealed class ClusterSettingsDto
     public int MetricsRetentionDays { get; set; } = 30;
     public int AuditLogRetentionDays { get; set; } = 365;
     public bool DetailedBehaviorLogging { get; set; } = true;
+
+    // Messengers & Bots
+    public string TelegramBotToken { get; set; } = string.Empty;
+    public string TelegramDefaultChannel { get; set; } = string.Empty;
+    public string DiscordWebhookUrl { get; set; } = string.Empty;
+    public string SlackWebhookUrl { get; set; } = string.Empty;
+    public bool EnableMessengerAlerts { get; set; } = true;
+
+    // SMS Gateways
+    public string SmsProvider { get; set; } = "Twilio";
+    public string SmsApiKey { get; set; } = string.Empty;
+    public string SmsSenderNumber { get; set; } = string.Empty;
+    public bool EnableSmsAlerts { get; set; }
+
+    // Payment Providers
+    public string PaymentProvider { get; set; } = "Stripe";
+    public string PaymentPublicKey { get; set; } = string.Empty;
+    public string PaymentSecretKey { get; set; } = string.Empty;
+    public string PaymentWebhookSecret { get; set; } = string.Empty;
+    public string PaymentCurrency { get; set; } = "USD";
+
+    // Dynamic Subscription Tiers Configuration (JSON)
+    public string SubscriptionTiersJson { get; set; } = """
+        [
+          {"tier":"Free","priceMonthly":0,"maxInstances":1,"allowLiveTrading":false,"allowOptimization":true,"storageDays":7},
+          {"tier":"Pro","priceMonthly":49,"maxInstances":5,"allowLiveTrading":true,"allowOptimization":true,"storageDays":90},
+          {"tier":"Enterprise","priceMonthly":299,"maxInstances":50,"allowLiveTrading":true,"allowOptimization":true,"storageDays":365}
+        ]
+        """;
 }
 
 /// <summary>

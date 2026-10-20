@@ -43,13 +43,17 @@ internal sealed record BacktestConfiguration
 
         if (config is Dictionary<string, object> d)
         {
-            dict = d;
+            dict = new Dictionary<string, object>(d, StringComparer.OrdinalIgnoreCase);
         }
         else if (config is string jsonStr && !string.IsNullOrWhiteSpace(jsonStr))
         {
             try
             {
-                dict = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonStr);
+                var parsed = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonStr);
+                if (parsed != null)
+                {
+                    dict = new Dictionary<string, object>(parsed, StringComparer.OrdinalIgnoreCase);
+                }
             }
             catch
             {
@@ -59,7 +63,11 @@ internal sealed record BacktestConfiguration
         {
             try
             {
-                dict = JsonSerializer.Deserialize<Dictionary<string, object>>(je.GetRawText());
+                var parsed = JsonSerializer.Deserialize<Dictionary<string, object>>(je.GetRawText());
+                if (parsed != null)
+                {
+                    dict = new Dictionary<string, object>(parsed, StringComparer.OrdinalIgnoreCase);
+                }
             }
             catch
             {

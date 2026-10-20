@@ -121,8 +121,71 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `core/tests/Cloud.UnitTests/ProfileServiceSlotAssignmentTests.cs`: Unit test suite verifying automatic marketplace extension provisioning and heartbeat connectivity reporting.
 - `frontends/apps/cloud-dashboard/src/app/maintenance/page.tsx`: Dedicated Maintenance and Command Console page for dispatching engine commands with correlation logs and presets.
 - `frontends/apps/cloud-dashboard/src/components/layout/MobileBottomNav.tsx`: Apple Design 5-item mobile bottom navigation bar with off-canvas sidebar drawer trigger.
+- `frontends/apps/cloud-dashboard/src/app/panel/runs/new`: Dedicated full-page Flow Run Launcher with deterministic configuration form.
+- `frontends/apps/cloud-dashboard/src/components/instances/CommandEventDetailModal.tsx`: Modal for inspecting dispatched engine command payloads, parameters, and results.
+- `core/src/Cloud/Endpoints/CancelRunEndpoint.cs`: FastEndpoints controller for cancelling an active or paused flow run.
+- `frontends/apps/cloud-dashboard/src/app/panel/reports/[id]/windows/page.tsx`: Walk-Forward window splits and out-of-sample degradation analysis page.
+- `frontends/apps/cloud-dashboard/src/app/panel/reports/[id]/windows/[windowIndex]/page.tsx`: Individual Walk-Forward window granular performance and chromosome DNA page.
 
 ### Modified Files
+- `core/src/Cloud/Data/CloudDbContext.cs`: Added custom ValueConverter for UserRole mapping legacy 'Developer' entries to Trader.
+- `core/src/Cloud/Data/CloudEnums.cs`: Cloud enums for roles, licenses, and command state.
+- `core/src/Cloud/Data/User.cs`: Extended User entity with international phone numbers, secondary email, MFA toggles, and connected storage drives.
+- `core/src/Cloud/Endpoints/FlowRunView.cs`: Added TotalReturn and DrawdownHit indicators for Flow Run views.
+- `core/src/Cloud/Endpoints/ListInstanceCommandsEndpoint.cs`: Added command payload and response serialization for inspection modals.
+- `core/src/Cloud/Endpoints/TicketEndpoints.cs`: Enhanced ticket sorting, filtering, and paging endpoints.
+- `core/src/Cloud/Services/CommandService.cs`: Enhanced command persistence with detailed event payloads and execution results.
+- `core/src/Cloud/Services/FlowOrchestrator.cs`: Added deterministic rerun, cancel run, and clone-from support in flow run pipelines.
+- `core/src/Cloud/Services/TicketService.cs`: Support for operator triage, descending order message logs, and multi-parameter filtering.
+- `core/src/Cloud/Services/UserService.cs`: Enhanced user profile updates and impersonation support.
+- `core/src/Engine/Kernel/KernelService.Optimization.cs`: GA parameter optimization with convergence progression telemetry.
+- `core/src/Engine/Kernel/KernelService.Live.cs`: Resilient fallback to MockPaperTradingAdapter and MeanRevertingPairsStrategy/TrendFollowingStrategy.
+- `core/src/Engine/Management/Tasks/BacktestConfiguration.cs`: Configuration models for backtest runs with initial capital and symbol specifications.
+- `core/src/Engine/Management/Tasks/ConfigurationParser.cs`: JSON configuration parser for multi-format run payloads.
+- `core/src/Engine/Management/Tasks/LiveConfiguration.cs`: Configuration models for live execution risk targets and drawdown boundaries.
+- `core/tests/Cloud.UnitTests/AuthEndpointsTests.cs`: Unit tests for authentication and token validation.
+- `core/tests/Cloud.UnitTests/CloudBranchCoverageTests.cs`: Branch coverage test suites for cloud endpoints.
+- `core/tests/Cloud.UnitTests/CloudGovernanceBranchTests.cs`: Branch coverage test suites for governance and RBAC rules.
+- `frontends/apps/cloud-dashboard/src/app/admin/ClusterSettingsForm.tsx`: Unified cluster settings form with messenger webhooks, SMS providers, and subscription tier matrices.
+- `frontends/apps/cloud-dashboard/src/app/auth/login/page.tsx`: High-contrast institutional login form with role switching.
+- `frontends/apps/cloud-dashboard/src/app/globals.css`: Institutional high-contrast light mode styling and global button text-wrap: nowrap !important rule.
+- `frontends/apps/cloud-dashboard/src/app/panel/runs/page.tsx`: Flow runs directory with Total Return, Drawdown Hit badges, and New Run redirection.
+- `frontends/apps/cloud-dashboard/src/app/panel/runs/new/page.tsx`: Full-page Flow Run Launcher with dynamic gene controls, Tick default, and unbounded walk-forward split validation.
+- `frontends/apps/cloud-dashboard/src/app/panel/reports/[id]/page.tsx`: Full run report page with bracket stripping and cancel run support.
+- `frontends/apps/cloud-dashboard/src/app/panel/reports/[id]/generations/page.tsx`: Full generations grid with server-side pagination.
+- `frontends/apps/cloud-dashboard/src/app/panel/reports/[id]/generations/[genId]/page.tsx`: Full generation detail page.
+- `frontends/apps/cloud-dashboard/src/app/panel/reports/[id]/generations/[genId]/populations/[popId]/page.tsx`: Full chromosome evaluator page.
+- `frontends/apps/cloud-dashboard/src/app/panel/reports/[id]/trades/page.tsx`: Full trade fill directory.
+- `frontends/apps/cloud-dashboard/src/app/panel/reports/[id]/trades/[ticket]/page.tsx`: Full trade fill telemetry page.
+- `frontends/apps/cloud-dashboard/src/app/runs`: Detailed flow run execution and audit report view.
+- `frontends/apps/cloud-dashboard/src/app/tickets/page.tsx`: Incident triage console with lazy message loading and status transitions.
+- `frontends/apps/cloud-dashboard/src/components/instances/tabs/InstanceExtensionsTab.tsx`: Extension slot configuration with modal assignment triggers.
+- `frontends/apps/cloud-dashboard/src/components/instances/tabs/InstanceOverviewTab.tsx`: Engine overview tab with opcode commands and status summary.
+- `frontends/apps/cloud-dashboard/src/components/instances/tabs/InstanceStreamsTab.tsx`: Live stream event feed with tail-lock autoscroll.
+- `frontends/apps/cloud-dashboard/src/components/instances/tabs/InstanceTelemetryTab.tsx`: Real-time telemetry charts and execution gauges.
+- `frontends/apps/cloud-dashboard/src/components/layout/header.tsx`: Removed 'Razor Cloud Control Plane' text; cleaned up topbar.
+- `frontends/apps/cloud-dashboard/src/components/layout/sidebar.tsx`: Replaced engine sockets/Cloud API footer with mini profile.
+- `frontends/apps/cloud-dashboard/src/components/live/EmergencyStopModal.tsx`: High-visibility emergency kill switch confirmation modal.
+- `frontends/apps/cloud-dashboard/src/components/live/LiveManagerContent.tsx`: Live trading operations console with real-time controls and position flattening.
+- `frontends/apps/cloud-dashboard/src/components/live/LivePositionsTable.tsx`: Tabular open position monitor with 1-click flatten controls.
+- `frontends/apps/cloud-dashboard/src/components/live/LiveRiskConfigModal.tsx`: Dynamic circuit breaker risk limit configuration modal.
+- `frontends/apps/cloud-dashboard/src/components/live/LiveStatsSummary.tsx`: Real-time institutional PnL and risk summary gauges.
+- `frontends/apps/cloud-dashboard/src/components/live/LiveTradeHistoryTable.tsx`: Executed fill history table with granular trade inspection.
+- `frontends/apps/cloud-dashboard/src/components/optimization/GenerationDetailModal.tsx`: Genetic algorithm generation inspection modal.
+- `frontends/apps/cloud-dashboard/src/components/optimization/PopulationBacktestModal.tsx`: Individual chromosome DNA backtest launcher modal.
+- `frontends/apps/cloud-dashboard/src/components/reports/DetailedMetricsGrid.tsx`: Institutional quantitative KPI metrics grid.
+- `frontends/apps/cloud-dashboard/src/components/reports/report-content.tsx`: Stripped brackets, added Cancel Run, added Generations (Dev) button.
+- `frontends/apps/cloud-dashboard/src/components/reports/TradeHistoryTable.tsx`: Full trade fills ledger.
+- `frontends/apps/cloud-dashboard/src/components/reports/WinningDnaCard.tsx`: Decoded Strategy Parameters key-value table wrapping parameter names.
+- `frontends/packages/api-client/src/schema/paths-runs.ts`: Added /api/runs/{runId}/cancel endpoint schema.
+- `frontends/apps/cloud-dashboard/src/components/reports/GenerationalConvergenceChart.tsx`: Convergence diversity and fitness trajectory charts.
+- `frontends/apps/cloud-dashboard/src/components/reports/TradeHistoryTable.tsx`: Full trade fill execution ledger with entry/exit timestamps.
+- `frontends/apps/cloud-dashboard/src/components/reports/WinningDnaCard.tsx`: Winning strategy DNA parameters and JSON export card.
+- `frontends/apps/cloud-dashboard/src/components/tickets/CreateTicketModal.tsx`: Modal for creating and dispatching operations support tickets.
+- `frontends/apps/cloud-dashboard/src/components/trades/GranularTradeDetailModal.tsx`: Granular price ladder, venue, and audit telemetry modal.
+- `frontends/apps/cloud-dashboard/src/components/ui/ActionDropdown.tsx`: Portaled actions dropdown preventing table overflow clipping.
+- `frontends/apps/cloud-dashboard/src/context/auth-context.tsx`: Context provider with impersonation session switching and storage sync.
+- `frontends/packages/api-client/src/schema/types.ts`: TypeScript schema types for platform settings, users, and ticket payloads.
 - `.gitignore`: Added root ignores for compiled native binaries (/bin/, /artifacts/, /publish/).
 - `core/src/Engine/AGENT.md`: Added nx publish engine target delegation.
 - `core/src/Engine/Engine.csproj`: Added single-file self-contained publish configuration defaults.
@@ -161,6 +224,133 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `frontends/packages/ui-kit/package.json`: Updated exports configuration for component primitives.
 - `frontends/packages/ui-kit/src/index.ts`: Export barrel for all presentation components.
 - `frontends/packages/ui-kit/tsconfig.json`: Strict TypeScript build configuration for component library.
+
+- `core/src/Cloud/CloudApplication.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Data/EngineShare.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Data/FlowRun.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Data/LineageEnums.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Data/PagedResult.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Endpoints/AcquireMarketplaceItemEndpoint.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Endpoints/AuthEndpoints.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Endpoints/CommunityEndpoints.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Endpoints/CompleteRunEndpoint.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Endpoints/EngineSharingEndpoints.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Endpoints/ExportRunReportXlsxEndpoint.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Endpoints/GenerationEndpoints.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Endpoints/GetMarketplaceItemEndpoint.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Endpoints/HealthEndpoint.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Endpoints/ListMarketplaceItemsEndpoint.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Endpoints/ListReportsEndpoint.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Endpoints/ListRunsEndpoint.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Endpoints/ManagementApiKeyMiddleware.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Endpoints/RegisterEngineEndpoint.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Endpoints/StartRunEndpoint.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Endpoints/StreamClientEventsEndpoint.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Endpoints/SubmitCommandEndpoint.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Endpoints/TradeEndpoints.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Services/EngineAuthenticationService.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Services/EngineRegistrationService.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Services/FlowRunExcelExportService.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Services/LineageContracts.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Services/LineageService.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Services/MarketplaceService.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/Services/RunReportService.cs`: Cloud backend controllers and domain services.
+- `core/src/Cloud/appsettings.Development.json`: Cloud backend controllers and domain services.
+- `core/src/Engine/Communication/CloudConnector.Heartbeat.cs`: Strategy engine handlers and runtime tasks.
+- `core/src/Engine/Communication/CloudConnector.Messaging.cs`: Strategy engine handlers and runtime tasks.
+- `core/src/Engine/Core/Credentials.cs`: Strategy engine handlers and runtime tasks.
+- `core/src/Engine/Extensions/ExtensionCatalog.cs`: Strategy engine handlers and runtime tasks.
+- `core/src/Engine/Extensions/ExtensionManager.cs`: Strategy engine handlers and runtime tasks.
+- `core/src/Engine/Extensions/IExtensionManager.cs`: Strategy engine handlers and runtime tasks.
+- `core/src/Engine/Management/Commands/CommandDispatcher.cs`: Strategy engine handlers and runtime tasks.
+- `core/src/Engine/Management/Commands/CommandHandlerBase.cs`: Strategy engine handlers and runtime tasks.
+- `core/src/Engine/Management/Commands/Handlers/DeployExtensionHandler.cs`: Strategy engine handlers and runtime tasks.
+- `core/src/Engine/Management/Commands/Handlers/GetLiveMetricsHandler.cs`: Strategy engine handlers and runtime tasks.
+- `core/src/Engine/Management/Commands/Handlers/GetLiveStateHandler.cs`: Strategy engine handlers and runtime tasks.
+- `core/src/Engine/Management/Commands/Handlers/InjectGenesHandler.cs`: Strategy engine handlers and runtime tasks.
+- `core/src/Engine/Management/Commands/Handlers/PauseLiveHandler.cs`: Strategy engine handlers and runtime tasks.
+- `core/src/Engine/Management/Commands/Handlers/ResumeLiveHandler.cs`: Strategy engine handlers and runtime tasks.
+- `core/src/Engine/Management/Commands/Handlers/RunBacktestHandler.cs`: Strategy engine handlers and runtime tasks.
+- `core/src/Engine/Management/Commands/Handlers/SetLiveConfigHandler.cs`: Strategy engine handlers and runtime tasks.
+- `core/src/Engine/Management/Commands/Handlers/StartOptimizationHandler.cs`: Strategy engine handlers and runtime tasks.
+- `core/src/Engine/Management/Commands/Handlers/StopLiveHandler.cs`: Strategy engine handlers and runtime tasks.
+- `core/src/Engine/Management/Commands/ICommandHandler.cs`: Strategy engine handlers and runtime tasks.
+- `core/src/Kernel/Hooks/FitnessEvaluationContext.cs`: Enterprise product component update.
+- `core/src/Kernel/Reporting/ReportGenerator.cs`: Enterprise product component update.
+- `core/src/Sdk/Slots/Adapter/MockPaperTradingAdapter.cs`: Enterprise product component update.
+- `core/src/Sdk/Slots/Strategy/MeanRevertingPairsStrategy.cs`: Enterprise product component update.
+- `core/src/Sdk/Slots/Strategy/TrendFollowingStrategy.cs`: Enterprise product component update.
+- `core/src/Shared/Helpers.cs`: Enterprise product component update.
+- `core/src/Shared/MemoryMappedTickList.cs`: Enterprise product component update.
+- `core/tests/Cloud.UnitTests/CloudEngineSocketTests.cs`: Unit and integration test suites.
+- `core/tests/Cloud.UnitTests/CommunityAndTicketingTests.cs`: Unit and integration test suites.
+- `core/tests/Cloud.UnitTests/Lineage/FlowOrchestratorTests.cs`: Unit and integration test suites.
+- `core/tests/Cloud.UnitTests/ManifestAndCommandTests.cs`: Unit and integration test suites.
+- `core/tests/Cloud.UnitTests/TestSupport/CloudTestContext.cs`: Unit and integration test suites.
+- `core/tests/Engine.UnitTests/Management/Commands/CommandDispatcherTests.cs`: Unit and integration test suites.
+- `core/tests/Engine.UnitTests/Management/Tasks/OptimizationCheckpointTests.cs`: Unit and integration test suites.
+- `core/tests/Engine.UnitTests/Management/Tasks/TaskManagerTests.cs`: Unit and integration test suites.
+- `core/tests/Sdk.UnitTests/Shared/MeanRevertingPairsStrategyTests.cs`: Unit and integration test suites.
+- `core/tests/Sdk.UnitTests/Shared/TrendFollowingStrategyTests.cs`: Unit and integration test suites.
+- `frontends/apps/cloud-dashboard/next.config.mjs`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/instances/[id]/live/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/instances/[id]/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/live/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/login/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/panel/admin/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/panel/instances/[id]/live/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/panel/instances/[id]/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/panel/instances/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/panel/layout.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/panel/live/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/panel/maintenance/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/panel/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/panel/profile/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/panel/reports/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/panel/runs/[id]/lineage/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/panel/runs/[id]/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/panel/settings/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/panel/tickets/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/panel/trades/[ticket]/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/app/reports/[id]/page.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/components/instances/ShareEngineModal.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/components/reports/EquityCurveChart.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/components/ui/ServerPagination.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/components/ui/toast.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/hooks/use-sse-stream.ts`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/lib/api-client.ts`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/test/auth-login.test.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/test/lineage.test.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/test/live.test.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/test/report.test.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/test/setup.ts`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/tailwind.config.ts`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/marketplace/next.config.mjs`: Marketplace application routes and components.
+- `frontends/apps/marketplace/src/app/community/[id]/page.tsx`: Marketplace application routes and components.
+- `frontends/apps/marketplace/src/app/globals.css`: Marketplace application routes and components.
+- `frontends/apps/marketplace/src/app/items/[id]/page.tsx`: Marketplace application routes and components.
+- `frontends/apps/marketplace/src/components/layout/navbar.tsx`: Marketplace application routes and components.
+- `frontends/apps/marketplace/src/components/ui/toast.tsx`: Marketplace application routes and components.
+- `frontends/apps/marketplace/src/lib/api-client.ts`: Marketplace application routes and components.
+- `frontends/apps/marketplace/src/test/setup.ts`: Marketplace application routes and components.
+- `frontends/apps/marketplace/tailwind.config.ts`: Marketplace application routes and components.
+- `frontends/packages/api-client/src/schema/paths.ts`: Enterprise product component update.
+- `samples/Directory.Build.props`: Sample trading strategies and broker adapters.
+- `samples/Plugins/Adapters/MT5/MT5.csproj`: Sample trading strategies and broker adapters.
+- `samples/Plugins/Adapters/MT5/Mt5Adapter.cs`: Sample trading strategies and broker adapters.
+- `samples/Plugins/Adapters/MT5/Mt5AdapterConfiguration.cs`: Sample trading strategies and broker adapters.
+- `samples/Plugins/Adapters/MT5/Mt5BridgeClient.cs`: Sample trading strategies and broker adapters.
+- `samples/Plugins/Adapters/MT5/Mt5MarketCalculator.cs`: Sample trading strategies and broker adapters.
+- `samples/Plugins/Adapters/Nobitex/Class1.cs`: Sample trading strategies and broker adapters.
+- `samples/Plugins/Adapters/Nobitex/Nobitex.csproj`: Sample trading strategies and broker adapters.
+- `samples/Plugins/Adapters/Nobitex/NobitexAdapter.cs`: Sample trading strategies and broker adapters.
+- `samples/Plugins/Adapters/Nobitex/NobitexAdapterConfiguration.cs`: Sample trading strategies and broker adapters.
+- `samples/Plugins/Adapters/Nobitex/NobitexMarketCalculator.cs`: Sample trading strategies and broker adapters.
+- `samples/Plugins/Strategies/CfdSmtDivergence/CfdSmtDivergence.csproj`: Sample trading strategies and broker adapters.
+- `samples/Plugins/Strategies/CfdSmtDivergence/CfdSmtDivergenceStrategy.cs`: Sample trading strategies and broker adapters.
+- `samples/Plugins/Strategies/CfdSmtDivergence/Class1.cs`: Sample trading strategies and broker adapters.
+- `samples/Samples.sln`: Sample trading strategies and broker adapters.
 
 ## 4. Test Surface
 
