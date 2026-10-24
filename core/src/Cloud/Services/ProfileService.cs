@@ -34,6 +34,15 @@ internal sealed class ProfileService(
     CommandService commandService,
     CloudOptions options)
 {
+    private static readonly System.Collections.Generic.HashSet<string> BuiltInAdapters = new(System.StringComparer.OrdinalIgnoreCase)
+    {
+        "PaperBroker", "MockPaperTradingAdapter", "MockPaperTrading"
+    };
+
+    private static readonly System.Collections.Generic.HashSet<string> BuiltInStrategies = new(System.StringComparer.OrdinalIgnoreCase)
+    {
+        "TrendFollowing", "TrendFollowingStrategy"
+    };
     /// <summary>
     /// Loads an instance together with its manifest, its selections and the resolved active set.
     /// </summary>
@@ -116,13 +125,8 @@ internal sealed class ProfileService(
             bool reported = instance.ManifestEntries
                 .Any(entry => entry.Kind == kind && string.Equals(entry.Name, trimmedName, StringComparison.OrdinalIgnoreCase));
 
-            bool isBuiltIn = (kind == ExtensionKind.Adapter &&
-                              (trimmedName.Equals("PaperBroker", StringComparison.OrdinalIgnoreCase) ||
-                               trimmedName.Equals("MockPaperTradingAdapter", StringComparison.OrdinalIgnoreCase) ||
-                               trimmedName.Equals("MockPaperTrading", StringComparison.OrdinalIgnoreCase))) ||
-                             (kind == ExtensionKind.Strategy &&
-                              (trimmedName.Equals("TrendFollowing", StringComparison.OrdinalIgnoreCase) ||
-                               trimmedName.Equals("TrendFollowingStrategy", StringComparison.OrdinalIgnoreCase)));
+            bool isBuiltIn = (kind == ExtensionKind.Adapter && BuiltInAdapters.Contains(trimmedName)) ||
+                             (kind == ExtensionKind.Strategy && BuiltInStrategies.Contains(trimmedName));
 
             if (!reported)
             {

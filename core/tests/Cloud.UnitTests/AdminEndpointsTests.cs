@@ -371,4 +371,143 @@ public sealed class AdminEndpointsTests
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
+
+    [Fact]
+    public async Task UpdateUserSubscription_UpdatesTier()
+    {
+        using var factory = new CloudWebApplicationFactory();
+        using HttpClient client = factory.CreateAuthorisedClient();
+
+        using HttpResponseMessage regResp = await client.PostAsJsonAsync(
+            new Uri("/api/auth/register", UriKind.Relative),
+            new
+            {
+                UserName = "sub_upgrade_user",
+                Password = "Password123!",
+                Role = UserRole.Trader,
+                Tier = SubscriptionTier.Free
+            },
+            JsonOptions).ConfigureAwait(true);
+        AuthSessionResponse? session = await regResp.Content.ReadFromJsonAsync<AuthSessionResponse>(JsonOptions).ConfigureAwait(true);
+        Assert.NotNull(session);
+        Guid userId = session.User.UserId;
+
+        using HttpResponseMessage updateResp = await client.PutAsJsonAsync(
+            new Uri($"/api/admin/users/{userId}/subscription", UriKind.Relative),
+            new
+            {
+                UserId = userId,
+                Tier = SubscriptionTier.Enterprise
+            },
+            JsonOptions).ConfigureAwait(true);
+
+        Assert.Equal(HttpStatusCode.OK, updateResp.StatusCode);
+        UserProfileView? view = await updateResp.Content.ReadFromJsonAsync<UserProfileView>(JsonOptions).ConfigureAwait(true);
+        Assert.NotNull(view);
+        Assert.Equal(SubscriptionTier.Enterprise, view.SubscriptionTier);
+
+        // Missing user returns 404
+        using HttpResponseMessage missingResp = await client.PutAsJsonAsync(
+            new Uri($"/api/admin/users/{Guid.NewGuid()}/subscription", UriKind.Relative),
+            new
+            {
+                UserId = Guid.NewGuid(),
+                Tier = SubscriptionTier.Pro
+            },
+            JsonOptions).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.NotFound, missingResp.StatusCode);
+    }
+
+    [Fact]
+    public async Task ResetUserPassword_ResetsPasswordAndRejectsEmpty()
+    {
+        using var factory = new CloudWebApplicationFactory();
+        using HttpClient client = factory.CreateAuthorisedClient();
+
+        using HttpResponseMessage regResp = await client.PostAsJsonAsync(
+            new Uri("/api/auth/register", UriKind.Relative),
+            new
+            {
+                UserName = "pwd_reset_user",
+                Password = "Password123!",
+                Role = UserRole.Trader
+            },
+            JsonOptions).ConfigureAwait(true);
+        AuthSessionResponse? session = await regResp.Content.ReadFromJsonAsync<AuthSessionResponse>(JsonOptions).ConfigureAwait(true);
+        Assert.NotNull(session);
+        Guid userId = session.User.UserId;
+
+        // Reset password
+        using HttpResponseMessage resetResp = await client.PostAsJsonAsync(
+            new Uri($"/api/admin/users/{userId}/reset-password", UriKind.Relative),
+            new
+            {
+                UserId = userId,
+                NewPassword = "NewStrongPassword123!"
+            },
+            JsonOptions).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.OK, resetResp.StatusCode);
+
+        // Empty password returns 400
+        using HttpResponseMessage emptyResp = await client.PostAsJsonAsync(
+            new Uri($"/api/admin/users/{userId}/reset-password", UriKind.Relative),
+            new
+            {
+                UserId = userId,
+                NewPassword = ""
+            },
+            JsonOptions).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.BadRequest, emptyResp.StatusCode);
+    }
+
+    [Fact]
+    public async Task ImpersonateUser_CreatesImpersonationSession()
+    {
+        using var factory = new CloudWebApplicationFactory();
+        using HttpClient client = factory.CreateAuthorisedClient();
+
+        // Register operator
+        using HttpResponseMessage opResp = await client.PostAsJsonAsync(
+            new Uri("/api/auth/register", UriKind.Relative),
+            new
+            {
+                UserName = "admin_op_impersonator",
+                Password = "Password123!",
+                Role = UserRole.Operator
+            },
+            JsonOptions).ConfigureAwait(true);
+        AuthSessionResponse? opSession = await opResp.Content.ReadFromJsonAsync<AuthSessionResponse>(JsonOptions).ConfigureAwait(true);
+        Assert.NotNull(opSession);
+
+        // Register target
+        using HttpResponseMessage regResp = await client.PostAsJsonAsync(
+            new Uri("/api/auth/register", UriKind.Relative),
+            new
+            {
+                UserName = "target_impersonate_user",
+                Password = "Password123!",
+                Role = UserRole.Trader
+            },
+            JsonOptions).ConfigureAwait(true);
+        AuthSessionResponse? session = await regResp.Content.ReadFromJsonAsync<AuthSessionResponse>(JsonOptions).ConfigureAwait(true);
+        Assert.NotNull(session);
+        Guid userId = session.User.UserId;
+
+        client.DefaultRequestHeaders.Add("X-User-Id", opSession.User.UserId.ToString());
+
+        using HttpResponseMessage impResp = await client.PostAsync(
+            new Uri($"/api/admin/impersonate/{userId}", UriKind.Relative),
+            null).ConfigureAwait(true);
+
+        Assert.Equal(HttpStatusCode.OK, impResp.StatusCode);
+        AuthSessionResponse? impSession = await impResp.Content.ReadFromJsonAsync<AuthSessionResponse>(JsonOptions).ConfigureAwait(true);
+        Assert.NotNull(impSession);
+        Assert.False(string.IsNullOrWhiteSpace(impSession.Token));
+
+        // Missing user returns 404
+        using HttpResponseMessage missingResp = await client.PostAsync(
+            new Uri($"/api/admin/impersonate/{Guid.NewGuid()}", UriKind.Relative),
+            null).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.NotFound, missingResp.StatusCode);
+    }
 }

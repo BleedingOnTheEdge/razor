@@ -71,13 +71,9 @@ internal sealed class StreamClientEventsEndpoint(IClientEventBroadcaster broadca
             {
                 break;
             }
-            catch (Exception)
+            catch (Exception) when (cancellationToken.IsCancellationRequested || HttpContext.RequestAborted.IsCancellationRequested)
             {
-                if (cancellationToken.IsCancellationRequested || HttpContext.RequestAborted.IsCancellationRequested)
-                {
-                    break;
-                }
-                // Guard stream against transient serialization faults
+                break;
             }
         }
     }

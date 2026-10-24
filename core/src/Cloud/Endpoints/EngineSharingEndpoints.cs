@@ -18,7 +18,7 @@ internal sealed class CreateEngineShareRequest
     public Guid Id { get; set; }
 
     /// <summary>Gets or sets the email to share with.</summary>
-    public string SharedWithEmail { get; set; } = string.Empty;
+    public string? SharedWithEmail { get; set; }
 
     /// <summary>Gets or sets the optional user ID to share with.</summary>
     public Guid? SharedWithUserId { get; set; }
@@ -97,9 +97,9 @@ internal sealed class CreateEngineShareEndpoint(EngineRegistrationService regist
 
         try
         {
-            DateTimeOffset expiresAt = req.ExpiresAtUtc > DateTimeOffset.UtcNow
-                ? req.ExpiresAtUtc
-                : DateTimeOffset.UtcNow.AddDays(7); // Default 7 days if invalid
+            DateTimeOffset expiresAt = req.ExpiresAtUtc == default
+                ? DateTimeOffset.UtcNow.AddDays(7)
+                : req.ExpiresAtUtc;
 
             EngineShare share = await registration.CreateShareAsync(
                 req.Id,

@@ -102,8 +102,7 @@ internal sealed class SubmitCommandEndpoint(
 
             if (!hasAccess)
             {
-                AddError("You do not have active control permissions for this engine instance or your sharing grant has expired.");
-                await Send.ErrorsAsync(StatusCodes.Status403Forbidden, cancellationToken).ConfigureAwait(false);
+                await Send.ForbiddenAsync(cancellationToken).ConfigureAwait(false);
                 return;
             }
         }

@@ -103,11 +103,6 @@ public static class TickSynthesizer
 #pragma warning disable CA5394 // Reason: Deterministic use for synthetic tick generation, not security.
                 double price = low + ((high - low) * ((rng.NextDouble() * 0.3) + (progress * 0.8)));
 #pragma warning restore CA5394
-                if (price < low)
-                {
-                    price = low;
-                }
-
                 if (price > high)
                 {
                     price = high;
@@ -153,7 +148,7 @@ public static class TickSynthesizer
         }
 
         int estimatedTicks = 5000;
-        if (minTime != long.MaxValue && maxTime != long.MinValue)
+        if (minTime != long.MaxValue)
         {
             long estimatedSeconds = (maxTime - minTime) / TimeSpan.TicksPerSecond;
             estimatedTicks = estimatedSeconds > int.MaxValue ? int.MaxValue : (int)estimatedSeconds;

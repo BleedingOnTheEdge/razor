@@ -213,7 +213,7 @@ internal sealed partial class EngineRegistrationService(
     internal async Task<EngineShare> CreateShareAsync(
         Guid instanceId,
         Guid ownerAccountId,
-        string sharedWithEmail,
+        string? sharedWithEmail,
         Guid? sharedWithUserId,
         DateTimeOffset expiresAtUtc,
         bool canRead = true,
@@ -245,7 +245,7 @@ internal sealed partial class EngineRegistrationService(
             Id = Guid.NewGuid(),
             EngineInstanceId = instanceId,
             OwnerAccountId = instance.AccountId,
-            SharedWithEmail = sharedWithEmail.Trim(),
+            SharedWithEmail = sharedWithEmail?.Trim() ?? string.Empty,
             SharedWithUserId = sharedWithUserId,
             CreatedAt = now,
             ExpiresAtUtc = expiresAtUtc,
@@ -266,11 +266,11 @@ internal sealed partial class EngineRegistrationService(
     internal async Task<IReadOnlyList<EngineShare>> GetSharesAsync(Guid instanceId, CancellationToken cancellationToken = default)
     {
         using CloudDbContext db = contextFactory.CreateDbContext();
-        return await db.EngineShares
+        var shares = await db.EngineShares
             .Where(s => s.EngineInstanceId == instanceId && !s.IsRevoked)
-            .OrderByDescending(s => s.CreatedAt)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
+        return [.. shares.OrderByDescending(s => s.CreatedAt)];
     }
 
     /// <summary>

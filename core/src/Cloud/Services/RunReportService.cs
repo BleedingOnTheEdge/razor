@@ -27,6 +27,10 @@ using Cloud.Data;
 /// </remarks>
 internal sealed class RunReportService
 {
+    private static readonly System.Text.Json.JsonSerializerOptions GenerationJsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
     /// <summary>
     /// Generates an auditable report for a flow run according to integrity rules.
     /// </summary>
@@ -52,7 +56,7 @@ internal sealed class RunReportService
             {
                 divergenceFlag = run.Relation.ToString();
             }
-            else if (isGapped)
+            else
             {
                 divergenceFlag = "Gapped";
             }
@@ -246,7 +250,7 @@ internal sealed class RunReportService
                         }
                         else if (prop.Value.ValueKind == System.Text.Json.JsonValueKind.String)
                         {
-                            parameters[prop.Name] = prop.Value.GetString() ?? "";
+                            parameters[prop.Name] = prop.Value.GetString()!;
                         }
                     }
                     if (genes.Count == 0 && stratEl.TryGetProperty("genes", out var sgEl) && sgEl.ValueKind == System.Text.Json.JsonValueKind.Array)
@@ -261,15 +265,15 @@ internal sealed class RunReportService
                     }
                 }
 
-                string strat = root.TryGetProperty("StrategyName", out var sn) ? sn.GetString() ?? "TrendFollowing" : "TrendFollowing";
-                string adapter = root.TryGetProperty("AdapterName", out var an) ? an.GetString() ?? "PaperBroker" : "PaperBroker";
+                string strat = (root.TryGetProperty("StrategyName", out var sn) ? sn.GetString() : null) ?? "TrendFollowing";
+                string adapter = (root.TryGetProperty("AdapterName", out var an) ? an.GetString() : null) ?? "PaperBroker";
                 string symbol = "BTC/USDT";
                 if (root.TryGetProperty("Symbols", out var symsEl) && symsEl.ValueKind == System.Text.Json.JsonValueKind.Array)
                 {
                     var first = symsEl.EnumerateArray().FirstOrDefault();
                     if (first.ValueKind == System.Text.Json.JsonValueKind.String)
                     {
-                        symbol = first.GetString() ?? symbol;
+                        symbol = first.GetString()!;
                     }
                 }
 
@@ -322,46 +326,25 @@ internal sealed class RunReportService
 
                 if (root.TryGetProperty("Trades", out var tradesEl) && tradesEl.ValueKind == System.Text.Json.JsonValueKind.Array)
                 {
-                    var parsedTrades = new List<ReportTradeItem>();
-                    foreach (var item in tradesEl.EnumerateArray())
+                    var items = System.Text.Json.JsonSerializer.Deserialize<List<DtoTradeItem>>(tradesEl.GetRawText(), GenerationJsonOptions);
+                    if (items is { Count: > 0 })
                     {
-                        long ticket = item.TryGetProperty("Ticket", out var tEl) && tEl.TryGetInt64(out var tk) ? tk : 0;
-                        string symbol = item.TryGetProperty("Symbol", out var sEl) ? sEl.GetString() ?? "BTC/USDT" : "BTC/USDT";
-                        string side = item.TryGetProperty("Side", out var sdEl) ? sdEl.GetString() ?? "Buy" : "Buy";
-                        double volume = item.TryGetProperty("Volume", out var vEl) && vEl.TryGetDouble(out var v) ? v : 1.0;
-                        double openPrice = item.TryGetProperty("OpenPrice", out var opEl) && opEl.TryGetDouble(out var op) ? op : 0.0;
-                        string openTime = item.TryGetProperty("OpenTime", out var otEl) ? otEl.GetString() ?? string.Empty : string.Empty;
-                        double closePrice = item.TryGetProperty("ClosePrice", out var cpEl) && cpEl.TryGetDouble(out var cp) ? cp : 0.0;
-                        string closeTime = item.TryGetProperty("CloseTime", out var ctEl) ? ctEl.GetString() ?? string.Empty : string.Empty;
-                        decimal profit = item.TryGetProperty("Profit", out var pEl) && pEl.TryGetDecimal(out var p) ? p : 0m;
-                        double returnPct = item.TryGetProperty("ReturnPct", out var rpEl) && rpEl.TryGetDouble(out var rp) ? rp : 0.0;
-                        decimal commission = item.TryGetProperty("Commission", out var cEl) && cEl.TryGetDecimal(out var c) ? c : 0m;
-                        decimal swap = item.TryGetProperty("Swap", out var swEl) && swEl.TryGetDecimal(out var sw) ? sw : 0m;
-                        double stopLoss = item.TryGetProperty("StopLoss", out var slEl) && slEl.TryGetDouble(out var sl) ? sl : 0.0;
-                        double takeProfit = item.TryGetProperty("TakeProfit", out var tpEl) && tpEl.TryGetDouble(out var tp) ? tp : 0.0;
-                        string exitReason = item.TryGetProperty("ExitReason", out var erEl) ? erEl.GetString() ?? string.Empty : (profit > 0 ? "TakeProfit" : "StopLoss");
-
-                        parsedTrades.Add(new ReportTradeItem(
-                            Ticket: ticket,
-                            Symbol: symbol,
-                            Side: side,
-                            Volume: volume,
-                            OpenPrice: openPrice,
-                            OpenTime: openTime,
-                            ClosePrice: closePrice,
-                            CloseTime: closeTime,
-                            Profit: profit,
-                            ReturnPct: returnPct,
-                            Commission: commission,
-                            Swap: swap,
-                            StopLoss: stopLoss,
-                            TakeProfit: takeProfit,
-                            ExitReason: exitReason));
-                    }
-
-                    if (parsedTrades.Count > 0)
-                    {
-                        return parsedTrades;
+                        return items.Select(t => new ReportTradeItem(
+                            Ticket: t.Ticket,
+                            Symbol: string.IsNullOrEmpty(t.Symbol) ? "BTC/USDT" : t.Symbol,
+                            Side: string.IsNullOrEmpty(t.Side) ? "Buy" : t.Side,
+                            Volume: t.Volume > 0 ? t.Volume : 1.0,
+                            OpenPrice: t.OpenPrice,
+                            OpenTime: t.OpenTime,
+                            ClosePrice: t.ClosePrice,
+                            CloseTime: t.CloseTime,
+                            Profit: t.Profit,
+                            ReturnPct: t.ReturnPct,
+                            Commission: t.Commission,
+                            Swap: t.Swap,
+                            StopLoss: t.StopLoss,
+                            TakeProfit: t.TakeProfit,
+                            ExitReason: string.IsNullOrEmpty(t.ExitReason) ? (t.Profit > 0 ? "TakeProfit" : "StopLoss") : t.ExitReason)).ToList();
                     }
                 }
             }
@@ -399,11 +382,7 @@ internal sealed class RunReportService
         double avgInterval = Math.Max(5.0, (totalSpanSeconds * 0.85) / Math.Max(1, count));
         DateTimeOffset currentClock = start.AddSeconds(10);
 
-        int winningCount = (int)Math.Round(count * 0.65);
-        if (winningCount <= 0 && totalProfit > 0)
-        {
-            winningCount = Math.Max(1, count / 2);
-        }
+        int winningCount = Math.Max(1, (int)Math.Round(count * 0.65));
         int losingCount = Math.Max(0, count - winningCount);
 
         var pnlList = new List<decimal>(count);
@@ -534,7 +513,7 @@ internal sealed class RunReportService
         decimal grossProfit = wins.Sum(t => t.Profit);
         decimal grossLoss = Math.Abs(losses.Sum(t => t.Profit));
         double profitFactor = grossLoss > 0 ? (double)Math.Round(grossProfit / grossLoss, 2) : 2.85;
-        double winRate = trades.Count > 0 ? Math.Round(((double)wins.Count / trades.Count) * 100.0, 1) : 65.0;
+        double winRate = Math.Round(((double)wins.Count / trades.Count) * 100.0, 1);
         double lossRate = Math.Round(100.0 - winRate, 1);
         decimal avgWin = wins.Count > 0 ? Math.Round(grossProfit / wins.Count, 2) : 185.20m;
         decimal avgLoss = losses.Count > 0 ? Math.Round(grossLoss / losses.Count, 2) : 92.40m;
@@ -567,28 +546,25 @@ internal sealed class RunReportService
         }
 
         decimal netProfit = run.NetProfit ?? (grossProfit - grossLoss);
-        decimal expectancy = trades.Count > 0 ? Math.Round(netProfit / trades.Count, 2) : 87.50m;
+        decimal expectancy = Math.Round(netProfit / trades.Count, 2);
         double maxDd = run.MaxDrawdown ?? 3.8;
 
         double avgHolding = 1420.0;
-        if (trades.Count > 0)
+        double totalHold = 0.0;
+        int holdCount = 0;
+        foreach (var t in trades)
         {
-            double totalHold = 0.0;
-            int holdCount = 0;
-            foreach (var t in trades)
+            if (DateTimeOffset.TryParse(t.OpenTime, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var oTime) &&
+                DateTimeOffset.TryParse(t.CloseTime, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var cTime) &&
+                cTime >= oTime)
             {
-                if (DateTimeOffset.TryParse(t.OpenTime, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var oTime) &&
-                    DateTimeOffset.TryParse(t.CloseTime, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var cTime) &&
-                    cTime >= oTime)
-                {
-                    totalHold += (cTime - oTime).TotalSeconds;
-                    holdCount++;
-                }
+                totalHold += (cTime - oTime).TotalSeconds;
+                holdCount++;
             }
-            if (holdCount > 0)
-            {
-                avgHolding = Math.Round(totalHold / holdCount, 1);
-            }
+        }
+        if (holdCount > 0)
+        {
+            avgHolding = Math.Round(totalHold / holdCount, 1);
         }
 
         return new ReportDetailedMetrics(
@@ -607,8 +583,8 @@ internal sealed class RunReportService
             WinLossRatio: winLossRatio,
             LargestWin: largestWin,
             LargestLoss: largestLoss,
-            MaxConsecutiveWins: trades.Count > 0 ? maxConsWins : 0,
-            MaxConsecutiveLosses: trades.Count > 0 ? maxConsLosses : 0,
+            MaxConsecutiveWins: maxConsWins,
+            MaxConsecutiveLosses: maxConsLosses,
             AverageHoldingPeriodSeconds: avgHolding,
             MaxDrawdownPct: maxDd,
             MaxDrawdownAmount: Math.Round(100000m * (decimal)(maxDd / 100.0), 2));
@@ -619,6 +595,68 @@ internal sealed class RunReportService
         if (run.Kind != RunKind.Optimization && run.Kind != RunKind.WalkForward)
         {
             return null;
+        }
+
+        if (!string.IsNullOrWhiteSpace(run.ResultPayloadJson))
+        {
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(run.ResultPayloadJson);
+                var root = doc.RootElement.TryGetProperty("Result", out var r) && r.ValueKind == System.Text.Json.JsonValueKind.Object
+                    ? r
+                    : doc.RootElement;
+
+                if (root.TryGetProperty("GenerationProgress", out var genEl) && genEl.ValueKind == System.Text.Json.JsonValueKind.Array)
+                {
+                    var dtoList = System.Text.Json.JsonSerializer.Deserialize<List<DtoGenerationItem>>(
+                        genEl.GetRawText(),
+                        GenerationJsonOptions);
+
+                    if (dtoList is { Count: > 0 })
+                    {
+                        var parsed = new List<ReportGenerationProgress>(dtoList.Count);
+                        foreach (var g in dtoList)
+                        {
+                            var pops = new List<ReportPopulationIndividual>();
+                            if (g.Populations is not null)
+                            {
+                                foreach (var p in g.Populations)
+                                {
+                                    string id = p.Id ?? p.IndividualId?.ToString(CultureInfo.InvariantCulture) ?? "0";
+                                    int idx = p.IndividualIndex > 0 ? p.IndividualIndex : (int.TryParse(id, out var parsedIdx) ? parsedIdx : 1);
+                                    pops.Add(new ReportPopulationIndividual(
+                                        Id: id,
+                                        IndividualIndex: idx,
+                                        Fitness: p.Fitness,
+                                        Diversity: p.Diversity,
+                                        Genes: [p.Fitness, p.Profit],
+                                        Parameters: p.Parameters ?? new Dictionary<string, object>(),
+                                        TotalReturn: p.TotalReturn,
+                                        SharpeRatio: p.SharpeRatio,
+                                        MaxDrawdown: p.MaxDrawdown,
+                                        WinRate: p.WinRate,
+                                        ProfitFactor: p.ProfitFactor,
+                                        TradeCount: p.TradeCount));
+                                }
+                            }
+
+                            parsed.Add(new ReportGenerationProgress(
+                                Generation: g.Generation,
+                                BestFitness: g.BestFitness,
+                                AverageFitness: g.AverageFitness,
+                                Diversity: g.Diversity,
+                                IsHyperMutation: g.IsHyperMutation,
+                                Populations: pops));
+                        }
+
+                        return parsed;
+                    }
+                }
+            }
+            catch
+            {
+                // Fall back to synthetic generations
+            }
         }
 
         double finalFitness = run.BestFitness ?? 0.88;
@@ -699,5 +737,50 @@ internal sealed class RunReportService
         }
 
         return list;
+    }
+
+    private sealed class DtoGenerationItem
+    {
+        public int Generation { get; set; } = 1;
+        public double BestFitness { get; set; }
+        public double AverageFitness { get; set; }
+        public double Diversity { get; set; }
+        public bool IsHyperMutation { get; set; }
+        public List<DtoPopulationItem>? Populations { get; set; }
+    }
+
+    private sealed class DtoPopulationItem
+    {
+        public string? Id { get; set; }
+        public int? IndividualId { get; set; }
+        public int IndividualIndex { get; set; }
+        public double Fitness { get; set; }
+        public double Profit { get; set; }
+        public double Diversity { get; set; }
+        public Dictionary<string, object>? Parameters { get; set; }
+        public double TotalReturn { get; set; }
+        public double SharpeRatio { get; set; }
+        public double MaxDrawdown { get; set; }
+        public double WinRate { get; set; }
+        public double ProfitFactor { get; set; }
+        public int TradeCount { get; set; }
+    }
+    private sealed class DtoTradeItem
+    {
+        public long Ticket { get; set; }
+        public string Symbol { get; set; } = "BTC/USDT";
+        public string Side { get; set; } = "Buy";
+        public double Volume { get; set; } = 1.0;
+        public double OpenPrice { get; set; }
+        public string OpenTime { get; set; } = string.Empty;
+        public double ClosePrice { get; set; }
+        public string CloseTime { get; set; } = string.Empty;
+        public decimal Profit { get; set; }
+        public double ReturnPct { get; set; }
+        public decimal Commission { get; set; }
+        public decimal Swap { get; set; }
+        public double StopLoss { get; set; }
+        public double TakeProfit { get; set; }
+        public string? ExitReason { get; set; }
     }
 }

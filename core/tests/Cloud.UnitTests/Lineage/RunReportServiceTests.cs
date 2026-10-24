@@ -186,5 +186,89 @@ public sealed class RunReportServiceTests
         Assert.Empty(report.Gaps);
         Assert.Empty(report.Interventions);
     }
+
+    [Fact]
+    public void GenerateReport_WithWinningDnaJson_ExtractsDnaParametersAndGenes()
+    {
+        var run = new FlowRun
+        {
+            Id = Guid.NewGuid(),
+            Continuity = RunContinuity.Contiguous,
+            WinningDnaJson = "{\"Genes\":[10.5, 20.5],\"Parameters\":{\"Period\":14,\"Mode\":\"Fast\"},\"Slots\":{\"Strategy\":\"CustomStrat\",\"Adapter\":\"CustomAdapter\"},\"Fitness\":0.95}"
+        };
+
+        RunReport report = _sut.GenerateReport(run);
+
+        Assert.NotNull(report.WinningDna);
+        Assert.Equal(2, report.WinningDna.Genes.Count);
+        Assert.Equal(10.5, report.WinningDna.Genes[0]);
+        Assert.Equal("CustomStrat", report.WinningDna.Slots.Strategy);
+        Assert.Equal("CustomAdapter", report.WinningDna.Slots.Adapter);
+        Assert.Equal(0.95, report.WinningDna.Fitness);
+    }
+
+    [Fact]
+    public void GenerateReport_WithConfigurationJson_ExtractsStrategyAndSymbols()
+    {
+        var run = new FlowRun
+        {
+            Id = Guid.NewGuid(),
+            Continuity = RunContinuity.Contiguous,
+            ConfigurationJson = "{\"StrategyName\":\"RsiStrategy\",\"AdapterName\":\"Binance\",\"Symbols\":[\"SOL/USDT\"],\"strategy\":{\"Period\":14,\"Name\":\"Rsi\",\"genes\":[1.0, 2.0]}}"
+        };
+
+        RunReport report = _sut.GenerateReport(run);
+
+        Assert.NotNull(report.WinningDna);
+        Assert.Equal("RsiStrategy", report.WinningDna.Slots.Strategy);
+        Assert.Equal("Binance", report.WinningDna.Slots.Adapter);
+        Assert.Equal("SOL/USDT", report.WinningDna.Execution.Symbols[0]);
+    }
+
+    [Fact]
+    public void GenerateReport_WithFullResultPayload_ExtractsTradesDetailedMetricsAndGenerations()
+    {
+        var run = new FlowRun
+        {
+            Id = Guid.NewGuid(),
+            Kind = RunKind.Optimization,
+            Continuity = RunContinuity.Contiguous,
+            ResultPayloadJson = "{\"Result\":{\"Trades\":[{\"Ticket\":1234,\"Symbol\":\"BTC/USDT\",\"Side\":\"Buy\",\"Volume\":1.5,\"OpenPrice\":50000.0,\"OpenTime\":\"2026-10-10\",\"ClosePrice\":51000.0,\"CloseTime\":\"2026-10-11\",\"Profit\":1500.0,\"ReturnPct\":3.0,\"Commission\":5.0,\"Swap\":1.0,\"StopLoss\":49000.0,\"TakeProfit\":52000.0,\"ExitReason\":\"TakeProfit\"}],\"EquityCurve\":[{\"Timestamp\":\"2026-10-10\",\"Balance\":100000.0,\"Equity\":100000.0,\"DrawdownPct\":0.0},{\"Timestamp\":\"2026-10-11\",\"Balance\":101500.0,\"Equity\":101500.0,\"DrawdownPct\":0.0}],\"DetailedMetrics\":{\"GrossProfit\":1500.0,\"GrossLoss\":0.0,\"ProfitFactor\":10.0,\"WinRate\":100.0,\"LossRate\":0.0,\"WinningTrades\":1,\"LosingTrades\":0,\"SortinoRatio\":3.5,\"CalmarRatio\":5.0,\"Expectancy\":1500.0,\"AverageWin\":1500.0,\"AverageLoss\":0.0,\"WinLossRatio\":10.0,\"LargestWin\":1500.0,\"LargestLoss\":0.0,\"MaxConsecutiveWins\":1,\"MaxConsecutiveLosses\":0,\"AverageHoldingPeriodSeconds\":86400.0,\"MaxDrawdownPct\":0.0,\"MaxDrawdownAmount\":0.0},\"GenerationProgress\":[{\"Generation\":1,\"BestFitness\":0.95,\"AverageFitness\":0.70,\"Diversity\":0.85,\"Populations\":[{\"IndividualId\":1,\"Fitness\":0.80,\"Parameters\":{\"Fast\":\"10\"}},{\"IndividualId\":2,\"Fitness\":0.95,\"Parameters\":{\"Fast\":\"14\"}}]}]}}"
+        };
+
+        RunReport report = _sut.GenerateReport(run);
+
+        Assert.NotNull(report.Trades);
+        Assert.NotEmpty(report.Trades);
+        Assert.Equal(1234, report.Trades[0].Ticket);
+        Assert.NotNull(report.EquityCurve);
+        Assert.Equal(2, report.EquityCurve.Count);
+        Assert.NotNull(report.DetailedMetrics);
+        Assert.Equal(1500.0m, report.DetailedMetrics.GrossProfit);
+        Assert.NotNull(report.GenerationProgress);
+        Assert.Single(report.GenerationProgress);
+        Assert.Equal(0.95, report.GenerationProgress[0].BestFitness);
+    }
+
+    [Fact]
+    public void GenerateReport_WithInvalidJson_DoesNotThrowAndFallsBack()
+    {
+        var run = new FlowRun
+        {
+            Id = Guid.NewGuid(),
+            Continuity = RunContinuity.Contiguous,
+            WinningDnaJson = "{ invalid json }",
+            ConfigurationJson = "{ broken json }",
+            ResultPayloadJson = "{ not json }"
+        };
+
+        RunReport report = _sut.GenerateReport(run);
+        Assert.NotNull(report);
+        Assert.NotNull(report.WinningDna);
+        Assert.NotNull(report.Trades);
+        Assert.NotEmpty(report.Trades);
+        Assert.NotNull(report.EquityCurve);
+        Assert.NotEmpty(report.EquityCurve);
+    }
 }
 

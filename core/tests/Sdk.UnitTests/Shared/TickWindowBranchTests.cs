@@ -350,4 +350,18 @@ public class TickWindowBranchTests
 
         Assert.True(window.TryGetLastCompletedBar("X", TimeFrame.H1, out double open, out double high, out double low, out double close, out double vol));
     }
+
+    [Fact]
+    public void TickRingBuffer_BoundsAndDispose_CoversAllBranches()
+    {
+        var buffer = new TickWindow.TickRingBuffer(5);
+        Assert.Throws<ArgumentOutOfRangeException>(() => buffer[0]);
+        Assert.Throws<ArgumentOutOfRangeException>(() => buffer[-1]);
+        buffer.Add(new Tick(100, 10.0, 10.0, 1));
+        Assert.Equal(10.0, buffer[0].Bid);
+        Assert.Throws<ArgumentOutOfRangeException>(() => buffer[1]);
+
+        buffer.Dispose();
+        buffer.Dispose(); // second call covers !_disposed == false
+    }
 }

@@ -49,7 +49,7 @@ internal sealed partial class KernelService
         if (strategy is null)
         {
             string strategyName = !string.IsNullOrWhiteSpace(input.StrategyName) ? input.StrategyName : "TrendFollowing";
-            #pragma warning disable CA2000
+#pragma warning disable CA2000
             strategy = _extensionManager.CreateTransientStrategy(strategyName)
                 ?? _extensionManager.CreateTransientStrategy("TrendFollowing")
                 ?? _extensionManager.CreateTransientStrategy("TrendFollowingStrategy")

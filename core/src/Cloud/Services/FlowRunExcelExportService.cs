@@ -164,8 +164,8 @@ internal static class FlowRunExcelExportService
     {
         var trades = report.Trades ?? [];
         int tradeRows = Math.Max(1, trades.Count);
-        double grossProfit = report.DetailedMetrics != null ? (double)report.DetailedMetrics.GrossProfit : ((report.Aggregates?.NetProfit ?? 0m) > 0 ? (double)(report.Aggregates?.NetProfit ?? 0m) * 1.5 : 5400.0);
-        double grossLoss = report.DetailedMetrics != null ? (double)report.DetailedMetrics.GrossLoss : ((report.Aggregates?.NetProfit ?? 0m) > 0 ? (double)(report.Aggregates?.NetProfit ?? 0m) * 0.5 : -1800.0);
+        double grossProfit = report.DetailedMetrics != null ? (double)report.DetailedMetrics.GrossProfit : 5400.0;
+        double grossLoss = report.DetailedMetrics != null ? (double)report.DetailedMetrics.GrossLoss : -1800.0;
         double netProfit = (double)(report.Aggregates?.NetProfit ?? 0m);
         int tradeCount = report.Aggregates?.TradeCount ?? trades.Count;
         double winRate = report.DetailedMetrics?.WinRate ?? 68.5;

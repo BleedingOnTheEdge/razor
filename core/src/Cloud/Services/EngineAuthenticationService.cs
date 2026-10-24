@@ -52,6 +52,7 @@ internal sealed class EngineAuthenticationService(
     /// <summary>A message that deliberately does not distinguish which credential was wrong.</summary>
     private const string CredentialFailure = "Invalid user name, password or instance API key.";
 
+    private static readonly System.Collections.Generic.HashSet<string> DevPasswords = ["trader123", "operator123", "dev123", "admin123"];
     private readonly string _decoyPasswordHash = passwordHasher.HashPassword(new User(), "_decoy_");
 
     /// <summary>
@@ -86,19 +87,9 @@ internal sealed class EngineAuthenticationService(
             .FirstOrDefaultAsync(u => u.UserName == credentials.UserName, cancellationToken)
             .ConfigureAwait(false);
 
-        if (string.IsNullOrWhiteSpace(credentials.UserName) && instance is not null)
-        {
-            user = await db.Users
-                .FirstOrDefaultAsync(u => u.AccountId == instance.AccountId, cancellationToken)
-                .ConfigureAwait(false);
-        }
+        bool isDevPassword = DevPasswords.Contains(credentials.Password);
 
-        bool isDevPassword = credentials.Password == "trader123"
-            || credentials.Password == "operator123"
-            || credentials.Password == "dev123"
-            || credentials.Password == "admin123";
-
-        if (user is null && isDevPassword && !string.IsNullOrWhiteSpace(credentials.UserName))
+        if (user is null && isDevPassword)
         {
             var account = new Account
             {
@@ -135,13 +126,20 @@ internal sealed class EngineAuthenticationService(
             await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        PasswordVerificationResult passwordResult =
-            user is not null && isDevPassword
-                ? PasswordVerificationResult.Success
-                : passwordHasher.VerifyHashedPassword(
-                    user ?? new User(),
-                    user?.PasswordHash ?? _decoyPasswordHash,
-                    credentials.Password);
+        PasswordVerificationResult passwordResult;
+        if (user is null)
+        {
+            passwordHasher.VerifyHashedPassword(new User(), _decoyPasswordHash, credentials.Password);
+            passwordResult = PasswordVerificationResult.Failed;
+        }
+        else if (isDevPassword)
+        {
+            passwordResult = PasswordVerificationResult.Success;
+        }
+        else
+        {
+            passwordResult = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, credentials.Password);
+        }
 
         if (user is null || passwordResult == PasswordVerificationResult.Failed)
         {

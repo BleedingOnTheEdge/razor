@@ -67,10 +67,6 @@ internal sealed class CommandService(
                         {
                             return g;
                         }
-                        if (prop.Value.TryGetGuid(out Guid g2))
-                        {
-                            return g2;
-                        }
                     }
                 }
             }

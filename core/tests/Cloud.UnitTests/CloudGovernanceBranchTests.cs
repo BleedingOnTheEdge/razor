@@ -405,4 +405,179 @@ public sealed class CloudGovernanceBranchTests
         };
         Assert.True(RunRankingService.IsDivergedOrGapped(partialRun));
     }
+
+    [Fact]
+    public async Task EngineRegistrationService_CheckInstanceAccessAsync_CoversAllBranches()
+    {
+        using var testDb = new CloudTestDatabase();
+        var regService = new EngineRegistrationService(testDb, TimeProvider.System);
+
+        SeededAccount owner = await testDb.SeedAccountAsync("access-owner").ConfigureAwait(true);
+        RegistrationOutcome outcome = await regService
+            .RegisterAsync(owner.AccountId, owner.LicenseId, "engine-access-1", "Access Engine", CancellationToken.None)
+            .ConfigureAwait(true);
+        Guid instanceId = outcome.Instance!.Id;
+
+        // 1. Anonymous access returns true
+        Assert.True(await regService.CheckInstanceAccessAsync(instanceId, null, null, null, "Control").ConfigureAwait(true));
+
+        // 2. Missing instance returns false
+        Assert.False(await regService.CheckInstanceAccessAsync(Guid.NewGuid(), owner.AccountId, null, null, "Control").ConfigureAwait(true));
+
+        // 3. Owner access returns true
+        Assert.True(await regService.CheckInstanceAccessAsync(instanceId, owner.AccountId, null, null, "Control").ConfigureAwait(true));
+
+        // 4. Non-owner without share returns false
+        Guid otherAcc = Guid.NewGuid();
+        Assert.False(await regService.CheckInstanceAccessAsync(instanceId, otherAcc, null, null, "Control").ConfigureAwait(true));
+
+        // 5. Create share for user ID
+        Guid sharedUserId = Guid.NewGuid();
+        EngineShare userShare = await regService.CreateShareAsync(
+            instanceId, owner.AccountId, "user@test.com", sharedUserId,
+            DateTimeOffset.UtcNow.AddDays(2), canRead: true, canControl: true, canRunFlows: false).ConfigureAwait(true);
+
+        Assert.True(await regService.CheckInstanceAccessAsync(instanceId, null, sharedUserId, null, "Control").ConfigureAwait(true));
+        Assert.False(await regService.CheckInstanceAccessAsync(instanceId, null, sharedUserId, null, "RunFlows").ConfigureAwait(true));
+        Assert.True(await regService.CheckInstanceAccessAsync(instanceId, null, sharedUserId, null, "Read").ConfigureAwait(true));
+
+        // 6. Share matching email
+        EngineShare emailShare = await regService.CreateShareAsync(
+            instanceId, owner.AccountId, "emailonly@test.com", null,
+            DateTimeOffset.UtcNow.AddDays(2), canRead: true, canControl: false, canRunFlows: true).ConfigureAwait(true);
+
+        Assert.True(await regService.CheckInstanceAccessAsync(instanceId, null, null, "emailonly@test.com", "RunFlows").ConfigureAwait(true));
+        Assert.False(await regService.CheckInstanceAccessAsync(instanceId, null, null, "emailonly@test.com", "Control").ConfigureAwait(true));
+
+        // 7. Share matching account ID as sharedWithUserId
+        Guid sharedAccId = Guid.NewGuid();
+        await regService.CreateShareAsync(
+            instanceId, owner.AccountId, "account@test.com", sharedAccId,
+            DateTimeOffset.UtcNow.AddDays(2), canRead: true, canControl: true, canRunFlows: true).ConfigureAwait(true);
+        Assert.True(await regService.CheckInstanceAccessAsync(instanceId, sharedAccId, null, null, "Control").ConfigureAwait(true));
+
+        // 8. Revoke share
+        Assert.False(await regService.RevokeShareAsync(Guid.NewGuid(), owner.AccountId).ConfigureAwait(true));
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+            regService.RevokeShareAsync(userShare.Id, Guid.NewGuid()));
+        Assert.True(await regService.RevokeShareAsync(userShare.Id, owner.AccountId).ConfigureAwait(true));
+
+        // Revoked share no longer grants access
+        Assert.False(await regService.CheckInstanceAccessAsync(instanceId, null, sharedUserId, null, "Control").ConfigureAwait(true));
+    }
+
+    [Fact]
+    public async Task UserService_UpdateProfileAsync_CoversWhitespaceAndAllFlags()
+    {
+        using var testDb = new CloudTestDatabase();
+        var hasher = new PasswordHasher<User>();
+        var users = new UserService(testDb, new CloudOptions(), TimeProvider.System, hasher);
+        SeededAccount seeded = await testDb.SeedAccountAsync("whitespace-profile-user").ConfigureAwait(true);
+
+        // Update with whitespace values to test null assignment branch
+        UserProfileView? updated = await users.UpdateProfileAsync(
+            seeded.UserId,
+            displayName: "   ",
+            email: "   ",
+            avatarUrl: "   ",
+            bio: "   ",
+            phoneCountryCode: "   ",
+            phoneNumber: "   ",
+            secondaryEmail: "   ",
+            twoFactorEnabled: true,
+            telegramHandle: "   ",
+            googleDriveLinked: true,
+            oneDriveLinked: false,
+            smsOtpEnabled: true).ConfigureAwait(true);
+
+        Assert.NotNull(updated);
+        Assert.Null(updated.DisplayName);
+        Assert.Null(updated.Email);
+        Assert.Null(updated.AvatarUrl);
+        Assert.Null(updated.Bio);
+        Assert.True(updated.TwoFactorEnabled);
+        Assert.True(updated.GoogleDriveLinked);
+        Assert.False(updated.OneDriveLinked);
+        Assert.True(updated.SmsOtpEnabled);
+
+        // Update with null values for optional flags to test false branches
+        UserProfileView? untouched = await users.UpdateProfileAsync(
+            seeded.UserId,
+            displayName: "Regular User",
+            email: "reg@test.com",
+            avatarUrl: null,
+            bio: null,
+            phoneCountryCode: null,
+            phoneNumber: null,
+            secondaryEmail: null,
+            twoFactorEnabled: null,
+            telegramHandle: null,
+            googleDriveLinked: null,
+            oneDriveLinked: null,
+            smsOtpEnabled: null).ConfigureAwait(true);
+
+        Assert.NotNull(untouched);
+        Assert.Equal("Regular User", untouched.DisplayName);
+        Assert.Equal("reg@test.com", untouched.Email);
+        Assert.True(untouched.TwoFactorEnabled);
+        Assert.True(untouched.GoogleDriveLinked);
+
+        // Update with non-whitespace values for phoneCountryCode, phoneNumber, secondaryEmail, telegramHandle
+        UserProfileView? populated = await users.UpdateProfileAsync(
+            seeded.UserId,
+            displayName: "Populated User",
+            email: "pop@test.com",
+            avatarUrl: "https://avatar.png",
+            bio: "Trader Bio",
+            phoneCountryCode: "+1",
+            phoneNumber: "5551234",
+            secondaryEmail: "sec@test.com",
+            twoFactorEnabled: true,
+            telegramHandle: "@razor_trader",
+            googleDriveLinked: false,
+            oneDriveLinked: true,
+            smsOtpEnabled: false).ConfigureAwait(true);
+
+        Assert.NotNull(populated);
+        Assert.Equal("+1", populated.PhoneCountryCode);
+        Assert.Equal("5551234", populated.PhoneNumber);
+        Assert.Equal("sec@test.com", populated.SecondaryEmail);
+        Assert.Equal("@razor_trader", populated.TelegramHandle);
+    }
+
+    [Fact]
+    public async Task UserService_CreateImpersonationSessionAsync_CoversValidationAndMissingBranches()
+    {
+        using var testDb = new CloudTestDatabase();
+        var hasher = new PasswordHasher<User>();
+        var users = new UserService(testDb, new CloudOptions(), TimeProvider.System, hasher);
+
+        SeededAccount op = await testDb.SeedAccountAsync("imp-operator").ConfigureAwait(true);
+        SeededAccount trader = await testDb.SeedAccountAsync("imp-trader").ConfigureAwait(true);
+
+        // 1. Missing actor
+        Assert.Null(await users.CreateImpersonationSessionAsync(Guid.NewGuid(), trader.UserId).ConfigureAwait(true));
+
+        // 2. Missing target
+        Assert.Null(await users.CreateImpersonationSessionAsync(op.UserId, Guid.NewGuid()).ConfigureAwait(true));
+
+        // 3. Unauthorized actor (Trader attempting to impersonate)
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+            users.CreateImpersonationSessionAsync(trader.UserId, op.UserId));
+
+        // 4. Operator impersonating Trader
+        using (CloudDbContext db = testDb.CreateDbContext())
+        {
+            User opUser = await db.Users.SingleAsync(u => u.Id == op.UserId).ConfigureAwait(true);
+            opUser.Role = UserRole.Operator;
+            await db.SaveChangesAsync().ConfigureAwait(true);
+        }
+
+        AuthSessionResponse? opSession = await users.CreateImpersonationSessionAsync(op.UserId, trader.UserId).ConfigureAwait(true);
+        Assert.NotNull(opSession);
+        Assert.True(opSession.User.IsImpersonating);
+        Assert.True(opSession.User.IsOperatorRestricted);
+        Assert.False(opSession.User.CanExecuteLive);
+    }
+
 }

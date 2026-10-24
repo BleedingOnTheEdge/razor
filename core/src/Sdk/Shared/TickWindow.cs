@@ -80,11 +80,7 @@ public sealed class TickWindow : IDisposable
             return;
         }
 
-        if (!_lastCompleteTimes.TryGetValue(symbol, out Dictionary<TimeFrame, long>? times))
-        {
-            buffer.Add(tick);
-            return;
-        }
+        Dictionary<TimeFrame, long> times = _lastCompleteTimes[symbol];
 
         foreach ((TimeFrame tf, long lastTime) in times)
         {
@@ -226,10 +222,7 @@ public sealed class TickWindow : IDisposable
         for (int i = first; i < n; i++)
         {
             Tick t = buffer[i];
-            if (t.Time < windowStart)
-            {
-                continue;
-            }
+
 
             double price = SelectPrice(t, priceType);
             volume += t.Volume;
@@ -297,7 +290,7 @@ public sealed class TickWindow : IDisposable
         public int Count;
     }
 
-    private sealed class TickRingBuffer : IDisposable
+    internal sealed class TickRingBuffer : IDisposable
     {
         private Tick[] _buffer;
         private int _head;
@@ -411,7 +404,7 @@ public sealed class TickWindow : IDisposable
 
         public void Dispose()
         {
-            if (!_disposed && _buffer is not null)
+            if (!_disposed)
             {
                 ArrayPool<Tick>.Shared.Return(_buffer);
                 _buffer = [];
