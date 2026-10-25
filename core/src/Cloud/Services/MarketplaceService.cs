@@ -216,6 +216,9 @@ internal sealed class MarketplaceService(
             AccountId = accountId,
             EngineInstanceId = targetInstanceId,
             LicenseKey = $"MKPL-{Guid.NewGuid():N}"[..24].ToUpperInvariant(),
+            AcquiredVersion = item.Version,
+            LicenseType = item.Price == 0 ? "Evaluation" : "Perpetual",
+            RightsJson = "{\"canRunLive\":true,\"canRunBacktest\":true,\"maxNodes\":5}",
             AcquiredAt = now
         };
 

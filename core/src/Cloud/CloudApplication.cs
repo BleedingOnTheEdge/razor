@@ -96,8 +96,18 @@ internal static class CloudApplication
         // A factory rather than a scoped context: an Engine session is long lived and would otherwise hold a
         // context for the whole connection, while each protocol message needs its own short lived unit of work.
         services.AddDbContextFactory<CloudDbContext>(contextOptions =>
-            contextOptions.UseNpgsql(options.ConnectionString, npgsqlOptions =>
-                npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
+        {
+            if (options.ConnectionString?.StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase) == true ||
+                options.ConnectionString?.EndsWith(".db", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                contextOptions.UseSqlite(options.ConnectionString);
+            }
+            else
+            {
+                contextOptions.UseNpgsql(options.ConnectionString, npgsqlOptions =>
+                    npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            }
+        });
 
         services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
         services.AddSingleton<EngineRegistrationService>();
@@ -117,6 +127,7 @@ internal static class CloudApplication
         services.AddSingleton<CommunityService>();
         services.AddSingleton<UserService>();
         services.AddSingleton<AdminSettingsService>();
+        services.AddSingleton<BundleService>();
 
         services.AddCors();
 
@@ -163,6 +174,9 @@ internal static class CloudApplication
             .AllowAnyHeader()
             .AllowAnyMethod());
 
+        app.UseDefaultFiles();
+        app.UseStaticFiles();
+
         app.UseSwaggerGen();
         app.UseManagementApiKey(options);
 
@@ -181,8 +195,9 @@ internal static class CloudApplication
             // Enums travel as their names so that a stored status or extension kind is as readable on the API
             // as it is in the database.
             config.Serializer.Options.Converters.Add(new JsonStringEnumConverter());
-
         });
+
+        app.MapFallbackToFile("index.html");
     }
 
     private sealed class ApiKeyAuthenticationHandler(

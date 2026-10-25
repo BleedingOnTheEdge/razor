@@ -1,21 +1,26 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
-import { Shield, Key, Terminal, ArrowRight, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { Shield, Key, Terminal, ArrowRight, CheckCircle2, AlertCircle, Loader2, LogOut } from 'lucide-react';
 
 export default function AuthLoginPage() {
   const router = useRouter();
   const { login, quickDemoLogin, isAuthenticated, user, logout } = useAuth();
 
+  const [mounted, setMounted] = useState(false);
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [customKey, setCustomKey] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,45 +56,20 @@ export default function AuthLoginPage() {
     }
   };
 
-  if (isAuthenticated && user) {
-    return (
-      <main className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-black font-mono">
-        <div className="w-full max-w-md p-8 border border-black text-center space-y-6">
-          <div className="w-12 h-12 mx-auto border border-black flex items-center justify-center text-green-600 font-bold">
-            [OK]
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold uppercase">Active Session Detected</h2>
-            <p className="text-xs text-black">
-              Authenticated as <span className="font-bold underline">{user.userName}</span> ({user.role})
-            </p>
-          </div>
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => router.push('/panel')}
-              className="w-full py-2.5 px-4 bg-black text-white font-bold text-sm border border-black flex items-center justify-center gap-2 hover:bg-zinc-800 transition-colors"
-            >
-              <span>ENTER PANEL</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-            <button
-              onClick={logout}
-              className="w-full py-2.5 px-4 bg-white hover:bg-zinc-100 text-black font-bold text-sm border border-black transition-colors"
-            >
-              SIGN OUT / SWITCH IDENTITY
-            </button>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-black font-mono">
-      <div className="w-full max-w-md space-y-8">
+      <div className="w-full max-w-md space-y-6">
+        {/* Navigation back to landing */}
+        <div className="flex items-center justify-between text-xs font-bold border-b border-black pb-3">
+          <Link href="/" className="hover:underline flex items-center gap-1">
+            &larr; BACK TO PLATFORM
+          </Link>
+          <span>RAZOR AUTH GATEWAY</span>
+        </div>
+
         {/* Header Branding */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 border border-black text-xs font-bold mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 border border-black text-xs font-bold mb-1">
             <Terminal className="w-3.5 h-3.5 text-black" />
             <span>RAZOR ENGINE 1.0</span>
           </div>
@@ -101,7 +81,43 @@ export default function AuthLoginPage() {
           </p>
         </div>
 
-        {/* Card */}
+        {/* Active Session Notice if logged in */}
+        {mounted && isAuthenticated && user && (
+          <div className="p-4 border-2 border-black bg-zinc-50 space-y-3">
+            <div className="flex items-center justify-between text-xs font-bold">
+              <span className="flex items-center gap-1.5 text-green-700">
+                <CheckCircle2 className="w-4 h-4" />
+                ACTIVE SESSION
+              </span>
+              <span className="border border-black px-1.5 py-0.5 text-[10px]">
+                {user.role}
+              </span>
+            </div>
+            <p className="text-xs text-black">
+              Signed in as <strong className="underline">{user.userName}</strong>. You can enter the operator terminal or sign in with another identity below.
+            </p>
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => router.push('/panel')}
+                className="py-2 px-3 bg-black text-white hover:bg-zinc-800 text-xs font-bold border border-black flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <span>ENTER PANEL</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={logout}
+                className="py-2 px-3 bg-white hover:bg-zinc-100 text-black text-xs font-bold border border-black flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>SIGN OUT</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Auth Form Card */}
         <div className="p-8 bg-white border border-black space-y-6">
           {error && (
             <div className="p-3.5 border border-black bg-white text-red-600 text-xs font-bold flex items-center gap-2.5">

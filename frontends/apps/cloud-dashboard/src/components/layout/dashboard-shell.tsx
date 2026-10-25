@@ -1,22 +1,80 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { useAuth } from '@/context/auth-context';
-import { AlertTriangle, Sparkles, ArrowRight } from 'lucide-react';
+import { AlertTriangle, Sparkles, ArrowRight, ShieldAlert, Loader2 } from 'lucide-react';
+
+const PUBLIC_ROUTES = [
+  '/',
+  '/login',
+  '/about',
+  '/contact',
+  '/terms',
+  '/docs',
+];
+
+function isPathPublic(pathname: string): boolean {
+  if (PUBLIC_ROUTES.includes(pathname)) return true;
+  if (pathname.startsWith('/auth') || pathname.startsWith('/docs')) return true;
+  return false;
+}
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, isImpersonating, impersonatedBy, exitImpersonation } = useAuth();
+  const { user, isAuthenticated, isLoading, isImpersonating, impersonatedBy, exitImpersonation } = useAuth();
 
-  // On landing page (/) and auth pages like /login, /auth/..., render full screen without dashboard chrome
-  if (pathname === '/' || pathname === '/login' || pathname.startsWith('/auth')) {
+  const isPublic = isPathPublic(pathname);
+
+  // Strict Authentication Guard for all non-public surfaces
+  useEffect(() => {
+    if (!isPublic && !isLoading && !isAuthenticated) {
+      router.replace('/auth/login');
+    }
+  }, [isPublic, isLoading, isAuthenticated, router]);
+
+  // On public pages, render full screen without dashboard chrome
+  if (isPublic) {
     return <>{children}</>;
+  }
+
+  // Loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white text-black font-mono flex items-center justify-center p-6 text-center">
+        <div className="p-8 border border-black space-y-3">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-black" />
+          <div className="text-xs font-bold uppercase tracking-widest">[AUTHENTICATING OPERATOR SESSION...]</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Strictly block unauthenticated access to the panel
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-white text-black font-mono flex flex-col items-center justify-center p-6 text-center space-y-4">
+        <div className="w-12 h-12 border border-black flex items-center justify-center font-bold text-red-600 text-lg">
+          [!]
+        </div>
+        <h1 className="text-lg font-bold uppercase">Restricted Operator Surface</h1>
+        <p className="text-xs text-black max-w-sm">
+          Access to this execution surface requires active operator authentication. Redirecting to sign in...
+        </p>
+        <Link
+          href="/auth/login"
+          className="px-4 py-2 bg-black text-white hover:bg-zinc-800 font-bold text-xs border border-black transition-colors"
+        >
+          [GO TO SIGN IN]
+        </Link>
+      </div>
+    );
   }
 
   // Footer promotion logic:
@@ -39,7 +97,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         className="text-[#D97706] hover:text-[#B45309] font-extrabold text-base tracking-tight flex items-center justify-center gap-2 transition-colors"
       >
         <Sparkles className="w-5 h-5 text-[#D97706]" />
-        <span>Scale to ENTERPRISE — Dedicated Cluster Nodes, Zero Rate-Limits & Unlimited Instances →</span>
+        <span>Scale to ENTERPRISE — Dedicated Cluster Nodes, Zero Rate-Limits & Unlimited Instances &rarr;</span>
       </Link>
     );
   } else {
@@ -49,7 +107,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         className="text-[#D97706] hover:text-[#B45309] font-extrabold text-base tracking-tight flex items-center justify-center gap-2 transition-colors"
       >
         <Sparkles className="w-5 h-5 text-[#D97706]" />
-        <span>Upgrade to PRO — Multi-Engine Parallel Execution, Live Trading Manager & Telemetry Fills →</span>
+        <span>Upgrade to PRO — Multi-Engine Parallel Execution, Live Trading Manager & Telemetry Fills &rarr;</span>
       </Link>
     );
   }
@@ -68,36 +126,30 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <AlertTriangle className="w-4 h-4 text-black shrink-0 animate-pulse" />
               <span className="truncate">
                 [IMPERSONATION ACTIVE]: Operating as [{user?.userName || 'User'}]
-                {impersonatedBy ? ` (Impersonated by ${impersonatedBy})` : ''}
-                {user?.role === 'Operator' ? ' — [OPERATOR RESTRICTED: Live Deploy Blocked]' : ' — [ADMIN FULL ACCESS]'}
               </span>
             </div>
             <button
-              type="button"
               onClick={exitImpersonation}
-              className="px-3 py-1 bg-black text-white hover:bg-zinc-800 text-xs font-mono font-bold shrink-0 transition-colors ml-2"
+              className="bg-black hover:bg-zinc-800 text-white px-2.5 py-1 text-[11px] font-bold border border-black uppercase shrink-0 transition-colors"
             >
-              [EXIT IMPERSONATION]
+              Exit Impersonation
             </button>
           </div>
         )}
 
-        <Header onToggleMobileMenu={() => setIsMobileMenuOpen((prev) => !prev)} />
+        <Header onToggleMobileMenu={() => setIsMobileMenuOpen(true)} />
 
-        <main
-          className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8 bg-white"
-          role="main"
-        >
+        <main className="flex-1 overflow-y-auto px-4 md:px-8 py-6 pb-20 md:pb-6 bg-white text-black min-h-0">
           {children}
         </main>
 
-        {/* Base Footer with Gold Promotion */}
-        <footer className="border-t border-black bg-zinc-50 px-4 py-3 text-center shrink-0">
+        {/* Global Footer Marketing Promotional Banner */}
+        <footer className="w-full bg-[#FEF3C7] border-t border-[#F59E0B] py-3 px-4 text-center select-none shrink-0 font-sans">
           {promoContent}
         </footer>
       </div>
+
       <MobileBottomNav onOpenSidebar={() => setIsMobileMenuOpen(true)} />
     </div>
   );
 }
-

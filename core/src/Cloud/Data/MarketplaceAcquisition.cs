@@ -35,6 +35,15 @@ internal sealed class MarketplaceAcquisition
     /// <summary>Gets or sets the issued licence key or permission token.</summary>
     public string LicenseKey { get; set; } = string.Empty;
 
+    /// <summary>Gets or sets the exact pinned semantic version acquired by the user.</summary>
+    public string AcquiredVersion { get; set; } = "1.0.0";
+
+    /// <summary>Gets or sets the license type (Perpetual, Subscription, Evaluation).</summary>
+    public string LicenseType { get; set; } = "Perpetual";
+
+    /// <summary>Gets or sets the JSON describing user rights and runtime quotas.</summary>
+    public string RightsJson { get; set; } = "{\"canRunLive\":true,\"canRunBacktest\":true,\"maxNodes\":5}";
+
     /// <summary>Gets or sets when the acquisition occurred.</summary>
     public DateTimeOffset AcquiredAt { get; set; }
 }

@@ -38,7 +38,7 @@ export function SlotAssignmentModal({
 }: SlotAssignmentModalProps) {
   if (!isOpen) return null;
 
-  const marketplaceUrl = `http://localhost:3001/items?targetEngineId=${instanceId || ''}&slot=${selectedSlotKind}`;
+  const marketplaceUrl = `/marketplace/items?targetEngineId=${instanceId || ''}&slot=${selectedSlotKind}`;
 
   return (
     <div

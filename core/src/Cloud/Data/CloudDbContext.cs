@@ -92,6 +92,15 @@ internal sealed class CloudDbContext : DbContext
     /// <summary>Gets the temporary engine sharing delegations.</summary>
     public DbSet<EngineShare> EngineShares => Set<EngineShare>();
 
+    /// <summary>Gets the trading bundles.</summary>
+    public DbSet<TradingBundle> TradingBundles => Set<TradingBundle>();
+
+    /// <summary>Gets the bundle change snapshots.</summary>
+    public DbSet<BundleSnapshot> BundleSnapshots => Set<BundleSnapshot>();
+
+    /// <summary>Gets the bundle snapshot attached DNAs.</summary>
+    public DbSet<BundleDna> BundleDnas => Set<BundleDna>();
+
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -113,6 +122,7 @@ internal sealed class CloudDbContext : DbContext
         ConfigureCommunityThread(modelBuilder);
         ConfigureSystemSetting(modelBuilder);
         ConfigureEngineShare(modelBuilder);
+        ConfigureTradingBundle(modelBuilder);
     }
 
 
@@ -398,6 +408,52 @@ internal sealed class CloudDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(s => s.EngineInstanceId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureTradingBundle(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<TradingBundle>(bundle =>
+        {
+            bundle.HasKey(b => b.Id);
+            bundle.Property(b => b.Id).HasMaxLength(32);
+            bundle.Property(b => b.Name).IsRequired().HasMaxLength(128);
+            bundle.Property(b => b.Description).HasMaxLength(2048);
+            bundle.Property(b => b.Currency).IsRequired().HasMaxLength(16);
+            bundle.Property(b => b.StrategySlotId).HasMaxLength(64);
+            bundle.Property(b => b.AdapterSlotIdsJson).HasMaxLength(4096);
+            bundle.Property(b => b.HookSlotIdsJson).HasMaxLength(4096);
+            bundle.Property(b => b.DefaultConfigurationsJson).HasMaxLength(16384);
+            bundle.HasIndex(b => b.AccountId);
+            bundle.HasMany(b => b.Snapshots)
+                .WithOne(s => s.Bundle!)
+                .HasForeignKey(s => s.BundleId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<BundleSnapshot>(snap =>
+        {
+            snap.HasKey(s => s.Id);
+            snap.Property(s => s.BundleId).IsRequired().HasMaxLength(32);
+            snap.Property(s => s.Version).IsRequired().HasMaxLength(32);
+            snap.Property(s => s.Name).HasMaxLength(128);
+            snap.Property(s => s.SnapshotStateJson).IsRequired().HasMaxLength(32768);
+            snap.HasIndex(s => s.BundleId);
+            snap.HasMany(s => s.Dnas)
+                .WithOne(d => d.BundleSnapshot!)
+                .HasForeignKey(d => d.BundleSnapshotId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<BundleDna>(dna =>
+        {
+            dna.HasKey(d => d.Id);
+            dna.Property(d => d.DnaId).IsRequired().HasMaxLength(64);
+            dna.Property(d => d.Name).HasMaxLength(128);
+            dna.Property(d => d.BacktestStatus).IsRequired().HasMaxLength(32);
+            dna.Property(d => d.ParametersJson).IsRequired().HasMaxLength(16384);
+            dna.Property(d => d.ReportSummary).HasMaxLength(4096);
+            dna.HasIndex(d => d.BundleSnapshotId);
         });
     }
 }

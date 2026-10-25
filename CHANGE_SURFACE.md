@@ -126,8 +126,66 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `core/src/Cloud/Endpoints/CancelRunEndpoint.cs`: FastEndpoints controller for cancelling an active or paused flow run.
 - `frontends/apps/cloud-dashboard/src/app/panel/reports/[id]/windows/page.tsx`: Walk-Forward window splits and out-of-sample degradation analysis page.
 - `frontends/apps/cloud-dashboard/src/app/panel/reports/[id]/windows/[windowIndex]/page.tsx`: Individual Walk-Forward window granular performance and chromosome DNA page.
+- `frontends/apps/cloud-dashboard/src/components/layout/PublicNav.tsx`: Public header and footer navigation with dynamic authentication state.
+- `frontends/apps/cloud-dashboard/src/app/about/page.tsx`: About page detailing quantitative architecture, low-latency execution, and non-custodial design.
+- `frontends/apps/cloud-dashboard/src/app/contact/page.tsx`: Operations and trading desk contact page with priority dispatch form.
+- `frontends/apps/cloud-dashboard/src/app/terms/page.tsx`: Terms of Service, algorithmic risk disclosures, and software licensing boundaries.
+- `frontends/apps/cloud-dashboard/src/app/docs/page.tsx`: Developer documentation for Slots and Hooks (strategies, broker adapters, fitness functions).
+- `.github/CODEOWNERS`: Monorepo code ownership rules declaring core team governance.
+- `PRODUCT_SKILL.md`: Enterprise product skill specification and project targets for Razor monorepo.
+- `.runflare-account`: Runflare deployment active account configuration.
+- `.runflareignore`: Runflare deployment build artifact ignore file.
+- `Dockerfile`: Multi-stage production container build for unified Razor deployment.
+- `Program.cs`: Root entrypoint for production monolithic host container.
+- `core/nuget.config`: NuGet package source configuration for core services.
+- `core/src/Cloud/Data/BundleDna.cs`: Entity model for trading strategy bundle DNA definitions.
+- `core/src/Cloud/Data/BundleSnapshot.cs`: Snapshot data contract for trading strategy bundle exports.
+- `core/src/Cloud/Data/MarketplaceAcquisition.cs`: Marketplace item licensing acquisition record.
+- `core/src/Cloud/Data/TradingBundle.cs`: Entity model for trading bundle registry and lifecycle.
+- `core/src/Cloud/Endpoints/BundleEndpoints.cs`: FastEndpoints controller for creating, querying, and snapshotting trading bundles.
+- `core/src/Cloud/Services/BundleService.cs`: Domain service managing bundle validation, slots, and parameter generation.
+- `core/tests/Cloud.UnitTests/BundleAndSchemaBranchCoverageTests.cs`: Unit test suite verifying edge cases and branch coverage for trading bundles.
+- `core/tests/Cloud.UnitTests/BundleServiceAndEndpointsTests.cs`: Unit test suite for bundle lifecycle endpoints and slot mapping.
+- `deploy/entrypoint.sh`: Container entrypoint script managing reverse proxy and service startup.
+- `deploy/nginx.conf`: Nginx reverse proxy configuration for port routing.
+- `frontends/apps/cloud-dashboard/src/app/bundles/new/page.tsx`: Bundles Studio interactive composition designer page.
+- `frontends/apps/cloud-dashboard/src/app/bundles/page.tsx`: Trading bundles catalog and overview page.
+- `frontends/apps/cloud-dashboard/src/app/marketplace/layout.tsx`: Marketplace layout wrapper with navigation tabs.
+- `frontends/apps/cloud-dashboard/src/app/marketplace/page.tsx`: Embedded marketplace page inside operator dashboard.
+- `frontends/apps/cloud-dashboard/src/app/panel/bundles/new/page.tsx`: Panel route for trading bundles creation.
+- `frontends/apps/cloud-dashboard/src/app/panel/bundles/page.tsx`: Panel route for trading bundles index.
+- `frontends/apps/cloud-dashboard/src/components/bundles/BundleSnapshotPanel.tsx`: UI component for inspecting and downloading bundle snapshot JSON.
+- `frontends/apps/cloud-dashboard/src/components/bundles/ComponentSlotGrid.tsx`: Grid UI for assigning strategies, risk managers, and indicators to bundle slots.
+- `frontends/apps/cloud-dashboard/src/components/bundles/DynamicParameterGenerator.tsx`: Interactive form generating dynamic parameter overrides for bundle strategies.
+- `frontends/apps/cloud-dashboard/src/types/bundle.ts`: TypeScript contracts and type definitions for trading bundles.
+- `frontends/apps/marketplace/src/app/payments/page.tsx`: Institutional payment and license checkout flow page.
+- `mywebapp.csproj`: Root ASP.NET Core project definition for production host container.
+- `nuget.config`: Root NuGet package configuration.
+- `scripts/__init__.py`: Python package indicator for EP-OS monorepo automation scripts.
+- `scripts/bin/ep`: Unified EP-OS CLI wrapper launcher script.
+- `scripts/deploy-runflare.sh`: Runflare deployment CLI orchestrator supporting multi-account switching.
+- `scripts/ep.py`: Enterprise Product CLI suite dispatcher (v1.0.0).
+- `scripts/ep_adopt.py`: EP-OS automated adoption and project scaffolding engine.
+- `scripts/ep_ast.py`: EP-OS AST inspection and refactoring primitives.
+- `scripts/ep_context.py`: Monorepo context inspection and architectural profile loader.
+- `scripts/ep_doctor.py`: Enterprise health diagnostics and self-healing runner.
+- `scripts/ep_hooks.py`: Git hooks management, installation, and validation.
+- `scripts/ep_ops.py`: Operational routines and gatekeeper commands.
+- `scripts/ep_runner.py`: Multi-target test, lint, and build execution engine.
+- `scripts/ep_scaffold.py`: Profile-compliant code generation and boilerplate scaffolding.
+- `scripts/ep_security.py`: Secret scanning and credential exposure mitigation.
+- `scripts/ep_session.py`: Agent session tracking and lineage auditing.
+- `scripts/ep_stack.py`: Monorepo dependency graph and stack analysis.
+- `scripts/ep_sync.py`: Synchronization engine between global skill and monorepo scripts.
+- `scripts/ep_vcs.py`: Git branch promotion, PR verification, and change tracking.
+- `scripts/prepare-wwwroot.py`: Next.js static asset compiler for container packaging.
 
 ### Modified Files
+- `core/src/Cloud/Cloud.csproj`: Added FastEndpoints, Microsoft.AspNetCore.OpenApi, and project dependencies.
+- `scripts/audit-runner.py`: Enhanced heuristic rules, non-UTC timestamp detection, and 10-dimension audit scorecard.
+- `scripts/check-nc-items.py`: Updated NC item validation logic and expiration warnings.
+- `scripts/validate-change-surface.py`: Added strict placeholder checks and wildcards detection in code surface.
+- `scripts/verify-agent-manifests.py`: Enhanced AGENT.md frontmatter validation and SLO tier checks.
 - `core/src/Cloud/Data/CloudDbContext.cs`: Added custom ValueConverter for UserRole mapping legacy 'Developer' entries to Trader.
 - `core/src/Cloud/Data/CloudEnums.cs`: Cloud enums for roles, licenses, and command state.
 - `core/src/Cloud/Data/User.cs`: Extended User entity with international phone numbers, secondary email, MFA toggles, and connected storage drives.
