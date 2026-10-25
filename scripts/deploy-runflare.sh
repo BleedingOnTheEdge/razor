@@ -13,8 +13,9 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 cd "${ROOT_DIR}"
 
-echo "📦 1. Compiling Next.js Cloud Dashboard..."
+echo "📦 1. Compiling Next.js Frontends (Dashboard & Marketplace)..."
 pnpm --filter cloud-dashboard build
+pnpm --filter marketplace build
 
 echo "🧹 2. Staging pre-rendered frontend assets into wwwroot..."
 python3 scripts/prepare-wwwroot.py
