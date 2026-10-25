@@ -127,6 +127,10 @@ namespace EndToEndTests
                 await app1.StopAsync().ConfigureAwait(true);
                 await app1.DisposeAsync().ConfigureAwait(true);
 
+                Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+
                 await Task.Delay(2000).ConfigureAwait(true); // Allow disconnect to be observed by Engine
 
                 // Start Second Cloud Instance on the exact same port with the same database
