@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>Razor</RootNamespace>
+        <AssemblyName>mywebapp</AssemblyName>
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="Program.cs" />
+        <ProjectReference Include="core/src/Cloud/Cloud.csproj" />
+    </ItemGroup>
+
+</Project>

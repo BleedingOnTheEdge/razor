@@ -21,7 +21,13 @@ dist/
 coverage/
 *.tsbuildinfo
 /bin/
+/obj/
 /artifacts/
 /publish/
+wwwroot/
+*.db
+*.sqlite
+*.sqlite*
+data/
 
 .env.local
