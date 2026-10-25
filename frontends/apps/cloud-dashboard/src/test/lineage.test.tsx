@@ -83,7 +83,7 @@ describe('Lineage DAG Explorer', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Execution Lineage & Reproduction')).toBeInTheDocument();
+      expect(screen.getByText('Branch at Checkpoint')).toBeInTheDocument();
     });
 
     const branchBtn = screen.getByText('Branch at Checkpoint');

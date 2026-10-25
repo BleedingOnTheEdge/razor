@@ -17,7 +17,7 @@ using Microsoft.EntityFrameworkCore;
 /// the count is enforced here rather than at authentication, so an over-quota deployment fails at
 /// provisioning with a clear error instead of failing intermittently at connect time.
 /// </remarks>
-internal sealed class EngineRegistrationService(
+internal sealed partial class EngineRegistrationService(
     IDbContextFactory<CloudDbContext> contextFactory,
     TimeProvider timeProvider)
 {
@@ -165,13 +165,17 @@ internal sealed class EngineRegistrationService(
     }
 
     /// <summary>
-    /// Lists registered instances, optionally filtered by account.
+    /// Lists registered instances, optionally filtered by account and active shares.
     /// </summary>
     /// <param name="accountId">Optional account filter.</param>
+    /// <param name="userId">Optional user ID filter for shared instances.</param>
+    /// <param name="userEmail">Optional user email filter for shared instances.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The registered instances.</returns>
     internal async Task<IReadOnlyList<EngineInstance>> ListAsync(
         Guid? accountId = null,
+        Guid? userId = null,
+        string? userEmail = null,
         CancellationToken cancellationToken = default)
     {
         using CloudDbContext db = contextFactory.CreateDbContext();
@@ -183,10 +187,164 @@ internal sealed class EngineRegistrationService(
 
         if (accountId is Guid accId)
         {
-            query = query.Where(i => i.AccountId == accId);
+            DateTimeOffset now = timeProvider.GetUtcNow();
+            var activeShares = await db.EngineShares
+                .Where(s => !s.IsRevoked && s.CanRead)
+                .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+            var sharedEngineIds = activeShares
+                .Where(s => s.ExpiresAtUtc > now)
+                .Where(s => (userId != null && s.SharedWithUserId == userId) ||
+                            (!string.IsNullOrEmpty(userEmail) && s.SharedWithEmail == userEmail) ||
+                            s.SharedWithUserId == accId)
+                .Select(s => s.EngineInstanceId)
+                .ToList();
+
+            query = query.Where(i => i.AccountId == accId || sharedEngineIds.Contains(i.Id));
         }
 
         List<EngineInstance> instances = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
         return [.. instances.OrderBy(i => i.Name)];
+    }
+
+    /// <summary>
+    /// Creates a time-bounded sharing grant for an engine instance.
+    /// </summary>
+    internal async Task<EngineShare> CreateShareAsync(
+        Guid instanceId,
+        Guid ownerAccountId,
+        string? sharedWithEmail,
+        Guid? sharedWithUserId,
+        DateTimeOffset expiresAtUtc,
+        bool canRead = true,
+        bool canControl = true,
+        bool canRunFlows = true,
+        CancellationToken cancellationToken = default)
+    {
+        using CloudDbContext db = contextFactory.CreateDbContext();
+
+        var instance = await db.EngineInstances.FirstOrDefaultAsync(i => i.Id == instanceId, cancellationToken).ConfigureAwait(false);
+        if (instance == null)
+        {
+            throw new KeyNotFoundException($"No engine instance found with ID {instanceId}");
+        }
+
+        if (ownerAccountId != Guid.Empty && instance.AccountId != ownerAccountId)
+        {
+            throw new UnauthorizedAccessException("Only the engine owner can share this instance.");
+        }
+
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        if (expiresAtUtc <= now)
+        {
+            throw new ArgumentException("Expiration date must be in the future.", nameof(expiresAtUtc));
+        }
+
+        var share = new EngineShare
+        {
+            Id = Guid.NewGuid(),
+            EngineInstanceId = instanceId,
+            OwnerAccountId = instance.AccountId,
+            SharedWithEmail = sharedWithEmail?.Trim() ?? string.Empty,
+            SharedWithUserId = sharedWithUserId,
+            CreatedAt = now,
+            ExpiresAtUtc = expiresAtUtc,
+            CanRead = canRead,
+            CanControl = canControl,
+            CanRunFlows = canRunFlows,
+            IsRevoked = false
+        };
+
+        db.EngineShares.Add(share);
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return share;
+    }
+
+    /// <summary>
+    /// Lists active temporary shares for an engine instance.
+    /// </summary>
+    internal async Task<IReadOnlyList<EngineShare>> GetSharesAsync(Guid instanceId, CancellationToken cancellationToken = default)
+    {
+        using CloudDbContext db = contextFactory.CreateDbContext();
+        var shares = await db.EngineShares
+            .Where(s => s.EngineInstanceId == instanceId && !s.IsRevoked)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+        return [.. shares.OrderByDescending(s => s.CreatedAt)];
+    }
+
+    /// <summary>
+    /// Revokes an active engine share.
+    /// </summary>
+    internal async Task<bool> RevokeShareAsync(Guid shareId, Guid ownerAccountId, CancellationToken cancellationToken = default)
+    {
+        using CloudDbContext db = contextFactory.CreateDbContext();
+        var share = await db.EngineShares.FirstOrDefaultAsync(s => s.Id == shareId, cancellationToken).ConfigureAwait(false);
+        if (share == null)
+        {
+            return false;
+        }
+
+        if (ownerAccountId != Guid.Empty && share.OwnerAccountId != ownerAccountId)
+        {
+            throw new UnauthorizedAccessException("Only the engine owner can revoke this share.");
+        }
+
+        share.IsRevoked = true;
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return true;
+    }
+
+    /// <summary>
+    /// Validates whether a tenant/user has permission to perform an action on an engine.
+    /// </summary>
+    internal async Task<bool> CheckInstanceAccessAsync(
+        Guid instanceId,
+        Guid? accountId,
+        Guid? userId,
+        string? userEmail,
+        string action,
+        CancellationToken cancellationToken = default)
+    {
+        if (accountId is null && userId is null && string.IsNullOrEmpty(userEmail))
+        {
+            return true;
+        }
+
+        using CloudDbContext db = contextFactory.CreateDbContext();
+        var instance = await db.EngineInstances.FirstOrDefaultAsync(i => i.Id == instanceId, cancellationToken).ConfigureAwait(false);
+        if (instance == null)
+        {
+            return false;
+        }
+
+        if (accountId.HasValue && instance.AccountId == accountId.Value)
+        {
+            return true;
+        }
+
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        var candidateShares = await db.EngineShares
+            .Where(s => s.EngineInstanceId == instanceId && !s.IsRevoked)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        var share = candidateShares.FirstOrDefault(s =>
+            s.ExpiresAtUtc > now &&
+            ((userId != null && s.SharedWithUserId == userId) ||
+             (!string.IsNullOrEmpty(userEmail) && s.SharedWithEmail == userEmail) ||
+             (accountId != null && s.SharedWithUserId == accountId)));
+
+        if (share == null)
+        {
+            return false;
+        }
+
+        return action switch
+        {
+            "Control" => share.CanControl,
+            "RunFlows" => share.CanRunFlows,
+            _ => share.CanRead
+        };
     }
 }

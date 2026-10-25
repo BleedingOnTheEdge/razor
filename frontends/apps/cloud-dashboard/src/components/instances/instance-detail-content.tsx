@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getApiClient } from '@/lib/api-client';
 import type { EngineInstanceDetailPayload } from '@razor/api-client';
 import { useToast } from '@/components/ui/toast';
 import {
   getInstanceStatusBadge,
-  getExtensionKindBadge,
   formatTimestamp,
   formatHash,
 } from '@razor/ui-kit';
@@ -15,14 +14,27 @@ import {
   ArrowLeft,
   RefreshCw,
   Server,
-  Plus,
+  Radio,
+  Terminal,
+  Cpu,
   SlidersHorizontal,
+  Key,
+  ShieldAlert,
+  Trash2,
+  Edit2,
+  Sliders,
+  Send,
 } from 'lucide-react';
-import {
-  CommandDispatchSection,
-  COMMAND_PRESETS,
-} from './CommandDispatchSection';
+import { ActionDropdown, type ActionDropdownItem } from '@/components/ui/ActionDropdown';
+import { CommandDispatchSection, COMMAND_PRESETS, type DispatchedCommand } from './CommandDispatchSection';
 import { SlotAssignmentModal } from './SlotAssignmentModal';
+import { InstanceActionModals } from './ManageEngineModals';
+import { CreatedCredentialsDialog } from './CreatedCredentialsDialog';
+import { CommandEventDetailModal } from './CommandEventDetailModal';
+import { InstanceOverviewTab } from './tabs/InstanceOverviewTab';
+import { InstanceTelemetryTab } from './tabs/InstanceTelemetryTab';
+import { InstanceExtensionsTab } from './tabs/InstanceExtensionsTab';
+import { InstanceStreamsTab } from './tabs/InstanceStreamsTab';
 
 type ManifestExtension = EngineInstanceDetailPayload['manifest'][number];
 
@@ -30,15 +42,20 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
   const toast = useToast();
 
   const [instance, setInstance] = useState<EngineInstanceDetailPayload | null>(null);
-  const [commands, setCommands] = useState<any[]>([]);
+  const [commands, setCommands] = useState<DispatchedCommand[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [manifestFilter, setManifestFilter] = useState('');
 
   // Command dispatch state
   const [cmdId, setCmdId] = useState(1001);
   const [cmdType, setCmdType] = useState('Ping');
   const [cmdParams, setCmdParams] = useState('{}');
   const [dispatching, setDispatching] = useState(false);
+
+  // Command detail modal state
+  const [selectedCommandForDetail, setSelectedCommandForDetail] = useState<DispatchedCommand | null>(null);
+  const [eventDetailModalOpen, setEventDetailModalOpen] = useState(false);
 
   // Slot assignment modal state
   const [slotModalOpen, setSlotModalOpen] = useState(false);
@@ -47,18 +64,21 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
   const [isSlotActive, setIsSlotActive] = useState(true);
   const [updatingSlot, setUpdatingSlot] = useState(false);
 
+  // Manage engine modals
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [rotateOpen, setRotateOpen] = useState(false);
+  const [revokeOpen, setRevokeOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [credsModalData, setCredsModalData] = useState<{ instanceId: string; engineId: string; apiKey: string } | null>(null);
+
   async function loadDetails() {
     setLoading(true);
     setError(null);
     try {
       const client = getApiClient();
       const [instRes, cmdsRes] = await Promise.all([
-        client.GET('/api/instances/{instanceId}', {
-          params: { path: { instanceId } },
-        }),
-        client.GET('/api/instances/{instanceId}/commands', {
-          params: { path: { instanceId } },
-        }),
+        client.GET('/api/instances/{instanceId}', { params: { path: { instanceId } } }),
+        client.GET('/api/instances/{instanceId}/commands', { params: { path: { instanceId } } }),
       ]);
 
       if (instRes.data) {
@@ -68,7 +88,7 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
       }
 
       if (cmdsRes.data) {
-        setCommands(cmdsRes.data);
+        setCommands(cmdsRes.data as unknown as DispatchedCommand[]);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error communicating with Cloud API backend.');
@@ -90,11 +110,8 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
 
   async function handleDispatch(e: React.FormEvent) {
     e.preventDefault();
-    // Validate JSON parameters
     try {
-      if (cmdParams.trim()) {
-        JSON.parse(cmdParams);
-      }
+      if (cmdParams.trim()) JSON.parse(cmdParams);
     } catch {
       toast.error('Invalid JSON', 'Command parameters must be valid JSON');
       return;
@@ -106,24 +123,23 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
       const { data, error: err } = await client.POST('/api/instances/{instanceId}/commands', {
         params: { path: { instanceId } },
         body: {
-          commandId: Number(cmdId),
+          commandId: cmdId,
           commandType: cmdType,
-          parameters: cmdParams,
-          timeoutSeconds: 30,
+          parameters: cmdParams.trim() ? cmdParams : '{}',
         },
       });
 
       if (err) {
-        toast.error('Dispatch Failed', 'The backend rejected the engine command.');
-      } else if (data) {
+        toast.error('Dispatch Failed', typeof err === 'string' ? err : 'Server rejected the command');
+      } else {
         toast.success(
           'Command Dispatched',
-          `Dispatched #${cmdId} (${cmdType}). Correlation: ${formatHash(data.correlationId, 6)}`
+          `Queued ${cmdType} (#${cmdId}) [Correlation: ${formatHash(data?.correlationId || '', 6)}]`
         );
-        await loadDetails();
+        loadDetails();
       }
     } catch (e) {
-      toast.error('Dispatch Error', e instanceof Error ? e.message : 'Network communication error.');
+      toast.error('Dispatch Error', e instanceof Error ? e.message : 'Unknown communication error');
     } finally {
       setDispatching(false);
     }
@@ -132,7 +148,7 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
   async function handleSlotSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedExtensionName.trim()) {
-      toast.error('Missing Extension Name', 'Please select or type an extension name.');
+      toast.error('Validation Error', 'Please select or enter an extension name');
       return;
     }
 
@@ -143,288 +159,304 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
         params: { path: { instanceId } },
         body: {
           kind: selectedSlotKind,
-          name: selectedExtensionName.trim(),
+          name: selectedExtensionName,
           isActive: isSlotActive,
         },
       });
 
       if (err) {
-        toast.error('Slot Update Failed', 'Engine profile rejected selection.');
-      } else if (data) {
-        toast.success('Slot Configured', `Updated ${selectedSlotKind} slot to ${selectedExtensionName}`);
+        toast.error('Failed to configure slot', typeof err === 'string' ? err : 'Internal error');
+      } else {
+        toast.success(
+          'Slot Configured',
+          `${selectedSlotKind} assigned to ${selectedExtensionName} (${isSlotActive ? 'Active' : 'Disabled'})`
+        );
         setSlotModalOpen(false);
-        await loadDetails();
+        loadDetails();
       }
     } catch (e) {
-      toast.error('Slot Update Error', e instanceof Error ? e.message : 'Network error.');
+      toast.error('Slot Error', e instanceof Error ? e.message : 'Unknown error');
     } finally {
       setUpdatingSlot(false);
     }
   }
 
-  function openSlotModal(kind: string, defaultName?: string) {
-    setSelectedSlotKind(kind as 'Adapter' | 'Strategy' | 'NeuralNetwork' | 'HookPlugin');
+  function openSlotModal(kind: 'Adapter' | 'Strategy' | 'NeuralNetwork' | 'HookPlugin', defaultName?: string) {
+    setSelectedSlotKind(kind);
     setSelectedExtensionName(defaultName || '');
     setIsSlotActive(true);
     setSlotModalOpen(true);
   }
 
+  function handleSelectCommandForDetail(cmd: DispatchedCommand) {
+    setSelectedCommandForDetail(cmd);
+    setEventDetailModalOpen(true);
+  }
+
   const badge = instance ? getInstanceStatusBadge(instance.status) : null;
+  const filteredManifest = (instance?.manifest || []).filter((ext) => {
+    if (!manifestFilter.trim()) return true;
+    const q = manifestFilter.toLowerCase();
+    return ext.name.toLowerCase().includes(q) || ext.kind.toLowerCase().includes(q);
+  });
+
+  const manageDropdownItems: ActionDropdownItem[] = [
+    {
+      label: '[RUN COMMAND CREDENTIALS]',
+      onClick: () => {
+        const savedKey = typeof window !== 'undefined' ? localStorage.getItem(`engine_key_${instanceId}`) : null;
+        setCredsModalData({
+          instanceId,
+          engineId: instance?.engineId || 'engine-worker-01',
+          apiKey: savedKey || '<YOUR_GENERATED_API_KEY>',
+        });
+      },
+    },
+    {
+      label: '[MAINTENANCE CONSOLE]',
+      href: `/panel/maintenance?instanceId=${instanceId}`,
+    },
+    {
+      label: '[RENAME ENGINE]',
+      onClick: () => setRenameOpen(true),
+    },
+    {
+      label: '[CONFIGURE SLOTS]',
+      onClick: () => openSlotModal('Strategy'),
+    },
+    {
+      label: '[ROTATE API KEY]',
+      onClick: () => setRotateOpen(true),
+    },
+    {
+      label: '[REVOKE API KEY]',
+      onClick: () => setRevokeOpen(true),
+      danger: true,
+    },
+    {
+      label: '[DECOMMISSION ENGINE]',
+      onClick: () => setDeleteOpen(true),
+      danger: true,
+    },
+  ];
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-6xl font-mono">
       {/* Back Link */}
-      <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
-        <Link href="/instances" className="hover:text-zinc-200 flex items-center gap-1">
+      <div className="flex items-center gap-2 text-xs text-black">
+        <Link href="/panel/instances" className="hover:underline flex items-center gap-1 font-bold">
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Fleet</span>
+          <span>[BACK TO FLEET]</span>
         </Link>
         <span>/</span>
-        <span className="text-zinc-300">Engine {instance?.name || formatHash(instanceId, 6)}</span>
+        <span className="font-bold">Engine {instance?.name || formatHash(instanceId, 6)}</span>
       </div>
 
       {/* Header */}
-      <div className="flex items-start justify-between pb-6 border-b border-zinc-800">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-4 border-b border-black">
         <div>
-          <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-              <Server className="w-6 h-6 text-cyan-400" />
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight text-black flex items-center gap-2">
+              <Server className="w-6 h-6 text-black shrink-0" />
               <span>{instance?.name || instance?.engineId || 'Engine Instance'}</span>
-            </h2>
+            </h1>
             {badge && (
-              <span className={`px-2.5 py-1 rounded-full text-xs font-mono font-medium ${badge.className}`}>
-                {badge.label}
+              <span className="px-2.5 py-1 text-xs font-bold border border-black bg-zinc-50 text-black">
+                [{badge.label?.toUpperCase()}]
               </span>
             )}
-            <span
-              className={`px-2.5 py-1 rounded-full text-xs font-mono font-medium flex items-center gap-1.5 ${
-                instance?.isConnected
-                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                  : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
-              }`}
-            >
+            <span className="px-2.5 py-1 text-xs font-bold border border-black bg-zinc-50 text-black flex items-center gap-1.5">
               <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  instance?.isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'
+                className={`w-2 h-2 ${
+                  instance?.isConnected ? 'bg-green-600' : 'bg-black'
                 }`}
               />
-              {instance?.isConnected ? 'Connected' : 'Offline'}
+              {instance?.isConnected ? '[CONNECTED]' : '[OFFLINE]'}
             </span>
           </div>
-          <p className="text-xs font-mono text-zinc-400 mt-1">Instance ID: {instanceId}</p>
+          <p className="text-xs text-black mt-1">Instance ID: {instanceId}</p>
         </div>
 
-        <button
-          onClick={loadDetails}
-          className="px-3 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-mono text-zinc-300 transition-colors flex items-center gap-2"
+        {/* Action Toolbar: Live Manager, Refresh, and Hamburger Dropdown */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Live Manager: Always visible outside */}
+          <Link
+            href={`/panel/live?instanceId=${instanceId}`}
+            title="Open Dedicated Live Trading Manager"
+            className="px-3.5 py-1.5 border border-black bg-green-600 hover:bg-green-700 text-white font-bold text-xs transition-colors flex items-center gap-1.5"
+          >
+            <Radio className="w-3.5 h-3.5" />
+            <span>[LIVE MANAGER]</span>
+          </Link>
+
+          {/* Refresh: Always visible outside */}
+          <button
+            onClick={loadDetails}
+            className="px-3 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black text-xs font-bold transition-colors flex items-center gap-1.5"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>[REFRESH]</span>
+          </button>
+
+          {/* Grouped Actions Hamburger Dropdown */}
+          <ActionDropdown
+            label="[MANAGE ENGINE ▾]"
+            items={manageDropdownItems}
+            align="right"
+          />
+        </div>
+      </div>
+
+      {/* Quick Section Anchor Jump Navigation Bar */}
+      <div className="sticky top-0 z-20 bg-white py-2 border-b border-black flex items-center gap-2 overflow-x-auto text-xs font-bold">
+        <a
+          href="#overview"
+          className="px-3 py-1 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors"
         >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Refresh</span>
-        </button>
+          # OVERVIEW
+        </a>
+        <a
+          href="#telemetry"
+          className="px-3 py-1 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors"
+        >
+          # TELEMETRY
+        </a>
+        <a
+          href="#extensions"
+          className="px-3 py-1 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors"
+        >
+          # EXTENSIONS ({instance?.manifest?.length || 0})
+        </a>
+        <a
+          href="#commands"
+          className="px-3 py-1 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors"
+        >
+          # COMMANDS ({commands.length})
+        </a>
+        <a
+          href="#livestreams"
+          className="px-3 py-1 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors"
+        >
+          # LIVE STREAM
+        </a>
       </div>
 
       {loading && (
-        <div className="py-12 text-center text-sm font-mono text-zinc-400">
-          Loading engine configuration & state...
+        <div className="py-12 text-center text-sm font-bold text-black border border-black">
+          [LOADING ENGINE CONFIGURATION & TELEMETRY STATE...]
         </div>
       )}
 
       {error && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm font-mono">
-          {error}
+        <div className="p-4 border border-black text-red-600 text-sm font-bold">
+          [ERROR]: {error}
         </div>
       )}
 
       {instance && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column: Active Selections & Manifest */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Active Slots Card */}
-            <div className="p-6 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider font-mono flex items-center gap-2">
-                    <SlidersHorizontal className="w-4 h-4 text-cyan-400" />
-                    <span>Active Extension Profile Slots</span>
-                  </h3>
-                  <p className="text-xs text-zinc-400 mt-0.5 font-sans">
-                    Zero-downtime hot-swappable slots currently occupied on this running engine.
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => openSlotModal('Strategy')}
-                  className="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-zinc-950 font-bold text-xs font-mono transition-colors flex items-center gap-1.5"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Configure Slot</span>
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Adapter Slot */}
-                <div className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800/50 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono text-zinc-400">Adapter Slot</span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-blue-500/10 text-blue-400">
-                        Feed / Broker
-                      </span>
-                    </div>
-                    <span className="text-sm font-bold text-white mt-2 block font-mono">
-                      {instance.activeSelections?.adapter || 'None (Dormant)'}
-                    </span>
-                  </div>
-                  <div className="mt-4 pt-3 border-t border-zinc-800/50 flex justify-end">
-                    <button
-                      onClick={() => openSlotModal('Adapter', instance.activeSelections?.adapter || undefined)}
-                      className="text-xs font-mono text-cyan-400 hover:text-cyan-300 transition-colors"
-                    >
-                      Hot-Swap Adapter →
-                    </button>
-                  </div>
-                </div>
-
-                {/* Strategy Slot */}
-                <div className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800/50 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono text-zinc-400">Strategy Slot</span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400">
-                        Order Logic
-                      </span>
-                    </div>
-                    <span className="text-sm font-bold text-white mt-2 block font-mono">
-                      {instance.activeSelections?.strategy || 'None (Dormant)'}
-                    </span>
-                  </div>
-                  <div className="mt-4 pt-3 border-t border-zinc-800/50 flex justify-end">
-                    <button
-                      onClick={() => openSlotModal('Strategy', instance.activeSelections?.strategy || undefined)}
-                      className="text-xs font-mono text-cyan-400 hover:text-cyan-300 transition-colors"
-                    >
-                      Hot-Swap Strategy →
-                    </button>
-                  </div>
-                </div>
-
-                {/* Neural Network Slot */}
-                <div className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800/50 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono text-zinc-400">Neural Network Slot</span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-purple-500/10 text-purple-400">
-                        Inference
-                      </span>
-                    </div>
-                    <span className="text-sm font-bold text-white mt-2 block font-mono">
-                      {instance.activeSelections?.neuralNetwork || 'None'}
-                    </span>
-                  </div>
-                  <div className="mt-4 pt-3 border-t border-zinc-800/50 flex justify-end">
-                    <button
-                      onClick={() => openSlotModal('NeuralNetwork', instance.activeSelections?.neuralNetwork || undefined)}
-                      className="text-xs font-mono text-cyan-400 hover:text-cyan-300 transition-colors"
-                    >
-                      Hot-Swap Model →
-                    </button>
-                  </div>
-                </div>
-
-                {/* Hook Plugins Slot */}
-                <div className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800/50 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono text-zinc-400">Hook Plugins</span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-rose-500/10 text-rose-400">
-                        Interceptors
-                      </span>
-                    </div>
-                    <span className="text-sm font-bold text-white mt-2 block font-mono">
-                      {instance.activeSelections?.hookPlugins?.length || 0} loaded
-                    </span>
-                  </div>
-                  <div className="mt-4 pt-3 border-t border-zinc-800/50 flex justify-end">
-                    <button
-                      onClick={() => openSlotModal('HookPlugin')}
-                      className="text-xs font-mono text-cyan-400 hover:text-cyan-300 transition-colors"
-                    >
-                      Add Hook Plugin →
-                    </button>
-                  </div>
-                </div>
-              </div>
+        <div className="space-y-8">
+          {/* SECTION 1: OVERVIEW */}
+          <section id="overview" className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-black">
+              <h2 className="text-base font-bold text-black uppercase tracking-wider flex items-center gap-2">
+                <Server className="w-4 h-4 text-black" />
+                <span>Section 1: Engine Overview & Operational Status</span>
+              </h2>
             </div>
+            <InstanceOverviewTab
+              instanceId={instanceId}
+              instance={instance}
+              commands={commands}
+              onNavigateToExtensions={() => {
+                const el = document.getElementById('extensions');
+                el?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              onNavigateToCommands={() => {
+                const el = document.getElementById('commands');
+                el?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              onSelectCommand={handleSelectCommandForDetail}
+            />
+          </section>
 
-            {/* Manifest Extensions Card */}
-            <div className="p-6 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider font-mono">
-                    Reported Extension Manifest
-                  </h3>
-                  <p className="text-xs text-zinc-400 mt-0.5 font-sans">
-                    All binaries and scripts discovered and registered by the engine during bootstrap.
-                  </p>
-                </div>
-                <span className="text-xs text-zinc-400 font-mono">
-                  {instance.manifest?.length || 0} registered
-                </span>
-              </div>
-
-              {!instance.manifest || instance.manifest.length === 0 ? (
-                <div className="py-8 text-center text-xs font-mono text-zinc-400">
-                  No extensions reported in engine manifest yet.
-                </div>
-              ) : (
-                <div className="divide-y divide-zinc-800/50">
-                  {instance.manifest.map((ext: ManifestExtension, idx: number) => {
-                    const kindBadge = getExtensionKindBadge(ext.kind);
-                    return (
-                      <div
-                        key={idx}
-                        className="py-3 flex items-center justify-between text-xs font-mono"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${kindBadge.className}`}>
-                            {kindBadge.label}
-                          </span>
-                          <span className="text-zinc-200 font-semibold">{ext.name}</span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <span className="text-zinc-400">{formatTimestamp(ext.reportedAt)}</span>
-                          <button
-                            onClick={() => openSlotModal(ext.kind, ext.name)}
-                            className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-cyan-400 text-[11px] transition-colors"
-                          >
-                            Assign Slot
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+          {/* SECTION 2: TELEMETRY & RESOURCES */}
+          <section id="telemetry" className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-black">
+              <h2 className="text-base font-bold text-black uppercase tracking-wider flex items-center gap-2">
+                <Cpu className="w-4 h-4 text-black" />
+                <span>Section 2: Computational Resources & Telemetry</span>
+              </h2>
             </div>
-          </div>
+            <InstanceTelemetryTab />
+          </section>
 
-          {/* Right Column: Command Dispatch & History */}
-          <CommandDispatchSection
-            cmdId={cmdId}
-            setCmdId={setCmdId}
-            cmdType={cmdType}
-            setCmdType={setCmdType}
-            cmdParams={cmdParams}
-            setCmdParams={setCmdParams}
-            dispatching={dispatching}
-            onDispatch={handleDispatch}
-            onApplyPreset={applyPreset}
-            commands={commands}
-          />
+          {/* SECTION 3: EXTENSIONS & SLOTS */}
+          <section id="extensions" className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-black">
+              <h2 className="text-base font-bold text-black uppercase tracking-wider flex items-center gap-2">
+                <SlidersHorizontal className="w-4 h-4 text-black" />
+                <span>Section 3: Extension Manifest & Active Slot Profiles</span>
+              </h2>
+            </div>
+            <InstanceExtensionsTab
+              instance={instance}
+              manifestFilter={manifestFilter}
+              setManifestFilter={setManifestFilter}
+              filteredManifest={filteredManifest}
+              onOpenSlotModal={openSlotModal}
+            />
+          </section>
+
+          {/* SECTION 4: COMMANDS & EVENT RESPONSES */}
+          <section id="commands" className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-black">
+              <h2 className="text-base font-bold text-black uppercase tracking-wider flex items-center gap-2">
+                <Terminal className="w-4 h-4 text-black" />
+                <span>Section 4: Wire Command Dispatcher & Response Inspector</span>
+              </h2>
+            </div>
+            <CommandDispatchSection
+              cmdId={cmdId}
+              setCmdId={setCmdId}
+              cmdType={cmdType}
+              setCmdType={setCmdType}
+              cmdParams={cmdParams}
+              setCmdParams={setCmdParams}
+              dispatching={dispatching}
+              onDispatch={handleDispatch}
+              onApplyPreset={applyPreset}
+              commands={commands}
+              onSelectCommand={handleSelectCommandForDetail}
+            />
+          </section>
+
+          {/* SECTION 5: LIVE STREAMS */}
+          <section id="livestreams" className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-black">
+              <h2 className="text-base font-bold text-black uppercase tracking-wider flex items-center gap-2">
+                <Radio className="w-4 h-4 text-black" />
+                <span>Section 5: Real-Time Tick & Event Stream Channel</span>
+              </h2>
+            </div>
+            <InstanceStreamsTab
+              instanceId={instanceId}
+              instance={instance}
+            />
+          </section>
         </div>
       )}
 
-      {/* Modal: Slot Assignment */}
+      {/* Command & Event Response Detail Modal */}
+      <CommandEventDetailModal
+        command={selectedCommandForDetail}
+        isOpen={eventDetailModalOpen}
+        onClose={() => {
+          setEventDetailModalOpen(false);
+          setSelectedCommandForDetail(null);
+        }}
+      />
+
+      {/* Slot Assignment Modal */}
       <SlotAssignmentModal
         isOpen={slotModalOpen}
         onClose={() => setSlotModalOpen(false)}
@@ -436,8 +468,34 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
         setIsSlotActive={setIsSlotActive}
         updatingSlot={updatingSlot}
         onSubmit={handleSlotSubmit}
-        manifest={instance?.manifest}
+        manifest={instance?.manifest || []}
       />
+
+      {/* Credentials Dialog */}
+      <CreatedCredentialsDialog
+        credentials={credsModalData}
+        onClose={() => setCredsModalData(null)}
+      />
+
+      {/* Manage Engine Modals */}
+      {instance && (
+        <InstanceActionModals
+          instanceId={instanceId}
+          instanceName={instance.name}
+          renameOpen={renameOpen}
+          setRenameOpen={setRenameOpen}
+          rotateOpen={rotateOpen}
+          setRotateOpen={setRotateOpen}
+          revokeOpen={revokeOpen}
+          setRevokeOpen={setRevokeOpen}
+          deleteOpen={deleteOpen}
+          setDeleteOpen={setDeleteOpen}
+          onRenamed={(newName) => {
+            if (instance) setInstance({ ...instance, name: newName });
+          }}
+          onReload={loadDetails}
+        />
+      )}
     </div>
   );
 }

@@ -58,7 +58,10 @@ internal sealed class SubmitCommandResponse
 /// instance's next authenticated session, which means the caller does not have to retry around connection
 /// churn.
 /// </remarks>
-internal sealed class SubmitCommandEndpoint(CommandService commands, EngineSessionRegistry registry)
+internal sealed class SubmitCommandEndpoint(
+    CommandService commands,
+    EngineSessionRegistry registry,
+    EngineRegistrationService registration)
     : Endpoint<SubmitCommandRequest, SubmitCommandResponse>
 {
     /// <inheritdoc/>
@@ -77,6 +80,32 @@ internal sealed class SubmitCommandEndpoint(CommandService commands, EngineSessi
     /// <inheritdoc/>
     public override async Task HandleAsync(SubmitCommandRequest request, CancellationToken cancellationToken)
     {
+        Guid? accountId = null;
+        if (HttpContext.Request.Headers.TryGetValue("X-Account-Id", out var accVal) && Guid.TryParse(accVal, out var parsedAcc))
+        {
+            accountId = parsedAcc;
+        }
+
+        Guid? userId = null;
+        if (HttpContext.Request.Headers.TryGetValue("X-User-Id", out var userVal) && Guid.TryParse(userVal, out var parsedUser))
+        {
+            userId = parsedUser;
+        }
+
+        string? userEmail = HttpContext.Request.Headers.TryGetValue("X-User-Email", out var emailVal) ? emailVal.ToString() : null;
+
+        if (accountId.HasValue || userId.HasValue || !string.IsNullOrEmpty(userEmail))
+        {
+            bool hasAccess = await registration
+                .CheckInstanceAccessAsync(request.InstanceId, accountId, userId, userEmail, "Control", cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!hasAccess)
+            {
+                await Send.ForbiddenAsync(cancellationToken).ConfigureAwait(false);
+                return;
+            }
+        }
         CommandOutcome outcome = await commands
             .SubmitAsync(
                 request.InstanceId,

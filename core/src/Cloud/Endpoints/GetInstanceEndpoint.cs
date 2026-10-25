@@ -90,6 +90,9 @@ internal sealed class GetInstanceResponse
     /// <summary>Gets or sets the registration timestamp.</summary>
     public DateTimeOffset CreatedAt { get; set; }
 
+    /// <summary>Gets or sets a value indicating whether the instance currently has an active connected session.</summary>
+    public bool IsConnected { get; set; }
+
     /// <summary>Gets or sets the last authenticated heartbeat, when there has been one.</summary>
     public DateTimeOffset? LastSeenAt { get; set; }
 
@@ -109,7 +112,7 @@ internal sealed class GetInstanceResponse
 /// (002-030-160 §17.1 "stores user profiles with active adapter, strategy, indicators, and hook plugin
 /// selections per engine instance").
 /// </summary>
-internal sealed class GetInstanceEndpoint(ProfileService profiles)
+internal sealed class GetInstanceEndpoint(ProfileService profiles, Cloud.Engine.EngineSessionRegistry registry)
     : Endpoint<GetInstanceRequest, GetInstanceResponse>
 {
     /// <inheritdoc/>
@@ -146,6 +149,7 @@ internal sealed class GetInstanceEndpoint(ProfileService profiles)
             Status = snapshot.Instance.Status,
             CreatedAt = snapshot.Instance.CreatedAt,
             LastSeenAt = snapshot.Instance.LastSeenAt,
+            IsConnected = registry.IsConnected(snapshot.Instance.Id) || (snapshot.Instance.LastSeenAt.HasValue && snapshot.Instance.LastSeenAt.Value >= DateTimeOffset.UtcNow.AddSeconds(-45)),
             ActiveSelections = new ActiveSetView
             {
                 Adapter = snapshot.ActiveSet.Adapter,

@@ -25,13 +25,13 @@ internal sealed class GetLiveStateHandler : CommandHandlerBase
 
     public override async Task HandleAsync(CloudCommand command, CancellationToken cancellationToken)
     {
-        if (command.Parameters is not Dictionary<string, object> dict || !dict.TryGetValue("TaskId", out object? idObj))
+        string? taskId = TryGetParameterString(command.Parameters, "TaskId");
+        if (string.IsNullOrWhiteSpace(taskId))
         {
             await SendErrorAsync(command.CorrelationId ?? string.Empty, "Missing TaskId.", cancellationToken).ConfigureAwait(false);
             return;
         }
 
-        string taskId = idObj?.ToString()!;
         object state = await _taskManager.GetLiveStateAsync(taskId, cancellationToken).ConfigureAwait(false);
         await SendSuccessAsync(command.CorrelationId ?? string.Empty, state, cancellationToken).ConfigureAwait(false);
     }

@@ -429,6 +429,93 @@ public sealed class ManifestAndCommandTests
         Assert.Equal(0, await context.Commands.FailExpiredAsync(Guid.NewGuid(), CancellationToken.None).ConfigureAwait(true));
     }
 
+    [Fact]
+    public async Task Command_CompleteAsync_UnpacksNestedResultMetricsAndReturnsRunId()
+    {
+        using CloudTestContext context = await CloudTestContext.CreateWithInstanceAsync().ConfigureAwait(true);
+        Guid runId = Guid.NewGuid();
+
+        // Seed a running flow run
+        using (CloudDbContext db = context.Database.CreateDbContext())
+        {
+            db.FlowRuns.Add(new FlowRun
+            {
+                Id = runId,
+                EngineInstanceId = context.InstanceId,
+                Kind = RunKind.Backtest,
+                Status = RunStatus.Running,
+                CreatedAt = context.Time.GetUtcNow()
+            });
+            await db.SaveChangesAsync();
+        }
+
+        string parametersJson = $"{{\"RunId\":\"{runId}\"}}";
+        CommandOutcome submitted = await context.Commands
+            .SubmitAsync(context.InstanceId, 1200, "RunBacktest", parametersJson, 30, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        string nestedResultPayload = "{\"CommandId\":1200,\"Status\":\"Success\",\"Result\":{\"NetProfit\":3450.50,\"TotalReturn\":3.45,\"SharpeRatio\":2.1,\"MaxDrawdown\":4.2,\"TradeCount\":35,\"BestFitness\":0.95}}";
+
+        CommandCompletionResult completion = await context.Commands
+            .CompleteAsync(context.InstanceId, submitted.Command!.CorrelationId, isSuccess: true, nestedResultPayload, null, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        Assert.True(completion.Recorded);
+        Assert.Equal(runId, completion.RunId);
+
+        using (CloudDbContext db = context.Database.CreateDbContext())
+        {
+            FlowRun? updatedRun = await db.FlowRuns.FindAsync(runId);
+            Assert.NotNull(updatedRun);
+            Assert.Equal(RunStatus.Completed, updatedRun.Status);
+            Assert.Equal(3450.50m, updatedRun.NetProfit);
+            Assert.Equal(3.45m, updatedRun.TotalReturn);
+            Assert.Equal(2.1, updatedRun.SharpeRatio);
+            Assert.Equal(4.2, updatedRun.MaxDrawdown);
+            Assert.Equal(35, updatedRun.TradeCount);
+            Assert.Equal(0.95, updatedRun.BestFitness);
+        }
+    }
+
+    [Fact]
+    public async Task Command_FailExpiredAsync_TransitionsRunningFlowRunToFaulted()
+    {
+        using CloudTestContext context = await CloudTestContext.CreateWithInstanceAsync().ConfigureAwait(true);
+        Guid runId = Guid.NewGuid();
+
+        using (CloudDbContext db = context.Database.CreateDbContext())
+        {
+            db.FlowRuns.Add(new FlowRun
+            {
+                Id = runId,
+                EngineInstanceId = context.InstanceId,
+                Kind = RunKind.Backtest,
+                Status = RunStatus.Running,
+                CreatedAt = context.Time.GetUtcNow()
+            });
+            await db.SaveChangesAsync();
+        }
+
+        string parametersJson = $"{{\"RunId\":\"{runId}\"}}";
+        CommandOutcome submitted = await context.Commands
+            .SubmitAsync(context.InstanceId, 1200, "RunBacktest", parametersJson, 30, CancellationToken.None)
+            .ConfigureAwait(true);
+        await context.Commands.MarkDispatchedAsync([submitted.Command!.Id], CancellationToken.None).ConfigureAwait(true);
+
+        context.Time.Advance(TimeSpan.FromSeconds(31));
+        int failedCount = await context.Commands.FailExpiredAsync(context.InstanceId, CancellationToken.None).ConfigureAwait(true);
+
+        Assert.Equal(1, failedCount);
+
+        using (CloudDbContext db = context.Database.CreateDbContext())
+        {
+            FlowRun? updatedRun = await db.FlowRuns.FindAsync(runId);
+            Assert.NotNull(updatedRun);
+            Assert.Equal(RunStatus.Faulted, updatedRun.Status);
+            Assert.NotNull(updatedRun.CompletedAt);
+        }
+    }
+
     private static async Task<EngineCommand> SubmitAsync(CloudTestContext context)
     {
         CommandOutcome outcome = await context.Commands

@@ -56,6 +56,12 @@ internal sealed class CommandListItemView
 
     /// <summary>Gets or sets the error message, if failed.</summary>
     public string? ErrorMessage { get; set; }
+
+    /// <summary>Gets or sets the command parameters JSON.</summary>
+    public string? ParametersJson { get; set; }
+
+    /// <summary>Gets or sets the engine response result payload JSON.</summary>
+    public string? ResultPayloadJson { get; set; }
 }
 
 /// <summary>
@@ -93,7 +99,9 @@ internal sealed class ListInstanceCommandsEndpoint(CommandService commands)
             SubmittedAt = c.SubmittedAt,
             DispatchedAt = c.DispatchedAt,
             CompletedAt = c.CompletedAt,
-            ErrorMessage = c.ErrorMessage
+            ErrorMessage = c.ErrorMessage,
+            ParametersJson = c.ParametersJson,
+            ResultPayloadJson = c.ResultPayloadJson
         })];
 
         await Send.OkAsync(items, cancellationToken).ConfigureAwait(false);

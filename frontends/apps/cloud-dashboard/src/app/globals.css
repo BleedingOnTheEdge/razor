@@ -3,11 +3,144 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
+html,
 body {
-  background-color: #09090b;
-  color: #f4f4f5;
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, ui-sans-serif, system-ui;
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: -0.011em;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+/* Modern, clean institutional canvas */
+main,
+section,
+.content-area,
+.bg-page {
+  background-color: #f8fafc;
+}
+
+/* Form controls */
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  background-color: #ffffff;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
+/* Table styling: clean, highly legible financial terminal tables */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th {
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #475569;
+  background-color: #f1f5f9;
+  padding: 10px 14px;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+td {
+  font-size: 14px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Headings */
+h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.015em;
+}
+
+h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+/* Monospace for tabular data, numbers, chromosomes, code, hashes */
+.font-mono,
+code,
+pre,
+kbd,
+.tabular-nums {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  font-feature-settings: "tnum" on, "lnum" on;
+}
+
+/* High contrast green for positive returns, profit, winning, success */
+.text-green-500,
+.text-green-600,
+.text-green-700,
+.text-emerald-500,
+.text-emerald-600,
+.text-emerald-700,
+.text-profit {
+  color: #16a34a !important;
+  font-weight: 700 !important;
+}
+
+/* High contrast red for negative returns, loss, drawdown, errors */
+.text-red-500,
+.text-red-600,
+.text-red-700,
+.text-rose-500,
+.text-rose-600,
+.text-rose-700,
+.text-loss {
+  color: #dc2626 !important;
+  font-weight: 700 !important;
+}
+
+/* Smooth transitions */
+button, a {
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+/* Global button text wrapping rule */
+button,
+a.button,
+[role="button"],
+.btn {
+  text-wrap: nowrap !important;
+  white-space: nowrap !important;
+}
+

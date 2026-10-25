@@ -35,10 +35,29 @@ internal sealed partial class KernelService
         string taskId = $"live_{Guid.NewGuid():N}";
         _logLiveStarted(_logger, taskId, null);
 
-        var adapter = _extensionManager.ActiveAdapter
-            ?? throw new InvalidOperationException("No active adapter found.");
-        var strategy = _extensionManager.ActiveStrategy
-            ?? throw new InvalidOperationException("No active strategy found.");
+        var adapter = _extensionManager.ActiveAdapter;
+        if (adapter is null)
+        {
+            string adapterName = !string.IsNullOrWhiteSpace(input.AdapterName) ? input.AdapterName : "PaperBroker";
+            adapter = _extensionManager.CreateTransientAdapter(adapterName)
+                ?? _extensionManager.CreateTransientAdapter("PaperBroker")
+                ?? _extensionManager.CreateTransientAdapter("MockPaperTradingAdapter")
+                ?? new Sdk.Slots.Adapter.MockPaperTradingAdapter();
+        }
+
+        var strategy = _extensionManager.ActiveStrategy;
+        if (strategy is null)
+        {
+            string strategyName = !string.IsNullOrWhiteSpace(input.StrategyName) ? input.StrategyName : "TrendFollowing";
+#pragma warning disable CA2000
+            strategy = _extensionManager.CreateTransientStrategy(strategyName)
+                ?? _extensionManager.CreateTransientStrategy("TrendFollowing")
+                ?? _extensionManager.CreateTransientStrategy("TrendFollowingStrategy")
+                ?? (strategyName.Contains("Mean", StringComparison.OrdinalIgnoreCase) || strategyName.Contains("Pairs", StringComparison.OrdinalIgnoreCase)
+                    ? new Sdk.Slots.Strategy.MeanRevertingPairsStrategy()
+                    : new Sdk.Slots.Strategy.TrendFollowingStrategy());
+#pragma warning restore CA2000
+        }
 
         var symbolProperties = new Dictionary<string, SymbolProperties>();
         foreach (var sym in input.Symbols)
@@ -104,14 +123,22 @@ internal sealed partial class KernelService
             };
             await strategy.OnConfigureAsync(spec).ConfigureAwait(false);
 
+            if (input.Genes is { Length: > 0 })
+            {
+                strategy.InjectGenes(input.Genes);
+            }
+
 #pragma warning disable CA2000
             tickWindow = new TickWindow(input.Symbols, new[] { TimeFrame.Tick });
 #pragma warning restore CA2000
             var indicatorRegistry = IndicatorRegistryFactory.Create(tickWindow);
+#pragma warning disable CA2000
+            var pauseGate = new ManualResetEventSlim(true);
+#pragma warning restore CA2000
             try
             {
                 await strategy.OnStartAsync(indicatorRegistry).ConfigureAwait(false);
-                var taskState = new TaskState(cts, Broker: liveBroker, Strategy: strategy, IndicatorRegistry: indicatorRegistry, TickWindow: tickWindow);
+                var taskState = new TaskState(cts, Broker: liveBroker, Strategy: strategy, IndicatorRegistry: indicatorRegistry, TickWindow: tickWindow, PauseGate: pauseGate);
                 try
                 {
                     _activeTasks[taskId] = taskState;
@@ -119,11 +146,13 @@ internal sealed partial class KernelService
                 catch
                 {
                     cts.Dispose();
+                    pauseGate.Dispose();
                     throw;
                 }
             }
             catch
             {
+                pauseGate.Dispose();
                 if (indicatorRegistry is IDisposable disposable)
                 {
                     disposable.Dispose();
@@ -137,18 +166,22 @@ internal sealed partial class KernelService
                 throw;
             }
 
-            strategy.InjectGenes(input.Genes);
+            if (input.Genes != null && input.Genes.Length > 0)
+            {
+                strategy.InjectGenes(input.Genes);
+            }
 
             await liveBroker.ConnectAndNotifyAsync(cancellationToken).ConfigureAwait(false);
             await liveBroker.InitializeLiveStateAsync(cancellationToken).ConfigureAwait(false);
 
-            // Tick handler – now uses synchronous enqueue.
+            // Tick handler – checks pause gate before pushing ticks.
             Action<string, Tick> tickHandler = (symbol, tick) =>
             {
                 try
                 {
+                    pauseGate.Wait();
                     tickWindow.PushTick(symbol, tick);
-                    liveBroker.OnTickReceived(symbol, tick); // FIXED: was liveBroker.OnTickAsync(...).GetAwaiter().GetResult()
+                    liveBroker.OnTickReceived(symbol, tick);
                 }
                 catch (Exception ex)
                 {
@@ -191,14 +224,17 @@ internal sealed partial class KernelService
         if (_activeTasks.TryGetValue(taskId, out var state) && state.Broker is LiveBroker broker)
         {
             await broker.SyncStateAsync(cancellationToken).ConfigureAwait(false);
+            var openPositions = await broker.GetOpenPositionsAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            var activeOrders = await broker.GetPendingOrdersAsync(cancellationToken).ConfigureAwait(false);
+
             return new LiveState
             {
                 IsLive = true,
                 Equity = broker.Equity,
                 Balance = broker.Balance,
                 Drawdown = broker.MaxDrawdown,
-                Positions = Array.Empty<object>(),
-                Orders = Array.Empty<object>()
+                Positions = openPositions.ToArray(),
+                Orders = activeOrders.ToArray()
             };
         }
         return new LiveState { IsLive = false, Equity = 0, Balance = 0 };
@@ -230,6 +266,7 @@ internal sealed partial class KernelService
             }
 
             state.DisposeCts();
+            state.DisposePauseGate();
             state.DisposeIndicatorRegistry();
             state.DisposeTickWindow();
 
@@ -243,14 +280,20 @@ internal sealed partial class KernelService
     /// <inheritdoc/>
     public Task PauseLiveAsync(string taskId, CancellationToken cancellationToken)
     {
-        _logPauseLiveNotImplemented(_logger, null);
+        if (_activeTasks.TryGetValue(taskId, out var state) && state.PauseGate != null)
+        {
+            state.PauseGate.Reset();
+        }
         return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
     public Task ResumeLiveAsync(string taskId, CancellationToken cancellationToken)
     {
-        _logResumeLiveNotImplemented(_logger, null);
+        if (_activeTasks.TryGetValue(taskId, out var state) && state.PauseGate != null)
+        {
+            state.PauseGate.Set();
+        }
         return Task.CompletedTask;
     }
 

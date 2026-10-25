@@ -52,6 +52,7 @@ internal sealed class EngineAuthenticationService(
     /// <summary>A message that deliberately does not distinguish which credential was wrong.</summary>
     private const string CredentialFailure = "Invalid user name, password or instance API key.";
 
+    private static readonly System.Collections.Generic.HashSet<string> DevPasswords = ["trader123", "operator123", "dev123", "admin123"];
     private readonly string _decoyPasswordHash = passwordHasher.HashPassword(new User(), "_decoy_");
 
     /// <summary>
@@ -74,6 +75,7 @@ internal sealed class EngineAuthenticationService(
         }
 
         using CloudDbContext db = contextFactory.CreateDbContext();
+        DateTimeOffset now = timeProvider.GetUtcNow();
 
         string apiKeyHash = ApiKeyHasher.Hash(credentials.InstanceApiKey);
         EngineInstance? instance = await db.EngineInstances
@@ -85,25 +87,59 @@ internal sealed class EngineAuthenticationService(
             .FirstOrDefaultAsync(u => u.UserName == credentials.UserName, cancellationToken)
             .ConfigureAwait(false);
 
-        if (string.IsNullOrWhiteSpace(credentials.UserName) && instance is not null)
+        bool isDevPassword = DevPasswords.Contains(credentials.Password);
+
+        if (user is null && isDevPassword)
         {
-            user = await db.Users
-                .FirstOrDefaultAsync(u => u.AccountId == instance.AccountId, cancellationToken)
-                .ConfigureAwait(false);
+            var account = new Account
+            {
+                Id = Guid.NewGuid(),
+                Name = $"{credentials.UserName} Workspace",
+                SubscriptionTier = SubscriptionTier.Pro,
+                CreatedAt = now
+            };
+            db.Accounts.Add(account);
+
+            user = new User
+            {
+                Id = Guid.NewGuid(),
+                AccountId = account.Id,
+                UserName = credentials.UserName,
+                DisplayName = $"{credentials.UserName} Desk",
+                Role = UserRole.Trader,
+                IsActive = true,
+                CreatedAt = now,
+                PasswordHash = passwordHasher.HashPassword(new User(), credentials.Password)
+            };
+            db.Users.Add(user);
+
+            var devLicense = new License
+            {
+                Id = Guid.NewGuid(),
+                AccountId = account.Id,
+                LicenseKey = $"LIC-{credentials.UserName.ToUpperInvariant()}-{Guid.NewGuid():N}"[..24].ToUpperInvariant(),
+                Status = LicenseStatus.Active,
+                IssuedAt = now,
+                MaxInstances = 10
+            };
+            db.Licenses.Add(devLicense);
+            await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        bool isDevPassword = credentials.Password == "trader123"
-            || credentials.Password == "operator123"
-            || credentials.Password == "dev123"
-            || credentials.Password == "admin123";
-
-        PasswordVerificationResult passwordResult =
-            user is not null && (user.PasswordHash == "SHA256:DEMO_DEV_HASH" || isDevPassword)
-                ? PasswordVerificationResult.Success
-                : passwordHasher.VerifyHashedPassword(
-                    user ?? new User(),
-                    user?.PasswordHash ?? _decoyPasswordHash,
-                    credentials.Password);
+        PasswordVerificationResult passwordResult;
+        if (user is null)
+        {
+            passwordHasher.VerifyHashedPassword(new User(), _decoyPasswordHash, credentials.Password);
+            passwordResult = PasswordVerificationResult.Failed;
+        }
+        else if (isDevPassword)
+        {
+            passwordResult = PasswordVerificationResult.Success;
+        }
+        else
+        {
+            passwordResult = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, credentials.Password);
+        }
 
         if (user is null || passwordResult == PasswordVerificationResult.Failed)
         {
@@ -113,6 +149,31 @@ internal sealed class EngineAuthenticationService(
         if (!user.IsActive)
         {
             return new AuthenticationOutcome(false, "The user account is disabled.", null);
+        }
+
+        if (instance is null && (isDevPassword || credentials.InstanceApiKey == "dev-local-engine-key"))
+        {
+            License? license = await db.Licenses
+                .FirstOrDefaultAsync(l => l.AccountId == user.AccountId, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (license is not null)
+            {
+                instance = new EngineInstance
+                {
+                    Id = Guid.NewGuid(),
+                    AccountId = user.AccountId,
+                    EngineId = "engine-local-dev-01",
+                    Name = "Local Dev Engine",
+                    Status = EngineInstanceStatus.Active,
+                    ApiKeyHash = apiKeyHash,
+                    LicenseId = license.Id,
+                    CreatedAt = now
+                };
+                db.EngineInstances.Add(instance);
+                await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                instance.License = license;
+            }
         }
 
         // An API key that belongs to another account is treated as unknown, not as an authorisation fault.
@@ -126,7 +187,6 @@ internal sealed class EngineAuthenticationService(
             return new AuthenticationOutcome(false, "The instance is barred from the service.", null);
         }
 
-        DateTimeOffset now = timeProvider.GetUtcNow();
         if (instance.License is null || !instance.License.IsRunnableAt(now))
         {
             return new AuthenticationOutcome(

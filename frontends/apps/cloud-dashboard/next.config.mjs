@@ -7,6 +7,15 @@ const nextConfig = {
     NEXT_PUBLIC_API_BASE_URL: process.env.API_BASE_URL || 'http://localhost:5000',
     NEXT_PUBLIC_MANAGEMENT_API_KEY: process.env.MANAGEMENT_API_KEY || '',
   },
+  async redirects() {
+    return [
+      {
+        source: '/login',
+        destination: '/auth/login',
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

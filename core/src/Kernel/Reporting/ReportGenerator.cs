@@ -76,8 +76,8 @@ public sealed class ReportGenerator
             InitialBalance = 0,
             FinalBalance = 0,
             MaxDrawdown = 0,
-            StartDate = DateTime.UtcNow,
-            EndDate = DateTime.UtcNow,
+            StartDate = _clock.GetUtcNow(),
+            EndDate = _clock.GetUtcNow(),
             AdditionalMetrics = new Dictionary<string, double>
             {
                 { "BestFitness", best.Fitness },

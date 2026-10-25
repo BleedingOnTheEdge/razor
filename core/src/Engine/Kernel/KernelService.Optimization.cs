@@ -34,10 +34,27 @@ internal sealed partial class KernelService
         string taskId = $"opt_{Guid.NewGuid():N}";
         _logOptimizationStarted(_logger, taskId, null);
 
-        var adapter = _extensionManager.ActiveAdapter
-            ?? throw new InvalidOperationException("No active adapter found.");
-        var strategy = _extensionManager.ActiveStrategy
-            ?? throw new InvalidOperationException("No active strategy found.");
+        var adapter = !string.IsNullOrWhiteSpace(input.AdapterName)
+            ? (_extensionManager.CreateTransientAdapter(input.AdapterName)
+               ?? _extensionManager.CreateTransientAdapter("MockPaperTradingAdapter")
+               ?? _extensionManager.ActiveAdapter)
+            : (_extensionManager.ActiveAdapter ?? _extensionManager.CreateTransientAdapter("MockPaperTradingAdapter"));
+        adapter ??= _extensionManager.CreateTransientAdapter("MockPaperTradingAdapter")
+            ?? _extensionManager.CreateTransientAdapter("PaperBroker")
+            ?? new Sdk.Slots.Adapter.MockPaperTradingAdapter();
+
+        var strategy = !string.IsNullOrWhiteSpace(input.StrategyName)
+            ? (_extensionManager.CreateTransientStrategy(input.StrategyName)
+               ?? _extensionManager.CreateTransientStrategy("TrendFollowing")
+               ?? _extensionManager.ActiveStrategy)
+            : (_extensionManager.ActiveStrategy ?? _extensionManager.CreateTransientStrategy("TrendFollowing"));
+#pragma warning disable CA2000
+        strategy ??= _extensionManager.CreateTransientStrategy("TrendFollowing")
+            ?? _extensionManager.CreateTransientStrategy("TrendFollowingStrategy")
+            ?? (input.StrategyName != null && (input.StrategyName.Contains("Mean", StringComparison.OrdinalIgnoreCase) || input.StrategyName.Contains("Pairs", StringComparison.OrdinalIgnoreCase))
+                ? new Sdk.Slots.Strategy.MeanRevertingPairsStrategy()
+                : new Sdk.Slots.Strategy.TrendFollowingStrategy());
+#pragma warning restore CA2000
 
         var symbolProperties = new Dictionary<string, SymbolProperties>();
         var tickStreams = new List<IReadOnlyList<Tick>>();
@@ -146,11 +163,10 @@ internal sealed partial class KernelService
 
             async Task<double> EvaluateChromosome(ChromosomeKernel chromo, CancellationToken ct)
             {
-                var transientStrategy = _extensionManager.CreateTransientStrategy(input.StrategyName);
-                if (transientStrategy == null)
-                {
-                    throw new InvalidOperationException($"Could not create transient strategy '{input.StrategyName}'.");
-                }
+                string evalStratName = !string.IsNullOrWhiteSpace(input.StrategyName) ? input.StrategyName : "TrendFollowing";
+                var transientStrategy = _extensionManager.CreateTransientStrategy(evalStratName)
+                    ?? _extensionManager.CreateTransientStrategy("TrendFollowing")
+                    ?? strategy;
 
                 try
                 {
@@ -278,7 +294,7 @@ internal sealed partial class KernelService
 
         var dummy = new ChromosomeKernel(1);
         dummy.Genes[0] = 0;
-        dummy.Fitness = 0;
+        dummy.Fitness = ChromosomeKernel.NotEvaluated;
         dummy.Generation = 0;
         dummy.IndividualIndex = 0;
         dummy.Seed = 0;

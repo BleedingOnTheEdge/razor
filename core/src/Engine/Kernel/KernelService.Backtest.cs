@@ -153,7 +153,13 @@ internal sealed partial class KernelService
                     Genes = config.Genes.Length > 0 ? config.Genes : null,
                     GeneInitializationSeed = config.GeneInitializationSeed,
                     NeuralNetwork = nnModel,
-                    Progress = null,
+                    Progress = new Progress<BacktestProgress>(p =>
+                    {
+                        if (_activeTasks.TryGetValue(taskId, out var current))
+                        {
+                            _activeTasks[taskId] = current with { LastProgress = p };
+                        }
+                    }),
                     MessageBus = _messageBus,
                     Metrics = _metrics,
                     HookRegistry = _hookRegistry,

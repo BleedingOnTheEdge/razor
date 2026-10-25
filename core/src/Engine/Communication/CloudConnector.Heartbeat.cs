@@ -181,7 +181,9 @@ internal sealed partial class CloudConnector
     /// <inheritdoc/>
     public async Task SendExtensionManifestAsync(object manifest, CancellationToken cancellationToken)
     {
-        if (!_isConnected || _webSocket == null)
+        _cachedManifest = manifest;
+
+        if (!_isConnected || _webSocket == null || _webSocket.State != WebSocketState.Open)
         {
             _logCannotSendManifest(_logger, null);
             return;

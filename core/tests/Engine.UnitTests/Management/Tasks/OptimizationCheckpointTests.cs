@@ -503,6 +503,7 @@ public sealed class OptimizationCheckpointTests : IDisposable
         public Task RemoveExtensionAsync(string name, CancellationToken cancellationToken) => Task.CompletedTask;
         public Task<object> GetManifestAsync(CancellationToken cancellationToken) => Task.FromResult<object>(new());
         public IStrategyCapability? CreateTransientStrategy(string strategyName) => new FakeStrategyCapability();
+        public IAdapterCapability? CreateTransientAdapter(string adapterName) => new FakeAdapterCapability();
         public void EnableBehaviorLoggingOnStrategy(string sessionId, int snapshotIntervalSeconds = 10)
         {
         }

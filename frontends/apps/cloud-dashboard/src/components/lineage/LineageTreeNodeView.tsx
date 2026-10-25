@@ -34,10 +34,21 @@ export function LineageTreeNodeView({
   onBranch,
   onResume,
 }: LineageTreeNodeViewProps) {
-  const { run, children } = node;
-  const isCurrent = run.id === activeRunId;
-  const statusBadge = getRunStatusBadge(run.status);
-  const relBadge = getRunRelationBadge(run.relation);
+  const runId = node.run?.id || node.runId || (node as any).id || '';
+  const kind = node.run?.kind || node.kind || 'Backtest';
+  const status = node.run?.status || node.status || 'Completed';
+  const relation = node.run?.relation || node.relation || 'Direct';
+  const continuity = node.run?.continuity ?? node.continuity;
+  const forkPointStep = node.run?.forkPointStep ?? (node as any).forkPointStep ?? node.forkPoint?.step;
+  const interventionsCount = node.run?.interventionsCount ?? (node as any).interventionsCount ?? node.interventions?.length ?? 0;
+  const engineInstanceId = node.run?.engineInstanceId || node.engineInstanceId || '';
+  const createdAt = node.run?.createdAt || node.createdAt || '';
+  const metrics = node.run?.metrics || node.metrics;
+  const children = node.children || [];
+
+  const isCurrent = runId === activeRunId;
+  const statusBadge = getRunStatusBadge(status);
+  const relBadge = getRunRelationBadge(relation);
 
   return (
     <div className="relative font-mono">
@@ -45,19 +56,19 @@ export function LineageTreeNodeView({
       <div
         className={`p-4 rounded-xl border transition-all ${
           isCurrent
-            ? 'bg-zinc-900 border-cyan-500/50 shadow-lg shadow-cyan-950/20 ring-1 ring-cyan-500/30'
-            : 'bg-zinc-950/70 border-zinc-800/70 hover:border-zinc-700'
+            ? 'bg-white border-cyan-500 shadow-md ring-2 ring-cyan-100'
+            : 'bg-white border-zinc-200 hover:border-zinc-300 shadow-sm'
         }`}
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div
               className={`p-1.5 rounded-md ${
-                run.relation === 'Branched'
-                  ? 'bg-purple-500/10 text-purple-400'
-                  : run.relation === 'Spliced'
-                  ? 'bg-amber-500/10 text-amber-400'
-                  : 'bg-cyan-500/10 text-cyan-400'
+                relation === 'Branched'
+                  ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                  : relation === 'Spliced'
+                  ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                  : 'bg-cyan-50 text-cyan-700 border border-cyan-200'
               }`}
             >
               <GitCommit className="w-4 h-4" />
@@ -65,9 +76,9 @@ export function LineageTreeNodeView({
 
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-white text-sm">{formatHash(run.id, 8)}</span>
+                <span className="font-bold text-zinc-900 text-sm">{formatHash(runId, 8)}</span>
                 {isCurrent && (
-                  <span className="px-1.5 py-0.5 rounded text-[10px] bg-cyan-500/20 text-cyan-300 font-bold">
+                  <span className="px-1.5 py-0.5 rounded text-[10px] bg-cyan-100 text-cyan-800 font-bold">
                     VIEWING
                   </span>
                 )}
@@ -78,10 +89,10 @@ export function LineageTreeNodeView({
                   {relBadge.label}
                 </span>
               </div>
-              <p className="text-xs text-zinc-400 mt-0.5">
-                Kind: <span className="text-zinc-200">{run.kind}</span> • Engine:{' '}
-                <span className="text-zinc-300">{formatHash(run.engineInstanceId, 6)}</span> •{' '}
-                {formatTimestamp(run.createdAt)}
+              <p className="text-xs text-zinc-500 mt-0.5">
+                Kind: <span className="text-zinc-800 font-medium">{kind}</span> • Engine:{' '}
+                <span className="text-zinc-700">{formatHash(engineInstanceId, 6)}</span> •{' '}
+                {formatTimestamp(createdAt)}
               </p>
             </div>
           </div>
@@ -90,39 +101,41 @@ export function LineageTreeNodeView({
           <div className="flex items-center gap-3 text-xs">
             <div className="text-right">
               <span className="text-zinc-400 text-[11px] block">Net Profit</span>
-              <span className="text-zinc-200 font-bold block">{formatCurrency(run.metrics?.netProfit)}</span>
+              <span className="text-zinc-900 font-bold block">{formatCurrency(metrics?.netProfit)}</span>
             </div>
 
             <div className="text-right">
               <span className="text-zinc-400 text-[11px] block">Sharpe</span>
-              <span className="text-zinc-200 font-bold block">
-                {run.metrics?.sharpeRatio != null ? run.metrics.sharpeRatio.toFixed(2) : '—'}
+              <span className="text-zinc-900 font-bold block">
+                {metrics?.sharpeRatio != null ? metrics.sharpeRatio.toFixed(2) : '—'}
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5 border-l border-zinc-800 pl-3">
+            <div className="flex items-center gap-1.5 border-l border-zinc-200 pl-3">
               <button
-                onClick={() => onBranch(run.id)}
+                type="button"
+                onClick={() => onBranch(runId)}
                 title="Branch at checkpoint"
-                className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-purple-400 text-xs transition-colors flex items-center gap-1"
+                className="px-2 py-1 rounded bg-zinc-100 hover:bg-zinc-200 text-purple-700 text-xs transition-colors flex items-center gap-1 font-medium"
               >
                 <GitBranch className="w-3.5 h-3.5" />
                 <span>Branch</span>
               </button>
 
               <button
-                onClick={() => onResume(run.id)}
+                type="button"
+                onClick={() => onResume(runId)}
                 title="Resume execution"
-                className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-emerald-400 text-xs transition-colors flex items-center gap-1"
+                className="px-2 py-1 rounded bg-zinc-100 hover:bg-zinc-200 text-emerald-700 text-xs transition-colors flex items-center gap-1 font-medium"
               >
                 <Play className="w-3.5 h-3.5" />
                 <span>Resume</span>
               </button>
 
               <Link
-                href={`/reports/${run.id}`}
+                href={`/reports/${runId}`}
                 title="View full report"
-                className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-cyan-400 text-xs transition-colors flex items-center gap-1"
+                className="px-2 py-1 rounded bg-zinc-100 hover:bg-zinc-200 text-cyan-700 text-xs transition-colors flex items-center gap-1 font-medium"
               >
                 <FileText className="w-3.5 h-3.5" />
                 <span>Report</span>
@@ -132,22 +145,22 @@ export function LineageTreeNodeView({
         </div>
 
         {/* Checkpoint & Intervention info if branched or spliced */}
-        {(run.forkPointStep != null || run.interventionsCount > 0) && (
-          <div className="mt-3 pt-3 border-t border-zinc-800/60 flex items-center gap-4 text-xs text-zinc-400">
-            {run.forkPointStep != null && (
-              <span className="flex items-center gap-1 text-purple-300">
+        {(forkPointStep != null || interventionsCount > 0) && (
+          <div className="mt-3 pt-3 border-t border-zinc-100 flex items-center gap-4 text-xs text-zinc-500">
+            {forkPointStep != null && (
+              <span className="flex items-center gap-1 text-purple-700">
                 <ChevronRight className="w-3.5 h-3.5" />
-                Forked at Step #{run.forkPointStep}
+                Forked at Step #{forkPointStep}
               </span>
             )}
-            {run.interventionsCount > 0 && (
-              <span className="flex items-center gap-1 text-amber-300">
+            {interventionsCount > 0 && (
+              <span className="flex items-center gap-1 text-amber-700">
                 <ShieldAlert className="w-3.5 h-3.5" />
-                {run.interventionsCount} Interventions Logged
+                {interventionsCount} Interventions Logged
               </span>
             )}
-            {run.continuity === 'Gapped' && (
-              <span className="px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-400 text-[10px]">
+            {continuity === 'Gapped' && (
+              <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 text-[10px]">
                 Gapped Continuity
               </span>
             )}
@@ -157,17 +170,20 @@ export function LineageTreeNodeView({
 
       {/* Recursive Children */}
       {children && children.length > 0 && (
-        <div className="ml-6 pl-4 border-l border-zinc-800 space-y-3 mt-3">
-          {children.map((childNode) => (
-            <LineageTreeNodeView
-              key={childNode.run.id}
-              node={childNode}
-              activeRunId={activeRunId}
-              depth={depth + 1}
-              onBranch={onBranch}
-              onResume={onResume}
-            />
-          ))}
+        <div className="ml-6 pl-4 border-l border-zinc-200 space-y-3 mt-3">
+          {children.map((childNode, idx) => {
+            const childId = childNode.run?.id || childNode.runId || (childNode as any).id || `child-${idx}`;
+            return (
+              <LineageTreeNodeView
+                key={childId}
+                node={childNode}
+                activeRunId={activeRunId}
+                depth={depth + 1}
+                onBranch={onBranch}
+                onResume={onResume}
+              />
+            );
+          })}
         </div>
       )}
     </div>

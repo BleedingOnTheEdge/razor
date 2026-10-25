@@ -24,6 +24,109 @@ export interface EngineInstanceDetailPayload {
   manifest: Array<{ kind: string; name: string; reportedAt: string }>;
 }
 
+export interface WinningDnaPayload {
+  id?: string;
+  genomeHash?: string;
+  generation?: number;
+  genes: number[];
+  parameters?: Record<string, number>;
+  fitnessScore?: number;
+  annualizedReturnPct?: number;
+  winRatePct?: number;
+  slots?: {
+    strategy?: string | null;
+    adapter?: string | null;
+    neuralNetwork?: string | null;
+  } | null;
+  execution?: {
+    symbols?: string[] | null;
+    timeframes?: string[] | null;
+    initialBalance?: number;
+    leverage?: number;
+    accountCurrency?: string | null;
+  } | null;
+  fitness: number;
+}
+
+export interface DetailedMetricsPayload {
+  grossProfit?: number;
+  grossLoss?: number;
+  profitFactor?: number;
+  winRate?: number;
+  lossRate?: number;
+  winningTrades?: number;
+  losingTrades?: number;
+  sortinoRatio?: number;
+  calmarRatio?: number;
+  expectancy?: number;
+  payoffRatio?: number;
+  winLossRatio?: number;
+  averageWin?: number;
+  averageLoss?: number;
+  largestWin?: number;
+  largestLoss?: number;
+  maxConsecutiveWins?: number;
+  maxConsecutiveLosses?: number;
+  averageHoldingPeriodSeconds?: number;
+  maxDrawdownPct?: number;
+  maxDrawdownAmount?: number;
+}
+
+export interface TradeItemPayload {
+  ticket: number;
+  symbol: string;
+  side: string;
+  volume: number;
+  openTime: string;
+  openPrice: number;
+  closeTime?: string | null;
+  closePrice: number;
+  profit: number;
+  returnPct: number;
+  commission?: number;
+  swap?: number;
+  stopLoss?: number;
+  takeProfit?: number;
+  exitReason?: string;
+  slippageTicks?: number;
+  executionVenue?: string;
+}
+
+export interface EquityPointPayload {
+  timestamp: string;
+  equity: number;
+  balance: number;
+  drawdownPct: number;
+}
+
+export interface PopulationIndividualPayload {
+  id: string;
+  individualIndex: number;
+  fitness: number;
+  diversity: number;
+  genes: number[];
+  parameters: Record<string, any>;
+  totalReturn: number;
+  sharpeRatio: number;
+  maxDrawdown: number;
+  winRate: number;
+  profitFactor: number;
+  tradeCount: number;
+  trades?: TradeItemPayload[];
+  equityCurve?: EquityPointPayload[];
+  dna?: WinningDnaPayload;
+}
+
+export interface GenerationProgressPayload {
+  generation: number;
+  bestFitness: number;
+  averageFitness: number;
+  diversity?: number;
+  populationDiversity?: number;
+  isHyperMutation?: boolean;
+  populations?: PopulationIndividualPayload[];
+}
+
 export interface FlowRunPayload {
   id: string;
   engineInstanceId: string;
@@ -39,21 +142,58 @@ export interface FlowRunPayload {
   randomPosition?: string | null;
   isPartial: boolean;
   createdAt: string;
-  metrics?: {
-    netProfit?: number | null;
-    totalReturn?: number | null;
-    sharpeRatio?: number | null;
-    maxDrawdown?: number | null;
-    tradeCount?: number | null;
-    bestFitness?: number | null;
-  } | null;
+  completedAt?: string | null;
+  configurationJson?: string | null;
+  winningDnaJson?: string | null;
+  winningDna?: WinningDnaPayload | null;
+  resultPayloadJson?: string | null;
+  metrics?: RunMetricsPayload | null;
   interventionsCount: number;
   gapsCount: number;
 }
 
+export interface RunMetricsPayload {
+  netProfit?: number | null;
+  totalReturn?: number | null;
+  sharpeRatio?: number | null;
+  maxDrawdown?: number | null;
+  tradeCount?: number | null;
+  bestFitness?: number | null;
+}
+
 export interface LineageNodePayload {
-  run: FlowRunPayload;
+  runId: string;
+  parentRunId?: string | null;
+  kind: string;
+  status: string;
+  relation?: string | null;
+  continuity?: string | null;
+  forkPoint?: { step?: number; generation?: number; windowIndex?: number } | null;
+  forkPointStep?: number | null;
+  interventionsCount?: number;
+  engineInstanceId?: string;
+  createdAt?: string;
+  metrics?: RunMetricsPayload | null;
+  baseSeed?: number | null;
+  randomPosition?: string | null;
+  isPartial?: boolean;
+  interventions?: Array<{
+    stepIndex: number;
+    previousFingerprint: string;
+    newFingerprint: string;
+    actor: string;
+    reason: string;
+    modificationsSummary?: string | null;
+    beforePayloadJson?: string | null;
+    afterPayloadJson?: string | null;
+  }>;
+  gaps?: Array<{
+    startStep: number;
+    endStep: number;
+    reason: string;
+  }>;
   children: LineageNodePayload[];
+  run?: FlowRunPayload;
 }
 
 export interface RunReportPayload {
@@ -61,11 +201,27 @@ export interface RunReportPayload {
   engineInstanceId: string;
   kind: string;
   status: string;
+  parentRunId?: string | null;
   relation?: string | null;
   continuity?: string | null;
   baseSeed?: number | null;
-  isPartial: boolean;
   createdAt: string;
+  completedAt?: string | null;
+  configurationJson?: string | null;
+  isPartial: boolean;
+  headlineFiguresSuppressed: boolean;
+  isDiverged: boolean;
+  isComparable: boolean;
+  divergenceFlag?: string | null;
+  warningMessage?: string | null;
+  aggregates?: {
+    netProfit?: number | null;
+    totalReturn?: number | null;
+    sharpeRatio?: number | null;
+    maxDrawdown?: number | null;
+    tradeCount?: number | null;
+    bestFitness?: number | null;
+  } | null;
   metrics?: {
     netProfit?: number | null;
     totalReturn?: number | null;
@@ -75,23 +231,28 @@ export interface RunReportPayload {
     bestFitness?: number | null;
   } | null;
   interventions: Array<{
-    id: string;
+    id?: string;
     stepIndex: number;
     previousFingerprint: string;
     newFingerprint: string;
     actor: string;
     reason: string;
     modificationsSummary?: string | null;
-    timestamp: string;
+    timestamp?: string;
   }>;
   gaps: Array<{
-    id: string;
+    id?: string;
     startStep: number;
     endStep: number;
     reason: string;
-    recordedAt: string;
+    recordedAt?: string;
   }>;
-  comparable: boolean;
+  comparable?: boolean;
+  winningDna?: WinningDnaPayload | null;
+  detailedMetrics?: DetailedMetricsPayload | null;
+  trades?: TradeItemPayload[] | null;
+  equityCurve?: EquityPointPayload[] | null;
+  generationProgress?: GenerationProgressPayload[] | null;
 }
 
 export interface RankedRunResultPayload {
@@ -136,12 +297,29 @@ export interface UserProfilePayload {
   accountId: string;
   userName: string;
   accountName: string;
-  role: 'Admin' | 'Operator' | 'Developer' | 'Trader';
+  displayName?: string | null;
+  email?: string | null;
+  avatarUrl?: string | null;
+  bio?: string | null;
+  phoneCountryCode?: string | null;
+  phoneNumber?: string | null;
+  secondaryEmail?: string | null;
+  twoFactorEnabled?: boolean;
+  telegramHandle?: string | null;
+  googleDriveLinked?: boolean;
+  oneDriveLinked?: boolean;
+  smsOtpEnabled?: boolean;
+  isImpersonating?: boolean;
+  impersonatedBy?: string | null;
+  isOperatorRestricted?: boolean;
+  role: 'SuperAdmin' | 'Admin' | 'Operator' | 'Developer' | 'Trader';
+  isActive?: boolean;
   subscriptionTier: 'Free' | 'Pro' | 'Enterprise';
   maxInstances: number;
   canManageFleet: boolean;
   canExecuteLive: boolean;
   canPublishMarketplace: boolean;
+  canAdministerCluster?: boolean;
   createdAt: string;
 }
 
@@ -193,4 +371,54 @@ export interface CommunityThreadPayload {
   repliesCount: number;
   createdAt: string;
   replies: CommunityReplyPayload[];
+}
+
+export interface ClusterSettingsPayload {
+  heartbeatIntervalSeconds: number;
+  heartbeatTimeoutSeconds: number;
+  maxFleetSizePerAccount: number;
+  commandQueueExpirySeconds: number;
+  autoDrainGracePeriodSeconds: number;
+  enforceStrictKeyRotationDays: number;
+  requireMfaForLiveTrading: boolean;
+  allowSelfRegistration: boolean;
+  allowedIpRanges: string;
+  sessionTimeoutMinutes: number;
+  requireCurationApproval: boolean;
+  platformFeePercent: number;
+  allowUnverifiedAuthors: boolean;
+  metricsRetentionDays: number;
+  auditLogRetentionDays: number;
+  detailedBehaviorLogging: boolean;
+  telegramBotToken?: string;
+  telegramDefaultChannel?: string;
+  discordWebhookUrl?: string;
+  slackWebhookUrl?: string;
+  enableMessengerAlerts?: boolean;
+  smsProvider?: string;
+  smsApiKey?: string;
+  smsSenderNumber?: string;
+  enableSmsAlerts?: boolean;
+  paymentProvider?: string;
+  paymentPublicKey?: string;
+  paymentSecretKey?: string;
+  paymentWebhookSecret?: string;
+  paymentCurrency?: string;
+  subscriptionTiersJson?: string;
+}
+
+export interface UpdateProfileRequestPayload {
+  userId?: string;
+  displayName?: string;
+  email?: string;
+  avatarUrl?: string;
+  bio?: string;
+  phoneCountryCode?: string;
+  phoneNumber?: string;
+  secondaryEmail?: string;
+  twoFactorEnabled?: boolean;
+  telegramHandle?: string;
+  googleDriveLinked?: boolean;
+  oneDriveLinked?: boolean;
+  smsOtpEnabled?: boolean;
 }

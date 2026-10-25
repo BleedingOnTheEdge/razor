@@ -21,7 +21,25 @@ internal sealed record UserProfileView(
     bool CanManageFleet,
     bool CanExecuteLive,
     bool CanPublishMarketplace,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    string? Email = null,
+    string? DisplayName = null,
+    string? AvatarUrl = null,
+    string? Bio = null,
+    bool CanManageUsers = false,
+    bool CanManageSettings = false,
+    bool IsSuperAdmin = false,
+    string? PhoneCountryCode = null,
+    string? PhoneNumber = null,
+    string? SecondaryEmail = null,
+    bool TwoFactorEnabled = false,
+    string? TelegramHandle = null,
+    bool GoogleDriveLinked = false,
+    bool OneDriveLinked = false,
+    bool SmsOtpEnabled = false,
+    bool IsImpersonating = false,
+    string? ImpersonatedBy = null,
+    bool IsOperatorRestricted = false);
 
 /// <summary>Represents an authentication session response.</summary>
 internal sealed record AuthSessionResponse(
@@ -31,7 +49,7 @@ internal sealed record AuthSessionResponse(
 /// <summary>
 /// Manages user authentication context, role assignments, and account subscription tiers.
 /// </summary>
-internal sealed class UserService(
+internal sealed partial class UserService(
     IDbContextFactory<CloudDbContext> contextFactory,
     CloudOptions options,
     TimeProvider timeProvider,
@@ -68,11 +86,11 @@ internal sealed class UserService(
                 AccountId = account.Id,
                 Account = account,
                 UserName = name,
-                PasswordHash = "SHA256:DEMO_DEV_HASH",
-                Role = name.Contains("admin", StringComparison.OrdinalIgnoreCase) ? UserRole.Admin : UserRole.Developer,
+                Role = name.Contains("admin", StringComparison.OrdinalIgnoreCase) ? UserRole.Admin : UserRole.Trader,
                 CreatedAt = now,
                 IsActive = true
             };
+            user.PasswordHash = passwordHasher.HashPassword(user, "admin123");
 
             var license = new License
             {
@@ -143,25 +161,26 @@ internal sealed class UserService(
             .FirstOrDefaultAsync(u => u.UserName == name, cancellationToken)
             .ConfigureAwait(false);
 
-        // If user does not exist, auto-provision developer/operator in dev mode
+        // Unknown users must fail authentication
         if (user is null)
         {
-            UserRole defaultRole = name.Contains("admin", StringComparison.OrdinalIgnoreCase)
-                ? UserRole.Admin
-                : (name.Contains("trader", StringComparison.OrdinalIgnoreCase) ? UserRole.Trader : UserRole.Operator);
-            user = await ProvisionUserInternalAsync(db, name, password, null, defaultRole, SubscriptionTier.Free, cancellationToken)
-                .ConfigureAwait(false);
+            return null;
         }
-        else
+
+        if (string.IsNullOrEmpty(user.PasswordHash))
         {
-            if (!string.IsNullOrEmpty(user.PasswordHash) && !user.PasswordHash.StartsWith("SHA256:DEMO_DEV_HASH", StringComparison.Ordinal))
-            {
-                var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
-                if (result == Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed)
-                {
-                    return null;
-                }
-            }
+            return null;
+        }
+
+        var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
+        if (result == Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed)
+        {
+            return null;
+        }
+
+        if (!user.IsActive)
+        {
+            return null;
         }
 
         string token = options.ManagementApiKey ?? "dev-cloud-management-key-3000";
@@ -262,9 +281,12 @@ internal sealed class UserService(
             _ => 1
         };
 
-        bool canManageFleet = user.Role is UserRole.Admin or UserRole.Operator;
+        bool isSuperAdmin = user.Role is UserRole.SuperAdmin;
+        bool canManageFleet = user.Role is UserRole.SuperAdmin or UserRole.Admin or UserRole.Operator;
         bool canExecuteLive = tier is SubscriptionTier.Pro or SubscriptionTier.Enterprise;
-        bool canPublishMarketplace = user.Role is UserRole.Admin or UserRole.Developer;
+        bool canPublishMarketplace = user.Role is UserRole.SuperAdmin or UserRole.Admin or UserRole.Trader;
+        bool canManageUsers = user.Role is UserRole.SuperAdmin or UserRole.Admin;
+        bool canManageSettings = user.Role is UserRole.SuperAdmin;
 
         return new UserProfileView(
             user.Id,
@@ -277,6 +299,21 @@ internal sealed class UserService(
             canManageFleet,
             canExecuteLive,
             canPublishMarketplace,
-            user.CreatedAt);
+            user.CreatedAt,
+            user.Email,
+            user.DisplayName,
+            user.AvatarUrl,
+            user.Bio,
+            canManageUsers,
+            canManageSettings,
+            isSuperAdmin,
+            user.PhoneCountryCode,
+            user.PhoneNumber,
+            user.SecondaryEmail,
+            user.TwoFactorEnabled,
+            user.TelegramHandle,
+            user.GoogleDriveLinked,
+            user.OneDriveLinked,
+            user.SmsOtpEnabled);
     }
 }

@@ -23,6 +23,12 @@ internal sealed class ListMarketplaceItemsRequest
 
     /// <summary>Gets or sets whether to filter by curated status.</summary>
     public bool? IsCurated { get; set; }
+
+    /// <summary>Gets or sets the 1-based page number.</summary>
+    public int? Page { get; set; }
+
+    /// <summary>Gets or sets the page size.</summary>
+    public int? PageSize { get; set; }
 }
 
 /// <summary>
@@ -97,27 +103,39 @@ internal sealed class MarketplaceItemView
 /// Searches and lists marketplace catalogue items.
 /// </summary>
 internal sealed class ListMarketplaceItemsEndpoint(MarketplaceService marketplace)
-    : Endpoint<ListMarketplaceItemsRequest, IReadOnlyList<MarketplaceItemView>>
+    : Endpoint<ListMarketplaceItemsRequest, object>
 {
     /// <inheritdoc/>
     public override void Configure()
     {
         Get("/api/marketplace/items");
+        AllowAnonymous();
         Summary(summary =>
         {
             summary.Summary = "Search marketplace catalogue";
-            summary.Description = "Returns extension listings matching optional slot kind, query keywords, or curated status.";
+            summary.Description = "Returns extension listings matching optional slot kind, query keywords, or curated status with optional pagination.";
         });
     }
 
     /// <inheritdoc/>
     public override async Task HandleAsync(ListMarketplaceItemsRequest request, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
         IReadOnlyList<MarketplaceItem> items = await marketplace
             .SearchItemsAsync(request.Kind, request.Query, request.IsCurated, cancellationToken)
             .ConfigureAwait(false);
 
         List<MarketplaceItemView> views = [.. items.Select(MarketplaceItemView.FromEntity)];
-        await Send.OkAsync(views, cancellationToken).ConfigureAwait(false);
+
+        if (request.Page.HasValue || request.PageSize.HasValue)
+        {
+            var paged = PagedResult.Create(views, request.Page, request.PageSize);
+            await Send.OkAsync(paged, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            await Send.OkAsync(views, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

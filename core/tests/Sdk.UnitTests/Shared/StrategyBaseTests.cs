@@ -475,4 +475,18 @@ public class StrategyBaseTests
         var genes = strategy.ExportGenes();
         Assert.Equal(expected, genes);
     }
+
+    [Fact]
+    public async Task PrimarySymbol_ReturnsEmpty_WhenRequestedSymbolsIsEmpty()
+    {
+        using var strategy = new TestableStrategy();
+        var spec = new StrategySpecification
+        {
+            InitialBalance = 1000,
+            Leverage = 1,
+            RequestedSymbols = System.Collections.Immutable.ImmutableArray<SymbolRequest>.Empty
+        };
+        await strategy.OnConfigureAsync(spec);
+        Assert.Equal(string.Empty, strategy.PrimarySymbol);
+    }
 }

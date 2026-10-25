@@ -6,6 +6,7 @@
 
 namespace Cloud.Engine;
 
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Cloud.Events;
@@ -60,6 +61,8 @@ internal sealed partial class EngineSession : IDisposable
     private readonly IClientEventBroadcaster? _eventBroadcaster;
     private readonly ILogger<EngineSession> _logger;
 
+    private static readonly ConcurrentDictionary<Guid, byte> _inFlightSessionCommands = new();
+    private readonly SemaphoreSlim _sendPendingLock = new(1, 1);
     private SessionCipher? _cipher;
     private string? _nonce;
     private string? _sessionId;
@@ -185,33 +188,76 @@ internal sealed partial class EngineSession : IDisposable
     /// </remarks>
     internal async Task SendPendingCommandsAsync(CancellationToken cancellationToken)
     {
-        if (InstanceId is not Guid instanceId || _cipher is null)
+        if (_disposed || InstanceId is not Guid instanceId || _cipher is null)
         {
             return;
         }
 
-        IReadOnlyList<Data.EngineCommand> pending = await _commands
-            .TakeUndeliveredAsync(instanceId, cancellationToken)
-            .ConfigureAwait(false);
-        if (pending.Count == 0)
+        try
+        {
+            await _sendPendingLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (ObjectDisposedException)
         {
             return;
         }
 
-        List<Guid> written = [];
-        foreach (Data.EngineCommand command in pending)
+        try
         {
-            await SendEncryptedAsync(
-                CloudProtocol.MessageType.Command,
-                BuildCommandPayload(command),
-                command.CorrelationId,
-                cancellationToken).ConfigureAwait(false);
+            if (_disposed)
+            {
+                return;
+            }
 
-            written.Add(command.Id);
-            CloudLog.CommandDispatched(_logger, command.CorrelationId, command.CommandType);
+            IReadOnlyList<Data.EngineCommand> pending = await _commands
+                .TakeUndeliveredAsync(instanceId, cancellationToken)
+                .ConfigureAwait(false);
+            if (pending.Count == 0)
+            {
+                return;
+            }
+
+            var toSend = pending.Where(c => _inFlightSessionCommands.TryAdd(c.Id, 0)).ToList();
+            if (toSend.Count == 0)
+            {
+                return;
+            }
+
+            List<Guid> written = [];
+            try
+            {
+                foreach (Data.EngineCommand command in toSend)
+                {
+                    await SendEncryptedAsync(
+                        CloudProtocol.MessageType.Command,
+                        BuildCommandPayload(command),
+                        command.CorrelationId,
+                        cancellationToken).ConfigureAwait(false);
+
+                    written.Add(command.Id);
+                    CloudLog.CommandDispatched(_logger, command.CorrelationId, command.CommandType);
+                }
+
+                await _commands.MarkDispatchedAsync(written, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                foreach (var cmd in toSend)
+                {
+                    _inFlightSessionCommands.TryRemove(cmd.Id, out _);
+                }
+            }
         }
-
-        await _commands.MarkDispatchedAsync(written, cancellationToken).ConfigureAwait(false);
+        finally
+        {
+            try
+            {
+                _sendPendingLock.Release();
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+        }
     }
 
     /// <inheritdoc/>
@@ -223,6 +269,7 @@ internal sealed partial class EngineSession : IDisposable
         }
 
         _disposed = true;
+        _sendPendingLock.Dispose();
         _cipher?.Dispose();
         GC.SuppressFinalize(this);
     }

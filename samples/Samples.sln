@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36109.1
@@ -9,13 +9,31 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Adapters", "Adapters", "{F1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Strategies", "Strategies", "{7DF834D7-3423-4252-9436-94CDA2208ED5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MT5", "Plugins\Adapters\MT5\MT5.csproj", "{CAF0E3B2-2CB0-4655-8136-8E12AD3EF2EE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MT5", "Plugins/Adapters/MT5/MT5.csproj", "{CAF0E3B2-2CB0-4655-8136-8E12AD3EF2EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Plugins.Adapters.Nobitex", "Plugins\Adapters\Nobitex\Nobitex.csproj", "{5DFB10B4-862F-4248-A431-42A3512B0176}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Plugins.Adapters.Nobitex", "Plugins/Adapters/Nobitex/Nobitex.csproj", "{5DFB10B4-862F-4248-A431-42A3512B0176}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CfdSmtDivergence", "Plugins\Strategies\CfdSmtDivergence\CfdSmtDivergence.csproj", "{2675C49D-88DB-413C-BDEC-6CBDF7A776A4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CfdSmtDivergence", "Plugins/Strategies/CfdSmtDivergence/CfdSmtDivergence.csproj", "{2675C49D-88DB-413C-BDEC-6CBDF7A776A4}"
 EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CAF0E3B2-2CB0-4655-8136-8E12AD3EF2EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAF0E3B2-2CB0-4655-8136-8E12AD3EF2EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAF0E3B2-2CB0-4655-8136-8E12AD3EF2EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAF0E3B2-2CB0-4655-8136-8E12AD3EF2EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DFB10B4-862F-4248-A431-42A3512B0176}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DFB10B4-862F-4248-A431-42A3512B0176}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DFB10B4-862F-4248-A431-42A3512B0176}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DFB10B4-862F-4248-A431-42A3512B0176}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2675C49D-88DB-413C-BDEC-6CBDF7A776A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2675C49D-88DB-413C-BDEC-6CBDF7A776A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2675C49D-88DB-413C-BDEC-6CBDF7A776A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2675C49D-88DB-413C-BDEC-6CBDF7A776A4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
@@ -28,7 +46,5 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FF622FD5-6342-413D-BEA0-F6D460931C24}
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 	EndGlobalSection
 EndGlobal

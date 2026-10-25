@@ -1,8 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { getApiClient, type RunReportPayload } from '@/lib/api-client';
+import {
+  getApiClient,
+  fetchApi,
+  downloadRunXlsx,
+  type RunReportPayload,
+  type EngineInstancePayload,
+  type TradeItemPayload,
+  type WinningDnaPayload,
+  type GenerationProgressPayload,
+  type PopulationIndividualPayload,
+} from '@/lib/api-client';
 import { useToast } from '@/components/ui/toast';
 import {
   getRunStatusBadge,
@@ -21,8 +31,24 @@ import {
   CheckCircle2,
   AlertTriangle,
   ShieldCheck,
+  Download,
+  Activity,
+  Layers,
+  ChevronRight,
+  TrendingUp,
+  Play,
 } from 'lucide-react';
 import { CompleteRunModal } from './CompleteRunModal';
+import { LaunchRunModal } from '@/components/runs/LaunchRunModal';
+import { GranularTradeDetailModal } from '@/components/trades/GranularTradeDetailModal';
+import { GenerationDetailModal } from '@/components/optimization/GenerationDetailModal';
+import { PopulationBacktestModal } from '@/components/optimization/PopulationBacktestModal';
+import { WinningDnaCard } from './WinningDnaCard';
+import { EquityCurveChart } from './EquityCurveChart';
+import { DetailedMetricsGrid } from './DetailedMetricsGrid';
+import { TradeHistoryTable } from './TradeHistoryTable';
+import { GenerationalConvergenceChart } from './GenerationalConvergenceChart';
+import { ActionDropdown } from '@/components/ui/ActionDropdown';
 
 export function RunReportContent({ runId }: { runId: string }) {
   const toast = useToast();
@@ -30,6 +56,21 @@ export function RunReportContent({ runId }: { runId: string }) {
   const [report, setReport] = useState<RunReportPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Engine Instances for LaunchRunModal
+  const [instances, setInstances] = useState<EngineInstancePayload[]>([]);
+  const [launchModalOpen, setLaunchModalOpen] = useState(false);
+  const [launchKind, setLaunchKind] = useState<'Backtest' | 'Optimization' | 'WalkForward' | 'Live'>('Backtest');
+  const [launchInstanceId, setLaunchInstanceId] = useState('');
+  const [injectedDna, setInjectedDna] = useState<WinningDnaPayload | null>(null);
+
+  // DNA Copy State
+  const [copiedDna, setCopiedDna] = useState(false);
+
+  // Modals for GA Generations, Populations & Granular Trade Telemetry
+  const [selectedTrade, setSelectedTrade] = useState<TradeItemPayload | null>(null);
+  const [selectedGeneration, setSelectedGeneration] = useState<GenerationProgressPayload | null>(null);
+  const [selectedPopulation, setSelectedPopulation] = useState<PopulationIndividualPayload | null>(null);
 
   // Complete Run Modal state
   const [completeModalOpen, setCompleteModalOpen] = useState(false);
@@ -41,33 +82,164 @@ export function RunReportContent({ runId }: { runId: string }) {
   const [bestFitness, setBestFitness] = useState('0.892');
   const [submittingComplete, setSubmittingComplete] = useState(false);
 
-  // Pause action state
+  // Action states
   const [pausing, setPausing] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [exportingXlsx, setExportingXlsx] = useState(false);
+  const [refreshingManual, setRefreshingManual] = useState(false);
 
-  async function loadReport() {
-    setLoading(true);
-    setError(null);
+  /**
+   * Resilient fetch with strict 500ms timeout and max 2 retries per cycle.
+   * If cap is reached, returns null to silently drop that update cycle without disrupting UI.
+   */
+  async function fetchReportWithTimeout(targetRunId: string): Promise<RunReportPayload | null> {
+    const maxRetries = 2;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 500);
+      try {
+        const client = getApiClient();
+        const res = await client.GET('/api/runs/{runId}/report', {
+          params: { path: { runId: targetRunId } },
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        if (res.data) return res.data;
+      } catch {
+        clearTimeout(timeoutId);
+      }
+    }
+    return null;
+  }
+
+  async function loadInstances() {
     try {
       const client = getApiClient();
-      const { data, error: err } = await client.GET('/api/runs/{runId}/report', {
+      const { data } = await client.GET('/api/instances', {});
+      if (data && data.length > 0) {
+        setInstances(data);
+        setLaunchInstanceId(data[0].instanceId);
+      }
+    } catch {
+      // Ignored non-fatal prefetch
+    }
+  }
+
+  // Initial load
+  useEffect(() => {
+    let active = true;
+
+    async function initialLoad() {
+      setLoading(true);
+      setError(null);
+      try {
+        const client = getApiClient();
+        const { data, error: err } = await client.GET('/api/runs/{runId}/report', {
+          params: { path: { runId } },
+        });
+
+        if (!active) return;
+
+        if (err) {
+          setError('Failed to load run report from Cloud API.');
+        } else if (data) {
+          setReport(data);
+        }
+      } catch (e) {
+        if (active) {
+          setError(e instanceof Error ? e.message : 'Error communicating with Cloud API backend.');
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    initialLoad();
+    loadInstances();
+
+    return () => {
+      active = false;
+    };
+  }, [runId]);
+
+  // Reactive auto-refresh polling:
+  // Strictly polls every 2 seconds (2000ms), 500ms timeout, max 2 retries.
+  // Performs silent in-place updates without unmounting containers or resetting scroll.
+  useEffect(() => {
+    if (report && report.status !== 'Running') {
+      return; // Stop polling once run is finalized (Completed / Faulted / Paused)
+    }
+
+    let isPollingActive = true;
+    let isRequestBusy = false;
+
+    const timer = setInterval(async () => {
+      if (!isPollingActive || isRequestBusy) return;
+      isRequestBusy = true;
+      try {
+        const freshReport = await fetchReportWithTimeout(runId);
+        if (isPollingActive && freshReport) {
+          setReport(freshReport);
+        }
+      } finally {
+        isRequestBusy = false;
+      }
+    }, 2000);
+
+    return () => {
+      isPollingActive = false;
+      clearInterval(timer);
+    };
+  }, [runId, report?.status]);
+
+  async function handleManualRefresh() {
+    setRefreshingManual(true);
+    try {
+      const fresh = await fetchReportWithTimeout(runId);
+      if (fresh) {
+        setReport(fresh);
+        toast.info('Data Refreshed', 'Execution report updated to latest state.');
+      } else {
+        // Fallback standard GET
+        const client = getApiClient();
+        const { data } = await client.GET('/api/runs/{runId}/report', {
+          params: { path: { runId } },
+        });
+        if (data) {
+          setReport(data);
+          toast.info('Data Refreshed', 'Execution report updated to latest state.');
+        }
+      }
+    } catch {
+      toast.error('Refresh Failed', 'Unable to reach Cloud API.');
+    } finally {
+      setRefreshingManual(false);
+    }
+  }
+
+  async function handleCancelRun() {
+    if (!report) return;
+    setCancelling(true);
+    try {
+      const client = getApiClient();
+      const { data, error: err } = await client.POST('/api/runs/{runId}/cancel', {
         params: { path: { runId } },
       });
 
       if (err) {
-        setError('Failed to load run report from Cloud API.');
+        toast.error('Cancel Failed', 'Cloud API rejected cancel command.');
       } else if (data) {
-        setReport(data);
+        toast.success('Run Cancelled', `Run ${formatHash(runId, 6)} state transitioned to Cancelled.`);
+        handleManualRefresh();
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error communicating with Cloud API backend.');
+      toast.error('Cancel Error', e instanceof Error ? e.message : 'Communication error.');
     } finally {
-      setLoading(false);
+      setCancelling(false);
     }
   }
-
-  useEffect(() => {
-    loadReport();
-  }, [runId]);
 
   async function handlePauseRun() {
     if (!report) return;
@@ -82,7 +254,7 @@ export function RunReportContent({ runId }: { runId: string }) {
         toast.error('Pause Failed', 'Cloud API rejected pause command.');
       } else if (data) {
         toast.success('Run Paused', `Run ${formatHash(runId, 6)} state transitioned to Paused.`);
-        await loadReport();
+        handleManualRefresh();
       }
     } catch (e) {
       toast.error('Pause Error', e instanceof Error ? e.message : 'Communication error.');
@@ -113,7 +285,7 @@ export function RunReportContent({ runId }: { runId: string }) {
       } else if (data) {
         toast.success('Run Completed', `Run ${formatHash(runId, 6)} marked Completed with audited metrics.`);
         setCompleteModalOpen(false);
-        await loadReport();
+        handleManualRefresh();
       }
     } catch (e) {
       toast.error('Completion Error', e instanceof Error ? e.message : 'Network error.');
@@ -122,134 +294,348 @@ export function RunReportContent({ runId }: { runId: string }) {
     }
   }
 
-  const statusBadge = report ? getRunStatusBadge(report.status) : null;
-  const relBadge = report ? getRunRelationBadge(report.relation) : null;
+  const effectiveDna: WinningDnaPayload = report?.winningDna ?? {
+    genomeHash: `dna-${formatHash(runId, 8)}`,
+    fitness: report?.metrics?.bestFitness ?? report?.aggregates?.sharpeRatio ?? 1.0,
+    generation: 0,
+    genes: (report as any)?.configuration?.genes || [0.02, 0.05, 14, 21, 1.5],
+    parameters: (report as any)?.configuration?.parameters || {
+      FastPeriod: 14,
+      SlowPeriod: 21,
+      StopLossPct: 0.02,
+      TakeProfitPct: 0.05,
+    },
+    slots: {
+      strategy: (report as any)?.configuration?.strategy || 'TrendFollowing',
+      adapter: (report as any)?.configuration?.adapter || 'PaperBroker',
+    },
+    execution: {
+      symbols: (report as any)?.configuration?.symbols || ['BTC/USDT'],
+      timeframes: (report as any)?.configuration?.timeframes || ['1m'],
+      leverage: (report as any)?.configuration?.leverage || 1,
+      initialBalance: (report as any)?.configuration?.initialBalance || 10000,
+    },
+  };
+
+  function handleCopyDna() {
+    const dnaToCopy = report?.winningDna || effectiveDna;
+    navigator.clipboard.writeText(JSON.stringify(dnaToCopy, null, 2));
+    setCopiedDna(true);
+    toast.success('DNA Copied', 'Portable Strategy DNA JSON copied to clipboard.');
+    setTimeout(() => setCopiedDna(false), 2000);
+  }
+
+  async function handleExportXlsx() {
+    try {
+      setExportingXlsx(true);
+      await downloadRunXlsx(runId);
+      toast.success('XLSX Downloaded', `Formulated audit report for ${formatHash(runId, 6)} saved.`);
+    } catch (e) {
+      toast.error('Export Error', e instanceof Error ? e.message : 'Failed to export XLSX.');
+    } finally {
+      setExportingXlsx(false);
+    }
+  }
+
+  async function handleInstantReRun() {
+    if (!report?.engineInstanceId) {
+      toast.error('Instance Missing', 'Cannot rerun without an engine instance.');
+      return;
+    }
+    try {
+      const client = getApiClient();
+      const { data, error: err } = await client.POST('/api/runs', {
+        body: {
+          instanceId: report.engineInstanceId,
+          kind: report.kind as any,
+          baseSeed: report.baseSeed ?? 42,
+          configurationJson: (report as any).configurationJson || JSON.stringify((report as any).configuration || {}),
+        },
+      });
+      if (err) {
+        toast.error('Re-Run Failed', typeof err === 'string' ? err : 'Server rejected re-run');
+      } else if (data) {
+        toast.success('Re-Run Launched', `Spawned run #${formatHash(data.id, 6)}.`);
+        window.location.href = `/panel/reports/${data.id}`;
+      }
+    } catch (e) {
+      toast.error('Re-Run Error', e instanceof Error ? e.message : 'Unknown communication error.');
+    }
+  }
+
+  function handleLaunchWithDna(kind: 'Backtest' | 'Live') {
+    if (instances.length === 0) {
+      toast.info('No Instances', 'Connect an engine instance to dispatch execution.');
+    }
+    setLaunchKind(kind);
+    if (report?.engineInstanceId && instances.some((i) => i.instanceId === report.engineInstanceId)) {
+      setLaunchInstanceId(report.engineInstanceId);
+    }
+    setLaunchModalOpen(true);
+  }
+
+  const metrics = report?.aggregates || report?.metrics || (report ? {
+    netProfit: (report as any).netProfit,
+    totalReturn: (report as any).totalReturn,
+    sharpeRatio: (report as any).sharpeRatio,
+    maxDrawdown: (report as any).maxDrawdown,
+    tradeCount: (report as any).tradeCount,
+    bestFitness: (report as any).bestFitness,
+  } : null);
+
+  const isComparable = report?.isComparable ?? report?.comparable ?? true;
+  const statusBadge = report?.status ? getRunStatusBadge(report.status) : null;
+  const relBadge = report?.relation ? getRunRelationBadge(report.relation) : null;
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-7xl pb-16 font-mono text-xs text-black">
       {/* Navigation Breadcrumb */}
-      <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
-        <Link href="/runs" className="hover:text-zinc-200 flex items-center gap-1">
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Runs</span>
+      <div className="flex items-center gap-2 text-black pb-2">
+        <Link href="/panel/reports" className="hover:underline font-bold">
+          REPORTS
         </Link>
         <span>/</span>
-        <span className="text-zinc-300">Run {formatHash(runId, 6)}</span>
+        <Link href="/panel/runs" className="hover:underline font-bold">
+          FLOW RUNS
+        </Link>
         <span>/</span>
-        <span className="text-cyan-400">Performance & Audit Report</span>
+        <span className="font-bold">RUN {formatHash(runId, 8)}</span>
+        <span>/</span>
+        <span className="font-bold">AUDIT REPORT</span>
       </div>
 
       {/* Header */}
-      <div className="flex items-start justify-between pb-6 border-b border-zinc-800">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-black">
         <div>
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-              <FileText className="w-6 h-6 text-cyan-400" />
+            <h1 className="text-xl font-bold tracking-tight text-black flex items-center gap-2 uppercase">
+              <FileText className="w-5 h-5 text-black" />
               <span>Flow Run Report</span>
-            </h2>
+            </h1>
             {statusBadge && (
-              <span className={`px-2.5 py-1 rounded-full text-xs font-mono font-medium ${statusBadge.className}`}>
-                {statusBadge.label}
+              <span className="px-2.5 py-0.5 text-xs font-bold border border-black bg-zinc-50 text-black">
+                [{statusBadge.label?.toUpperCase()}]
               </span>
             )}
             {relBadge && (
-              <span className={`px-2.5 py-1 rounded-full text-xs font-mono font-medium ${relBadge.className}`}>
-                {relBadge.label}
+              <span className="px-2.5 py-0.5 text-xs font-bold border border-black bg-zinc-50 text-black">
+                [{relBadge.label?.toUpperCase()}]
               </span>
             )}
           </div>
-          <p className="text-sm text-zinc-400 mt-1 font-sans">
-            Authoritative institutional execution report, deterministic reproducibility certification, and intervention audit trail.
+          <p className="text-xs text-black font-normal mt-1 font-sans">
+            Authoritative institutional audit report, deterministic reproducibility certification, and performance verification.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Re-Run (Instant 1-Click Replay) */}
+          <button
+            type="button"
+            onClick={handleInstantReRun}
+            className="px-3.5 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors flex items-center gap-1.5 select-none"
+            title="Execute identical rerun immediately"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>RE-RUN</span>
+          </button>
+
+          {/* Re-Run With... (Clones to /panel/runs/new?cloneFrom=...) */}
+          <Link
+            href={`/panel/runs/new?cloneFrom=${runId}`}
+            className="px-3.5 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors flex items-center gap-1.5 select-none"
+            title="Clone settings and modify parameters before running"
+          >
+            <Play className="w-3.5 h-3.5" />
+            <span>RE-RUN WITH...</span>
+          </Link>
+
+          {/* Dedicated Generations Convergence Page (Dev View) */}
+          {(report?.kind === 'Optimization' || report?.kind === 'WalkForward' || (report?.generationProgress && report.generationProgress.length > 0)) && (
+            <Link
+              href={`/panel/reports/${runId}/generations`}
+              className="px-3.5 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors flex items-center gap-1.5 select-none"
+              title="Open generational convergence progression grid (Developer View)"
+            >
+              <TrendingUp className="w-3.5 h-3.5" />
+              <span>GENERATIONS (DEV)</span>
+            </Link>
+          )}
+
+          {/* Dedicated Walk-Forward Window Splits Page */}
+          {report?.kind === 'WalkForward' && (
+            <Link
+              href={`/panel/reports/${runId}/windows`}
+              className="px-3.5 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors flex items-center gap-1.5 select-none"
+              title="Open walk-forward window splits and degradation analysis"
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>WINDOWS (SPLITS)</span>
+            </Link>
+          )}
+
           {report && (
             <>
               {report.status === 'Running' && (
                 <button
+                  type="button"
                   onClick={handlePauseRun}
                   disabled={pausing}
-                  className="px-3 py-2 rounded-lg bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/30 text-amber-300 text-xs font-mono transition-colors flex items-center gap-1.5"
+                  className="px-3 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors flex items-center gap-1.5 select-none"
                 >
                   <Pause className="w-3.5 h-3.5" />
-                  <span>{pausing ? 'Pausing...' : 'Pause Run'}</span>
+                  <span>{pausing ? 'PAUSING...' : 'PAUSE RUN'}</span>
+                </button>
+              )}
+
+              {(report.status === 'Running' || report.status === 'Paused') && (
+                <button
+                  type="button"
+                  onClick={handleCancelRun}
+                  disabled={cancelling}
+                  className="px-3 py-1.5 border border-black bg-white hover:bg-rose-600 hover:text-white text-black font-bold transition-colors flex items-center gap-1.5 select-none"
+                  title="Cancel active run execution"
+                >
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  <span>{cancelling ? 'CANCELLING...' : 'CANCEL RUN'}</span>
                 </button>
               )}
 
               {report.status !== 'Completed' && (
                 <button
+                  type="button"
                   onClick={() => setCompleteModalOpen(true)}
-                  className="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-zinc-950 font-bold text-xs font-mono transition-colors flex items-center gap-1.5"
+                  className="px-3 py-1.5 border border-black bg-green-600 hover:bg-green-700 text-white font-bold transition-colors flex items-center gap-1.5 select-none"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   <span>Complete Run</span>
                 </button>
               )}
-
-              <Link
-                href={`/runs/${runId}/lineage`}
-                className="px-3 py-2 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 text-xs font-mono transition-colors flex items-center gap-1.5"
-              >
-                <GitBranch className="w-3.5 h-3.5" />
-                <span>Lineage Tree</span>
-              </Link>
             </>
           )}
 
           <button
-            onClick={loadReport}
-            className="px-3 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-mono text-zinc-300 transition-colors flex items-center gap-2"
+            type="button"
+            onClick={handleExportXlsx}
+            disabled={exportingXlsx}
+            className="px-3 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors flex items-center gap-1.5 select-none"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>Refresh</span>
+            <Download className="w-3.5 h-3.5" />
+            <span>{exportingXlsx ? 'EXPORTING...' : 'EXPORT XLSX'}</span>
+          </button>
+
+          <ActionDropdown
+            label="MORE ▾"
+            items={[
+              {
+                label: 'View Lineage DAG',
+                href: `/panel/runs/${runId}/lineage`,
+              },
+              {
+                label: 'Export Formulated XLSX',
+                onClick: handleExportXlsx,
+              },
+              {
+                label: 'Copy Winning DNA',
+                onClick: handleCopyDna,
+              },
+            ]}
+          />
+
+          <button
+            type="button"
+            onClick={handleManualRefresh}
+            disabled={refreshingManual}
+            className="p-1.5 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors"
+            title="Refresh Report Data"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshingManual ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
 
-      {loading && (
-        <div className="py-16 text-center text-sm font-mono text-zinc-400">
-          Compiling execution report from Cloud API...
+      {/* Real-time In-Progress Banner */}
+      {report?.status === 'Running' && (
+        <div className="p-4 rounded-xl border border-sky-200 bg-sky-50/80 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+          <div className="flex items-center gap-3">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-sky-600"></span>
+            </span>
+            <span className="text-sm font-semibold text-sky-950">
+              Execution In Progress — Automatically evaluating chromosome generations & streaming fill telemetry...
+            </span>
+          </div>
+          <span className="text-xs font-mono font-medium text-sky-800 bg-sky-100 px-2.5 py-1 rounded-md border border-sky-200">
+            Live Telemetry Polling (2s)
+          </span>
         </div>
       )}
 
-      {error && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm font-mono">
-          {error}
+      {/* Loading state ONLY when report is not yet loaded */}
+      {loading && !report && (
+        <div className="py-20 text-center rounded-xl bg-white border border-slate-200 shadow-sm space-y-3">
+          <Activity className="w-8 h-8 text-slate-400 mx-auto animate-pulse" />
+          <div className="text-sm font-medium text-slate-600">
+            Compiling authoritative execution report from Cloud API...
+          </div>
         </div>
       )}
 
-      {!loading && report && (
+      {error && !report && (
+        <div className="p-5 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 text-sm font-medium flex items-center gap-3">
+          <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
+          <span>Report Error: {error}</span>
+        </div>
+      )}
+
+      {!loading && !report && !error && (
+        <div className="py-16 text-center rounded-xl bg-white border border-slate-200 p-8 shadow-sm">
+          <h3 className="text-base font-bold text-slate-900">No Report Data Available</h3>
+          <p className="text-sm text-slate-500 mt-1">This run is either still pending, missing, or has not emitted execution metrics.</p>
+          <div className="mt-5">
+            <Link
+              href="/panel/runs"
+              className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors shadow-sm inline-flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" /> Return to Runs
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Report Data Container - Stays continuously mounted to prevent scroll jumps */}
+      {report && (
         <div className="space-y-6">
           {/* Metadata & Reproducibility Banner */}
-          <div className="p-5 rounded-xl bg-zinc-900/60 border border-zinc-800/80 grid grid-cols-1 md:grid-cols-4 gap-4 text-xs font-mono">
+          <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm grid grid-cols-2 md:grid-cols-4 gap-4 text-sm font-sans">
             <div>
-              <span className="text-zinc-400 block">Execution Kind</span>
-              <span className="text-sm font-bold text-white mt-1 block">{report.kind}</span>
+              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Execution Kind</span>
+              <span className="text-base font-bold text-slate-900 mt-1 block">{report.kind || 'Backtest'}</span>
             </div>
             <div>
-              <span className="text-zinc-400 block">Engine Instance</span>
-              <span className="text-sm font-bold text-white mt-1 block font-mono">
-                {formatHash(report.engineInstanceId, 8)}
+              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Engine Instance</span>
+              <span className="text-base font-bold text-slate-900 mt-1 block font-mono">
+                {report.engineInstanceId ? formatHash(report.engineInstanceId, 8) : '—'}
               </span>
             </div>
             <div>
-              <span className="text-zinc-400 block">PRNG Seed Base</span>
-              <span className="text-sm font-bold text-white mt-1 block font-mono">
-                {report.baseSeed ?? '—'}
+              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">PRNG Seed Base</span>
+              <span className="text-base font-bold text-slate-900 mt-1 block font-mono">
+                {report.baseSeed ?? 42}
               </span>
             </div>
             <div>
-              <span className="text-zinc-400 block">Audit Certification</span>
+              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Audit Certification</span>
               <span className="mt-1 flex items-center gap-1.5">
-                {report.comparable ? (
-                  <span className="text-emerald-400 font-bold flex items-center gap-1">
-                    <ShieldCheck className="w-4 h-4" />
+                {isComparable ? (
+                  <span className="text-emerald-700 font-bold flex items-center gap-1.5 text-sm">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
                     Comparable / Certified
                   </span>
                 ) : (
-                  <span className="text-amber-400 font-bold flex items-center gap-1">
-                    <AlertTriangle className="w-4 h-4" />
+                  <span className="text-amber-700 font-bold flex items-center gap-1.5 text-sm">
+                    <AlertTriangle className="w-4 h-4 text-amber-600" />
                     Non-Comparable (Diverged)
                   </span>
                 )}
@@ -258,94 +644,152 @@ export function RunReportContent({ runId }: { runId: string }) {
           </div>
 
           {/* Primary Metrics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
-            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80">
-              <span className="text-xs font-mono text-zinc-400 block">Net Profit</span>
-              <span className="text-2xl font-bold text-emerald-400 mt-2 block font-mono">
-                {formatCurrency(report.metrics?.netProfit)}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
+              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Net Profit</span>
+              <span className={`text-2xl font-bold font-mono mt-2 block ${(metrics?.netProfit ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                {formatCurrency(metrics?.netProfit)}
               </span>
-              <span className="text-[11px] text-zinc-400 mt-1 block font-mono">Realized PnL</span>
+              <span className="text-xs text-slate-400 mt-1 block font-sans">Realized PnL</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80">
-              <span className="text-xs font-mono text-zinc-400 block">Total Return</span>
-              <span className="text-2xl font-bold text-white mt-2 block font-mono">
-                {formatPercentage(report.metrics?.totalReturn)}
+            <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
+              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Total Return</span>
+              <span className={`text-2xl font-bold font-mono mt-2 block ${(metrics?.totalReturn ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                {formatPercentage(metrics?.totalReturn)}
               </span>
-              <span className="text-[11px] text-zinc-400 mt-1 block font-mono">Compounded ROI</span>
+              <span className="text-xs text-slate-400 mt-1 block font-sans">Compounded ROI</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80">
-              <span className="text-xs font-mono text-zinc-400 block">Sharpe Ratio</span>
-              <span className="text-2xl font-bold text-cyan-400 mt-2 block font-mono">
-                {report.metrics?.sharpeRatio != null ? report.metrics.sharpeRatio.toFixed(2) : '—'}
+            <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
+              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Sharpe Ratio</span>
+              <span className="text-2xl font-bold font-mono text-slate-900 mt-2 block">
+                {metrics?.sharpeRatio != null ? metrics.sharpeRatio.toFixed(2) : '—'}
               </span>
-              <span className="text-[11px] text-zinc-400 mt-1 block font-mono">Risk-Adjusted</span>
+              <span className="text-xs text-slate-400 mt-1 block font-sans">Risk-Adjusted Return</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80">
-              <span className="text-xs font-mono text-zinc-400 block">Max Drawdown</span>
-              <span className="text-2xl font-bold text-rose-400 mt-2 block font-mono">
-                {formatPercentage(report.metrics?.maxDrawdown, false)}
+            <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
+              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Max Drawdown</span>
+              <span className="text-2xl font-bold font-mono text-rose-700 mt-2 block">
+                {formatPercentage(metrics?.maxDrawdown, false)}
               </span>
-              <span className="text-[11px] text-zinc-400 mt-1 block font-mono">Peak-to-Trough</span>
+              <span className="text-xs text-slate-400 mt-1 block font-sans">Peak-to-Trough</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80">
-              <span className="text-xs font-mono text-zinc-400 block">Total Trades</span>
-              <span className="text-2xl font-bold text-white mt-2 block font-mono">
-                {report.metrics?.tradeCount ?? '—'}
+            <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
+              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Total Trades</span>
+              <span className="text-2xl font-bold font-mono text-slate-900 mt-2 block">
+                {metrics?.tradeCount ?? '—'}
               </span>
-              <span className="text-[11px] text-zinc-400 mt-1 block font-mono">Executed Fills</span>
+              <span className="text-xs text-slate-400 mt-1 block font-sans">Executed Fills</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80">
-              <span className="text-xs font-mono text-zinc-400 block">Best Fitness</span>
-              <span className="text-2xl font-bold text-amber-400 mt-2 block font-mono">
-                {report.metrics?.bestFitness != null ? report.metrics.bestFitness.toFixed(3) : '—'}
+            <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
+              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Best Fitness</span>
+              <span className="text-2xl font-bold font-mono text-amber-700 mt-2 block">
+                {metrics?.bestFitness != null ? metrics.bestFitness.toFixed(3) : '—'}
               </span>
-              <span className="text-[11px] text-zinc-400 mt-1 block font-mono">Objective Score</span>
+              <span className="text-xs text-slate-400 mt-1 block font-sans">Objective Score</span>
             </div>
           </div>
 
+          {/* Winning Strategy DNA Specification */}
+          {(report.winningDna || effectiveDna) && (
+            <WinningDnaCard
+              winningDna={report.winningDna || effectiveDna}
+              copiedDna={copiedDna}
+              onCopyDna={handleCopyDna}
+              onLaunchWithDna={handleLaunchWithDna}
+            />
+          )}
+
+          {/* Interactive SVG Equity & Drawdown Curve */}
+          {report.equityCurve && report.equityCurve.length > 0 && (
+            <EquityCurveChart equityPoints={report.equityCurve} />
+          )}
+
+          {/* Detailed Institutional Metrics & Risk Analytics */}
+          {report.detailedMetrics && (
+            <DetailedMetricsGrid detailedMetrics={report.detailedMetrics} />
+          )}
+
+          {/* Itemized Granular Trade Fill History */}
+          {report.trades && report.trades.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between pb-1">
+                <h3 className="text-base font-bold text-slate-900">Trade Execution Ledger</h3>
+                <Link
+                  href={`/panel/reports/${runId}/trades`}
+                  className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 font-medium text-xs text-slate-700 transition-colors shadow-sm inline-flex items-center gap-1.5"
+                >
+                  <Layers className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Open Full Trades Ledger</span>
+                </Link>
+              </div>
+              <TradeHistoryTable trades={report.trades} onSelectTrade={setSelectedTrade} />
+            </div>
+          )}
+
+          {/* Optimization Generational Progression Link Card (Dev Feature) */}
+          {report.generationProgress && report.generationProgress.length > 0 && (
+            <div className="p-4 border border-black bg-zinc-50 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <span className="font-bold uppercase text-black block">
+                  Genetic Generational Convergence ({report.generationProgress.length} Generations Evaluated)
+                </span>
+                <span className="text-[11px] text-zinc-600 font-sans mt-0.5 block">
+                  Per-generation population diversity, fitness trajectory, and chromosome backtesting metrics moved to dedicated Dev page.
+                </span>
+              </div>
+              <Link
+                href={'/panel/reports/' + runId + '/generations'}
+                className="px-3.5 py-1.5 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors inline-flex items-center gap-1.5"
+              >
+                <TrendingUp className="w-3.5 h-3.5" />
+                <span>OPEN GENERATIONS PROGRESSION GRID</span>
+              </Link>
+            </div>
+          )}
+
           {/* Append-Only Interventions Audit Log */}
-          <div className="p-6 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-4">
+          <div className="p-6 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs uppercase tracking-wider font-mono text-zinc-200 font-semibold flex items-center gap-2">
+              <h3 className="text-sm uppercase tracking-wider font-mono text-slate-700 font-semibold flex items-center gap-2">
                 <span>Append-Only Human & System Interventions</span>
-                <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 text-[10px]">
+                <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">
                   {report.interventions?.length || 0}
                 </span>
               </h3>
             </div>
 
             {!report.interventions || report.interventions.length === 0 ? (
-              <div className="py-8 text-center text-xs font-mono text-zinc-400">
+              <div className="py-6 text-center text-sm font-sans text-slate-500">
                 No interventions recorded. Execution remained strictly contiguous and untampered.
               </div>
             ) : (
-              <div className="divide-y divide-zinc-800/50">
-                {report.interventions.map((item) => (
-                  <div key={item.id} className="py-4 space-y-2 text-xs font-mono">
+              <div className="divide-y divide-slate-100">
+                {report.interventions.map((item, idx) => (
+                  <div key={item.id || `intervention-${idx}-${item.stepIndex}`} className="py-4 space-y-2 text-sm font-sans">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 font-bold">
+                        <span className="px-2.5 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 font-bold text-xs font-mono">
                           Step #{item.stepIndex}
                         </span>
-                        <span className="text-zinc-200 font-semibold">{item.actor}</span>
+                        <span className="text-slate-900 font-semibold">{item.actor}</span>
                       </div>
-                      <span className="text-zinc-400">{formatTimestamp(item.timestamp)}</span>
+                      <span className="text-slate-400 text-xs font-mono">{formatTimestamp(item.timestamp)}</span>
                     </div>
 
-                    <p className="text-zinc-300 font-sans">{item.reason}</p>
+                    <p className="text-slate-700">{item.reason}</p>
 
                     {item.modificationsSummary && (
-                      <p className="text-zinc-400 text-[11px] bg-zinc-950/60 p-2 rounded border border-zinc-800/40">
+                      <p className="text-slate-600 text-xs font-mono bg-slate-50 p-3 rounded-lg border border-slate-200">
                         {item.modificationsSummary}
                       </p>
                     )}
 
-                    <div className="flex items-center gap-4 text-[11px] text-zinc-400">
+                    <div className="flex items-center gap-4 text-xs font-mono text-slate-500">
                       <span>Prev: {formatHash(item.previousFingerprint, 8)}</span>
                       <span>→</span>
                       <span>New: {formatHash(item.newFingerprint, 8)}</span>
@@ -357,31 +801,31 @@ export function RunReportContent({ runId }: { runId: string }) {
           </div>
 
           {/* Recorded Execution Gaps */}
-          <div className="p-6 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-4">
+          <div className="p-6 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs uppercase tracking-wider font-mono text-zinc-200 font-semibold flex items-center gap-2">
+              <h3 className="text-sm uppercase tracking-wider font-mono text-slate-700 font-semibold flex items-center gap-2">
                 <span>Recorded Execution Gaps</span>
-                <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 text-[10px]">
+                <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">
                   {report.gaps?.length || 0}
                 </span>
               </h3>
             </div>
 
             {!report.gaps || report.gaps.length === 0 ? (
-              <div className="py-6 text-center text-xs font-mono text-zinc-400">
+              <div className="py-6 text-center text-sm font-sans text-slate-500">
                 No execution gaps detected. Run executed in full contiguity.
               </div>
             ) : (
-              <div className="divide-y divide-zinc-800/50">
-                {report.gaps.map((gap) => (
-                  <div key={gap.id} className="py-3 flex items-center justify-between text-xs font-mono">
+              <div className="divide-y divide-slate-100">
+                {report.gaps.map((gap, idx) => (
+                  <div key={gap.id || `gap-${idx}-${gap.startStep}`} className="py-3 flex items-center justify-between text-sm font-sans">
                     <div className="flex items-center gap-3">
-                      <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-300">
+                      <span className="px-2.5 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 text-xs font-mono font-bold">
                         Steps {gap.startStep} – {gap.endStep}
                       </span>
-                      <span className="text-zinc-300 font-sans">{gap.reason}</span>
+                      <span className="text-slate-700">{gap.reason}</span>
                     </div>
-                    <span className="text-zinc-400">{formatTimestamp(gap.recordedAt)}</span>
+                    <span className="text-slate-400 text-xs font-mono">{formatTimestamp(gap.recordedAt || '')}</span>
                   </div>
                 ))}
               </div>
@@ -408,6 +852,69 @@ export function RunReportContent({ runId }: { runId: string }) {
         setBestFitness={setBestFitness}
         submittingComplete={submittingComplete}
         onSubmit={handleCompleteSubmit}
+      />
+
+      {/* Launch Run Modal (with winning DNA injection) */}
+      <LaunchRunModal
+        isOpen={launchModalOpen}
+        onClose={() => {
+          setLaunchModalOpen(false);
+          setInjectedDna(null);
+        }}
+        instances={instances}
+        launchInstanceId={launchInstanceId}
+        setLaunchInstanceId={setLaunchInstanceId}
+        launchKind={launchKind}
+        setLaunchKind={setLaunchKind}
+        initialDna={injectedDna || report?.winningDna || undefined}
+        onRunLaunched={(newRun) => {
+          if (typeof window !== 'undefined') {
+            window.location.assign(`/panel/runs/${newRun.id}`);
+          }
+        }}
+      />
+
+      {/* Generation Detail Modal */}
+      <GenerationDetailModal
+        isOpen={!!selectedGeneration}
+        onClose={() => setSelectedGeneration(null)}
+        generation={selectedGeneration}
+        runId={runId}
+        onSelectIndividual={(individual) => {
+          setSelectedPopulation(individual);
+        }}
+      />
+
+      {/* Population Backtest Detail Modal */}
+      <PopulationBacktestModal
+        isOpen={!!selectedPopulation}
+        onClose={() => setSelectedPopulation(null)}
+        individual={selectedPopulation}
+        generationNumber={selectedGeneration?.generation ?? 1}
+        runId={runId}
+        onSelectTrade={(trade) => {
+          setSelectedTrade(trade);
+        }}
+        onRunAsBacktest={(individual) => {
+          const constructedDna: WinningDnaPayload = individual.dna || {
+            genes: individual.genes || [],
+            parameters: individual.parameters || {},
+            fitness: individual.fitness || 0,
+            slots: report?.winningDna?.slots || null,
+            execution: report?.winningDna?.execution || null,
+          };
+          setInjectedDna(constructedDna);
+          setLaunchKind('Backtest');
+          setLaunchModalOpen(true);
+        }}
+      />
+
+      {/* Granular Trade Telemetry & Execution Ladder Modal */}
+      <GranularTradeDetailModal
+        isOpen={!!selectedTrade}
+        onClose={() => setSelectedTrade(null)}
+        trade={selectedTrade}
+        runId={runId}
       />
     </div>
   );

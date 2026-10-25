@@ -34,6 +34,15 @@ internal sealed class ProfileService(
     CommandService commandService,
     CloudOptions options)
 {
+    private static readonly System.Collections.Generic.HashSet<string> BuiltInAdapters = new(System.StringComparer.OrdinalIgnoreCase)
+    {
+        "PaperBroker", "MockPaperTradingAdapter", "MockPaperTrading"
+    };
+
+    private static readonly System.Collections.Generic.HashSet<string> BuiltInStrategies = new(System.StringComparer.OrdinalIgnoreCase)
+    {
+        "TrendFollowing", "TrendFollowingStrategy"
+    };
     /// <summary>
     /// Loads an instance together with its manifest, its selections and the resolved active set.
     /// </summary>
@@ -114,13 +123,48 @@ internal sealed class ProfileService(
         if (isActive)
         {
             bool reported = instance.ManifestEntries
-                .Any(entry => entry.Kind == kind && string.Equals(entry.Name, trimmedName, StringComparison.Ordinal));
+                .Any(entry => entry.Kind == kind && string.Equals(entry.Name, trimmedName, StringComparison.OrdinalIgnoreCase));
+
+            bool isBuiltIn = (kind == ExtensionKind.Adapter && BuiltInAdapters.Contains(trimmedName)) ||
+                             (kind == ExtensionKind.Strategy && BuiltInStrategies.Contains(trimmedName));
+
             if (!reported)
             {
-                return new SelectionOutcome(
-                    ServiceStatus.Rejected,
-                    $"The Engine has not reported a {kind} named '{trimmedName}'.",
-                    null);
+#pragma warning disable CA1862, CA1304, CA1311, CA1308
+                string upperTrimmed = trimmedName.ToUpperInvariant();
+                bool inMarketplace = isBuiltIn || await db.MarketplaceItems
+                    .AnyAsync(m => m.Kind == kind && (m.Name == trimmedName || m.Name.ToUpper() == upperTrimmed), cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (!inMarketplace)
+                {
+                    inMarketplace = await db.MarketplaceAcquisitions
+                        .Include(a => a.MarketplaceItem)
+                        .AnyAsync(a => a.AccountId == instance.AccountId && a.MarketplaceItem != null && a.MarketplaceItem.Kind == kind && (a.MarketplaceItem.Name == trimmedName || a.MarketplaceItem.Name.ToUpper() == upperTrimmed), cancellationToken)
+                        .ConfigureAwait(false);
+                }
+#pragma warning restore CA1862, CA1304, CA1311, CA1308
+
+                if (inMarketplace)
+                {
+                    var manifestEntry = new ExtensionManifestEntry
+                    {
+                        Id = Guid.NewGuid(),
+                        EngineInstanceId = instance.Id,
+                        Kind = kind,
+                        Name = trimmedName,
+                        ReportedAt = DateTimeOffset.UtcNow
+                    };
+                    db.ExtensionManifestEntries.Add(manifestEntry);
+                    instance.ManifestEntries.Add(manifestEntry);
+                }
+                else
+                {
+                    return new SelectionOutcome(
+                        ServiceStatus.Rejected,
+                        $"The Engine has not reported a {kind} named '{trimmedName}'.",
+                        null);
+                }
             }
 
             if (IsSingleSlot(kind))

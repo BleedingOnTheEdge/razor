@@ -104,8 +104,8 @@ internal sealed class RegisterEndpoint(UserService users) : Endpoint<RegisterReq
                 req.UserName,
                 req.Password,
                 req.AccountName,
-                req.Role,
-                req.SubscriptionTier,
+                UserRole.Operator,
+                SubscriptionTier.Free,
                 ct).ConfigureAwait(false);
 
             await Send.OkAsync(session, ct).ConfigureAwait(false);

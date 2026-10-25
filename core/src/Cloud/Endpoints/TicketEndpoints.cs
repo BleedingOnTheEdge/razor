@@ -24,6 +24,21 @@ internal sealed class GetTicketsRequest
 
     /// <summary>Gets or sets the submitting account identifier.</summary>
     public Guid? AccountId { get; set; }
+
+    /// <summary>Gets or sets the search query.</summary>
+    public string? Search { get; set; }
+
+    /// <summary>Gets or sets the priority filter.</summary>
+    public TicketPriority? Priority { get; set; }
+
+    /// <summary>Gets or sets the category filter.</summary>
+    public TicketCategory? Category { get; set; }
+
+    /// <summary>Gets or sets the 1-based page number.</summary>
+    public int? Page { get; set; }
+
+    /// <summary>Gets or sets the page size.</summary>
+    public int? PageSize { get; set; }
 }
 
 /// <summary>Payload for opening a new support ticket.</summary>
@@ -90,7 +105,7 @@ internal sealed class UpdateTicketStatusRequest
 }
 
 /// <summary>Lists support tickets across system operations and additive developers.</summary>
-internal sealed class GetTicketsEndpoint(TicketService tickets) : Endpoint<GetTicketsRequest, IReadOnlyList<Ticket>>
+internal sealed class GetTicketsEndpoint(TicketService tickets) : Endpoint<GetTicketsRequest, object>
 {
     /// <inheritdoc/>
     public override void Configure()
@@ -99,16 +114,32 @@ internal sealed class GetTicketsEndpoint(TicketService tickets) : Endpoint<GetTi
         Summary(s =>
         {
             s.Summary = "List support tickets";
-            s.Description = "Returns tickets filtered by target routing (SystemManager, AdditiveDeveloper), status, and additive ID.";
+            s.Description = "Returns tickets filtered by target routing, status, priority, category, search, and server-side pagination.";
         });
     }
 
     /// <inheritdoc/>
     public override async Task HandleAsync(GetTicketsRequest req, CancellationToken ct)
     {
-        IReadOnlyList<Ticket> list = await tickets.GetTicketsAsync(req.TargetType, req.Status, req.TargetItemId, req.AccountId, ct)
-            .ConfigureAwait(false);
-        await Send.OkAsync(list, ct).ConfigureAwait(false);
+        IReadOnlyList<Ticket> list = await tickets.GetTicketsAsync(
+            req.TargetType,
+            req.Status,
+            req.TargetItemId,
+            req.AccountId,
+            req.Search,
+            req.Priority,
+            req.Category,
+            ct).ConfigureAwait(false);
+
+        if (req.Page.HasValue || req.PageSize.HasValue)
+        {
+            var paged = PagedResult.Create(list, req.Page, req.PageSize);
+            await Send.OkAsync(paged, ct).ConfigureAwait(false);
+        }
+        else
+        {
+            await Send.OkAsync(list, ct).ConfigureAwait(false);
+        }
     }
 }
 
@@ -129,6 +160,13 @@ internal sealed class CreateTicketEndpoint(TicketService tickets) : Endpoint<Cre
     /// <inheritdoc/>
     public override async Task HandleAsync(CreateTicketRequest req, CancellationToken ct)
     {
+        if (string.IsNullOrWhiteSpace(req.Title) || string.IsNullOrWhiteSpace(req.Description))
+        {
+            AddError("Title and Description cannot be empty.");
+            await Send.ErrorsAsync(StatusCodes.Status400BadRequest, ct).ConfigureAwait(false);
+            return;
+        }
+
         Ticket ticket = await tickets.CreateTicketAsync(
             req.AccountId == Guid.Empty ? Guid.NewGuid() : req.AccountId,
             req.UserId == Guid.Empty ? Guid.NewGuid() : req.UserId,
@@ -194,6 +232,13 @@ internal sealed class AddTicketMessageEndpoint(TicketService tickets) : Endpoint
     /// <inheritdoc/>
     public override async Task HandleAsync(AddTicketMessageRequest req, CancellationToken ct)
     {
+        if (string.IsNullOrWhiteSpace(req.Message))
+        {
+            AddError("Ticket message cannot be empty.");
+            await Send.ErrorsAsync(StatusCodes.Status400BadRequest, ct).ConfigureAwait(false);
+            return;
+        }
+
         Guid ticketId = Route<Guid>("ticketId");
         TicketMessage? msg = await tickets.AddMessageAsync(
             ticketId,

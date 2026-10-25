@@ -7,6 +7,7 @@
 namespace Cloud.Endpoints;
 
 using Cloud.Data;
+using System.Text.Json.Serialization;
 using Cloud.Services;
 using FastEndpoints;
 using Microsoft.AspNetCore.Http;
@@ -20,9 +21,11 @@ internal sealed class AcquireMarketplaceItemRequest
     public Guid ItemId { get; set; }
 
     /// <summary>Gets or sets the acquiring account identifier.</summary>
+    [JsonConverter(typeof(FlexibleGuidConverter))]
     public Guid AccountId { get; set; }
 
     /// <summary>Gets or sets an optional target engine instance for immediate deployment.</summary>
+    [JsonConverter(typeof(FlexibleNullableGuidConverter))]
     public Guid? TargetInstanceId { get; set; }
 }
 

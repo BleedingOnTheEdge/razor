@@ -86,6 +86,12 @@ internal sealed class CloudDbContext : DbContext
     /// <summary>Gets the replies to community threads.</summary>
     public DbSet<CommunityReply> CommunityReplies => Set<CommunityReply>();
 
+    /// <summary>Gets the persistent system settings.</summary>
+    public DbSet<SystemSetting> SystemSettings => Set<SystemSetting>();
+
+    /// <summary>Gets the temporary engine sharing delegations.</summary>
+    public DbSet<EngineShare> EngineShares => Set<EngineShare>();
+
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -105,6 +111,8 @@ internal sealed class CloudDbContext : DbContext
         ConfigureMarketplaceAcquisition(modelBuilder);
         ConfigureTicket(modelBuilder);
         ConfigureCommunityThread(modelBuilder);
+        ConfigureSystemSetting(modelBuilder);
+        ConfigureEngineShare(modelBuilder);
     }
 
 
@@ -128,9 +136,27 @@ internal sealed class CloudDbContext : DbContext
             user.HasKey(u => u.Id);
             user.Property(u => u.UserName).IsRequired().HasMaxLength(128);
             user.Property(u => u.PasswordHash).IsRequired().HasMaxLength(512);
-            user.Property(u => u.Role).HasConversion<string>().HasMaxLength(32);
+            var userRoleConverter = new Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<UserRole, string>(
+                v => v.ToString(),
+                v => ParseUserRole(v));
+
+            user.Property(u => u.Role).HasConversion(userRoleConverter).HasMaxLength(32);
+            user.Property(u => u.Email).HasMaxLength(256);
+            user.Property(u => u.DisplayName).HasMaxLength(128);
+            user.Property(u => u.AvatarUrl).HasMaxLength(512);
+            user.Property(u => u.Bio).HasMaxLength(1024);
             user.HasIndex(u => u.UserName).IsUnique();
         });
+    }
+
+    private static UserRole ParseUserRole(string role)
+    {
+        if (string.Equals(role, "Developer", StringComparison.OrdinalIgnoreCase))
+        {
+            return UserRole.Trader;
+        }
+
+        return Enum.TryParse<UserRole>(role, true, out var parsed) ? parsed : UserRole.Trader;
     }
 
     private static void ConfigureLicense(ModelBuilder modelBuilder)
@@ -225,6 +251,9 @@ internal sealed class CloudDbContext : DbContext
             run.Property(r => r.Relation).HasConversion<string>().HasMaxLength(32);
             run.Property(r => r.Continuity).HasConversion<string>().HasMaxLength(32);
             run.Property(r => r.RandomPosition).HasMaxLength(4096);
+            run.Property(r => r.ConfigurationJson).HasMaxLength(16384);
+            run.Property(r => r.WinningDnaJson).HasMaxLength(65536);
+            run.Property(r => r.ResultPayloadJson);
             run.HasIndex(r => r.EngineInstanceId);
             run.HasIndex(r => r.ParentRunId);
             run.HasOne(r => r.ParentRun).WithMany(p => p!.ChildRuns).HasForeignKey(r => r.ParentRunId).OnDelete(DeleteBehavior.Restrict);
@@ -340,6 +369,35 @@ internal sealed class CloudDbContext : DbContext
             reply.Property(r => r.AuthorBadge).IsRequired().HasMaxLength(64);
             reply.Property(r => r.Content).IsRequired().HasMaxLength(4096);
             reply.HasIndex(r => r.ThreadId);
+        });
+    }
+
+    private static void ConfigureSystemSetting(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<SystemSetting>(setting =>
+        {
+            setting.HasKey(s => s.Key);
+            setting.Property(s => s.Key).HasMaxLength(128);
+            setting.Property(s => s.Category).IsRequired().HasMaxLength(64);
+            setting.Property(s => s.Description).HasMaxLength(512);
+            setting.Property(s => s.Value).IsRequired();
+            setting.HasIndex(s => s.Category);
+        });
+    }
+
+    private static void ConfigureEngineShare(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<EngineShare>(share =>
+        {
+            share.HasKey(s => s.Id);
+            share.Property(s => s.SharedWithEmail).HasMaxLength(256);
+            share.HasIndex(s => s.EngineInstanceId);
+            share.HasIndex(s => s.OwnerAccountId);
+            share.HasIndex(s => s.SharedWithUserId);
+            share.HasOne(s => s.EngineInstance)
+                .WithMany()
+                .HasForeignKey(s => s.EngineInstanceId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

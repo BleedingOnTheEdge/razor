@@ -272,6 +272,11 @@ internal sealed partial class CloudConnector
             case "AuthAck":
                 _logAuthAck(_logger, null);
                 Console.WriteLine("Authentication acknowledged.");
+                _isConnected = true;
+                if (_cachedManifest != null)
+                {
+                    await this.SendExtensionManifestAsync(_cachedManifest, cancellationToken).ConfigureAwait(false);
+                }
                 break;
 
             case "HeartbeatResponse":
