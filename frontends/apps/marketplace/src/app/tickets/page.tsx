@@ -48,11 +48,15 @@ export default function TicketsPage() {
       });
 
       if (ticketRes.data) {
-        setTickets(ticketRes.data);
+        const raw = ticketRes.data as unknown as { items?: TicketPayload[] } | TicketPayload[];
+        const list: TicketPayload[] = Array.isArray(raw) ? raw : (raw?.items ?? []);
+        setTickets(list);
         if (selectedTicket) {
-          const fresh = ticketRes.data.find((t) => t.id === selectedTicket.id);
+          const fresh = list.find((t) => t.id === selectedTicket.id);
           if (fresh) setSelectedTicket(fresh);
         }
+      } else {
+        setTickets([]);
       }
     } catch (err) {
       console.error('Failed to load tickets:', err);

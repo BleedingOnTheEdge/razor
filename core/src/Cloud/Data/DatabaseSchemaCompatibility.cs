@@ -143,9 +143,16 @@ internal static class DatabaseSchemaCompatibility
                 "AccountId" uuid NOT NULL REFERENCES "Accounts"("Id") ON DELETE CASCADE,
                 "EngineInstanceId" uuid REFERENCES "EngineInstances"("Id") ON DELETE SET NULL,
                 "LicenseKey" character varying(128) NOT NULL,
+                "AcquiredVersion" character varying(32) NOT NULL DEFAULT '1.0.0',
+                "LicenseType" character varying(32) NOT NULL DEFAULT 'Perpetual',
+                "RightsJson" character varying(2048) NOT NULL DEFAULT '{{}}',
                 "AcquiredAt" timestamp with time zone NOT NULL,
                 "ExpiresAt" timestamp with time zone
             );
+
+            ALTER TABLE IF EXISTS "MarketplaceAcquisitions" ADD COLUMN IF NOT EXISTS "AcquiredVersion" character varying(32) NOT NULL DEFAULT '1.0.0';
+            ALTER TABLE IF EXISTS "MarketplaceAcquisitions" ADD COLUMN IF NOT EXISTS "LicenseType" character varying(32) NOT NULL DEFAULT 'Perpetual';
+            ALTER TABLE IF EXISTS "MarketplaceAcquisitions" ADD COLUMN IF NOT EXISTS "RightsJson" character varying(2048) NOT NULL DEFAULT '{{}}';
 
             -- Ensure Support Ticket tables exist
             CREATE TABLE IF NOT EXISTS "Tickets" (
@@ -209,6 +216,47 @@ internal static class DatabaseSchemaCompatibility
                 "CanControl" boolean NOT NULL DEFAULT true,
                 "CanRunFlows" boolean NOT NULL DEFAULT true,
                 "IsRevoked" boolean NOT NULL DEFAULT false
+            );
+
+            -- Ensure Bundles and Snapshots tables exist
+            CREATE TABLE IF NOT EXISTS "TradingBundles" (
+                "Id" character varying(32) PRIMARY KEY,
+                "AccountId" uuid NOT NULL REFERENCES "Accounts"("Id") ON DELETE CASCADE,
+                "Name" character varying(128) NOT NULL,
+                "Description" character varying(2048),
+                "DocumentationMarkdown" text,
+                "IsPublic" boolean NOT NULL DEFAULT false,
+                "PublishedToMarketplace" boolean NOT NULL DEFAULT false,
+                "Price" numeric NOT NULL DEFAULT 0,
+                "Currency" character varying(16) NOT NULL DEFAULT 'Free',
+                "StrategySlotId" character varying(64),
+                "AdapterSlotIdsJson" character varying(4096) NOT NULL DEFAULT '[]',
+                "HookSlotIdsJson" character varying(4096) NOT NULL DEFAULT '[]',
+                "DefaultConfigurationsJson" character varying(16384) NOT NULL DEFAULT '{{}}',
+                "CreatedAt" timestamp with time zone NOT NULL,
+                "UpdatedAt" timestamp with time zone NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS "BundleSnapshots" (
+                "Id" uuid PRIMARY KEY,
+                "BundleId" character varying(32) NOT NULL REFERENCES "TradingBundles"("Id") ON DELETE CASCADE,
+                "Version" character varying(32) NOT NULL,
+                "Name" character varying(128),
+                "SnapshotStateJson" character varying(32768) NOT NULL DEFAULT '{{}}',
+                "CreatedAt" timestamp with time zone NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS "BundleDnas" (
+                "Id" uuid PRIMARY KEY,
+                "BundleSnapshotId" uuid NOT NULL REFERENCES "BundleSnapshots"("Id") ON DELETE CASCADE,
+                "DnaId" character varying(64) NOT NULL,
+                "Name" character varying(128),
+                "ParametersJson" character varying(16384) NOT NULL DEFAULT '{{}}',
+                "BacktestStatus" character varying(32) NOT NULL DEFAULT 'Untested',
+                "Fitness" double precision,
+                "NetProfit" numeric,
+                "ReportSummary" character varying(4096),
+                "CreatedAt" timestamp with time zone NOT NULL
             );
             """;
 

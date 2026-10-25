@@ -70,11 +70,15 @@ export default function OperatorTicketsPage() {
       });
 
       if (res.data) {
-        setTickets(res.data);
+        const raw = res.data as unknown as { items?: TicketPayload[] } | TicketPayload[];
+        const list: TicketPayload[] = Array.isArray(raw) ? raw : (raw?.items ?? []);
+        setTickets(list);
         if (selectedTicket) {
-          const fresh = res.data.find((t) => t.id === selectedTicket.id);
+          const fresh = list.find((t) => t.id === selectedTicket.id);
           if (fresh) setSelectedTicket(fresh);
         }
+      } else {
+        setTickets([]);
       }
     } catch {
       toast.error('Load Error', 'Failed to fetch tickets from control plane.');
@@ -145,7 +149,7 @@ export default function OperatorTicketsPage() {
 
   // Client multi-param sorting
   const sortedTickets = useMemo(() => {
-    const list = [...tickets];
+    const list = Array.isArray(tickets) ? [...tickets] : [];
     const priorityWeights: Record<string, number> = { Critical: 4, High: 3, Medium: 2, Low: 1 };
 
     list.sort((a, b) => {
@@ -176,10 +180,11 @@ export default function OperatorTicketsPage() {
   const visibleMessages = sortedMessages.slice(0, visibleMessagesCount);
 
   // High-level counts
-  const openCount = tickets.filter((t) => t.status === 'Open').length;
-  const inProgressCount = tickets.filter((t) => t.status === 'InProgress').length;
-  const incidentCount = tickets.filter((t) => t.category === 'Incident' || t.priority === 'Critical').length;
-  const resolvedCount = tickets.filter((t) => t.status === 'Resolved' || t.status === 'Closed').length;
+  const safeTickets = Array.isArray(tickets) ? tickets : [];
+  const openCount = safeTickets.filter((t) => t.status === 'Open').length;
+  const inProgressCount = safeTickets.filter((t) => t.status === 'InProgress').length;
+  const incidentCount = safeTickets.filter((t) => t.category === 'Incident' || t.priority === 'Critical').length;
+  const resolvedCount = safeTickets.filter((t) => t.status === 'Resolved' || t.status === 'Closed').length;
 
   return (
     <div className="space-y-6 max-w-7xl font-mono text-black">

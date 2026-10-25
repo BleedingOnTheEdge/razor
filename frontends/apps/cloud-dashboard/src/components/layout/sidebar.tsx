@@ -16,6 +16,7 @@ import {
   Terminal,
   X,
   Radio,
+  Package,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '@/context/auth-context';
@@ -59,6 +60,13 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
       label: 'Flow Runs & Lineage',
       icon: Activity,
       active: pathname.startsWith('/panel/runs') || pathname.startsWith('/panel/reports') || pathname.startsWith('/runs') || pathname.startsWith('/reports'),
+      visible: true,
+    },
+    {
+      href: '/panel/bundles',
+      label: 'Bundles',
+      icon: Package,
+      active: pathname.startsWith('/panel/bundles') || pathname.startsWith('/bundles'),
       visible: true,
     },
     {

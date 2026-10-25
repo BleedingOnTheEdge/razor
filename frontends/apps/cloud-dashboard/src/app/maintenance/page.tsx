@@ -207,14 +207,28 @@ function MaintenanceContent() {
         {/* Left Column: Form & Presets (2 cols) */}
         <div className="lg:col-span-2 space-y-6">
           <div className="p-5 border border-black bg-white space-y-4">
-            <div>
-              <h2 className="text-sm font-bold text-black uppercase tracking-wider flex items-center gap-2">
-                <Send className="w-4 h-4 text-black" />
-                <span>Command Execution Form</span>
-              </h2>
-              <p className="text-xs text-black font-normal mt-0.5 font-sans">
-                Select a preset or configure custom opcode and payload parameters.
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-bold text-black uppercase tracking-wider flex items-center gap-2">
+                  <Send className="w-4 h-4 text-black" />
+                  <span>Command Execution Form</span>
+                </h2>
+                <p className="text-xs text-black font-normal mt-0.5 font-sans">
+                  Select a preset or configure custom opcode and payload parameters.
+                </p>
+              </div>
+
+              {/* Top Alias Submit Button */}
+              <button
+                type="button"
+                onClick={handleDispatch}
+                disabled={dispatching || !selectedInstanceId}
+                className="px-4 py-2 border border-black bg-black text-white hover:bg-zinc-800 disabled:opacity-50 text-xs font-bold uppercase transition-colors flex items-center gap-2 shrink-0 self-start sm:self-auto"
+                title="Execute command directly from top"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>{dispatching ? 'DISPATCHING...' : `EXECUTE ${cmdType.toUpperCase()}`}</span>
+              </button>
             </div>
 
             {/* Presets */}

@@ -117,6 +117,7 @@ internal static class CloudApplication
         services.AddSingleton<CommunityService>();
         services.AddSingleton<UserService>();
         services.AddSingleton<AdminSettingsService>();
+        services.AddSingleton<BundleService>();
 
         services.AddCors();
 

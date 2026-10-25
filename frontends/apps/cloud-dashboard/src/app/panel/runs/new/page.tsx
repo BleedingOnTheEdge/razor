@@ -61,7 +61,7 @@ function NewRunForm() {
 
   // Form Fields
   const [selectedInstanceId, setSelectedInstanceId] = useState<string>('');
-  const [runKind, setRunKind] = useState<'Backtest' | 'Optimization' | 'WalkForward' | 'Live'>('Backtest');
+  const [runKind, setRunKind] = useState<'Backtest' | 'Optimization' | 'WalkForward'>('Backtest');
   const [seed, setSeed] = useState<number>(42);
 
   // Strategy & Adapter Slot Selection
@@ -394,8 +394,13 @@ function NewRunForm() {
                 <option value="Backtest">Backtest (Deterministic Single Run)</option>
                 <option value="Optimization">Optimization (GA Genetic Evolution)</option>
                 <option value="WalkForward">Walk-Forward (Sliding Out-of-Sample)</option>
-                <option value="Live">Live (Real-Time Order Routing)</option>
               </select>
+              <div className="mt-1 text-[10px] text-zinc-600 font-sans">
+                Looking for Real-Time Execution? Live trading is decoupled from flow runs and managed directly in the{' '}
+                <Link href="/panel/live" className="font-bold underline text-black">
+                  Live Trading Manager →
+                </Link>
+              </div>
             </div>
           </div>
         </div>

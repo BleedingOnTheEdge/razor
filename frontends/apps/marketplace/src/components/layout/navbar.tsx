@@ -19,6 +19,7 @@ import {
   LogIn,
   UserPlus,
   KeyRound,
+  CreditCard,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getApiClient } from '@/lib/api-client';
@@ -137,6 +138,19 @@ export function Navbar() {
               >
                 <UploadCloud className="w-3.5 h-3.5" />
                 <span>Publisher Portal</span>
+              </Link>
+
+              <Link
+                href="/payments"
+                className={clsx(
+                  'flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors',
+                  pathname === '/payments'
+                    ? 'bg-indigo-50 text-indigo-700 dark:bg-zinc-800 dark:text-indigo-400 font-semibold'
+                    : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-zinc-800/60'
+                )}
+              >
+                <CreditCard className="w-3.5 h-3.5" />
+                <span>Payments</span>
               </Link>
             </nav>
           </div>
