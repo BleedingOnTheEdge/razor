@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ShoppingBag, ExternalLink, ArrowRight, Store, Compass, KeyRound, MessageSquare } from 'lucide-react';
 
 export default function MarketplaceGatewayPage() {
-  const marketplaceUrl = process.env.NEXT_PUBLIC_MARKETPLACE_URL || 'http://localhost:3001';
+  const marketplaceUrl = process.env.NEXT_PUBLIC_MARKETPLACE_URL || '/marketplace';
 
   return (
     <div className="py-12 space-y-8 max-w-3xl mx-auto text-center font-mono">
@@ -22,16 +22,14 @@ export default function MarketplaceGatewayPage() {
         </p>
       </div>
 
-      {/* Primary Action to Open in New Tab */}
+      {/* Primary Action to Enter Marketplace */}
       <div className="pt-2">
         <a
           href={marketplaceUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2.5 px-6 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase transition-all shadow-lg shadow-indigo-600/25 border border-indigo-400"
+          className="inline-flex items-center gap-2.5 px-6 py-3.5 bg-black hover:bg-zinc-800 text-white font-bold text-xs uppercase transition-all border border-black shadow-sm"
         >
-          <span>Launch Marketplace in Dedicated Tab</span>
-          <ExternalLink className="w-4 h-4" />
+          <span>Enter Marketplace Catalog</span>
+          <ArrowRight className="w-4 h-4" />
         </a>
       </div>
 

@@ -229,6 +229,27 @@ public sealed class BundleAndSchemaBranchCoverageTests : IDisposable
         var searchPrivateRes = await client.GetAsync(
             new Uri("/api/bundles?isPublic=false", UriKind.Relative));
         Assert.Equal(System.Net.HttpStatusCode.OK, searchPrivateRes.StatusCode);
+
+        // 13. GetBundleByIdEndpoint: success
+        var getSuccess = await client.GetAsync(new Uri($"/api/bundles/{created.Id}", UriKind.Relative));
+        Assert.Equal(System.Net.HttpStatusCode.OK, getSuccess.StatusCode);
+
+        // 14. DeleteBundleEndpoint: success
+        var deleteSuccess = await client.DeleteAsync(new Uri($"/api/bundles/{created.Id}", UriKind.Relative));
+        Assert.Equal(System.Net.HttpStatusCode.NoContent, deleteSuccess.StatusCode);
+
+        // 15. Additional branch coverage edge cases: GetTrade not found & Community validation
+        var tradeNotFound = await client.GetAsync(new Uri("/api/trades/99999999", UriKind.Relative));
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, tradeNotFound.StatusCode);
+
+        var commInvalid = await client.PostAsJsonAsync(
+            new Uri("/api/community/threads", UriKind.Relative),
+            new
+            {
+                Title = "",
+                Body = ""
+            });
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, commInvalid.StatusCode);
     }
 
     [Fact]

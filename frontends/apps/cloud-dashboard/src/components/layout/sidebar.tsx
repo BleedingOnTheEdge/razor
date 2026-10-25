@@ -156,18 +156,22 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
             );
           })}
 
-          <a
-            href="http://localhost:3001"
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center justify-between px-3 py-2 text-sm font-bold border border-transparent hover:border-black hover:bg-zinc-100 text-black transition-colors"
+          <Link
+            href="/marketplace"
+            onClick={onClose}
+            className={clsx(
+              'flex items-center justify-between px-3 py-2 text-sm font-bold border transition-colors',
+              pathname.startsWith('/marketplace')
+                ? 'bg-black text-white border-black'
+                : 'bg-white text-black border-transparent hover:border-black hover:bg-zinc-100'
+            )}
           >
             <div className="flex items-center gap-3">
-              <ShoppingBag className="w-4 h-4 text-black" />
+              <ShoppingBag className={clsx('w-4 h-4', pathname.startsWith('/marketplace') ? 'text-white' : 'text-black')} />
               <span>Marketplace</span>
             </div>
-            <span className="text-[10px] px-1.5 py-0.5 border border-black font-bold">:3001</span>
-          </a>
+            <span className={clsx('text-[10px] px-1.5 py-0.5 border font-bold', pathname.startsWith('/marketplace') ? 'border-white text-white' : 'border-black text-black')}>HUB</span>
+          </Link>
         </nav>
       </div>
 

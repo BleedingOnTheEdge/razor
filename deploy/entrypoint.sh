@@ -23,10 +23,20 @@ cd /app/frontend
 PORT=3002 HOSTNAME=127.0.0.1 node frontends/apps/cloud-dashboard/server.js &
 FRONTEND_PID=$!
 
+if [ -d "/app/marketplace" ]; then
+    echo "🚀 Starting Razor Marketplace (Internal Port 3001)..."
+    cd /app/marketplace
+    PORT=3001 HOSTNAME=127.0.0.1 node frontends/apps/marketplace/server.js &
+    MARKETPLACE_PID=$!
+fi
+
 cleanup() {
     echo "🛑 Shutting down Razor processes..."
     kill -TERM "$BACKEND_PID" 2>/dev/null || true
     kill -TERM "$FRONTEND_PID" 2>/dev/null || true
+    if [ -n "$MARKETPLACE_PID" ]; then
+        kill -TERM "$MARKETPLACE_PID" 2>/dev/null || true
+    fi
     nginx -s stop 2>/dev/null || true
     wait
     exit 0

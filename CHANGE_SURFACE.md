@@ -126,6 +126,11 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `core/src/Cloud/Endpoints/CancelRunEndpoint.cs`: FastEndpoints controller for cancelling an active or paused flow run.
 - `frontends/apps/cloud-dashboard/src/app/panel/reports/[id]/windows/page.tsx`: Walk-Forward window splits and out-of-sample degradation analysis page.
 - `frontends/apps/cloud-dashboard/src/app/panel/reports/[id]/windows/[windowIndex]/page.tsx`: Individual Walk-Forward window granular performance and chromosome DNA page.
+- `frontends/apps/cloud-dashboard/src/components/layout/PublicNav.tsx`: Public header and footer navigation with dynamic authentication state.
+- `frontends/apps/cloud-dashboard/src/app/about/page.tsx`: About page detailing quantitative architecture, low-latency execution, and non-custodial design.
+- `frontends/apps/cloud-dashboard/src/app/contact/page.tsx`: Operations and trading desk contact page with priority dispatch form.
+- `frontends/apps/cloud-dashboard/src/app/terms/page.tsx`: Terms of Service, algorithmic risk disclosures, and software licensing boundaries.
+- `frontends/apps/cloud-dashboard/src/app/docs/page.tsx`: Developer documentation for Slots and Hooks (strategies, broker adapters, fitness functions).
 - `.github/CODEOWNERS`: Monorepo code ownership rules declaring core team governance.
 - `PRODUCT_SKILL.md`: Enterprise product skill specification and project targets for Razor monorepo.
 - `.runflare-account`: Runflare deployment active account configuration.
