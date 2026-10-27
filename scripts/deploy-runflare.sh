@@ -21,6 +21,9 @@ echo "🔨 2. Compiling and publishing .NET 10 Cloud backend..."
 dotnet publish core/src/Cloud/Cloud.csproj -c Release -o dist/cloud
 
 echo "📦 3. Compiling Next.js Cloud Dashboard..."
+export NEXT_PUBLIC_API_BASE_URL=""
+export NEXT_PUBLIC_DASHBOARD_URL="/"
+export NEXT_PUBLIC_MARKETPLACE_URL="/marketplace"
 pnpm --filter cloud-dashboard build
 rm -rf dist/dashboard-staging 2>/dev/null || true
 mkdir -p dist/dashboard-staging

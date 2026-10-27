@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { ClientEvent } from '@razor/contracts';
+import { getApiBaseUrl } from '@/lib/api-client';
 
 const SSE_EVENT_TYPES = [
   'message',
@@ -20,7 +21,7 @@ export function useSseStream(instanceId?: string) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+    const baseUrl = getApiBaseUrl();
     const streamUrl = instanceId
       ? `${baseUrl}/api/events/stream?instanceId=${encodeURIComponent(instanceId)}`
       : `${baseUrl}/api/events/stream`;

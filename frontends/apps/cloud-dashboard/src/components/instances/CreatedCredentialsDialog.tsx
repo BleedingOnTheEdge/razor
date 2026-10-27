@@ -22,7 +22,10 @@ export function CreatedCredentialsDialog({
   const toast = useToast();
   if (!credentials) return null;
 
-  const launchCommand = `dotnet run --project core/src/Engine -- --instance ${credentials.instanceId} --engine-id ${credentials.engineId} --key "${credentials.apiKey}" --username ${userName} --password trader123 --endpoint ws://localhost:5000/engine`;
+  const wsEndpoint = typeof window !== 'undefined'
+    ? `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/engine`
+    : 'ws://localhost:5000/engine';
+  const launchCommand = `dotnet run --project core/src/Engine -- --instance ${credentials.instanceId} --engine-id ${credentials.engineId} --key "${credentials.apiKey}" --username ${userName} --password trader123 --endpoint ${wsEndpoint}`;
 
   return (
     <div
