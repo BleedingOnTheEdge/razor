@@ -1,21 +1,35 @@
+# Git & VCS
+.git
+.github
+.nx
+node_modules
+.agents
+.ep
 
-/.git
-/.github
-/.nx
-/.agents
-/.ep
-/node_modules
-/.next
-/data
+# Storage & temp data
+data
 *.log
 *.sqlite
 *.sqlite*
-/core
-/frontends
-/tests
-/docs
-/samples
-/scripts
+obj
+bin
+
+# Test & Docs
+tests
+docs
+core/tests
+samples
+
+# Other core submodules not needed for Cloud Control Plane container
+core/src/Engine
+core/src/Kernel
+core/src/Sdk
+core/src/Shared
+
+# Frontends source code (pre-built into dist/)
+frontends
+
+# Environment files
 .env
 .env.*
 !.env.example

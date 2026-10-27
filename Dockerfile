@@ -13,7 +13,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     nginx \
     curl \
     ca-certificates \
-    tar \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy Node.js binary and modules from node runtime
@@ -21,11 +20,8 @@ COPY --from=node-runtime /usr/local /usr/local
 
 # Copy pre-built backend and frontend artifacts
 COPY dist/cloud /app/backend
-COPY dist/dashboard.tar.gz /app/dashboard.tar.gz
-COPY dist/marketplace.tar.gz /app/marketplace.tar.gz
-
-RUN mkdir -p /app/frontend && tar -xzf /app/dashboard.tar.gz -C /app/frontend && rm -f /app/dashboard.tar.gz
-RUN mkdir -p /app/marketplace && tar -xzf /app/marketplace.tar.gz -C /app/marketplace && rm -f /app/marketplace.tar.gz
+COPY dist/dashboard /app/frontend
+COPY dist/marketplace /app/marketplace
 
 # Copy Nginx gateway configuration and entrypoint script
 COPY deploy/nginx.conf /etc/nginx/nginx.conf
