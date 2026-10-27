@@ -21,6 +21,7 @@ COPY --from=node-runtime /usr/local /usr/local
 # Copy pre-built backend and frontend artifacts
 COPY dist/cloud /app/backend
 COPY dist/dashboard /app/frontend
+COPY dist/marketplace /app/marketplace
 
 # Copy Nginx gateway configuration and entrypoint script
 COPY deploy/nginx.conf /etc/nginx/nginx.conf

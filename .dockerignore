@@ -1,0 +1,15 @@
+.git
+.github
+.nx
+node_modules
+.agents
+.ep
+docs
+tests
+core/tests
+*.log
+*.sqlite
+*.sqlite*
+.env
+.env.*
+!dist/**

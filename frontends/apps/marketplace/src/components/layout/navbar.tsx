@@ -213,9 +213,7 @@ export function Navbar() {
             )}
 
             <a
-              href={process.env.NEXT_PUBLIC_DASHBOARD_URL || 'http://localhost:3002'}
-              target="_blank"
-              rel="noreferrer"
+              href={process.env.NEXT_PUBLIC_DASHBOARD_URL || '/'}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:border-transparent dark:text-zinc-300 text-xs font-mono transition-colors"
             >
               <span>Operator Dashboard</span>

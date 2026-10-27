@@ -156,7 +156,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
             );
           })}
 
-          <Link
+          <a
             href="/marketplace"
             onClick={onClose}
             className={clsx(
@@ -171,7 +171,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
               <span>Marketplace</span>
             </div>
             <span className={clsx('text-[10px] px-1.5 py-0.5 border font-bold', pathname.startsWith('/marketplace') ? 'border-white text-white' : 'border-black text-black')}>HUB</span>
-          </Link>
+          </a>
         </nav>
       </div>
 

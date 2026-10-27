@@ -16,11 +16,12 @@ const PUBLIC_ROUTES = [
   '/contact',
   '/terms',
   '/docs',
+  '/marketplace',
 ];
 
 function isPathPublic(pathname: string): boolean {
   if (PUBLIC_ROUTES.includes(pathname)) return true;
-  if (pathname.startsWith('/auth') || pathname.startsWith('/docs')) return true;
+  if (pathname.startsWith('/auth') || pathname.startsWith('/docs') || pathname.startsWith('/marketplace')) return true;
   return false;
 }
 
