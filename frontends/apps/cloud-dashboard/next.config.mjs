@@ -16,6 +16,19 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    const marketplaceUrl = process.env.MARKETPLACE_URL || 'http://localhost:3001';
+    return [
+      {
+        source: '/marketplace',
+        destination: `${marketplaceUrl}/marketplace`,
+      },
+      {
+        source: '/marketplace/:path*',
+        destination: `${marketplaceUrl}/marketplace/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

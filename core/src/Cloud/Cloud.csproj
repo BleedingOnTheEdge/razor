@@ -27,7 +27,6 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="EndToEndTests" />
-        <InternalsVisibleTo Include="mywebapp" />
     </ItemGroup>
 
 </Project>

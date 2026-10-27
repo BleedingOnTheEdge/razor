@@ -44,6 +44,7 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 ## 3. Code Surface (Targeted Symbols & Files)
 
 ### Added Files
+- `.dockerignore`: Docker build exclusion manifest preserving distribution artifacts for container builds.
 - `core/src/Cloud/Engine/EngineSession.Handlers.cs`: Partial class isolating FastEndpoints session message handlers.
 - `core/src/Engine/Communication/CloudConnector.BinaryTransfer.cs`: Partial class isolating chunked binary file transfer streams.
 - `core/src/Engine/Communication/CloudConnector.Connection.cs`: Partial class isolating WebSocket connection and authentication loop.

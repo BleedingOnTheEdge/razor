@@ -2,10 +2,10 @@
 set -e
 
 echo "=========================================================="
-echo "   Razor Unified Production Deployment                    "
-echo "   Target: Runflare ASP.NET 10 Engine                     "
+echo "   Razor Unified Production Container Deployment          "
+echo "   Target: Runflare Docker Engine                         "
 echo "   Project: storage-deploy (36052) | Item: razor (84129)  "
-echo "   Ports: 5000 / 3000 (Cloud Control Plane + Web Console) "
+echo "   Exposed Port: 3000 (Unified Gateway: Cloud + Web + Market)"
 echo "=========================================================="
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -13,21 +13,36 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 cd "${ROOT_DIR}"
 
-echo "📦 1. Compiling Next.js Frontends (Dashboard & Marketplace)..."
+echo "🧹 1. Cleaning up previous distribution artifacts..."
+rm -rf dist 2>/dev/null || true
+mkdir -p dist/cloud dist/dashboard dist/marketplace
+
+echo "🔨 2. Compiling and publishing .NET 10 Cloud backend..."
+dotnet publish core/src/Cloud/Cloud.csproj -c Release -o dist/cloud
+
+echo "📦 3. Compiling Next.js Cloud Dashboard..."
 pnpm --filter cloud-dashboard build
+cp -a frontends/apps/cloud-dashboard/.next/standalone/. dist/dashboard/
+mkdir -p dist/dashboard/frontends/apps/cloud-dashboard/.next
+cp -a frontends/apps/cloud-dashboard/.next/static dist/dashboard/frontends/apps/cloud-dashboard/.next/
+if [ -d "frontends/apps/cloud-dashboard/public" ]; then
+  cp -a frontends/apps/cloud-dashboard/public dist/dashboard/frontends/apps/cloud-dashboard/
+fi
+
+echo "📦 4. Compiling Next.js Marketplace..."
 pnpm --filter marketplace build
+cp -a frontends/apps/marketplace/.next/standalone/. dist/marketplace/
+mkdir -p dist/marketplace/frontends/apps/marketplace/.next
+cp -a frontends/apps/marketplace/.next/static dist/marketplace/frontends/apps/marketplace/.next/
+if [ -d "frontends/apps/marketplace/public" ]; then
+  cp -a frontends/apps/marketplace/public dist/marketplace/frontends/apps/marketplace/
+fi
 
-echo "🧹 2. Staging pre-rendered frontend assets into wwwroot..."
-python3 scripts/prepare-wwwroot.py
-
-echo "🔨 3. Validating .NET 10 compilation for mywebapp..."
-dotnet build mywebapp.csproj -c Release --no-restore
-
-echo "🚀 4. Uploading and deploying to Runflare..."
+echo "🚀 5. Uploading and deploying container to Runflare..."
 RUNFLARE_BIN="$(command -v runflare || echo "${HOME}/.local/bin/runflare")"
 
-# Temporarily comment out wwwroot in .gitignore so Runflare packager includes it
-sed -i.bak -e 's|^wwwroot|# wwwroot|g' .gitignore 2>/dev/null || true
+# Temporarily comment out dist in .gitignore so Runflare packager includes it
+sed -i.bak -e 's|^dist|# dist|g' .gitignore 2>/dev/null || true
 restore_gitignore() {
   if [ -f .gitignore.bak ]; then
     mv .gitignore.bak .gitignore 2>/dev/null || true

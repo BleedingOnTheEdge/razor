@@ -13,7 +13,6 @@ data
 *.sqlite*
 obj
 bin
-dist
 
 # Test & Docs
 tests
@@ -21,13 +20,13 @@ docs
 core/tests
 samples
 
-# Other core submodules not needed for Cloud Control Plane
+# Other core submodules not needed for Cloud Control Plane container
 core/src/Engine
 core/src/Kernel
 core/src/Sdk
 core/src/Shared
 
-# Frontends source code (pre-rendered into wwwroot)
+# Frontends source code (pre-built into dist/)
 frontends
 
 # Environment files

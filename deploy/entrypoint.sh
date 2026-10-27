@@ -58,5 +58,5 @@ echo "🚀 Starting Gateway Reverse Proxy (Public Port 3000)..."
 nginx -g "daemon off;" &
 NGINX_PID=$!
 
-wait -n "$BACKEND_PID" "$FRONTEND_PID" "$NGINX_PID"
+wait -n "$BACKEND_PID" "$FRONTEND_PID" "$NGINX_PID" ${MARKETPLACE_PID:+"$MARKETPLACE_PID"}
 cleanup
