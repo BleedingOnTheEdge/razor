@@ -180,6 +180,9 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `scripts/ep_sync.py`: Synchronization engine between global skill and monorepo scripts.
 - `scripts/ep_vcs.py`: Git branch promotion, PR verification, and change tracking.
 - `scripts/prepare-wwwroot.py`: Next.js static asset compiler for container packaging.
+- `frontends/apps/cloud-dashboard/src/app/auth/register/page.tsx`: Operator and workspace user registration form with validation and direct /panel redirection.
+- `frontends/apps/cloud-dashboard/src/app/register/page.tsx`: Re-export page for /register route.
+- `frontends/apps/cloud-dashboard/src/test/auth-register.test.tsx`: Vitest suite verifying registration page rendering, password validation, API dispatch, and navigation.
 
 ### Modified Files
 - `core/src/Cloud/Cloud.csproj`: Added FastEndpoints, Microsoft.AspNetCore.OpenApi, and project dependencies.

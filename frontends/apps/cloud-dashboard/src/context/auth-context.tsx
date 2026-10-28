@@ -12,6 +12,13 @@ interface AuthContextType {
   isImpersonating: boolean;
   impersonatedBy: string | null;
   login: (userName: string, password: string, managementKey?: string) => Promise<{ success: boolean; error?: string }>;
+  register: (params: {
+    userName: string;
+    password: string;
+    accountName?: string;
+    role?: 'Admin' | 'Operator' | 'Developer' | 'Trader';
+    subscriptionTier?: 'Free' | 'Pro' | 'Enterprise';
+  }) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   startImpersonation: (session: AuthSessionPayload) => void;
   exitImpersonation: () => void;
@@ -88,6 +95,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: false, error: err instanceof Error ? err.message : 'Login failed' };
     }
   }, []);
+
+  const register = useCallback(
+    async (params: {
+      userName: string;
+      password: string;
+      accountName?: string;
+      role?: 'Admin' | 'Operator' | 'Developer' | 'Trader';
+      subscriptionTier?: 'Free' | 'Pro' | 'Enterprise';
+    }) => {
+      try {
+        const client = getApiClient();
+        const res = await client.POST('/api/auth/register', {
+          body: {
+            userName: params.userName,
+            password: params.password,
+            accountName: params.accountName,
+            role: params.role || 'Operator',
+            subscriptionTier: params.subscriptionTier || 'Free',
+          },
+        });
+
+        if (res.data) {
+          const session: AuthSessionPayload = res.data;
+          setToken(session.token);
+          setUser(session.user);
+          setIsImpersonating(false);
+          setImpersonatedBy(null);
+
+          localStorage.setItem(TOKEN_KEY, session.token);
+          localStorage.setItem(USER_KEY, JSON.stringify(session.user));
+          localStorage.removeItem(IMPERSONATION_BACKUP_TOKEN_KEY);
+          localStorage.removeItem(IMPERSONATION_BACKUP_USER_KEY);
+          localStorage.removeItem(IMPERSONATED_BY_KEY);
+          return { success: true };
+        }
+
+        return { success: false, error: 'Registration failed' };
+      } catch (err: unknown) {
+        return { success: false, error: err instanceof Error ? err.message : 'Registration failed' };
+      }
+    },
+    []
+  );
 
   const startImpersonation = useCallback((session: AuthSessionPayload) => {
     if (typeof window === 'undefined') return;
@@ -175,6 +225,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isImpersonating,
         impersonatedBy,
         login,
+        register,
         logout,
         startImpersonation,
         exitImpersonation,
@@ -194,6 +245,7 @@ const defaultAuthContext: AuthContextType = {
   isImpersonating: false,
   impersonatedBy: null,
   login: async () => ({ success: false }),
+  register: async () => ({ success: false }),
   logout: () => {},
   startImpersonation: () => {},
   exitImpersonation: () => {},

@@ -254,7 +254,7 @@ export default function AuthLoginPage() {
         </div>
 
         <div className="text-center text-xs text-black font-bold">
-          ENDPOINT: <span className="underline">http://localhost:5000</span>
+          ENDPOINT: <span className="underline">CLOUD CONTROL PLANE (/api)</span>
         </div>
       </div>
     </main>
