@@ -8,7 +8,7 @@ export function InstanceTelemetryTab() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* CPU Gauge */}
-        <div className="p-5 border border-[#262626] bg-[#171717] space-y-3 font-mono">
+        <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-3 font-mono">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-zinc-100 flex items-center gap-1.5 uppercase">
               <Cpu className="w-4 h-4 text-zinc-100" />
@@ -16,8 +16,8 @@ export function InstanceTelemetryTab() {
             </span>
             <span className="text-[#3ECF8E] font-bold">14.2%</span>
           </div>
-          <div className="w-full bg-zinc-200 h-3 border border-[#262626] overflow-hidden">
-            <div className="bg-black h-full" style={{ width: '14.2%' }} />
+          <div className="w-full bg-[#141414] h-2.5 rounded-full border border-[#262626] overflow-hidden">
+            <div className="bg-[#3ECF8E] h-full rounded-full" style={{ width: '14.2%' }} />
           </div>
           <div className="flex items-center justify-between text-[11px] text-zinc-100">
             <span>4 Cores Active</span>
@@ -26,7 +26,7 @@ export function InstanceTelemetryTab() {
         </div>
 
         {/* Memory Footprint */}
-        <div className="p-5 border border-[#262626] bg-[#171717] space-y-3 font-mono">
+        <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-3 font-mono">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-zinc-100 flex items-center gap-1.5 uppercase">
               <Activity className="w-4 h-4 text-zinc-100" />
@@ -34,8 +34,8 @@ export function InstanceTelemetryTab() {
             </span>
             <span className="text-zinc-100 font-bold">248 MB</span>
           </div>
-          <div className="w-full bg-zinc-200 h-3 border border-[#262626] overflow-hidden">
-            <div className="bg-black h-full" style={{ width: '24.2%' }} />
+          <div className="w-full bg-[#141414] h-2.5 rounded-full border border-[#262626] overflow-hidden">
+            <div className="bg-[#3ECF8E] h-full rounded-full" style={{ width: '24.2%' }} />
           </div>
           <div className="flex items-center justify-between text-[11px] text-zinc-100">
             <span>Managed Heap: 92 MB</span>
@@ -44,7 +44,7 @@ export function InstanceTelemetryTab() {
         </div>
 
         {/* Heartbeat Latency */}
-        <div className="p-5 border border-[#262626] bg-[#171717] space-y-3 font-mono">
+        <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-3 font-mono">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-zinc-100 flex items-center gap-1.5 uppercase">
               <Zap className="w-4 h-4 text-zinc-100" />
@@ -52,8 +52,8 @@ export function InstanceTelemetryTab() {
             </span>
             <span className="text-[#3ECF8E] font-bold">3.2 ms</span>
           </div>
-          <div className="w-full bg-zinc-200 h-3 border border-[#262626] overflow-hidden">
-            <div className="bg-[#3ECF8E] text-[#0f0f0f] h-full" style={{ width: '8%' }} />
+          <div className="w-full bg-[#141414] h-2.5 rounded-full border border-[#262626] overflow-hidden">
+            <div className="bg-[#3ECF8E] h-full rounded-full" style={{ width: '8%' }} />
           </div>
           <div className="flex items-center justify-between text-[11px] text-zinc-100">
             <span>Packet Loss: 0.0%</span>

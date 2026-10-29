@@ -37,13 +37,13 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
   if (!trades || trades.length === 0) return null;
 
   return (
-    <div className="p-5 bg-[#171717] border border-[#262626] space-y-4 font-sans text-xs text-zinc-100">
+    <div className="p-5 bg-[#171717] border border-[#262626] rounded-xl space-y-4 font-sans text-xs text-zinc-100">
       <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-[#262626]">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
             <Layers className="w-4 h-4 text-zinc-100" />
             <span>Granular Trade Fill History</span>
-            <span className="ml-2 px-2 py-0.5 border border-[#262626] bg-[#141414] font-bold text-[11px]">
+            <span className="ml-2 px-2.5 py-0.5 rounded-full border border-[#262626] bg-[#141414] font-bold text-[10px] text-zinc-300">
               {filteredTrades.length} Fills
             </span>
           </h3>
@@ -60,13 +60,13 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
               setTradePage(1);
             }}
             placeholder="Search ticket, symbol, side, reason..."
-            className="w-full pl-8 pr-3 py-1.5 bg-[#171717] border border-[#262626] text-zinc-100 placeholder:text-zinc-500 font-mono text-xs focus:outline-none focus:border-[#3ECF8E]"
+            className="w-full pl-8 pr-3 py-1.5 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 placeholder:text-zinc-500 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
           />
         </div>
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto border border-[#262626] bg-[#171717]">
+      <div className="overflow-x-auto border border-[#262626] bg-[#171717] rounded-xl">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
             <tr className="bg-[#1f1f1f] border-b border-[#262626] font-bold uppercase tracking-wider text-[11px]">
@@ -100,10 +100,10 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
                 <td className="py-2.5 px-3 font-bold text-zinc-100">{t.symbol}</td>
                 <td className="py-2.5 px-3">
                   <span
-                    className={`px-1.5 py-0.5 border font-bold text-[10px] uppercase ${
+                    className={`px-2 py-0.5 rounded-full border font-bold text-[10px] uppercase ${
                       t.side.toUpperCase() === 'BUY'
-                        ? 'border-green-600 bg-green-50 text-green-700'
-                        : 'border-rose-500/30 bg-red-50 text-red-700'
+                        ? 'border-[#3ECF8E]/30 bg-emerald-950/20 text-[#3ECF8E]'
+                        : 'border-rose-800/30 bg-rose-950/20 text-rose-400'
                     }`}
                   >
                     {t.side.toUpperCase()}
@@ -125,7 +125,7 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
                   {t.returnPct != null ? (t.returnPct >= 0 ? `+${t.returnPct.toFixed(2)}%` : `${t.returnPct.toFixed(2)}%`) : '—'}
                 </td>
                 <td className="py-2.5 px-3 text-center">
-                  <span className="px-1.5 py-0.5 border border-[#262626] bg-[#141414] font-bold text-[10px]">
+                  <span className="px-2 py-0.5 rounded-md border border-[#262626] bg-[#141414] font-bold text-[10px] text-zinc-300">
                     {t.exitReason || 'Signal'}
                   </span>
                 </td>
@@ -133,7 +133,7 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
                   <button
                     type="button"
                     onClick={() => onSelectTrade(t)}
-                    className="px-2 py-0.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors select-none text-[11px]"
+                    className="px-2.5 py-0.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-bold transition-colors select-none text-[11px]"
                   >
                     INSPECT →
                   </button>
@@ -156,7 +156,7 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
               type="button"
               disabled={tradePage === 1}
               onClick={() => setTradePage((p) => Math.max(1, p - 1))}
-              className="px-2.5 py-1 border border-[#262626] bg-[#171717] hover:bg-[#1f1f1f] font-bold disabled:opacity-40 transition-colors flex items-center gap-1 select-none"
+              className="px-3 py-1 rounded-full border border-[#262626] bg-[#171717] hover:bg-[#1f1f1f] text-zinc-200 font-bold disabled:opacity-40 transition-colors flex items-center gap-1 select-none"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
               <span>PREV</span>
@@ -168,7 +168,7 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
               type="button"
               disabled={tradePage >= totalTradePages}
               onClick={() => setTradePage((p) => Math.min(totalTradePages, p + 1))}
-              className="px-2.5 py-1 border border-[#262626] bg-[#171717] hover:bg-[#1f1f1f] font-bold disabled:opacity-40 transition-colors flex items-center gap-1 select-none"
+              className="px-3 py-1 rounded-full border border-[#262626] bg-[#171717] hover:bg-[#1f1f1f] text-zinc-200 font-bold disabled:opacity-40 transition-colors flex items-center gap-1 select-none"
             >
               <span>NEXT</span>
               <ChevronRight className="w-3.5 h-3.5" />

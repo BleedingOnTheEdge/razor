@@ -464,9 +464,9 @@ export function RunReportContent({ runId }: { runId: string }) {
 
       {/* Loading state ONLY when report is not yet loaded */}
       {loading && !report && (
-        <div className="py-20 text-center rounded-xl bg-[#171717] border border-slate-200 shadow-sm space-y-3">
-          <Activity className="w-8 h-8 text-slate-400 mx-auto animate-pulse" />
-          <div className="text-sm font-medium text-slate-600">
+        <div className="py-20 text-center rounded-xl bg-[#171717] border border-[#262626] shadow-sm space-y-3">
+          <Activity className="w-8 h-8 text-zinc-500 mx-auto animate-pulse" />
+          <div className="text-sm font-medium text-zinc-400">
             Compiling authoritative execution report from Cloud API...
           </div>
         </div>
@@ -480,13 +480,13 @@ export function RunReportContent({ runId }: { runId: string }) {
       )}
 
       {!loading && !report && !error && (
-        <div className="py-16 text-center rounded-xl bg-[#171717] border border-slate-200 p-8 shadow-sm">
-          <h3 className="text-base font-bold text-slate-900">No Report Data Available</h3>
-          <p className="text-sm text-slate-500 mt-1">This run is either still pending, missing, or has not emitted execution metrics.</p>
+        <div className="py-16 text-center rounded-xl bg-[#171717] border border-[#262626] p-8 shadow-sm">
+          <h3 className="text-base font-bold text-zinc-100">No Report Data Available</h3>
+          <p className="text-sm text-zinc-400 mt-1">This run is either still pending, missing, or has not emitted execution metrics.</p>
           <div className="mt-5">
             <Link
               href="/panel/runs"
-              className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors shadow-sm inline-flex items-center gap-2"
+              className="px-4 py-2 bg-[#171717] text-white rounded-lg text-sm font-medium hover:bg-[#222222] transition-colors shadow-sm inline-flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" /> Return to Runs
             </Link>
@@ -498,25 +498,25 @@ export function RunReportContent({ runId }: { runId: string }) {
       {report && (
         <div className="space-y-6">
           {/* Metadata & Reproducibility Banner */}
-          <div className="p-5 rounded-xl bg-[#171717] border border-slate-200 shadow-sm grid grid-cols-2 md:grid-cols-4 gap-4 text-sm font-sans">
+          <div className="p-5 rounded-xl bg-[#171717] border border-[#262626] shadow-sm grid grid-cols-2 md:grid-cols-4 gap-4 text-sm font-sans">
             <div>
-              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Execution Kind</span>
-              <span className="text-base font-bold text-slate-900 mt-1 block">{report.kind || 'Backtest'}</span>
+              <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider block">Execution Kind</span>
+              <span className="text-base font-bold text-zinc-100 mt-1 block">{report.kind || 'Backtest'}</span>
             </div>
             <div>
-              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Engine Instance</span>
-              <span className="text-base font-bold text-slate-900 mt-1 block font-mono">
+              <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider block">Engine Instance</span>
+              <span className="text-base font-bold text-zinc-100 mt-1 block font-mono">
                 {report.engineInstanceId ? formatHash(report.engineInstanceId, 8) : '—'}
               </span>
             </div>
             <div>
-              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">PRNG Seed Base</span>
-              <span className="text-base font-bold text-slate-900 mt-1 block font-mono">
+              <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider block">PRNG Seed Base</span>
+              <span className="text-base font-bold text-zinc-100 mt-1 block font-mono">
                 {report.baseSeed ?? 42}
               </span>
             </div>
             <div>
-              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Audit Certification</span>
+              <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider block">Audit Certification</span>
               <span className="mt-1 flex items-center gap-1.5">
                 {isComparable ? (
                   <span className="text-emerald-700 font-bold flex items-center gap-1.5 text-sm">
@@ -535,52 +535,52 @@ export function RunReportContent({ runId }: { runId: string }) {
 
           {/* Primary Metrics Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div className="p-5 rounded-xl bg-[#171717] border border-slate-200 shadow-sm">
-              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Net Profit</span>
+            <div className="p-5 rounded-xl bg-[#171717] border border-[#262626] shadow-sm">
+              <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider block">Net Profit</span>
               <span className={`text-2xl font-bold font-mono mt-2 block ${(metrics?.netProfit ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
                 {formatCurrency(metrics?.netProfit)}
               </span>
-              <span className="text-xs text-slate-400 mt-1 block font-sans">Realized PnL</span>
+              <span className="text-xs text-zinc-500 mt-1 block font-sans">Realized PnL</span>
             </div>
 
-            <div className="p-5 rounded-xl bg-[#171717] border border-slate-200 shadow-sm">
-              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Total Return</span>
+            <div className="p-5 rounded-xl bg-[#171717] border border-[#262626] shadow-sm">
+              <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider block">Total Return</span>
               <span className={`text-2xl font-bold font-mono mt-2 block ${(metrics?.totalReturn ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
                 {formatPercentage(metrics?.totalReturn)}
               </span>
-              <span className="text-xs text-slate-400 mt-1 block font-sans">Compounded ROI</span>
+              <span className="text-xs text-zinc-500 mt-1 block font-sans">Compounded ROI</span>
             </div>
 
-            <div className="p-5 rounded-xl bg-[#171717] border border-slate-200 shadow-sm">
-              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Sharpe Ratio</span>
-              <span className="text-2xl font-bold font-mono text-slate-900 mt-2 block">
+            <div className="p-5 rounded-xl bg-[#171717] border border-[#262626] shadow-sm">
+              <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider block">Sharpe Ratio</span>
+              <span className="text-2xl font-bold font-mono text-zinc-100 mt-2 block">
                 {metrics?.sharpeRatio != null ? metrics.sharpeRatio.toFixed(2) : '—'}
               </span>
-              <span className="text-xs text-slate-400 mt-1 block font-sans">Risk-Adjusted Return</span>
+              <span className="text-xs text-zinc-500 mt-1 block font-sans">Risk-Adjusted Return</span>
             </div>
 
-            <div className="p-5 rounded-xl bg-[#171717] border border-slate-200 shadow-sm">
-              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Max Drawdown</span>
+            <div className="p-5 rounded-xl bg-[#171717] border border-[#262626] shadow-sm">
+              <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider block">Max Drawdown</span>
               <span className="text-2xl font-bold font-mono text-rose-700 mt-2 block">
                 {formatPercentage(metrics?.maxDrawdown, false)}
               </span>
-              <span className="text-xs text-slate-400 mt-1 block font-sans">Peak-to-Trough</span>
+              <span className="text-xs text-zinc-500 mt-1 block font-sans">Peak-to-Trough</span>
             </div>
 
-            <div className="p-5 rounded-xl bg-[#171717] border border-slate-200 shadow-sm">
-              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Total Trades</span>
-              <span className="text-2xl font-bold font-mono text-slate-900 mt-2 block">
+            <div className="p-5 rounded-xl bg-[#171717] border border-[#262626] shadow-sm">
+              <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider block">Total Trades</span>
+              <span className="text-2xl font-bold font-mono text-zinc-100 mt-2 block">
                 {metrics?.tradeCount ?? '—'}
               </span>
-              <span className="text-xs text-slate-400 mt-1 block font-sans">Executed Fills</span>
+              <span className="text-xs text-zinc-500 mt-1 block font-sans">Executed Fills</span>
             </div>
 
-            <div className="p-5 rounded-xl bg-[#171717] border border-slate-200 shadow-sm">
-              <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Best Fitness</span>
+            <div className="p-5 rounded-xl bg-[#171717] border border-[#262626] shadow-sm">
+              <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider block">Best Fitness</span>
               <span className="text-2xl font-bold font-mono text-amber-700 mt-2 block">
                 {metrics?.bestFitness != null ? metrics.bestFitness.toFixed(3) : '—'}
               </span>
-              <span className="text-xs text-slate-400 mt-1 block font-sans">Objective Score</span>
+              <span className="text-xs text-zinc-500 mt-1 block font-sans">Objective Score</span>
             </div>
           </div>
 
@@ -608,12 +608,12 @@ export function RunReportContent({ runId }: { runId: string }) {
           {report.trades && report.trades.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between pb-1">
-                <h3 className="text-base font-bold text-slate-900">Trade Execution Ledger</h3>
+                <h3 className="text-base font-bold text-zinc-100">Trade Execution Ledger</h3>
                 <Link
                   href={`/panel/reports/${runId}/trades`}
-                  className="px-3 py-1.5 rounded-lg border border-slate-300 bg-[#171717] hover:bg-slate-50 font-medium text-xs text-slate-700 transition-colors shadow-sm inline-flex items-center gap-1.5"
+                  className="px-3 py-1.5 rounded-full border border-[#262626] bg-[#171717] hover:bg-[#222222] font-medium text-xs text-zinc-300 transition-colors inline-flex items-center gap-1.5"
                 >
-                  <Layers className="w-3.5 h-3.5 text-slate-500" />
+                  <Layers className="w-3.5 h-3.5 text-zinc-400" />
                   <span>Open Full Trades Ledger</span>
                 </Link>
               </div>
@@ -623,7 +623,7 @@ export function RunReportContent({ runId }: { runId: string }) {
 
           {/* Optimization Generational Progression Link Card (Dev Feature) */}
           {report.generationProgress && report.generationProgress.length > 0 && (
-            <div className="p-4 border border-[#262626] bg-[#141414] flex flex-wrap items-center justify-between gap-3">
+            <div className="p-4 border border-[#262626] bg-[#141414] rounded-xl flex flex-wrap items-center justify-between gap-3">
               <div>
                 <span className="font-bold uppercase text-zinc-100 block">
                   Genetic Generational Convergence ({report.generationProgress.length} Generations Evaluated)
@@ -643,18 +643,18 @@ export function RunReportContent({ runId }: { runId: string }) {
           )}
 
           {/* Append-Only Interventions Audit Log */}
-          <div className="p-6 rounded-xl bg-[#171717] border border-slate-200 shadow-sm space-y-4">
+          <div className="p-6 rounded-xl bg-[#171717] border border-[#262626] shadow-sm space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm uppercase tracking-wider font-mono text-slate-700 font-semibold flex items-center gap-2">
+              <h3 className="text-sm uppercase tracking-wider font-mono text-zinc-300 font-semibold flex items-center gap-2">
                 <span>Append-Only Human & System Interventions</span>
-                <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">
+                <span className="px-2 py-0.5 rounded-full bg-[#1f1f1f] text-zinc-300 text-xs font-semibold">
                   {report.interventions?.length || 0}
                 </span>
               </h3>
             </div>
 
             {!report.interventions || report.interventions.length === 0 ? (
-              <div className="py-6 text-center text-sm font-sans text-slate-500">
+              <div className="py-6 text-center text-sm font-sans text-zinc-400">
                 No interventions recorded. Execution remained strictly contiguous and untampered.
               </div>
             ) : (
@@ -666,20 +666,20 @@ export function RunReportContent({ runId }: { runId: string }) {
                         <span className="px-2.5 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 font-bold text-xs font-mono">
                           Step #{item.stepIndex}
                         </span>
-                        <span className="text-slate-900 font-semibold">{item.actor}</span>
+                        <span className="text-zinc-100 font-semibold">{item.actor}</span>
                       </div>
-                      <span className="text-slate-400 text-xs font-mono">{formatTimestamp(item.timestamp)}</span>
+                      <span className="text-zinc-500 text-xs font-mono">{formatTimestamp(item.timestamp)}</span>
                     </div>
 
-                    <p className="text-slate-700">{item.reason}</p>
+                    <p className="text-zinc-300">{item.reason}</p>
 
                     {item.modificationsSummary && (
-                      <p className="text-slate-600 text-xs font-mono bg-slate-50 p-3 rounded-lg border border-slate-200">
+                      <p className="text-zinc-400 text-xs font-mono bg-[#141414] p-3 rounded-lg border border-[#262626]">
                         {item.modificationsSummary}
                       </p>
                     )}
 
-                    <div className="flex items-center gap-4 text-xs font-mono text-slate-500">
+                    <div className="flex items-center gap-4 text-xs font-mono text-zinc-400">
                       <span>Prev: {formatHash(item.previousFingerprint, 8)}</span>
                       <span>→</span>
                       <span>New: {formatHash(item.newFingerprint, 8)}</span>

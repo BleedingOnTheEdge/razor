@@ -291,6 +291,7 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `core/src/Kernel/Brokers/SimulatedBroker.Matching.cs`: Decomposed from 570 lines down to 395 lines via `SimulatedBroker.Accounting.cs`.
 - `frontends/apps/cloud-dashboard/src/app/instances/page.tsx`: Decomposed from 596 lines down to 369 lines via extracted modal components.
 - `frontends/apps/cloud-dashboard/src/app/runs/page.tsx`: Decomposed from 594 lines down to 424 lines via `LaunchRunModal.tsx` and `RankedRunsTable.tsx`.
+- `frontends/apps/cloud-dashboard/src/app/runs/[id]/page.tsx`: Flow run audit and performance detail view.
 - `frontends/apps/cloud-dashboard/src/components/instances/instance-detail-content.tsx`: Decomposed from 698 lines down to 443 lines via extracted modals.
 - `frontends/apps/cloud-dashboard/src/components/lineage/lineage-content.tsx`: Decomposed from 655 lines down to 312 lines via extracted modals and node views.
 - `frontends/apps/cloud-dashboard/src/components/reports/report-content.tsx`: Decomposed from 512 lines down to 414 lines via `CompleteRunModal.tsx`.

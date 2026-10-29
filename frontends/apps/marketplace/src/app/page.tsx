@@ -150,14 +150,14 @@ function MarketplaceCatalogueContent() {
               <h3 className="text-sm font-bold font-mono">
                 Target Node: Engine {targetEngineId.slice(0, 8)}...
               </h3>
-              <p className="text-xs text-indigo-700">
+              <p className="text-xs text-[#3ECF8E]">
                 Filter applied for {targetSlot || 'all'} additives. Click &quot;Assign to Engine&quot; to install and activate directly.
               </p>
             </div>
           </div>
           <a
             href={`${dashboardBaseUrl}/instances/${targetEngineId}`}
-            className="text-xs font-mono font-semibold text-indigo-700 hover:text-indigo-900 underline shrink-0"
+            className="text-xs font-mono font-semibold text-[#3ECF8E] hover:text-indigo-900 underline shrink-0"
           >
             ← Return to Fleet Dashboard
           </a>
@@ -166,14 +166,14 @@ function MarketplaceCatalogueContent() {
 
       {/* Hero section */}
       <div className="text-center max-w-3xl mx-auto space-y-3 pt-2">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-mono">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-[#3ECF8E] text-xs font-mono">
           <Sparkles className="w-3.5 h-3.5" />
           <span>Curated Institutional Trading Additives</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-100">
           Extend Your Razor Trading Engine
         </h1>
-        <p className="text-sm text-zinc-600 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-sm text-zinc-400 max-w-2xl mx-auto leading-relaxed">
           Discover, audit, and hot-swap verified strategies, exchange adapters, indicators, and risk hooks.
         </p>
       </div>
@@ -188,7 +188,7 @@ function MarketplaceCatalogueContent() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search extensions, strategies, adapters, indicators..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-zinc-200 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 font-mono shadow-sm"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#171717] border border-[#262626] text-sm text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 font-mono shadow-sm"
             />
           </div>
 
@@ -196,7 +196,7 @@ function MarketplaceCatalogueContent() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="px-3 py-2.5 rounded-xl bg-white border border-zinc-200 text-xs font-mono text-zinc-700 focus:outline-none focus:border-indigo-500 shadow-sm"
+              className="px-3 py-2.5 rounded-xl bg-[#171717] border border-[#262626] text-xs font-mono text-zinc-300 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 shadow-sm"
             >
               <option value="rating">Highest Rated</option>
               <option value="downloads">Most Downloaded</option>
@@ -209,7 +209,7 @@ function MarketplaceCatalogueContent() {
               className={`px-3 py-2.5 rounded-xl border text-xs font-mono font-medium transition-colors flex items-center gap-1.5 shadow-sm ${
                 curatedOnly
                   ? 'bg-indigo-50 border-indigo-300 text-indigo-800'
-                  : 'bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50'
+                  : 'bg-[#171717] border-[#262626] text-zinc-400 hover:bg-[#141414]'
               }`}
             >
               <ShieldCheck className="w-3.5 h-3.5" />
@@ -229,7 +229,7 @@ function MarketplaceCatalogueContent() {
               className={`px-3 py-1.5 rounded-lg border transition-all ${
                 selectedKind === kind
                   ? 'bg-indigo-600 border-indigo-600 text-white font-semibold shadow-sm'
-                  : 'bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'
+                  : 'bg-[#171717] border-[#262626] text-zinc-400 hover:bg-[#1f1f1f] hover:text-zinc-100'
               }`}
             >
               {kind}
@@ -260,18 +260,18 @@ function MarketplaceCatalogueContent() {
 
       {/* Empty State */}
       {!loading && !error && sortedItems.length === 0 && (
-        <div className="py-20 text-center rounded-2xl border border-dashed border-zinc-300 bg-white space-y-3 shadow-sm">
-          <div className="w-10 h-10 rounded-xl bg-zinc-100 text-zinc-500 flex items-center justify-center mx-auto">
+        <div className="py-20 text-center rounded-2xl border border-dashed border-[#262626] bg-[#171717] space-y-3 shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-[#1f1f1f] text-zinc-500 flex items-center justify-center mx-auto">
             <Tag className="w-5 h-5" />
           </div>
-          <h3 className="text-base font-semibold text-zinc-800 font-mono">No Extensions Found</h3>
+          <h3 className="text-base font-semibold text-zinc-200 font-mono">No Extensions Found</h3>
           <p className="text-xs text-zinc-500 max-w-sm mx-auto">
             No matching extensions found for your current category, search, or curation criteria.
           </p>
           <div className="pt-2">
             <button
               onClick={resetFilters}
-              className="px-3.5 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-xs font-mono text-zinc-700 transition-colors"
+              className="px-3.5 py-2 rounded-lg bg-[#1f1f1f] hover:bg-[#262626] text-xs font-mono text-zinc-300 transition-colors"
             >
               Reset Filters
             </button>
@@ -291,19 +291,19 @@ function MarketplaceCatalogueContent() {
             return (
               <div
                 key={item.id}
-                className="rounded-2xl bg-white border border-zinc-200 p-6 flex flex-col justify-between hover:border-zinc-300 transition-all duration-200 shadow-sm hover:shadow-md group"
+                className="rounded-2xl bg-[#171717] border border-[#262626] p-6 flex flex-col justify-between hover:border-[#262626] transition-all duration-200 shadow-sm hover:shadow-md group"
               >
                 <div>
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <h3 className="font-bold text-zinc-900 text-base tracking-tight truncate group-hover:text-indigo-600 transition-colors">
+                        <h3 className="font-bold text-zinc-100 text-base tracking-tight truncate group-hover:text-[#3ECF8E] transition-colors">
                           {item.name}
                         </h3>
                         {item.isCurated && (
                           <span
                             title="Audited and curated by Razor Platform"
-                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-indigo-50 text-indigo-700 border border-indigo-200"
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-indigo-50 text-[#3ECF8E] border border-indigo-200"
                           >
                             <ShieldCheck className="w-3 h-3" />
                             <span>Curated</span>
@@ -311,7 +311,7 @@ function MarketplaceCatalogueContent() {
                         )}
                       </div>
                       <p className="text-xs text-zinc-500 mt-0.5 font-mono">
-                        by <span className="text-zinc-700 font-medium">{item.author}</span> • v{item.version}
+                        by <span className="text-zinc-300 font-medium">{item.author}</span> • v{item.version}
                       </p>
                     </div>
 
@@ -320,11 +320,11 @@ function MarketplaceCatalogueContent() {
                     </span>
                   </div>
 
-                  <p className="mt-3.5 text-xs text-zinc-600 line-clamp-3 leading-relaxed">
+                  <p className="mt-3.5 text-xs text-zinc-400 line-clamp-3 leading-relaxed">
                     {item.description || 'No description provided.'}
                   </p>
 
-                  <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between text-xs font-mono text-zinc-500">
+                  <div className="mt-4 pt-3 border-t border-[#262626] flex items-center justify-between text-xs font-mono text-zinc-500">
                     <div className="flex items-center gap-1.5 text-amber-500 font-bold">
                       <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                       <span>{ratingScore.toFixed(1)}</span>
@@ -341,10 +341,10 @@ function MarketplaceCatalogueContent() {
                   </div>
                 </div>
 
-                <div className="mt-5 pt-4 border-t border-zinc-100 flex items-center justify-between gap-2">
+                <div className="mt-5 pt-4 border-t border-[#262626] flex items-center justify-between gap-2">
                   <div>
                     <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block">Price</span>
-                    <span className="font-bold text-zinc-900 text-sm font-mono">
+                    <span className="font-bold text-zinc-100 text-sm font-mono">
                       {item.price === 0 ? 'Free' : formatCurrency(item.price)}
                     </span>
                   </div>
@@ -364,7 +364,7 @@ function MarketplaceCatalogueContent() {
 
                     <Link
                       href={`/items/${item.id}`}
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-mono transition-colors"
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#1f1f1f] hover:bg-[#262626] text-zinc-300 text-xs font-mono transition-colors"
                     >
                       <span>Details</span>
                       <ArrowRight className="w-3 h-3" />

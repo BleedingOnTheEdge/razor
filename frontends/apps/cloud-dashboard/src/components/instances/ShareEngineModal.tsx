@@ -133,7 +133,7 @@ export function ShareEngineModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 font-mono text-xs">
-      <div className="w-full max-w-2xl bg-[#171717] border border-[#262626] p-6 space-y-6">
+      <div className="w-full max-w-2xl bg-[#171717] border border-[#262626] rounded-2xl shadow-2xl p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#262626]">
           <div>
@@ -147,14 +147,14 @@ export function ShareEngineModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-2 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors"
+            className="px-2.5 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium font-bold transition-colors"
           >
             [CLOSE]
           </button>
         </div>
 
         {/* Create Share Form */}
-        <form onSubmit={handleCreateShare} className="space-y-4 p-4 border border-[#262626] bg-[#171717]">
+        <form onSubmit={handleCreateShare} className="space-y-4 p-4 border border-[#262626] bg-[#171717] rounded-xl">
           <h3 className="font-bold text-zinc-100 uppercase">Grant New Temporary Delegation</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -166,7 +166,7 @@ export function ShareEngineModal({
                 value={recipientEmail}
                 onChange={(e) => setRecipientEmail(e.target.value)}
                 placeholder="developer@quant-firm.com"
-                className="w-full px-3 py-2 border border-[#262626] bg-[#171717] text-zinc-100 rounded-xl font-mono focus:outline-none focus:border-[#3ECF8E]"
+                className="w-full px-3 py-2 border border-[#262626] bg-[#171717] text-zinc-100 rounded-md font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
               />
             </div>
 
@@ -193,7 +193,7 @@ export function ShareEngineModal({
                 type="checkbox"
                 checked={canRead}
                 onChange={(e) => setCanRead(e.target.checked)}
-                className="w-4 h-4 accent-black"
+                className="w-4 h-4 rounded accent-[#3ECF8E]"
               />
               <span>View Telemetry & Status</span>
             </label>
@@ -203,7 +203,7 @@ export function ShareEngineModal({
                 type="checkbox"
                 checked={canControl}
                 onChange={(e) => setCanControl(e.target.checked)}
-                className="w-4 h-4 accent-black"
+                className="w-4 h-4 rounded accent-[#3ECF8E]"
               />
               <span>Operational Control (Pause/Resume/Config)</span>
             </label>
@@ -213,7 +213,7 @@ export function ShareEngineModal({
                 type="checkbox"
                 checked={canRunFlows}
                 onChange={(e) => setCanRunFlows(e.target.checked)}
-                className="w-4 h-4 accent-black"
+                className="w-4 h-4 rounded accent-[#3ECF8E]"
               />
               <span>Launch Flow Runs (Backtest/Live)</span>
             </label>
@@ -234,15 +234,15 @@ export function ShareEngineModal({
         <div className="space-y-3">
           <h3 className="font-bold text-zinc-100 uppercase">Active Temporary Delegations</h3>
           {loading ? (
-            <div className="py-6 text-center text-zinc-100 font-bold border border-[#262626]">
+            <div className="py-6 text-center text-zinc-100 font-bold border border-[#262626] rounded-xl">
               [FETCHING ACTIVE DELEGATIONS...]
             </div>
           ) : shares.length === 0 ? (
-            <div className="py-6 text-center text-zinc-100 font-normal border border-[#262626]">
+            <div className="py-6 text-center text-zinc-100 font-normal border border-[#262626] rounded-xl">
               No active delegations on this Engine instance. This engine is private to you.
             </div>
           ) : (
-            <div className="border border-[#262626] overflow-x-auto">
+            <div className="border border-[#262626] rounded-xl overflow-hidden">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-[#262626] bg-[#171717]">
@@ -278,7 +278,7 @@ export function ShareEngineModal({
                         <button
                           type="button"
                           onClick={() => handleRevokeShare(share.id)}
-                          className="px-2 py-1 border border-[#262626] bg-[#171717] hover:bg-red-600 hover:text-white text-zinc-100 font-bold transition-colors"
+                          className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-rose-950/40 hover:border-rose-500/50 hover:text-rose-400 text-zinc-100 rounded-full font-bold transition-colors"
                         >
                           [REVOKE]
                         </button>

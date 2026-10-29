@@ -61,13 +61,13 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
 
   return (
     <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <div className="bg-[#171717] border border-[#262626] max-w-lg w-full p-6 space-y-4 font-mono">
+      <div className="bg-[#171717] border border-[#262626] rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4 font-mono">
         <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
           <h3 className="text-sm font-bold uppercase text-zinc-100 flex items-center gap-2">
             <LifeBuoy className="w-4 h-4 text-zinc-100" />
             <span>Open Support or Incident Ticket</span>
           </h3>
-          <button type="button" onClick={onClose} className="p-1 border border-[#262626] text-zinc-100 hover:bg-[#1f1f1f]">
+          <button type="button" onClick={onClose} className="p-1 border border-[#262626] text-zinc-100 hover:bg-[#1f1f1f] rounded-lg">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -81,7 +81,7 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
               onChange={(e) => setTitle(e.target.value)}
               required
               placeholder="e.g. Engine RPC timeout on order dispatch"
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
 
@@ -91,7 +91,7 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as any)}
-                className="w-full px-2.5 py-1.5 bg-[#171717] border border-[#262626] text-zinc-100 text-xs font-mono rounded-none uppercase font-bold"
+                className="w-full px-2.5 py-1.5 bg-[#171717] border border-[#262626] text-zinc-100 text-xs font-mono rounded-md uppercase font-bold focus:outline-none focus:border-[#3ECF8E]"
               >
                 <option value="General">General Inquiries</option>
                 <option value="Bug">Defect / Bug Report</option>
@@ -106,7 +106,7 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as any)}
-                className="w-full px-2.5 py-1.5 bg-[#171717] border border-[#262626] text-zinc-100 text-xs font-mono rounded-none uppercase font-bold"
+                className="w-full px-2.5 py-1.5 bg-[#171717] border border-[#262626] text-zinc-100 text-xs font-mono rounded-md uppercase font-bold focus:outline-none focus:border-[#3ECF8E]"
               >
                 <option value="Low">Low - Informational</option>
                 <option value="Medium">Medium - Standard</option>
@@ -123,7 +123,7 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
               value={authorName}
               onChange={(e) => setAuthorName(e.target.value)}
               required
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
 
@@ -135,7 +135,7 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
               onChange={(e) => setDescription(e.target.value)}
               required
               placeholder="Provide exact error logs, reproduction steps, or operational impact..."
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none leading-relaxed"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md leading-relaxed"
             />
           </div>
 
@@ -143,7 +143,7 @@ export function CreateTicketModal({ isOpen, onClose, onTicketCreated }: CreateTi
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold uppercase text-xs"
+              className="px-4 py-2 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium font-bold uppercase text-xs"
             >
               Cancel
             </button>

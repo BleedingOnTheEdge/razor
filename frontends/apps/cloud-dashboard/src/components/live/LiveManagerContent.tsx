@@ -299,18 +299,18 @@ export function LiveManagerContent() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16 font-sans">
       {/* Top Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#262626]">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5">
-              <Radio className="w-6 h-6 text-emerald-600 animate-pulse" />
+            <h1 className="text-2xl font-bold tracking-tight text-zinc-100 flex items-center gap-2.5">
+              <Radio className="w-6 h-6 text-[#3ECF8E] animate-pulse" />
               <span>Live Trading & Flow Manager</span>
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-950/40 text-[#3ECF8E] border border-emerald-500/30">
               REAL-TIME VENUE
             </span>
           </div>
-          <p className="text-sm text-slate-600 mt-1">
+          <p className="text-sm text-zinc-400 mt-1">
             Supervise active algorithmic order routing, monitor tick telemetry, execute emergency stops, and audit granular fills.
           </p>
         </div>
@@ -354,13 +354,13 @@ export function LiveManagerContent() {
       </div>
 
       {/* Emergency & Quick Operational Controls Bar */}
-      <div className="p-4 bg-[#171717] border border-[#262626] flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
+      <div className="p-4 bg-[#171717] border border-[#262626] rounded-xl flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
         <div className="flex flex-wrap items-center gap-3">
           {/* EMERGENCY STOP BUTTON */}
           <button
             type="button"
             onClick={() => setEmergencyModalOpen(true)}
-            className="px-4 py-2 border border-[#262626] bg-red-600 hover:bg-red-700 text-white font-bold transition-colors flex items-center gap-2 select-none whitespace-nowrap"
+            className="px-5 py-2 border border-[#262626] bg-rose-600 hover:bg-rose-500 text-white rounded-full font-bold transition-colors flex items-center gap-2 select-none whitespace-nowrap"
           >
             <AlertOctagon className="w-4 h-4 fill-white text-rose-400" />
             <span className="hidden">EMERGENCY STOP (2001)</span>
@@ -400,13 +400,13 @@ export function LiveManagerContent() {
 
         {/* Engine Connectivity Status Pill */}
         <div className="flex items-center gap-3 text-xs font-mono">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 font-sans">
-            <span className="text-slate-500">Venue:</span>
-            <span className="font-semibold text-slate-900">Binance Futures (Direct)</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#141414] border border-[#262626] text-zinc-300 font-sans">
+            <span className="text-zinc-500">Venue:</span>
+            <span className="font-semibold text-zinc-100">Binance Futures (Direct)</span>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 font-sans">
-            <span className="text-slate-500">Latency:</span>
-            <span className="text-emerald-700 font-bold font-mono">2.8 ms</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#141414] border border-[#262626] text-zinc-300 font-sans">
+            <span className="text-zinc-500">Latency:</span>
+            <span className="text-[#3ECF8E] font-bold font-mono">2.8 ms</span>
           </div>
         </div>
       </div>

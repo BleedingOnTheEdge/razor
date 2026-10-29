@@ -47,15 +47,15 @@ export function SlotAssignmentModal({
       aria-labelledby="slot-modal-title"
       className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in"
     >
-      <div className="bg-white border border-zinc-200 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95">
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-200">
-          <h3 id="slot-modal-title" className="text-base font-bold text-zinc-900 font-mono flex items-center gap-2">
-            <SlidersHorizontal className="w-4 h-4 text-cyan-600" />
+      <div className="bg-[#171717] border border-[#262626] rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95">
+        <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
+          <h3 id="slot-modal-title" className="text-base font-bold text-zinc-100 font-mono flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-[#3ECF8E]" />
             <span>Configure Extension Slot</span>
           </h3>
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-700 text-xs font-mono p-1 rounded-lg hover:bg-zinc-100"
+            className="text-zinc-400 hover:text-zinc-300 text-xs font-mono p-1 rounded-lg hover:bg-[#1f1f1f]"
           >
             ✕ Cancel
           </button>
@@ -87,11 +87,11 @@ export function SlotAssignmentModal({
 
         <form onSubmit={onSubmit} className="space-y-4 text-xs font-mono">
           <div>
-            <label className="block text-zinc-700 mb-1 font-semibold">Slot Kind</label>
+            <label className="block text-zinc-300 mb-1 font-semibold">Slot Kind</label>
             <select
               value={selectedSlotKind}
               onChange={(e) => setSelectedSlotKind(e.target.value as any)}
-              className="w-full px-3 py-2 bg-zinc-50 border border-zinc-300 rounded-lg text-zinc-900 focus:outline-none focus:border-cyan-500"
+              className="w-full px-3 py-2 bg-[#141414] border border-[#262626] rounded-lg text-zinc-100 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
             >
               <option value="Adapter">Adapter (Feed / Broker)</option>
               <option value="Strategy">Strategy (Order Logic)</option>
@@ -101,14 +101,14 @@ export function SlotAssignmentModal({
           </div>
 
           <div>
-            <label className="block text-zinc-700 mb-1 font-semibold">Extension Name</label>
+            <label className="block text-zinc-300 mb-1 font-semibold">Extension Name</label>
             <input
               type="text"
               value={selectedExtensionName}
               onChange={(e) => setSelectedExtensionName(e.target.value)}
               placeholder="e.g. BinanceFuturesAdapter, TrendFollower"
               required
-              className="w-full px-3 py-2 bg-zinc-50 border border-zinc-300 rounded-lg text-zinc-900 focus:outline-none focus:border-cyan-500 font-mono"
+              className="w-full px-3 py-2 bg-[#141414] border border-[#262626] rounded-lg text-zinc-100 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 font-mono"
             />
 
             {manifest && manifest.length > 0 && (
@@ -125,7 +125,7 @@ export function SlotAssignmentModal({
                         className={`px-2.5 py-1 rounded-md text-[11px] transition-all font-mono border ${
                           selectedExtensionName === m.name
                             ? 'bg-cyan-100 border-cyan-300 text-cyan-900 font-semibold'
-                            : 'bg-zinc-100 border-zinc-200 hover:bg-zinc-200 text-zinc-700'
+                            : 'bg-[#1f1f1f] border-[#262626] hover:bg-[#262626] text-zinc-300'
                         }`}
                       >
                         {m.name}
@@ -142,18 +142,18 @@ export function SlotAssignmentModal({
               id="isActiveCheck"
               checked={isSlotActive}
               onChange={(e) => setIsSlotActive(e.target.checked)}
-              className="rounded border-zinc-300 text-cyan-600 focus:ring-0"
+              className="rounded border-[#262626] text-[#3ECF8E] focus:ring-0"
             />
-            <label htmlFor="isActiveCheck" className="text-zinc-700 font-sans cursor-pointer">
+            <label htmlFor="isActiveCheck" className="text-zinc-300 font-sans cursor-pointer">
               Activate slot immediately on engine
             </label>
           </div>
 
-          <div className="pt-2 flex items-center justify-end gap-3 border-t border-zinc-100">
+          <div className="pt-2 flex items-center justify-end gap-3 border-t border-[#262626]">
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 rounded-lg text-zinc-600 hover:text-zinc-900 text-xs font-mono"
+              className="px-3 py-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 text-xs font-mono"
             >
               Cancel
             </button>

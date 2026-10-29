@@ -117,7 +117,7 @@ export default function RunTradesListingPage() {
       </div>
 
       {/* Filter Controls */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border border-[#262626] bg-[#171717]">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border border-[#262626] bg-[#171717] rounded-xl">
         <div>
           <label className="block font-bold text-zinc-100 mb-1">Filter by Symbol</label>
           <input
@@ -168,11 +168,11 @@ export default function RunTradesListingPage() {
           [COMPILING EXECUTED TRADES FROM CLOUD API...]
         </div>
       ) : error ? (
-        <div className="p-4 border border-[#262626] text-rose-400 font-bold">
+        <div className="p-4 border border-rose-800/40 bg-rose-950/20 text-rose-300 font-bold rounded-xl">
           ERROR: {error}
         </div>
       ) : trades.length === 0 ? (
-        <div className="py-16 text-center border border-[#262626] p-8 font-bold">
+        <div className="py-16 text-center border border-[#262626] p-8 bg-[#141414] rounded-xl text-zinc-400 font-bold bg-[#141414] rounded-xl text-zinc-400">
           NO TRADES RECORDED FOR THIS FLOW RUN
         </div>
       ) : (

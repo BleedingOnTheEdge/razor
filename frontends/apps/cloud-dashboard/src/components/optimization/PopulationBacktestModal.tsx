@@ -73,29 +73,29 @@ export function PopulationBacktestModal({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 font-sans text-sm"
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 font-sans text-sm"
       onClick={onClose}
     >
       <div
-        className="bg-[#171717] border border-slate-200 rounded-2xl shadow-xl max-w-4xl w-full p-6 space-y-5 max-h-[92vh] overflow-y-auto text-slate-900 animate-in fade-in-0 zoom-in-95 duration-150"
+        className="bg-[#171717] border border-[#262626] rounded-2xl shadow-xl max-w-4xl w-full p-6 space-y-5 max-h-[92vh] overflow-y-auto text-zinc-100 animate-in fade-in-0 zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between pb-4 border-b border-slate-200">
+        <div className="flex items-start justify-between pb-4 border-b border-[#262626]">
           <div>
             <div className="flex items-center gap-3">
-              <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                <Dna className="w-5 h-5 text-indigo-600" />
+              <h3 className="text-xl font-bold text-zinc-100 flex items-center gap-2">
+                <Dna className="w-5 h-5 text-[#3ECF8E]" />
                 <span>Individual #{individual.individualIndex} (Gen {generationNumber}) Backtest</span>
               </h3>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-50 text-[#3ECF8E] border border-emerald-200">
                 Fitness: {individual.fitness.toFixed(4)}
               </span>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-slate-100 text-slate-700">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-[#1f1f1f] text-zinc-300">
                 Diversity: {individual.diversity.toFixed(3)}
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-zinc-400 mt-1">
               Autonomous backtest simulation report evaluated during genetic algorithm convergence.
             </p>
           </div>
@@ -114,7 +114,7 @@ export function PopulationBacktestModal({
             <button
               type="button"
               onClick={onClose}
-              className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              className="p-1 rounded-lg text-zinc-500 hover:text-zinc-400 hover:bg-[#1f1f1f] transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -123,67 +123,67 @@ export function PopulationBacktestModal({
 
         {/* Backtest Executive Metrics Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
-            <span className="text-slate-500 text-xs block font-medium uppercase tracking-wider">Total Return</span>
-            <span className={`text-lg font-bold mt-1 block font-mono ${individual.totalReturn >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+          <div className="p-3.5 bg-[#141414] border border-[#262626] rounded-xl">
+            <span className="text-zinc-400 text-xs block font-medium uppercase tracking-wider">Total Return</span>
+            <span className={`text-lg font-bold mt-1 block font-mono ${individual.totalReturn >= 0 ? 'text-[#3ECF8E]' : 'text-rose-400'}`}>
               {individual.totalReturn >= 0 ? `+${individual.totalReturn.toFixed(2)}%` : `${individual.totalReturn.toFixed(2)}%`}
             </span>
           </div>
-          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
-            <span className="text-slate-500 text-xs block font-medium uppercase tracking-wider">Sharpe Ratio</span>
-            <span className="text-lg font-bold mt-1 block font-mono text-slate-900">
+          <div className="p-3.5 bg-[#141414] border border-[#262626] rounded-xl">
+            <span className="text-zinc-400 text-xs block font-medium uppercase tracking-wider">Sharpe Ratio</span>
+            <span className="text-lg font-bold mt-1 block font-mono text-zinc-100">
               {individual.sharpeRatio.toFixed(2)}
             </span>
           </div>
-          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
-            <span className="text-slate-500 text-xs block font-medium uppercase tracking-wider">Max Drawdown</span>
-            <span className="text-lg font-bold mt-1 block font-mono text-rose-700">
+          <div className="p-3.5 bg-[#141414] border border-[#262626] rounded-xl">
+            <span className="text-zinc-400 text-xs block font-medium uppercase tracking-wider">Max Drawdown</span>
+            <span className="text-lg font-bold mt-1 block font-mono text-rose-400">
               -{individual.maxDrawdown.toFixed(2)}%
             </span>
           </div>
-          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
-            <span className="text-slate-500 text-xs block font-medium uppercase tracking-wider">Win Rate</span>
-            <span className="text-lg font-bold mt-1 block font-mono text-slate-900">
+          <div className="p-3.5 bg-[#141414] border border-[#262626] rounded-xl">
+            <span className="text-zinc-400 text-xs block font-medium uppercase tracking-wider">Win Rate</span>
+            <span className="text-lg font-bold mt-1 block font-mono text-zinc-100">
               {individual.winRate.toFixed(1)}%
             </span>
           </div>
-          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
-            <span className="text-slate-500 text-xs block font-medium uppercase tracking-wider">Profit Factor</span>
-            <span className="text-lg font-bold mt-1 block font-mono text-emerald-700">
+          <div className="p-3.5 bg-[#141414] border border-[#262626] rounded-xl">
+            <span className="text-zinc-400 text-xs block font-medium uppercase tracking-wider">Profit Factor</span>
+            <span className="text-lg font-bold mt-1 block font-mono text-[#3ECF8E]">
               {individual.profitFactor.toFixed(2)}
             </span>
           </div>
-          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
-            <span className="text-slate-500 text-xs block font-medium uppercase tracking-wider">Total Fills</span>
-            <span className="text-lg font-bold mt-1 block font-mono text-slate-900">
+          <div className="p-3.5 bg-[#141414] border border-[#262626] rounded-xl">
+            <span className="text-zinc-400 text-xs block font-medium uppercase tracking-wider">Total Fills</span>
+            <span className="text-lg font-bold mt-1 block font-mono text-zinc-100">
               {individual.tradeCount} Trades
             </span>
           </div>
         </div>
 
         {/* Strategy Parameters & Chromosome Genes */}
-        <div className="p-4 bg-[#171717] border border-slate-200 rounded-xl space-y-3">
-          <div className="flex items-center justify-between text-xs font-semibold text-slate-700 uppercase tracking-wider">
+        <div className="p-4 bg-[#171717] border border-[#262626] rounded-xl space-y-3">
+          <div className="flex items-center justify-between text-xs font-semibold text-zinc-300 uppercase tracking-wider">
             <span>Decoded Gene Parameters</span>
-            <span className="text-slate-500 font-mono">
+            <span className="text-zinc-400 font-mono">
               {individual.genes.length} Chromosome Alleles
             </span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 text-xs font-mono">
             {Object.entries(individual.parameters || {}).map(([key, val]) => (
-              <div key={key} className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
-                <span className="text-slate-500 block truncate font-medium text-[11px] uppercase">{key}</span>
-                <span className="text-sm font-bold text-slate-900 mt-0.5 block">
+              <div key={key} className="p-2.5 bg-[#141414] border border-[#262626] rounded-lg">
+                <span className="text-zinc-400 block truncate font-medium text-[11px] uppercase">{key}</span>
+                <span className="text-sm font-bold text-zinc-100 mt-0.5 block">
                   {typeof val === 'number' ? (Number.isInteger(val) ? val : val.toFixed(3)) : String(val)}
                 </span>
               </div>
             ))}
           </div>
 
-          <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-100">
-            <span className="text-xs text-slate-500 uppercase font-semibold mr-1">Raw Genes:</span>
+          <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[#262626]">
+            <span className="text-xs text-zinc-400 uppercase font-semibold mr-1">Raw Genes:</span>
             {individual.genes.map((g, idx) => (
-              <span key={idx} className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono text-xs text-slate-800">
+              <span key={idx} className="px-2 py-0.5 rounded bg-[#1f1f1f] border border-[#262626] font-mono text-xs text-zinc-200">
                 g{idx}: <strong>{typeof g === 'number' ? g.toFixed(3) : String(g)}</strong>
               </span>
             ))}
@@ -192,23 +192,23 @@ export function PopulationBacktestModal({
 
         {/* Realized Equity & Balance Curve */}
         {equityPoints.length > 0 && (
-          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+          <div className="p-4 bg-[#141414] border border-[#262626] rounded-xl space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-slate-700 uppercase tracking-wider">
+              <span className="font-semibold text-zinc-300 uppercase tracking-wider">
                 Realized Equity & Balance Curve
               </span>
               {hoveredPoint ? (
-                <div className="flex items-center gap-3 text-xs font-mono bg-slate-900 text-white px-2.5 py-1 rounded-md">
-                  <span className="text-slate-400">{hoveredPoint.timestamp}</span>
+                <div className="flex items-center gap-3 text-xs font-mono bg-[#141414] text-white px-2.5 py-1 rounded-md">
+                  <span className="text-zinc-500">{hoveredPoint.timestamp}</span>
                   <span className="font-bold text-emerald-400">Eq: {formatCurrency(hoveredPoint.equity)}</span>
                   <span className="text-rose-400 font-bold">DD: -{hoveredPoint.drawdownPct.toFixed(2)}%</span>
                 </div>
               ) : (
-                <span className="text-xs text-slate-400">Hover over curve to inspect</span>
+                <span className="text-xs text-zinc-500">Hover over curve to inspect</span>
               )}
             </div>
 
-            <div className="relative w-full overflow-hidden rounded-lg bg-[#171717] border border-slate-200 p-2">
+            <div className="relative w-full overflow-hidden rounded-lg bg-[#171717] border border-[#262626] p-2">
               <svg
                 viewBox={`0 0 ${svgWidth} ${svgHeight}`}
                 className="w-full h-auto select-none"
@@ -260,12 +260,12 @@ export function PopulationBacktestModal({
         {/* Trade History Table */}
         <div className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
               Simulated Trade Fills ({filteredTrades.length}) - Click any trade for telemetry
             </h4>
 
             <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={tradeSearch}
@@ -274,15 +274,15 @@ export function PopulationBacktestModal({
                   setTradePage(1);
                 }}
                 placeholder="Search fills..."
-                className="pl-8 pr-3 py-1.5 bg-[#171717] border border-slate-300 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-indigo-500"
+                className="pl-8 pr-3 py-1.5 bg-[#171717] border border-[#262626] rounded-lg text-xs text-zinc-200 placeholder-slate-400 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 focus:border-[#3ECF8E]"
               />
             </div>
           </div>
 
-          <div className="border border-slate-200 rounded-xl overflow-hidden">
+          <div className="border border-[#262626] rounded-xl overflow-hidden">
             <table className="w-full text-left text-xs font-mono border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 uppercase font-semibold text-[11px]">
+                <tr className="border-b border-[#262626] bg-[#141414] text-zinc-400 uppercase font-semibold text-[11px]">
                   <th className="py-2.5 px-3">Ticket</th>
                   <th className="py-2.5 px-3">Symbol</th>
                   <th className="py-2.5 px-3">Side</th>
@@ -298,30 +298,30 @@ export function PopulationBacktestModal({
                   <tr
                     key={t.ticket}
                     onClick={() => onSelectTrade(t)}
-                    className="hover:bg-slate-50/80 cursor-pointer transition-colors group"
+                    className="hover:bg-[#141414]/80 cursor-pointer transition-colors group"
                     title="Click to view granular trade telemetry"
                   >
-                    <td className="py-2.5 px-3 text-indigo-700 font-bold group-hover:underline">#{t.ticket}</td>
-                    <td className="py-2.5 px-3 font-semibold text-slate-900 font-sans">{t.symbol}</td>
+                    <td className="py-2.5 px-3 text-[#3ECF8E] font-bold group-hover:underline">#{t.ticket}</td>
+                    <td className="py-2.5 px-3 font-semibold text-zinc-100 font-sans">{t.symbol}</td>
                     <td className="py-2.5 px-3">
                       <span
                         className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                           t.side.toUpperCase() === 'BUY'
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                            : 'bg-rose-50 text-rose-700 border border-rose-200'
+                            ? 'bg-emerald-50 text-[#3ECF8E] border border-emerald-200'
+                            : 'bg-rose-50 text-rose-400 border border-rose-200'
                         }`}
                       >
                         {t.side.toUpperCase()}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3 font-medium text-slate-800">{t.volume}</td>
-                    <td className="py-2.5 px-3 text-slate-700">${typeof t.openPrice === 'number' ? t.openPrice.toFixed(2) : t.openPrice}</td>
-                    <td className="py-2.5 px-3 text-slate-700">${typeof t.closePrice === 'number' ? t.closePrice.toFixed(2) : t.closePrice}</td>
-                    <td className={`py-2.5 px-3 font-bold ${(t.profit ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                    <td className="py-2.5 px-3 font-medium text-zinc-200">{t.volume}</td>
+                    <td className="py-2.5 px-3 text-zinc-300">${typeof t.openPrice === 'number' ? t.openPrice.toFixed(2) : t.openPrice}</td>
+                    <td className="py-2.5 px-3 text-zinc-300">${typeof t.closePrice === 'number' ? t.closePrice.toFixed(2) : t.closePrice}</td>
+                    <td className={`py-2.5 px-3 font-bold ${(t.profit ?? 0) >= 0 ? 'text-[#3ECF8E]' : 'text-rose-400'}`}>
                       {t.profit != null ? (t.profit >= 0 ? `+${formatCurrency(t.profit)}` : formatCurrency(t.profit)) : '—'}
                     </td>
                     <td className="py-2.5 px-3 font-sans">
-                      <span className="px-2 py-0.5 rounded-full text-xs font-medium border border-slate-200 bg-slate-50 text-slate-700">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium border border-[#262626] bg-[#141414] text-zinc-300">
                         {t.exitReason}
                       </span>
                     </td>
@@ -333,14 +333,14 @@ export function PopulationBacktestModal({
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between text-xs text-slate-600 pt-1">
+            <div className="flex items-center justify-between text-xs text-zinc-400 pt-1">
               <span>Page {tradePage} of {totalPages}</span>
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   disabled={tradePage === 1}
                   onClick={() => setTradePage((p) => Math.max(1, p - 1))}
-                  className="px-2.5 py-1 border border-slate-300 rounded-md bg-[#171717] hover:bg-slate-50 text-slate-700 font-medium disabled:opacity-40"
+                  className="px-2.5 py-1 border border-[#262626] rounded-md bg-[#171717] hover:bg-[#141414] text-zinc-300 font-medium disabled:opacity-40"
                 >
                   Prev
                 </button>
@@ -348,7 +348,7 @@ export function PopulationBacktestModal({
                   type="button"
                   disabled={tradePage >= totalPages}
                   onClick={() => setTradePage((p) => Math.min(totalPages, p + 1))}
-                  className="px-2.5 py-1 border border-slate-300 rounded-md bg-[#171717] hover:bg-slate-50 text-slate-700 font-medium disabled:opacity-40"
+                  className="px-2.5 py-1 border border-[#262626] rounded-md bg-[#171717] hover:bg-[#141414] text-zinc-300 font-medium disabled:opacity-40"
                 >
                   Next
                 </button>
@@ -358,7 +358,7 @@ export function PopulationBacktestModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-3 border-t border-slate-200">
+        <div className="flex items-center justify-between pt-3 border-t border-[#262626]">
           {runId && individual?.id ? (
             <Link
               href={'/panel/reports/' + runId + '/generations/' + generationNumber + '/populations/' + individual.id}
@@ -370,7 +370,7 @@ export function PopulationBacktestModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 border border-slate-300 rounded-lg bg-[#171717] hover:bg-slate-50 text-slate-700 font-medium text-sm transition-colors"
+            className="px-4 py-2 border border-[#262626] rounded-lg bg-[#171717] hover:bg-[#141414] text-zinc-300 font-medium text-sm transition-colors"
           >
             Close Report
           </button>

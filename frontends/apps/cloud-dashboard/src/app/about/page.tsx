@@ -7,7 +7,7 @@ import { Cpu, ShieldCheck, Zap, LineChart, Code2, Layers, ArrowRight } from 'luc
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-[#171717] text-zinc-100 rounded-xl font-mono text-xs selection:bg-black selection:text-white flex flex-col justify-between">
+    <div className="min-h-screen bg-[#0f0f0f] text-zinc-100 font-mono text-xs selection:bg-[#3ECF8E] selection:text-[#0f0f0f] flex flex-col justify-between">
       <PublicNav />
 
       <main className="max-w-7xl mx-auto px-6 md:px-12 py-16 space-y-16 flex-1">
@@ -31,8 +31,8 @@ export default function AboutPage() {
             Core Quantitative Tenets
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 border border-[#262626] bg-[#171717] space-y-3">
-              <div className="w-10 h-10 border border-[#262626] flex items-center justify-center font-bold text-lg bg-black text-white">
+            <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-3">
+              <div className="w-10 h-10 rounded-full border border-[#3ECF8E]/30 bg-[#3ECF8E]/10 text-[#3ECF8E] flex items-center justify-center font-bold text-lg">
                 <Cpu className="w-5 h-5 text-white" />
               </div>
               <h3 className="text-sm font-bold uppercase">Zero-Curve-Fitting Philosophy</h3>
@@ -41,8 +41,8 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="p-6 border border-[#262626] bg-[#171717] space-y-3">
-              <div className="w-10 h-10 border border-[#262626] flex items-center justify-center font-bold text-lg bg-black text-white">
+            <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-3">
+              <div className="w-10 h-10 rounded-full border border-[#3ECF8E]/30 bg-[#3ECF8E]/10 text-[#3ECF8E] flex items-center justify-center font-bold text-lg">
                 <Zap className="w-5 h-5 text-white" />
               </div>
               <h3 className="text-sm font-bold uppercase">High-Frequency .NET 10 LTS Core</h3>
@@ -51,8 +51,8 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="p-6 border border-[#262626] bg-[#171717] space-y-3">
-              <div className="w-10 h-10 border border-[#262626] flex items-center justify-center font-bold text-lg bg-black text-white">
+            <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-3">
+              <div className="w-10 h-10 rounded-full border border-[#3ECF8E]/30 bg-[#3ECF8E]/10 text-[#3ECF8E] flex items-center justify-center font-bold text-lg">
                 <ShieldCheck className="w-5 h-5 text-white" />
               </div>
               <h3 className="text-sm font-bold uppercase">Institutional Risk Boundaries</h3>
@@ -64,35 +64,35 @@ export default function AboutPage() {
         </section>
 
         {/* Technology Architecture */}
-        <section className="p-8 border border-[#262626] bg-[#141414] space-y-6">
+        <section className="p-8 border border-[#262626] bg-[#141414] rounded-2xl space-y-6">
           <div className="flex items-center justify-between border-b border-[#262626] pb-3">
             <h2 className="text-lg font-bold uppercase">Monorepo System Architecture</h2>
             <span className="border border-[#262626] px-2 py-0.5 text-[10px] font-bold">10 PROJECTS • MODULAR DDD</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-4 border border-[#262626] bg-[#171717] space-y-1.5">
+            <div className="p-4 border border-[#262626] bg-[#171717] rounded-lg space-y-1.5">
               <span className="font-bold block text-sm">Engine & Kernel</span>
               <p className="text-[11px] text-zinc-100">
                 C# algorithmic matching engine, genetic algorithm solver, simulated brokers, and strategy execution slots.
               </p>
             </div>
 
-            <div className="p-4 border border-[#262626] bg-[#171717] space-y-1.5">
+            <div className="p-4 border border-[#262626] bg-[#171717] rounded-lg space-y-1.5">
               <span className="font-bold block text-sm">Cloud Control Plane</span>
               <p className="text-[11px] text-zinc-100">
                 FastEndpoints high-throughput REST API, WebSocket duplex stream server, and SQLite/PostgreSQL persistence.
               </p>
             </div>
 
-            <div className="p-4 border border-[#262626] bg-[#171717] space-y-1.5">
+            <div className="p-4 border border-[#262626] bg-[#171717] rounded-lg space-y-1.5">
               <span className="font-bold block text-sm">Operator Dashboard</span>
               <p className="text-[11px] text-zinc-100">
                 Next.js 15 App Router interface featuring live financial charts, run dispatching, and instance monitoring.
               </p>
             </div>
 
-            <div className="p-4 border border-[#262626] bg-[#171717] space-y-1.5">
+            <div className="p-4 border border-[#262626] bg-[#171717] rounded-lg space-y-1.5">
               <span className="font-bold block text-sm">Marketplace Hub</span>
               <p className="text-[11px] text-zinc-100">
                 Decoupled community hub for acquiring, rating, publishing, and versioning strategy slots and broker adapters.

@@ -114,17 +114,17 @@ export default function PopulationIndividualDetailPage() {
           [COMPILING CANDIDATE SIMULATION DATA FROM CLOUD API...]
         </div>
       ) : error ? (
-        <div className="p-4 border border-[#262626] text-rose-400 font-bold">
+        <div className="p-4 border border-rose-800/40 bg-rose-950/20 text-rose-300 font-bold rounded-xl">
           ERROR: {error}
         </div>
       ) : !individual ? (
-        <div className="py-16 text-center border border-[#262626] p-8 font-bold">
+        <div className="py-16 text-center border border-[#262626] p-8 bg-[#141414] rounded-xl text-zinc-400 font-bold bg-[#141414] rounded-xl text-zinc-400">
           [CANDIDATE #{popId} NOT FOUND]
         </div>
       ) : (
         <div className="space-y-6">
           {/* Candidate Metrics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 border border-[#262626] bg-[#171717]">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 border border-[#262626] bg-[#171717] rounded-xl">
             <div>
               <span className="text-zinc-100 font-bold block">Objective Fitness</span>
               <span className="text-xl font-bold text-[#3ECF8E] mt-1 block">
@@ -152,7 +152,7 @@ export default function PopulationIndividualDetailPage() {
           </div>
 
           {/* Decoded Parameters Card */}
-          <div className="p-4 border border-[#262626] bg-[#171717] space-y-3">
+          <div className="p-4 border border-[#262626] bg-[#171717] rounded-xl space-y-3">
             <h2 className="text-sm font-bold uppercase text-zinc-100">Decoded Strategy Parameters</h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
               {Object.entries(individual.parameters || {}).map(([paramName, paramVal]) => (
@@ -168,9 +168,9 @@ export default function PopulationIndividualDetailPage() {
 
           {/* Raw Genes Array */}
           {individual.genes && individual.genes.length > 0 && (
-            <div className="p-4 border border-[#262626] bg-[#171717] space-y-2">
+            <div className="p-4 border border-[#262626] bg-[#171717] rounded-xl space-y-2">
               <h2 className="text-sm font-bold uppercase text-zinc-100">Normalized Chromosome Genes ({individual.genes.length})</h2>
-              <div className="flex flex-wrap gap-1.5 p-3 border border-[#262626] bg-[#141414] font-bold">
+              <div className="flex flex-wrap gap-1.5 p-3 border border-[#262626] bg-[#141414] font-bold rounded-lg">
                 {individual.genes.map((g: number, idx: number) => (
                   <span key={idx} className="px-2 py-0.5 border border-[#262626] bg-[#171717] text-[11px]">
                     g[{idx}]: {g.toFixed(4)}

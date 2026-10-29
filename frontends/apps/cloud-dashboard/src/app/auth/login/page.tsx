@@ -64,7 +64,7 @@ export default function AuthLoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#171717] flex flex-col items-center justify-center p-6 text-zinc-100 font-mono">
+    <main className="min-h-screen bg-[#0f0f0f] flex flex-col items-center justify-center p-6 text-zinc-100 font-mono">
       <div className="w-full max-w-md space-y-6">
         {/* Navigation back to landing */}
         <div className="flex items-center justify-between text-xs font-bold border-b border-[#262626] pb-3">
@@ -90,7 +90,7 @@ export default function AuthLoginPage() {
 
         {/* Active Session Notice if logged in */}
         {mounted && isAuthenticated && user && (
-          <div className="p-4 border border-[#262626] bg-[#141414] space-y-3">
+          <div className="p-4 border border-[#262626] bg-[#141414] rounded-xl space-y-3">
             <div className="flex items-center justify-between text-xs font-bold">
               <span className="flex items-center gap-1.5 text-green-700">
                 <CheckCircle2 className="w-4 h-4" />
@@ -125,9 +125,9 @@ export default function AuthLoginPage() {
         )}
 
         {/* Auth Form Card */}
-        <div className="p-8 bg-[#171717] border border-[#262626] space-y-6">
+        <div className="p-8 bg-[#171717] border border-[#262626] rounded-2xl shadow-2xl space-y-6">
           {error && (
-            <div className="p-3.5 border border-[#262626] bg-[#171717] text-rose-400 text-xs font-bold flex items-center gap-2.5">
+            <div className="p-3.5 border border-rose-800/40 bg-rose-950/20 text-rose-300 rounded-xl text-xs font-bold flex items-center gap-2.5">
               <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
               <span>{error}</span>
             </div>
@@ -216,7 +216,7 @@ export default function AuthLoginPage() {
                 type="button"
                 disabled={isSubmitting}
                 onClick={() => handleQuickDemo('admin')}
-                className="p-2.5 bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] border border-[#262626] text-left transition-colors group"
+                className="p-3 bg-[#141414] hover:bg-[#1f1f1f] text-zinc-200 rounded-xl border border-[#262626] text-left transition-colors group"
               >
                 <div className="flex items-center gap-1.5 font-bold">
                   <Shield className="w-3.5 h-3.5" />
@@ -232,7 +232,7 @@ export default function AuthLoginPage() {
                 type="button"
                 disabled={isSubmitting}
                 onClick={() => handleQuickDemo('operator')}
-                className="p-2.5 bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] border border-[#262626] text-left transition-colors group"
+                className="p-3 bg-[#141414] hover:bg-[#1f1f1f] text-zinc-200 rounded-xl border border-[#262626] text-left transition-colors group"
               >
                 <div className="flex items-center gap-1.5 font-bold">
                   <Terminal className="w-3.5 h-3.5" />
@@ -248,7 +248,7 @@ export default function AuthLoginPage() {
                 type="button"
                 disabled={isSubmitting}
                 onClick={() => handleQuickDemo('trader')}
-                className="p-2.5 bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] border border-[#262626] text-left transition-colors group"
+                className="p-3 bg-[#141414] hover:bg-[#1f1f1f] text-zinc-200 rounded-xl border border-[#262626] text-left transition-colors group"
               >
                 <div className="flex items-center gap-1.5 font-bold">
                   <ArrowRight className="w-3.5 h-3.5" />

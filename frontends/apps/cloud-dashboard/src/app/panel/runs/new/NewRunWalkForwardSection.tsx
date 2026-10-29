@@ -21,7 +21,7 @@ export function NewRunWalkForwardSection({
   setWindowSplits,
 }: NewRunWalkForwardSectionProps) {
   return (
-    <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+    <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
       <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b border-[#262626] pb-2">
         <Layers className="w-4 h-4 text-zinc-100" />
         <span>5. Walk-Forward Window Partitioning</span>
@@ -42,7 +42,7 @@ export function NewRunWalkForwardSection({
             }}
             min={1}
             max={99}
-            className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
+            className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
           />
         </div>
 
@@ -60,7 +60,7 @@ export function NewRunWalkForwardSection({
             }}
             min={1}
             max={99}
-            className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
+            className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
           />
         </div>
 
@@ -72,7 +72,7 @@ export function NewRunWalkForwardSection({
             onChange={(e) => setWindowSplits(Number(e.target.value))}
             min={2}
             max={20}
-            className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
+            className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
           />
         </div>
       </div>

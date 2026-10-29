@@ -56,34 +56,34 @@ export function GenerationalConvergenceChart({
     : '';
 
   return (
-    <div className="p-6 bg-white border border-slate-200 rounded-xl shadow-sm space-y-5 font-sans">
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-slate-200">
+    <div className="p-6 bg-[#171717] border border-[#262626] rounded-xl shadow-sm space-y-5 font-sans">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-[#262626]">
         <div>
-          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="text-base font-bold text-zinc-100 flex items-center gap-2">
             <Activity className="w-5 h-5 text-indigo-600" />
             <span>Genetic Algorithm Optimization Convergence</span>
             <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
               Interactive
             </span>
           </h3>
-          <p className="text-sm text-slate-600 mt-1">
+          <p className="text-sm text-zinc-400 mt-1">
             Best and average fitness evolution across {genList.length} generations. Click any generation below to inspect individual chromosomes.
           </p>
         </div>
         <div className="flex items-center gap-5 text-xs font-medium">
           <div className="flex items-center gap-2">
-            <span className="w-4 h-1 bg-slate-900 rounded-full inline-block" />
-            <span className="text-slate-800 font-semibold">Best Fitness</span>
+            <span className="w-4 h-1 bg-[#3ECF8E] rounded-full inline-block" />
+            <span className="text-zinc-200 font-semibold">Best Fitness</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-4 h-0.5 bg-slate-400 inline-block border-t border-dashed border-slate-500" />
-            <span className="text-slate-600">Avg Fitness</span>
+            <span className="w-4 h-0.5 bg-zinc-500 inline-block border-t border-dashed border-[#262626]" />
+            <span className="text-zinc-400">Avg Fitness</span>
           </div>
         </div>
       </div>
 
       {/* Convergence Curve SVG Canvas */}
-      <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 overflow-hidden select-none">
+      <div className="bg-[#141414] p-4 rounded-xl border border-[#262626] overflow-hidden select-none">
         <svg viewBox={`0 0 ${cWidth} ${cHeight}`} className="w-full h-44 overflow-visible select-none">
           {/* Horizontal grid lines */}
           {[0, 0.5, 1].map((pct, i) => {
@@ -155,36 +155,36 @@ export function GenerationalConvergenceChart({
               onClick={() => onSelectGeneration(g)}
               className={`p-3.5 rounded-xl border text-left font-sans text-xs cursor-pointer transition-all ${
                 isSelected
-                  ? 'bg-slate-900 text-white border-slate-900 shadow-md ring-2 ring-indigo-500/30'
-                  : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300 hover:bg-slate-50/80 shadow-xs'
+                  ? 'bg-[#3ECF8E] text-[#0f0f0f] border-[#3ECF8E] shadow-md ring-2 ring-[#3ECF8E]/30'
+                  : 'bg-[#171717] text-zinc-200 border-[#262626] hover:border-[#262626] hover:bg-[#141414] shadow-xs'
               }`}
             >
               <div className="flex items-center justify-between text-xs font-semibold mb-2">
-                <span className={isSelected ? 'text-white' : 'text-slate-900'}>
+                <span className={isSelected ? 'text-white' : 'text-zinc-100'}>
                   Generation #{g.generation}
                 </span>
-                <span className={`text-[11px] font-medium font-mono px-1.5 py-0.5 rounded ${isSelected ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-600'}`}>
+                <span className={`text-[11px] font-medium font-mono px-1.5 py-0.5 rounded ${isSelected ? 'bg-[#141414] text-zinc-200' : 'bg-[#1f1f1f] text-zinc-400'}`}>
                   Inspect
                 </span>
               </div>
               <div className="space-y-1 font-mono text-xs">
                 <div className="flex items-baseline justify-between">
-                  <span className={isSelected ? 'text-slate-400' : 'text-slate-500'}>Best:</span>
+                  <span className={isSelected ? 'text-zinc-500' : 'text-zinc-400'}>Best:</span>
                   <span className={`font-bold ${isSelected ? 'text-emerald-400' : 'text-emerald-700'}`}>
                     {g.bestFitness.toFixed(4)}
                   </span>
                 </div>
                 {g.averageFitness != null && (
                   <div className="flex items-baseline justify-between">
-                    <span className={isSelected ? 'text-slate-400' : 'text-slate-500'}>Avg:</span>
-                    <span className={isSelected ? 'text-slate-300' : 'text-slate-700'}>
+                    <span className={isSelected ? 'text-zinc-500' : 'text-zinc-400'}>Avg:</span>
+                    <span className={isSelected ? 'text-zinc-300' : 'text-zinc-300'}>
                       {g.averageFitness.toFixed(4)}
                     </span>
                   </div>
                 )}
                 {(g.populationDiversity ?? g.diversity) != null && (
-                  <div className="flex items-baseline justify-between pt-1 border-t border-slate-100">
-                    <span className={`font-medium ${isSelected ? 'text-slate-200' : 'text-slate-700'}`}>
+                  <div className="flex items-baseline justify-between pt-1 border-t border-[#262626]">
+                    <span className={`font-medium ${isSelected ? 'text-zinc-200' : 'text-zinc-300'}`}>
                       Diversity: {(g.populationDiversity ?? g.diversity)?.toFixed(2)}
                     </span>
                   </div>
