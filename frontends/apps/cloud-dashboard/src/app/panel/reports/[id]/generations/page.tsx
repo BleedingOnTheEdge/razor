@@ -106,11 +106,11 @@ export default function GenerationsListingPage() {
           COMPILING GENERATIONS PROGRESSION FROM CLOUD API...
         </div>
       ) : error ? (
-        <div className="p-4 border border-[#262626] text-rose-400 font-bold">
+        <div className="p-4 border border-rose-800/40 bg-rose-950/20 text-rose-300 font-bold rounded-xl">
           ERROR: {error}
         </div>
       ) : generations.length === 0 ? (
-        <div className="py-16 text-center border border-[#262626] p-8 font-bold">
+        <div className="py-16 text-center border border-[#262626] p-8 bg-[#141414] rounded-xl text-zinc-400 font-bold bg-[#141414] rounded-xl text-zinc-400">
           NO GENERATIONS RECORDED FOR THIS FLOW RUN
         </div>
       ) : (

@@ -267,8 +267,8 @@ export default function AdminPage() {
 
   if (!isAuthenticated || !user) {
     return (
-      <div className="max-w-md mx-auto py-16 text-center space-y-4 border border-[#262626] p-8 bg-[#171717]">
-        <div className="w-12 h-12 bg-[#171717] border border-[#262626] text-zinc-100 flex items-center justify-center mx-auto">
+      <div className="max-w-md mx-auto py-16 text-center space-y-4 border border-[#262626] p-8 bg-[#171717] rounded-2xl">
+        <div className="w-12 h-12 bg-[#171717] border border-[#262626] text-zinc-100 flex items-center justify-center mx-auto rounded-full">
           <Lock className="w-6 h-6" />
         </div>
         <h1 className="text-sm font-mono font-bold uppercase tracking-wider text-zinc-100">Authentication Required</h1>
@@ -298,7 +298,7 @@ export default function AdminPage() {
         </div>
 
         {/* Tab Toggle */}
-        <div className="flex items-center border border-[#262626] bg-[#171717] font-mono text-xs">
+        <div className="flex items-center border border-[#262626] bg-[#171717] font-mono text-xs rounded-xl overflow-hidden">
           <button
             onClick={() => setActiveTab('users')}
             className={`flex items-center gap-2 px-4 py-2 uppercase font-bold transition-all ${
@@ -321,7 +321,7 @@ export default function AdminPage() {
       </div>
 
       {/* Institutional Alert Protocol */}
-      <div className="p-4 border border-[#262626] bg-[#171717] flex items-start gap-3 text-xs text-zinc-100 font-mono">
+      <div className="p-4 border border-[#262626] bg-[#171717] flex items-start gap-3 text-xs text-zinc-100 font-mono rounded-xl">
         <Info className="w-4 h-4 text-zinc-100 shrink-0 mt-0.5" />
         <div>
           <span className="font-bold uppercase">Governance Protocol:</span> SuperAdmin accounts have unrestricted authority to manage subscriptions, reset credentials, impersonate users with full execution privileges, or suspend accounts. Operators have restricted impersonation (manage engines & flows, live trading restricted).
@@ -340,13 +340,13 @@ export default function AdminPage() {
                 onChange={(e) => setUserSearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && loadUsers()}
                 placeholder="SEARCH USERNAME, EMAIL..."
-                className="w-full pl-9 pr-3 py-2 bg-[#171717] border border-[#262626] text-xs font-mono text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+                className="w-full pl-9 pr-3 py-2 bg-[#171717] border border-[#262626] text-xs font-mono text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
               />
             </div>
             <select
               value={userFilterRole}
               onChange={(e) => setUserFilterRole(e.target.value)}
-              className="px-3 py-2 bg-[#171717] border border-[#262626] text-xs font-mono font-bold uppercase text-zinc-100 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="px-3 py-2 bg-[#171717] border border-[#262626] text-xs font-mono font-bold uppercase text-zinc-100 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             >
               <option value="">All Roles</option>
               <option value="SuperAdmin">SuperAdmin</option>
@@ -356,14 +356,14 @@ export default function AdminPage() {
             </select>
             <button
               onClick={loadUsers}
-              className="px-4 py-2 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium font-mono text-xs font-bold uppercase rounded-none transition-colors"
+              className="px-5 py-2 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium font-mono text-xs font-bold uppercase transition-colors"
             >
               Apply Filter
             </button>
           </div>
 
           {/* User Table */}
-          <div className="border border-[#262626] bg-[#171717] overflow-hidden">
+          <div className="border border-[#262626] bg-[#171717] rounded-xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono border-collapse">
                 <thead className="bg-[#1f1f1f] text-zinc-200 border-b border-[#262626]">
@@ -400,7 +400,7 @@ export default function AdminPage() {
                             value={u.role === 'Developer' ? 'Trader' : u.role}
                             disabled={actionUserId === u.userId}
                             onChange={(e) => handleRoleChange(u.userId, e.target.value)}
-                            className="px-2 py-1 bg-[#171717] border border-[#262626] text-[11px] font-mono font-bold uppercase text-zinc-100 focus:outline-none focus:border-[#3ECF8E] rounded-none"
+                            className="px-2 py-1 bg-[#171717] border border-[#262626] text-[11px] font-mono font-bold uppercase text-zinc-100 focus:outline-none focus:border-[#3ECF8E] rounded-md"
                           >
                             <option value="SuperAdmin">SuperAdmin</option>
                             <option value="Admin">Admin</option>
@@ -430,7 +430,7 @@ export default function AdminPage() {
                           <button
                             onClick={() => handleStatusToggle(u.userId, u.isActive ?? true)}
                             disabled={actionUserId === u.userId}
-                            className={`px-2.5 py-1 text-[10px] font-mono font-bold uppercase border border-[#262626] transition-colors ${
+                            className={`px-2.5 py-1 text-[10px] font-mono font-bold uppercase border border-[#262626] rounded-full transition-colors ${
                               u.isActive !== false
                                 ? 'bg-[#171717] text-zinc-100 rounded-xl hover:bg-[#1f1f1f]'
                                 : 'bg-red-600 text-white hover:bg-red-700'
@@ -470,7 +470,7 @@ export default function AdminPage() {
                               onClick={() => handleDeleteUser(u.userId, u.userName)}
                               disabled={actionUserId === u.userId || u.userName === 'superadmin' || u.userId === user.userId}
                               title="Delete User"
-                              className="p-1 border border-[#262626] bg-[#171717] hover:bg-red-600 hover:text-white text-zinc-100 transition-colors disabled:opacity-30"
+                              className="p-1.5 border border-[#262626] bg-[#171717] hover:bg-rose-950/40 hover:border-rose-500/50 hover:text-rose-400 text-zinc-100 rounded-lg transition-colors disabled:opacity-30"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -497,7 +497,7 @@ export default function AdminPage() {
       {/* Subscription Tier Management Modal */}
       {subscriptionModalUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md border border-[#262626] bg-[#171717] p-6 space-y-4 font-mono">
+          <div className="w-full max-w-md border border-[#262626] bg-[#171717] rounded-2xl shadow-2xl p-6 space-y-4 font-mono">
             <div className="flex items-center justify-between border-b border-[#262626] pb-2">
               <h3 className="text-sm font-bold uppercase text-zinc-100 flex items-center gap-2">
                 <CreditCard className="w-4 h-4 text-zinc-100" />
@@ -505,7 +505,7 @@ export default function AdminPage() {
               </h3>
               <button
                 onClick={() => setSubscriptionModalUser(null)}
-                className="text-zinc-100 hover:bg-[#1f1f1f] p-1 border border-[#262626]"
+                className="text-zinc-100 hover:bg-[#1f1f1f] p-1 border border-[#262626] rounded-lg"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -520,7 +520,7 @@ export default function AdminPage() {
                   {(['Free', 'Pro', 'Enterprise'] as const).map((tier) => (
                     <label
                       key={tier}
-                      className={`flex items-center justify-between p-3 border border-[#262626] cursor-pointer transition-colors ${
+                      className={`flex items-center justify-between p-3 border border-[#262626] rounded-lg cursor-pointer transition-colors ${
                         selectedTier === tier ? 'bg-black text-white font-bold' : 'bg-[#171717] text-zinc-100 rounded-xl hover:bg-[#141414]'
                       }`}
                     >
@@ -531,7 +531,7 @@ export default function AdminPage() {
                           value={tier}
                           checked={selectedTier === tier}
                           onChange={() => setSelectedTier(tier)}
-                          className="w-4 h-4 accent-black"
+                          className="w-4 h-4 rounded accent-[#3ECF8E]"
                         />
                         <span className="uppercase">{tier} Tier</span>
                       </div>
@@ -567,7 +567,7 @@ export default function AdminPage() {
       {/* Password Reset Modal */}
       {passwordModalUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md border border-[#262626] bg-[#171717] p-6 space-y-4 font-mono">
+          <div className="w-full max-w-md border border-[#262626] bg-[#171717] rounded-2xl shadow-2xl p-6 space-y-4 font-mono">
             <div className="flex items-center justify-between border-b border-[#262626] pb-2">
               <h3 className="text-sm font-bold uppercase text-zinc-100 flex items-center gap-2">
                 <Key className="w-4 h-4 text-zinc-100" />
@@ -575,7 +575,7 @@ export default function AdminPage() {
               </h3>
               <button
                 onClick={() => setPasswordModalUser(null)}
-                className="text-zinc-100 hover:bg-[#1f1f1f] p-1 border border-[#262626]"
+                className="text-zinc-100 hover:bg-[#1f1f1f] p-1 border border-[#262626] rounded-lg"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -592,7 +592,7 @@ export default function AdminPage() {
                   placeholder="Enter secure new password..."
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-xs font-mono text-zinc-100 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-xs font-mono text-zinc-100 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
                 />
               </div>
 

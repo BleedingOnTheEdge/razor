@@ -165,7 +165,7 @@ export default function UserProfilePage() {
       {/* Top Banner */}
       <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-[#262626]">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 border border-[#262626] bg-[#171717] flex items-center justify-center text-zinc-100 text-2xl font-bold uppercase">
+          <div className="w-16 h-16 border border-[#262626] bg-[#171717] flex items-center justify-center text-zinc-100 text-2xl font-bold uppercase rounded-full">
             {profile?.displayName
               ? profile.displayName.charAt(0).toUpperCase()
               : (profile?.userName || 'U').charAt(0).toUpperCase()}
@@ -178,7 +178,7 @@ export default function UserProfilePage() {
               <span className="px-2.5 py-0.5 border border-[#262626] bg-[#171717] text-zinc-100 rounded-xl text-xs font-bold uppercase">
                 {profile?.role === 'Developer' ? 'Trader' : profile?.role || 'Trader'}
               </span>
-              <span className="px-2.5 py-0.5 border border-[#262626] bg-black text-white text-xs font-bold uppercase">
+              <span className="px-2.5 py-0.5 border border-[#262626] bg-[#1f1f1f] text-zinc-100 text-xs font-bold uppercase rounded-full">
                 {profile?.subscriptionTier || 'Free'} Plan
               </span>
             </div>
@@ -213,7 +213,7 @@ export default function UserProfilePage() {
           {/* Left Column: Details & Edit Form */}
           <div className="md:col-span-2 space-y-6">
             {isEditing ? (
-              <form onSubmit={handleSaveProfile} className="p-6 border border-[#262626] bg-[#171717] space-y-4 text-xs font-mono">
+              <form onSubmit={handleSaveProfile} className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4 text-xs font-mono">
                 <div className="flex items-center justify-between border-b border-[#262626] pb-2">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-100 flex items-center gap-2">
                     <Edit3 className="w-4 h-4 text-zinc-100" />
@@ -229,7 +229,7 @@ export default function UserProfilePage() {
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       placeholder="e.g. Senior Quant Lead"
-                      className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+                      className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
                     />
                   </div>
 
@@ -240,7 +240,7 @@ export default function UserProfilePage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="trader@fund.com"
-                      className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+                      className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
                     />
                   </div>
 
@@ -251,7 +251,7 @@ export default function UserProfilePage() {
                       value={secondaryEmail}
                       onChange={(e) => setSecondaryEmail(e.target.value)}
                       placeholder="backup@fund.com"
-                      className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+                      className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
                     />
                   </div>
 
@@ -264,14 +264,14 @@ export default function UserProfilePage() {
                         value={telegramHandle}
                         onChange={(e) => setTelegramHandle(e.target.value.replace(/^@/, ''))}
                         placeholder="quant_lead"
-                        className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+                        className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* International Phone Number with Country Code */}
-                <div className="border border-[#262626] p-4 bg-[#171717] space-y-2">
+                <div className="border border-[#262626] p-4 bg-[#171717] rounded-lg space-y-2">
                   <label className="block text-zinc-100 font-bold uppercase text-[11px]">
                     International Contact Phone (With Dialing Code)
                   </label>
@@ -279,7 +279,7 @@ export default function UserProfilePage() {
                     <select
                       value={phoneCountryCode}
                       onChange={(e) => setPhoneCountryCode(e.target.value)}
-                      className="px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+                      className="px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
                     >
                       {COUNTRY_DIALING_CODES.map((c) => (
                         <option key={c.code + c.iso} value={c.code}>
@@ -292,13 +292,13 @@ export default function UserProfilePage() {
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       placeholder="9123456789"
-                      className="sm:col-span-2 px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+                      className="sm:col-span-2 px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
                     />
                   </div>
                 </div>
 
                 {/* Security & OTP Toggles */}
-                <div className="border border-[#262626] p-4 bg-[#171717] space-y-3">
+                <div className="border border-[#262626] p-4 bg-[#171717] rounded-lg space-y-3">
                   <div className="text-xs font-bold uppercase text-zinc-100 pb-1 border-b border-[#262626]">
                     Authentication & Alert Protocols
                   </div>
@@ -308,7 +308,7 @@ export default function UserProfilePage() {
                         type="checkbox"
                         checked={twoFactorEnabled}
                         onChange={(e) => setTwoFactorEnabled(e.target.checked)}
-                        className="w-4 h-4 border border-[#262626] accent-black cursor-pointer"
+                        className="w-4 h-4 border border-[#262626] rounded accent-[#3ECF8E] cursor-pointer"
                       />
                       <span className="font-bold uppercase text-[11px]">Enforce Two-Factor Authentication (2FA)</span>
                     </label>
@@ -318,7 +318,7 @@ export default function UserProfilePage() {
                         type="checkbox"
                         checked={smsOtpEnabled}
                         onChange={(e) => setSmsOtpEnabled(e.target.checked)}
-                        className="w-4 h-4 border border-[#262626] accent-black cursor-pointer"
+                        className="w-4 h-4 border border-[#262626] rounded accent-[#3ECF8E] cursor-pointer"
                       />
                       <span className="font-bold uppercase text-[11px]">Enable SMS & Telegram OTP Login</span>
                     </label>
@@ -326,7 +326,7 @@ export default function UserProfilePage() {
                 </div>
 
                 {/* Cloud Drive Sync */}
-                <div className="border border-[#262626] p-4 bg-[#171717] space-y-3">
+                <div className="border border-[#262626] p-4 bg-[#171717] rounded-lg space-y-3">
                   <div className="text-xs font-bold uppercase text-zinc-100 pb-1 border-b border-[#262626]">
                     Automated Cloud Storage Sync (Exports & Reports Direct Delivery)
                   </div>
@@ -336,7 +336,7 @@ export default function UserProfilePage() {
                         type="checkbox"
                         checked={googleDriveLinked}
                         onChange={(e) => setGoogleDriveLinked(e.target.checked)}
-                        className="w-4 h-4 border border-[#262626] accent-black cursor-pointer"
+                        className="w-4 h-4 border border-[#262626] rounded accent-[#3ECF8E] cursor-pointer"
                       />
                       <span className="font-bold uppercase text-[11px]">Link Google Drive (Auto-Upload XLSX Runs)</span>
                     </label>
@@ -346,7 +346,7 @@ export default function UserProfilePage() {
                         type="checkbox"
                         checked={oneDriveLinked}
                         onChange={(e) => setOneDriveLinked(e.target.checked)}
-                        className="w-4 h-4 border border-[#262626] accent-black cursor-pointer"
+                        className="w-4 h-4 border border-[#262626] rounded accent-[#3ECF8E] cursor-pointer"
                       />
                       <span className="font-bold uppercase text-[11px]">Link Microsoft OneDrive (Auto-Archive)</span>
                     </label>
@@ -360,7 +360,7 @@ export default function UserProfilePage() {
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
                     placeholder="Describe your quantitative strategies, active assets, or trading desk responsibilities..."
-                    className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+                    className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
                   />
                 </div>
 
@@ -383,7 +383,7 @@ export default function UserProfilePage() {
                 </div>
               </form>
             ) : (
-              <div className="p-6 border border-[#262626] bg-[#171717] space-y-6">
+              <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-6">
                 <div className="flex items-center justify-between border-b border-[#262626] pb-2">
                   <h3 className="text-xs font-bold text-zinc-100 uppercase tracking-wider flex items-center gap-2">
                     <User className="w-4 h-4 text-zinc-100" />
@@ -392,57 +392,57 @@ export default function UserProfilePage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
-                  <div className="p-4 border border-[#262626] bg-[#171717]">
+                  <div className="p-4 border border-[#262626] bg-[#171717] rounded-lg">
                     <span className="text-zinc-100 uppercase text-[10px] font-bold block mb-1">Display Name</span>
                     <span className="text-zinc-100 font-bold block">{profile.displayName || 'None configured'}</span>
                   </div>
 
-                  <div className="p-4 border border-[#262626] bg-[#171717]">
+                  <div className="p-4 border border-[#262626] bg-[#171717] rounded-lg">
                     <span className="text-zinc-100 uppercase text-[10px] font-bold block mb-1">Primary Email</span>
                     <span className="text-zinc-100 font-bold block">{profile.email || 'None configured'}</span>
                   </div>
 
-                  <div className="p-4 border border-[#262626] bg-[#171717]">
+                  <div className="p-4 border border-[#262626] bg-[#171717] rounded-lg">
                     <span className="text-zinc-100 uppercase text-[10px] font-bold block mb-1">Secondary Recovery Email</span>
                     <span className="text-zinc-100 font-bold block">{profile.secondaryEmail || 'None configured'}</span>
                   </div>
 
-                  <div className="p-4 border border-[#262626] bg-[#171717]">
+                  <div className="p-4 border border-[#262626] bg-[#171717] rounded-lg">
                     <span className="text-zinc-100 uppercase text-[10px] font-bold block mb-1">Contact Phone Number</span>
                     <span className="text-zinc-100 font-bold block">
                       {profile.phoneNumber ? `${profile.phoneCountryCode || '+1'} ${profile.phoneNumber}` : 'None configured'}
                     </span>
                   </div>
 
-                  <div className="p-4 border border-[#262626] bg-[#171717]">
+                  <div className="p-4 border border-[#262626] bg-[#171717] rounded-lg">
                     <span className="text-zinc-100 uppercase text-[10px] font-bold block mb-1">Telegram Messenger</span>
                     <span className="text-zinc-100 font-bold block">
                       {profile.telegramHandle ? `@${profile.telegramHandle}` : 'None connected'}
                     </span>
                   </div>
 
-                  <div className="p-4 border border-[#262626] bg-[#171717]">
+                  <div className="p-4 border border-[#262626] bg-[#171717] rounded-lg">
                     <span className="text-zinc-100 uppercase text-[10px] font-bold block mb-1">Two-Factor Authentication</span>
                     <span className={`font-bold block uppercase ${profile.twoFactorEnabled ? 'text-zinc-100' : 'text-rose-400'}`}>
                       {profile.twoFactorEnabled ? 'Enabled' : 'Disabled'}
                     </span>
                   </div>
 
-                  <div className="p-4 border border-[#262626] bg-[#171717]">
+                  <div className="p-4 border border-[#262626] bg-[#171717] rounded-lg">
                     <span className="text-zinc-100 uppercase text-[10px] font-bold block mb-1">Google Drive Sync</span>
                     <span className="text-zinc-100 font-bold block uppercase">
                       {profile.googleDriveLinked ? 'Connected (Auto-Upload)' : 'Disconnected'}
                     </span>
                   </div>
 
-                  <div className="p-4 border border-[#262626] bg-[#171717]">
+                  <div className="p-4 border border-[#262626] bg-[#171717] rounded-lg">
                     <span className="text-zinc-100 uppercase text-[10px] font-bold block mb-1">Microsoft OneDrive Sync</span>
                     <span className="text-zinc-100 font-bold block uppercase">
                       {profile.oneDriveLinked ? 'Connected (Auto-Archive)' : 'Disconnected'}
                     </span>
                   </div>
 
-                  <div className="p-4 border border-[#262626] bg-[#171717] sm:col-span-2">
+                  <div className="p-4 border border-[#262626] bg-[#171717] rounded-lg sm:col-span-2">
                     <span className="text-zinc-100 uppercase text-[10px] font-bold block mb-1">Desk Notes & Biography</span>
                     <span className="text-zinc-100 block leading-relaxed">
                       {profile.bio || 'No personal biography or notes provided.'}
@@ -453,26 +453,26 @@ export default function UserProfilePage() {
             )}
 
             {/* Account Workspace & Quota */}
-            <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+            <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
               <h3 className="text-xs font-bold text-zinc-100 uppercase tracking-wider flex items-center gap-2 pb-2 border-b border-[#262626]">
                 <Server className="w-4 h-4 text-zinc-100" />
                 <span>Account Workspace & Execution Quota</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono">
-                <div className="p-4 border border-[#262626] bg-[#171717]">
+                <div className="p-4 border border-[#262626] bg-[#171717] rounded-lg">
                   <span className="text-zinc-100 uppercase text-[10px] font-bold block mb-1">Workspace</span>
                   <span className="text-zinc-100 font-bold block uppercase">{profile.accountName}</span>
                   <span className="text-[10px] text-zinc-100 block mt-1">ID: {formatHash(profile.accountId, 6)}</span>
                 </div>
 
-                <div className="p-4 border border-[#262626] bg-[#171717]">
+                <div className="p-4 border border-[#262626] bg-[#171717] rounded-lg">
                   <span className="text-zinc-100 uppercase text-[10px] font-bold block mb-1">Subscription Tier</span>
                   <span className="text-zinc-100 font-bold block uppercase">{profile.subscriptionTier} Plan</span>
                   <span className="text-[10px] text-zinc-100 block mt-1">Institutional Flow Quota</span>
                 </div>
 
-                <div className="p-4 border border-[#262626] bg-[#171717]">
+                <div className="p-4 border border-[#262626] bg-[#171717] rounded-lg">
                   <span className="text-zinc-100 uppercase text-[10px] font-bold block mb-1">Node Quota Cap</span>
                   <span className="text-zinc-100 font-bold block uppercase">{profile.maxInstances} Engine Nodes</span>
                   <span className="text-[10px] text-zinc-100 block mt-1">Concurrent live instances</span>
@@ -483,14 +483,14 @@ export default function UserProfilePage() {
 
           {/* Right Column: Permissions & Actions */}
           <div className="space-y-6">
-            <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+            <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
               <h3 className="text-xs font-bold text-zinc-100 uppercase tracking-wider flex items-center gap-2 pb-2 border-b border-[#262626]">
                 <Shield className="w-4 h-4 text-zinc-100" />
                 <span>Account Privileges & Entitlements</span>
               </h3>
 
               <div className="space-y-2 text-xs font-mono">
-                <div className="flex items-center justify-between p-3 border border-[#262626] bg-[#171717]">
+                <div className="flex items-center justify-between p-3 border border-[#262626] bg-[#171717] rounded-lg">
                   <span className="text-zinc-100 uppercase text-[11px] font-semibold">Manage Engine Fleet</span>
                   {profile.canManageFleet ? (
                     <span className="font-bold uppercase text-zinc-100">[AUTHORIZED]</span>
@@ -499,7 +499,7 @@ export default function UserProfilePage() {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between p-3 border border-[#262626] bg-[#171717]">
+                <div className="flex items-center justify-between p-3 border border-[#262626] bg-[#171717] rounded-lg">
                   <span className="text-zinc-100 uppercase text-[11px] font-semibold">Deploy Live Trading</span>
                   {profile.canExecuteLive ? (
                     <span className="font-bold uppercase text-zinc-100">[AUTHORIZED]</span>
@@ -508,7 +508,7 @@ export default function UserProfilePage() {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between p-3 border border-[#262626] bg-[#171717]">
+                <div className="flex items-center justify-between p-3 border border-[#262626] bg-[#171717] rounded-lg">
                   <span className="text-zinc-100 uppercase text-[11px] font-semibold">Publish Marketplace Additives</span>
                   {profile.canPublishMarketplace ? (
                     <span className="font-bold uppercase text-zinc-100">[AUTHORIZED]</span>
@@ -517,7 +517,7 @@ export default function UserProfilePage() {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between p-3 border border-[#262626] bg-[#171717]">
+                <div className="flex items-center justify-between p-3 border border-[#262626] bg-[#171717] rounded-lg">
                   <span className="text-zinc-100 uppercase text-[11px] font-semibold">Cluster Governance Access</span>
                   {profile.canAdministerCluster || profile.role === 'SuperAdmin' || profile.role === 'Admin' ? (
                     <span className="font-bold uppercase text-zinc-100">[SUPERADMIN]</span>
@@ -529,7 +529,7 @@ export default function UserProfilePage() {
             </div>
 
             {/* Quick Actions */}
-            <div className="p-6 border border-[#262626] bg-[#171717] space-y-3 font-mono text-xs">
+            <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-3 font-mono text-xs">
               <span className="text-xs text-zinc-100 font-bold uppercase tracking-wider block mb-2 pb-1 border-b border-[#262626]">
                 Account Actions
               </span>
@@ -554,7 +554,7 @@ export default function UserProfilePage() {
 
               <button
                 onClick={logout}
-                className="w-full py-2 px-3 border border-[#262626] bg-[#171717] hover:bg-red-600 hover:text-white text-zinc-100 font-bold uppercase transition-colors text-left"
+                className="w-full py-2 px-4 border border-[#262626] bg-[#171717] hover:bg-rose-950/40 hover:border-rose-500/50 hover:text-rose-400 text-zinc-100 font-bold uppercase transition-colors text-left rounded-lg"
               >
                 Sign Out of Control Plane
               </button>

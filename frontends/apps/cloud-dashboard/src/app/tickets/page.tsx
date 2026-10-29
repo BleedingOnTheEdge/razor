@@ -206,7 +206,7 @@ export default function OperatorTicketsPage() {
         <button
           type="button"
           onClick={() => setCreateModalOpen(true)}
-          className="px-4 py-2 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium text-xs font-bold uppercase flex items-center gap-2 rounded-none transition-colors self-start md:self-auto"
+          className="px-4 py-2 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium text-xs font-bold uppercase flex items-center gap-2 transition-colors self-start md:self-auto"
         >
           <Plus className="w-4 h-4" />
           <span>New Ticket</span>
@@ -215,7 +215,7 @@ export default function OperatorTicketsPage() {
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="p-4 border border-[#262626] bg-[#171717] space-y-1">
+        <div className="p-4 border border-[#262626] bg-[#171717] rounded-xl space-y-1">
           <div className="flex items-center justify-between text-xs font-bold uppercase text-zinc-100">
             <span>Awaiting Triage</span>
             <Clock className="w-3.5 h-3.5" />
@@ -223,7 +223,7 @@ export default function OperatorTicketsPage() {
           <p className="text-2xl font-bold font-mono text-zinc-100">{openCount}</p>
         </div>
 
-        <div className="p-4 border border-[#262626] bg-[#171717] space-y-1">
+        <div className="p-4 border border-[#262626] bg-[#171717] rounded-xl space-y-1">
           <div className="flex items-center justify-between text-xs font-bold uppercase text-zinc-100">
             <span>Active Investigations</span>
             <Clock className="w-3.5 h-3.5" />
@@ -231,7 +231,7 @@ export default function OperatorTicketsPage() {
           <p className="text-2xl font-bold font-mono text-zinc-100">{inProgressCount}</p>
         </div>
 
-        <div className="p-4 border border-[#262626] bg-[#171717] space-y-1">
+        <div className="p-4 border border-[#262626] bg-[#171717] rounded-xl space-y-1">
           <div className="flex items-center justify-between text-xs font-bold uppercase text-zinc-100">
             <span>Critical / Incidents</span>
             <ShieldAlert className="w-3.5 h-3.5" />
@@ -239,7 +239,7 @@ export default function OperatorTicketsPage() {
           <p className="text-2xl font-bold font-mono text-rose-400">{incidentCount}</p>
         </div>
 
-        <div className="p-4 border border-[#262626] bg-[#171717] space-y-1">
+        <div className="p-4 border border-[#262626] bg-[#171717] rounded-xl space-y-1">
           <div className="flex items-center justify-between text-xs font-bold uppercase text-zinc-100">
             <span>Resolved / Closed</span>
             <CheckCircle2 className="w-3.5 h-3.5" />
@@ -249,7 +249,7 @@ export default function OperatorTicketsPage() {
       </div>
 
       {/* Multi-Param Filter & Sort Control Bar */}
-      <div className="p-4 border border-[#262626] bg-[#171717] space-y-3">
+      <div className="p-4 border border-[#262626] bg-[#171717] rounded-xl space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
           {/* Search */}
           <div className="relative w-full sm:w-72">
@@ -260,7 +260,7 @@ export default function OperatorTicketsPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && loadTickets()}
               placeholder="SEARCH TICKETS..."
-              className="w-full pl-8 pr-3 py-1.5 bg-[#171717] border border-[#262626] text-xs font-mono text-zinc-100 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none uppercase placeholder:text-zinc-400"
+              className="w-full pl-8 pr-3 py-1.5 bg-[#171717] border border-[#262626] text-xs font-mono text-zinc-100 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md uppercase placeholder:text-zinc-400"
             />
           </div>
 
@@ -272,7 +272,7 @@ export default function OperatorTicketsPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="px-2 py-1.5 bg-[#171717] border border-[#262626] text-xs font-bold uppercase rounded-none"
+              className="px-2 py-1.5 bg-[#171717] border border-[#262626] text-xs font-bold uppercase rounded-md focus:outline-none focus:border-[#3ECF8E]"
             >
               <option value="updatedAt">Updated At</option>
               <option value="createdAt">Created At</option>
@@ -298,7 +298,7 @@ export default function OperatorTicketsPage() {
                 key={s}
                 type="button"
                 onClick={() => setStatusFilter(s)}
-                className={`px-2 py-0.5 border border-[#262626] uppercase text-[10px] font-bold transition-colors ${
+                className={`px-2.5 py-0.5 border border-[#262626] rounded-full uppercase text-[10px] font-bold transition-colors ${
                   statusFilter === s ? 'bg-black text-white' : 'bg-[#171717] text-zinc-100 rounded-xl hover:bg-[#1f1f1f]'
                 }`}
               >
@@ -315,7 +315,7 @@ export default function OperatorTicketsPage() {
                 key={p}
                 type="button"
                 onClick={() => setPriorityFilter(p)}
-                className={`px-2 py-0.5 border border-[#262626] uppercase text-[10px] font-bold transition-colors ${
+                className={`px-2.5 py-0.5 border border-[#262626] rounded-full uppercase text-[10px] font-bold transition-colors ${
                   priorityFilter === p ? 'bg-black text-white' : 'bg-[#171717] text-zinc-100 rounded-xl hover:bg-[#1f1f1f]'
                 }`}
               >
@@ -332,7 +332,7 @@ export default function OperatorTicketsPage() {
                 key={c}
                 type="button"
                 onClick={() => setCategoryFilter(c)}
-                className={`px-2 py-0.5 border border-[#262626] uppercase text-[10px] font-bold transition-colors ${
+                className={`px-2.5 py-0.5 border border-[#262626] rounded-full uppercase text-[10px] font-bold transition-colors ${
                   categoryFilter === c ? 'bg-black text-white' : 'bg-[#171717] text-zinc-100 rounded-xl hover:bg-[#1f1f1f]'
                 }`}
               >
@@ -348,12 +348,12 @@ export default function OperatorTicketsPage() {
         {/* Ticket List */}
         <div className="lg:col-span-5 space-y-3">
           {loading ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-3 border border-[#262626] bg-[#171717] p-6">
+            <div className="py-20 flex flex-col items-center justify-center gap-3 border border-[#262626] bg-[#171717] p-6 rounded-xl">
               <Loader2 className="w-6 h-6 animate-spin text-zinc-100" />
               <p className="text-xs font-bold uppercase">Loading tickets...</p>
             </div>
           ) : sortedTickets.length === 0 ? (
-            <div className="py-16 text-center border border-[#262626] p-6 bg-[#171717] space-y-2">
+            <div className="py-16 text-center border border-[#262626] p-6 bg-[#171717] space-y-2 rounded-xl">
               <LifeBuoy className="w-8 h-8 text-zinc-100 mx-auto" />
               <p className="text-xs font-bold uppercase">No matching tickets in queue</p>
             </div>
@@ -362,23 +362,23 @@ export default function OperatorTicketsPage() {
               <div
                 key={t.id}
                 onClick={() => setSelectedTicket(t)}
-                className={`p-4 border transition-all cursor-pointer ${
+                className={`p-4 border rounded-xl transition-all cursor-pointer ${
                   selectedTicket?.id === t.id
-                    ? 'border-[#262626] bg-[#1f1f1f] ring-2 ring-black'
-                    : 'border-[#262626] bg-white hover:bg-[#141414]'
+                    ? 'border-[#3ECF8E] bg-[#1f1f1f] ring-1 ring-[#3ECF8E]/30'
+                    : 'border-[#262626] bg-[#171717] hover:bg-[#1f1f1f]'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <div className="flex items-center gap-1.5">
                     <span
-                      className={`px-2 py-0.5 border border-[#262626] text-[10px] font-bold uppercase ${
+                      className={`px-2.5 py-0.5 border border-[#262626] rounded-full text-[10px] font-bold uppercase ${
                         t.status === 'Open'
-                          ? 'bg-[#171717] text-zinc-100 rounded-xl'
+                          ? 'bg-[#171717] text-zinc-100'
                           : t.status === 'InProgress'
-                          ? 'bg-black text-white'
+                          ? 'bg-[#222222] text-amber-400 border-amber-500/30'
                           : t.status === 'Resolved'
-                          ? 'bg-[#3ECF8E] text-[#0f0f0f] text-white'
-                          : 'bg-zinc-200 text-zinc-100'
+                          ? 'bg-[#3ECF8E] text-[#0f0f0f]'
+                          : 'bg-[#141414] text-zinc-400'
                       }`}
                     >
                       {t.status}
@@ -413,7 +413,7 @@ export default function OperatorTicketsPage() {
           )}
 
           {/* Pagination Controls */}
-          <div className="flex items-center justify-between p-3 border border-[#262626] bg-[#171717] text-xs">
+          <div className="flex items-center justify-between p-3 border border-[#262626] bg-[#171717] text-xs rounded-xl">
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -437,7 +437,7 @@ export default function OperatorTicketsPage() {
               <select
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
-                className="px-1.5 py-0.5 border border-[#262626] bg-[#171717] text-xs font-bold rounded-none"
+                className="px-1.5 py-0.5 border border-[#262626] bg-[#171717] text-xs font-bold rounded-md focus:outline-none focus:border-[#3ECF8E]"
               >
                 <option value={5}>5</option>
                 <option value={10}>10</option>
@@ -451,13 +451,13 @@ export default function OperatorTicketsPage() {
         {/* Selected Ticket Triage Details & DESC Message Stream */}
         <div className="lg:col-span-7">
           {selectedTicket ? (
-            <div className="border border-[#262626] bg-[#171717] p-6 space-y-6">
+            <div className="border border-[#262626] bg-[#171717] p-6 rounded-xl space-y-6">
               {/* Header & Status Actions */}
               <div className="space-y-4 border-b border-[#262626] pb-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="px-2 py-0.5 border border-[#262626] bg-[#171717] text-[10px] font-bold uppercase">
+                      <span className="px-2.5 py-0.5 border border-[#262626] bg-[#171717] text-[10px] font-bold uppercase rounded-full">
                         Target: {selectedTicket.targetType}
                       </span>
                       <span className="text-xs font-bold uppercase">
@@ -474,7 +474,7 @@ export default function OperatorTicketsPage() {
                         type="button"
                         onClick={() => handleStatusTransition(selectedTicket.id, 'InProgress')}
                         disabled={updatingStatus}
-                        className="px-3 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] text-xs font-bold uppercase transition-colors"
+                        className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full text-xs font-bold uppercase transition-colors"
                       >
                         Mark In-Progress
                       </button>
@@ -484,7 +484,7 @@ export default function OperatorTicketsPage() {
                         type="button"
                         onClick={() => handleStatusTransition(selectedTicket.id, 'Resolved')}
                         disabled={updatingStatus}
-                        className="px-3 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#3ECF8E] text-[#0f0f0f] hover:text-white text-zinc-100 text-xs font-bold uppercase transition-colors"
+                        className="px-3.5 py-1.5 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full text-xs font-bold uppercase transition-colors"
                       >
                         Resolve
                       </button>
@@ -494,7 +494,7 @@ export default function OperatorTicketsPage() {
                         type="button"
                         onClick={() => handleStatusTransition(selectedTicket.id, 'Closed')}
                         disabled={updatingStatus}
-                        className="px-3 py-1.5 border border-[#262626] bg-[#171717] hover:bg-red-600 hover:text-white text-zinc-100 text-xs font-bold uppercase transition-colors"
+                        className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-rose-950/40 hover:border-rose-500/50 text-rose-400 rounded-full text-xs font-bold uppercase transition-colors"
                       >
                         Close
                       </button>
@@ -503,7 +503,7 @@ export default function OperatorTicketsPage() {
                         type="button"
                         onClick={() => handleStatusTransition(selectedTicket.id, 'Open')}
                         disabled={updatingStatus}
-                        className="px-3 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] text-xs font-bold uppercase transition-colors"
+                        className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full text-xs font-bold uppercase transition-colors"
                       >
                         Reopen
                       </button>
@@ -519,7 +519,7 @@ export default function OperatorTicketsPage() {
               </div>
 
               {/* Instant Reply Composer placed at TOP of stream so NO scrolling required */}
-              <form onSubmit={handleSendReply} className="border border-[#262626] p-4 bg-[#141414] space-y-3">
+              <form onSubmit={handleSendReply} className="border border-[#262626] p-4 bg-[#141414] rounded-xl space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase text-zinc-100 flex items-center gap-1.5">
                     <MessageSquare className="w-4 h-4 text-zinc-100" />
@@ -529,7 +529,7 @@ export default function OperatorTicketsPage() {
                     type="text"
                     value={operatorName}
                     onChange={(e) => setOperatorName(e.target.value)}
-                    className="bg-[#171717] border border-[#262626] px-2.5 py-1 text-[11px] font-mono text-zinc-100 focus:outline-none focus:border-[#3ECF8E] uppercase font-bold"
+                    className="bg-[#171717] border border-[#262626] px-2.5 py-1 text-[11px] font-mono text-zinc-100 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md uppercase font-bold"
                     placeholder="Operator Name"
                   />
                 </div>
@@ -539,7 +539,7 @@ export default function OperatorTicketsPage() {
                   onChange={(e) => setReplyText(e.target.value)}
                   rows={3}
                   placeholder="Draft resolution notes, instructions for the trader, or internal telemetry findings..."
-                  className="w-full bg-[#171717] border border-[#262626] p-3 text-xs text-zinc-100 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black font-mono leading-relaxed rounded-none"
+                  className="w-full bg-[#171717] border border-[#262626] p-3 text-xs text-zinc-100 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 font-mono leading-relaxed rounded-md"
                   required
                 />
 
@@ -547,7 +547,7 @@ export default function OperatorTicketsPage() {
                   <button
                     type="submit"
                     disabled={submittingReply}
-                    className="flex items-center gap-2 px-5 py-2 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium text-xs font-bold uppercase transition-all disabled:opacity-50 rounded-none"
+                    className="flex items-center gap-2 px-5 py-2 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium text-xs font-bold uppercase transition-all disabled:opacity-50"
                   >
                     {submittingReply ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -577,21 +577,21 @@ export default function OperatorTicketsPage() {
                 </div>
 
                 {visibleMessages.length === 0 ? (
-                  <p className="text-xs text-zinc-100 italic p-4 border border-[#262626] bg-[#171717]">
+                  <p className="text-xs text-zinc-100 italic p-4 border border-[#262626] bg-[#171717] rounded-lg">
                     No operator replies yet. Initial request below:
                   </p>
                 ) : (
                   visibleMessages.map((m) => (
                     <div
                       key={m.id}
-                      className={`border border-[#262626] p-4 space-y-2 ${
-                        m.authorRole === 'Operator' ? 'bg-white' : 'bg-[#141414]'
+                      className={`border border-[#262626] rounded-lg p-4 space-y-2 ${
+                        m.authorRole === 'Operator' ? 'bg-[#1f1f1f]' : 'bg-[#141414]'
                       }`}
                     >
                       <div className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2">
                           <span className="font-bold uppercase text-zinc-100">@{m.authorName}</span>
-                          <span className="px-1.5 py-0.5 border border-[#262626] text-[9px] font-bold uppercase bg-[#171717]">
+                          <span className="px-2 py-0.5 border border-[#262626] text-[9px] font-bold uppercase bg-[#171717] rounded-full">
                             {m.authorRole}
                           </span>
                         </div>
@@ -607,7 +607,7 @@ export default function OperatorTicketsPage() {
                 )}
 
                 {/* Initial Description Card at Bottom of stream */}
-                <div className="border border-[#262626] p-4 bg-[#1f1f1f] space-y-1">
+                <div className="border border-[#262626] p-4 bg-[#1f1f1f] rounded-lg space-y-1">
                   <div className="text-[10px] font-bold uppercase text-zinc-100">Initial Description:</div>
                   <p className="text-xs text-zinc-100 leading-relaxed whitespace-pre-wrap">
                     {selectedTicket.description}
@@ -616,7 +616,7 @@ export default function OperatorTicketsPage() {
               </div>
             </div>
           ) : (
-            <div className="min-h-[300px] flex flex-col items-center justify-center border border-[#262626] p-8 text-center bg-[#171717] space-y-2">
+            <div className="min-h-[300px] flex flex-col items-center justify-center border border-[#262626] p-8 text-center bg-[#171717] space-y-2 rounded-xl">
               <LifeBuoy className="w-8 h-8 text-zinc-100" />
               <p className="text-xs font-bold uppercase text-zinc-100">
                 Select a ticket from the queue to view details and post replies

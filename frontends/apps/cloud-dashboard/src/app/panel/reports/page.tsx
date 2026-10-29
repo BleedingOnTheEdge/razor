@@ -161,7 +161,7 @@ export default function ReportsListingPage() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border border-[#262626] bg-[#171717]">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border border-[#262626] bg-[#171717] rounded-xl">
         <div>
           <label className="block font-bold text-zinc-100 mb-1">Search Hash or ID</label>
           <input
@@ -230,11 +230,11 @@ export default function ReportsListingPage() {
           [COMPILING AUDIT REPORTS FROM CLOUD DATABASE...]
         </div>
       ) : error ? (
-        <div className="p-4 border border-[#262626] text-rose-400 font-bold">
+        <div className="p-4 border border-rose-800/40 bg-rose-950/20 text-rose-300 font-bold rounded-xl">
           [ERROR]: {error}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="py-16 text-center border border-[#262626] p-8">
+        <div className="py-16 text-center border border-[#262626] p-8 bg-[#141414] rounded-xl text-zinc-400">
           <p className="font-bold text-zinc-100 uppercase">[NO REPORTS FOUND MATCHING FILTER CRITERIA]</p>
           <p className="mt-2 text-zinc-100 font-normal">Execute a Backtest, Walk-Forward, or Optimization flow to generate auditable provenance reports.</p>
           <div className="mt-4">

@@ -131,7 +131,7 @@ export function CommandDispatchSection({
   return (
     <div className="space-y-6 font-mono text-xs">
       {/* Dispatch Command Form */}
-      <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+      <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
         <div>
           <h3 className="text-sm font-bold text-zinc-100 uppercase tracking-wider flex items-center gap-2">
             <Send className="w-4 h-4 text-zinc-100" />
@@ -153,10 +153,10 @@ export function CommandDispatchSection({
                 key={preset.id}
                 type="button"
                 onClick={() => onApplyPreset(preset)}
-                className={`p-2.5 border text-left transition-colors flex flex-col justify-between ${
+                className={`p-2.5 rounded-lg border text-left transition-colors flex flex-col justify-between ${
                   cmdId === preset.id
-                    ? 'border-[#262626] bg-black text-white font-bold'
-                    : 'border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626]'
+                    ? 'border-[#3ECF8E] bg-[#3ECF8E]/10 text-[#3ECF8E] font-bold'
+                    : 'border-[#262626] bg-[#141414] hover:bg-[#1f1f1f] text-zinc-300'
                 }`}
               >
                 <span className="font-bold"><span>{preset.type}</span> (#{preset.id})</span>
@@ -176,7 +176,7 @@ export function CommandDispatchSection({
                 value={cmdId}
                 onChange={(e) => setCmdId(Number(e.target.value))}
                 type="number"
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-xs font-mono text-zinc-100 focus:outline-none focus:border-[#3ECF8E]"
+                className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-xs font-mono text-zinc-100 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
                 placeholder="1001"
                 required
               />
@@ -190,7 +190,7 @@ export function CommandDispatchSection({
                 value={cmdType}
                 onChange={(e) => setCmdType(e.target.value)}
                 type="text"
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-xs font-mono text-zinc-100 focus:outline-none focus:border-[#3ECF8E]"
+                className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-xs font-mono text-zinc-100 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
                 placeholder="Ping / SoftReload"
                 required
               />
@@ -205,7 +205,7 @@ export function CommandDispatchSection({
               value={cmdParams}
               onChange={(e) => setCmdParams(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-xs font-mono text-zinc-100 focus:outline-none focus:border-[#3ECF8E]"
+              className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-xs font-mono text-zinc-100 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
               placeholder="{}"
             />
           </div>
@@ -213,16 +213,16 @@ export function CommandDispatchSection({
           <button
             type="submit"
             disabled={dispatching}
-            className="w-full py-2.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] disabled:opacity-50 text-zinc-100 font-bold text-xs transition-colors flex items-center justify-center gap-2"
+            className="w-full py-2.5 border border-[#262626] bg-[#3ECF8E] hover:bg-[#34b27b] text-[#0f0f0f] rounded-full disabled:opacity-50 font-bold text-xs transition-colors flex items-center justify-center gap-2"
           >
             <Send className="w-3.5 h-3.5" />
-            <span>{dispatching ? '[DISPATCHING...]' : '[TRANSMIT COMMAND TO ENGINE]'}</span>
+            <span>{dispatching ? 'DISPATCHING...' : 'TRANSMIT COMMAND TO ENGINE'}</span>
           </button>
         </form>
       </div>
 
       {/* Dispatched Commands History */}
-      <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+      <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-[#262626]">
           <h3 className="text-sm font-bold text-zinc-100 uppercase tracking-wider">
             Command History & Wire Responses ({commands.length})
@@ -233,7 +233,7 @@ export function CommandDispatchSection({
         </div>
 
         {commands.length === 0 ? (
-          <div className="py-6 text-center text-xs text-zinc-100 border border-[#262626]">
+          <div className="py-6 text-center text-xs text-zinc-400 border border-[#262626] bg-[#141414] rounded-lg">
             [NO COMMANDS DISPATCHED TO THIS ENGINE YET]
           </div>
         ) : (
@@ -242,7 +242,7 @@ export function CommandDispatchSection({
               <div
                 key={cmd.commandId}
                 onClick={() => onSelectCommand?.(cmd)}
-                className="p-3 bg-[#171717] hover:bg-[#141414] cursor-pointer transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                className="p-3 rounded-lg bg-[#141414] hover:bg-[#1f1f1f] cursor-pointer transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-2 my-1"
                 title="Click to view full event details and engine return response"
               >
                 <div className="space-y-1">
@@ -254,7 +254,7 @@ export function CommandDispatchSection({
                       [{cmd.status?.toUpperCase()}]
                     </span>
                     {cmd.errorMessage && (
-                      <span className="text-[10px] font-bold text-rose-400 border border-red-500 px-1 bg-red-50">
+                      <span className="text-[10px] font-bold text-rose-400 border border-rose-800/40 px-2 py-0.5 rounded-full bg-rose-950/20">
                         ERROR
                       </span>
                     )}
@@ -267,10 +267,10 @@ export function CommandDispatchSection({
 
                 <button
                   type="button"
-                  className="px-2 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold text-[11px] flex items-center gap-1 self-start sm:self-auto"
+                  className="px-3 py-1 border border-[#262626] bg-[#141414] hover:bg-[#1f1f1f] text-zinc-200 rounded-full font-bold text-[11px] flex items-center gap-1 self-start sm:self-auto transition-colors"
                 >
                   <Eye className="w-3 h-3" />
-                  <span>[INSPECT RESPONSE]</span>
+                  <span>Inspect</span>
                 </button>
               </div>
             ))}

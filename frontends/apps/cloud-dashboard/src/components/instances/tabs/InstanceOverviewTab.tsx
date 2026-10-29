@@ -32,16 +32,16 @@ export function InstanceOverviewTab({
   return (
     <div className="space-y-6">
       {/* Dedicated Live Manager Banner */}
-      <div className="p-5 border border-[#262626] bg-[#171717] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="p-3 border border-[#262626] bg-[#141414] text-zinc-200">
+          <div className="p-3 border border-[#262626] bg-[#141414] rounded-lg text-zinc-200">
             <Radio className="w-5 h-5 text-zinc-100" />
           </div>
           <div>
             <h4 className="text-base font-bold text-zinc-100 flex items-center gap-2 font-mono uppercase">
               <span>Dedicated Live Trading & Flow Operations</span>
-              <span className="px-2 py-0.5 text-[10px] font-bold border border-[#262626] bg-green-50 text-green-700">
-                [LIVE READY]
+              <span className="px-2.5 py-0.5 text-[10px] font-bold rounded-full border border-[#3ECF8E]/30 bg-emerald-950/20 text-[#3ECF8E]">
+                LIVE READY
               </span>
             </h4>
             <p className="text-xs text-zinc-100 font-normal mt-0.5">
@@ -51,32 +51,32 @@ export function InstanceOverviewTab({
         </div>
         <Link
           href={`/panel/live?instanceId=${instanceId}`}
-          className="px-4 py-2 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold text-xs font-mono transition-colors flex items-center gap-2 whitespace-nowrap"
+          className="px-4 py-2 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-bold text-xs font-mono transition-colors flex items-center gap-2 whitespace-nowrap"
         >
-          <span>[LAUNCH LIVE MANAGER]</span>
+          <span>LAUNCH LIVE MANAGER</span>
           <ArrowUpRight className="w-4 h-4" />
         </Link>
       </div>
 
       {/* Quick Metadata & State */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs font-mono">
-        <div className="p-4 border border-[#262626] bg-[#171717]">
+        <div className="p-4 border border-[#262626] bg-[#171717] rounded-xl">
           <span className="font-bold text-zinc-100 uppercase block">Engine Identifier</span>
           <span className="text-sm font-bold text-zinc-100 mt-1 block font-mono">{instance.engineId}</span>
         </div>
-        <div className="p-4 border border-[#262626] bg-[#171717]">
+        <div className="p-4 border border-[#262626] bg-[#171717] rounded-xl">
           <span className="font-bold text-zinc-100 uppercase block">Account & License</span>
           <span className="text-sm font-bold text-zinc-100 mt-1 block font-mono">
             {formatHash(instance.licenseId || instance.accountId || 'standard', 8)}
           </span>
         </div>
-        <div className="p-4 border border-[#262626] bg-[#171717]">
+        <div className="p-4 border border-[#262626] bg-[#171717] rounded-xl">
           <span className="font-bold text-zinc-100 uppercase block">Bootstrap Registered</span>
           <span className="text-sm font-bold text-zinc-100 mt-1 block font-mono">
             {formatTimestamp(instance.createdAt)}
           </span>
         </div>
-        <div className="p-4 border border-[#262626] bg-[#171717]">
+        <div className="p-4 border border-[#262626] bg-[#171717] rounded-xl">
           <span className="font-bold text-zinc-100 uppercase block">Last Cloud Heartbeat</span>
           <span className="text-sm font-bold text-zinc-100 mt-1 block font-mono">
             {instance.lastSeenAt ? formatTimestamp(instance.lastSeenAt) : 'Never'}
@@ -85,7 +85,7 @@ export function InstanceOverviewTab({
       </div>
 
       {/* Quick Profile Slots Snapshot */}
-      <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+      <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
           <div className="flex items-center gap-2">
             <SlidersHorizontal className="w-4 h-4 text-zinc-100" />
@@ -106,25 +106,25 @@ export function InstanceOverviewTab({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs font-mono">
-          <div className="p-3 border border-[#262626] bg-[#141414]">
+          <div className="p-3 border border-[#262626] bg-[#141414] rounded-lg">
             <span className="font-bold text-zinc-100 block text-[11px] uppercase">Broker / Adapter</span>
             <span className="text-sm font-bold text-zinc-100 mt-1 block">
               {instance.activeSelections?.adapter || 'None (Dormant)'}
             </span>
           </div>
-          <div className="p-3 border border-[#262626] bg-[#141414]">
+          <div className="p-3 border border-[#262626] bg-[#141414] rounded-lg">
             <span className="font-bold text-zinc-100 block text-[11px] uppercase">Order Strategy</span>
             <span className="text-sm font-bold text-zinc-100 mt-1 block">
               {instance.activeSelections?.strategy || 'None (Dormant)'}
             </span>
           </div>
-          <div className="p-3 border border-[#262626] bg-[#141414]">
+          <div className="p-3 border border-[#262626] bg-[#141414] rounded-lg">
             <span className="font-bold text-zinc-100 block text-[11px] uppercase">Neural Network</span>
             <span className="text-sm font-bold text-zinc-100 mt-1 block">
               {instance.activeSelections?.neuralNetwork || 'None (Bypassed)'}
             </span>
           </div>
-          <div className="p-3 border border-[#262626] bg-[#141414]">
+          <div className="p-3 border border-[#262626] bg-[#141414] rounded-lg">
             <span className="font-bold text-zinc-100 block text-[11px] uppercase">Hook Interceptors</span>
             <span className="text-sm font-bold text-zinc-100 mt-1 block">
               {instance.activeSelections?.hookPlugins?.length || 0} active
@@ -134,7 +134,7 @@ export function InstanceOverviewTab({
       </div>
 
       {/* Quick Command Summary Card */}
-      <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+      <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
           <div className="flex items-center gap-2">
             <Terminal className="w-4 h-4 text-zinc-100" />
@@ -156,7 +156,7 @@ export function InstanceOverviewTab({
 
         {commands.length === 0 ? (
           <div className="py-6 text-center text-xs font-mono text-zinc-100">
-            [NO COMMANDS DISPATCHED TO THIS INSTANCE YET]
+            No commands dispatched to this instance yet
           </div>
         ) : (
           <div className="divide-y divide-[#262626]">
@@ -164,7 +164,7 @@ export function InstanceOverviewTab({
               <div
                 key={cmd.commandId || idx}
                 onClick={() => onSelectCommand?.(cmd)}
-                className="py-2.5 flex items-center justify-between text-xs font-mono hover:bg-[#141414] cursor-pointer px-2 transition-colors"
+                className="py-2.5 flex items-center justify-between text-xs font-mono hover:bg-[#141414] rounded-lg cursor-pointer px-2.5 transition-colors"
                 title="Click to view full command payload and response"
               >
                 <div className="flex items-center gap-2.5">

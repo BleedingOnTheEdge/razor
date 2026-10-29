@@ -22,7 +22,7 @@ export function ClusterSettingsForm({
   return (
     <form onSubmit={onSave} className="space-y-6">
       {/* 1. Fleet Policies */}
-      <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+      <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
         <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
           <Server className="w-4 h-4 text-zinc-100" />
           <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100">
@@ -36,7 +36,7 @@ export function ClusterSettingsForm({
               type="number"
               value={settings.heartbeatIntervalSeconds}
               onChange={(e) => setSettings({ ...settings, heartbeatIntervalSeconds: Number(e.target.value) })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
           <div>
@@ -45,7 +45,7 @@ export function ClusterSettingsForm({
               type="number"
               value={settings.heartbeatTimeoutSeconds}
               onChange={(e) => setSettings({ ...settings, heartbeatTimeoutSeconds: Number(e.target.value) })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
           <div>
@@ -54,7 +54,7 @@ export function ClusterSettingsForm({
               type="number"
               value={settings.maxFleetSizePerAccount}
               onChange={(e) => setSettings({ ...settings, maxFleetSizePerAccount: Number(e.target.value) })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
           <div>
@@ -63,14 +63,14 @@ export function ClusterSettingsForm({
               type="number"
               value={settings.commandQueueExpirySeconds}
               onChange={(e) => setSettings({ ...settings, commandQueueExpirySeconds: Number(e.target.value) })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
         </div>
       </div>
 
       {/* 2. Security & Access */}
-      <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+      <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
         <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
           <Shield className="w-4 h-4 text-zinc-100" />
           <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100">
@@ -84,7 +84,7 @@ export function ClusterSettingsForm({
               type="number"
               value={settings.enforceStrictKeyRotationDays}
               onChange={(e) => setSettings({ ...settings, enforceStrictKeyRotationDays: Number(e.target.value) })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
           <div>
@@ -93,7 +93,7 @@ export function ClusterSettingsForm({
               type="text"
               value={settings.allowedIpRanges}
               onChange={(e) => setSettings({ ...settings, allowedIpRanges: e.target.value })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
           <div>
@@ -102,7 +102,7 @@ export function ClusterSettingsForm({
               type="number"
               value={settings.sessionTimeoutMinutes ?? 120}
               onChange={(e) => setSettings({ ...settings, sessionTimeoutMinutes: Number(e.target.value) })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
           <div className="flex items-center gap-2 pt-2">
@@ -111,7 +111,7 @@ export function ClusterSettingsForm({
               id="selfReg"
               checked={settings.allowSelfRegistration}
               onChange={(e) => setSettings({ ...settings, allowSelfRegistration: e.target.checked })}
-              className="w-4 h-4 border border-[#262626] rounded-none text-zinc-100 cursor-pointer accent-black"
+              className="w-4 h-4 border border-[#262626] rounded text-zinc-100 cursor-pointer accent-[#3ECF8E]"
             />
             <label htmlFor="selfReg" className="text-zinc-100 font-semibold uppercase text-[11px] cursor-pointer">Allow Public Self-Registration</label>
           </div>
@@ -121,7 +121,7 @@ export function ClusterSettingsForm({
               id="mfa"
               checked={settings.requireMfaForLiveTrading}
               onChange={(e) => setSettings({ ...settings, requireMfaForLiveTrading: e.target.checked })}
-              className="w-4 h-4 border border-[#262626] rounded-none text-zinc-100 cursor-pointer accent-black"
+              className="w-4 h-4 border border-[#262626] rounded text-zinc-100 cursor-pointer accent-[#3ECF8E]"
             />
             <label htmlFor="mfa" className="text-zinc-100 font-semibold uppercase text-[11px] cursor-pointer">Require 2FA For Live Execution</label>
           </div>
@@ -129,7 +129,7 @@ export function ClusterSettingsForm({
       </div>
 
       {/* 3. Marketplace & Additives */}
-      <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+      <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
         <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
           <ShoppingBag className="w-4 h-4 text-zinc-100" />
           <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100">
@@ -144,7 +144,7 @@ export function ClusterSettingsForm({
               step="0.1"
               value={settings.platformFeePercent}
               onChange={(e) => setSettings({ ...settings, platformFeePercent: Number(e.target.value) })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
           <div className="flex items-center gap-2 pt-6">
@@ -153,7 +153,7 @@ export function ClusterSettingsForm({
               id="curation"
               checked={settings.requireCurationApproval}
               onChange={(e) => setSettings({ ...settings, requireCurationApproval: e.target.checked })}
-              className="w-4 h-4 border border-[#262626] rounded-none text-zinc-100 cursor-pointer accent-black"
+              className="w-4 h-4 border border-[#262626] rounded text-zinc-100 cursor-pointer accent-[#3ECF8E]"
             />
             <label htmlFor="curation" className="text-zinc-100 font-semibold uppercase text-[11px] cursor-pointer">Require Staff Curation Before Public Listing</label>
           </div>
@@ -161,7 +161,7 @@ export function ClusterSettingsForm({
       </div>
 
       {/* 4. Telemetry & Retention */}
-      <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+      <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
         <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
           <Database className="w-4 h-4 text-zinc-100" />
           <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100">
@@ -175,7 +175,7 @@ export function ClusterSettingsForm({
               type="number"
               value={settings.metricsRetentionDays ?? 30}
               onChange={(e) => setSettings({ ...settings, metricsRetentionDays: Number(e.target.value) })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
           <div>
@@ -184,7 +184,7 @@ export function ClusterSettingsForm({
               type="number"
               value={settings.auditLogRetentionDays ?? 365}
               onChange={(e) => setSettings({ ...settings, auditLogRetentionDays: Number(e.target.value) })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
           <div className="flex items-center gap-2 pt-6">
@@ -193,7 +193,7 @@ export function ClusterSettingsForm({
               id="detailedLog"
               checked={settings.detailedBehaviorLogging ?? true}
               onChange={(e) => setSettings({ ...settings, detailedBehaviorLogging: e.target.checked })}
-              className="w-4 h-4 border border-[#262626] rounded-none text-zinc-100 cursor-pointer accent-black"
+              className="w-4 h-4 border border-[#262626] rounded text-zinc-100 cursor-pointer accent-[#3ECF8E]"
             />
             <label htmlFor="detailedLog" className="text-zinc-100 font-semibold uppercase text-[11px] cursor-pointer">Record Granular Execution Telemetry</label>
           </div>
@@ -201,7 +201,7 @@ export function ClusterSettingsForm({
       </div>
 
       {/* 5. Messengers & Notification Integrations */}
-      <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+      <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-[#262626]">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-zinc-100" />
@@ -215,7 +215,7 @@ export function ClusterSettingsForm({
               id="msgAlerts"
               checked={settings.enableMessengerAlerts ?? true}
               onChange={(e) => setSettings({ ...settings, enableMessengerAlerts: e.target.checked })}
-              className="w-4 h-4 border border-[#262626] rounded-none text-zinc-100 cursor-pointer accent-black"
+              className="w-4 h-4 border border-[#262626] rounded text-zinc-100 cursor-pointer accent-[#3ECF8E]"
             />
             <label htmlFor="msgAlerts" className="text-zinc-100 font-mono font-bold uppercase text-[11px] cursor-pointer">
               Active Dispatch
@@ -230,7 +230,7 @@ export function ClusterSettingsForm({
               placeholder="bot123456789:ABCdefGHIjkl..."
               value={settings.telegramBotToken ?? ''}
               onChange={(e) => setSettings({ ...settings, telegramBotToken: e.target.value })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
           <div>
@@ -240,7 +240,7 @@ export function ClusterSettingsForm({
               placeholder="@razor_desk_alerts or -100123456789"
               value={settings.telegramDefaultChannel ?? ''}
               onChange={(e) => setSettings({ ...settings, telegramDefaultChannel: e.target.value })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
           <div>
@@ -250,7 +250,7 @@ export function ClusterSettingsForm({
               placeholder="https://discord.com/api/webhooks/..."
               value={settings.discordWebhookUrl ?? ''}
               onChange={(e) => setSettings({ ...settings, discordWebhookUrl: e.target.value })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
           <div>
@@ -260,14 +260,14 @@ export function ClusterSettingsForm({
               placeholder="https://hooks.slack.com/services/..."
               value={settings.slackWebhookUrl ?? ''}
               onChange={(e) => setSettings({ ...settings, slackWebhookUrl: e.target.value })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
         </div>
       </div>
 
       {/* 6. SMS Gateways */}
-      <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+      <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-[#262626]">
           <div className="flex items-center gap-2">
             <PhoneCall className="w-4 h-4 text-zinc-100" />
@@ -281,7 +281,7 @@ export function ClusterSettingsForm({
               id="smsAlerts"
               checked={settings.enableSmsAlerts ?? false}
               onChange={(e) => setSettings({ ...settings, enableSmsAlerts: e.target.checked })}
-              className="w-4 h-4 border border-[#262626] rounded-none text-zinc-100 cursor-pointer accent-black"
+              className="w-4 h-4 border border-[#262626] rounded text-zinc-100 cursor-pointer accent-[#3ECF8E]"
             />
             <label htmlFor="smsAlerts" className="text-zinc-100 font-mono font-bold uppercase text-[11px] cursor-pointer">
               Enable SMS Delivery
@@ -294,7 +294,7 @@ export function ClusterSettingsForm({
             <select
               value={settings.smsProvider ?? 'Twilio'}
               onChange={(e) => setSettings({ ...settings, smsProvider: e.target.value })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             >
               <option value="Twilio">Twilio Communications</option>
               <option value="AwsSns">AWS SNS Worldwide</option>
@@ -310,7 +310,7 @@ export function ClusterSettingsForm({
               placeholder="ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
               value={settings.smsApiKey ?? ''}
               onChange={(e) => setSettings({ ...settings, smsApiKey: e.target.value })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
           <div>
@@ -320,14 +320,14 @@ export function ClusterSettingsForm({
               placeholder="+12025550192 or RAZOR_ALERT"
               value={settings.smsSenderNumber ?? ''}
               onChange={(e) => setSettings({ ...settings, smsSenderNumber: e.target.value })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
         </div>
       </div>
 
       {/* 7. Payment Providers */}
-      <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+      <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
         <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
           <CreditCard className="w-4 h-4 text-zinc-100" />
           <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100">
@@ -340,7 +340,7 @@ export function ClusterSettingsForm({
             <select
               value={settings.paymentProvider ?? 'Stripe'}
               onChange={(e) => setSettings({ ...settings, paymentProvider: e.target.value })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             >
               <option value="Stripe">Stripe Connect</option>
               <option value="LemonSqueezy">Lemon Squeezy</option>
@@ -353,7 +353,7 @@ export function ClusterSettingsForm({
             <select
               value={settings.paymentCurrency ?? 'USD'}
               onChange={(e) => setSettings({ ...settings, paymentCurrency: e.target.value })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             >
               <option value="USD">USD ($)</option>
               <option value="EUR">EUR (€)</option>
@@ -368,7 +368,7 @@ export function ClusterSettingsForm({
               placeholder="pk_live_..."
               value={settings.paymentPublicKey ?? ''}
               onChange={(e) => setSettings({ ...settings, paymentPublicKey: e.target.value })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
           <div>
@@ -378,7 +378,7 @@ export function ClusterSettingsForm({
               placeholder="sk_live_..."
               value={settings.paymentSecretKey ?? ''}
               onChange={(e) => setSettings({ ...settings, paymentSecretKey: e.target.value })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
           <div className="sm:col-span-2">
@@ -388,14 +388,14 @@ export function ClusterSettingsForm({
               placeholder="whsec_..."
               value={settings.paymentWebhookSecret ?? ''}
               onChange={(e) => setSettings({ ...settings, paymentWebhookSecret: e.target.value })}
-              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md"
             />
           </div>
         </div>
       </div>
 
       {/* 8. Dynamic Subscription Tiers */}
-      <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+      <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
         <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
           <Layers className="w-4 h-4 text-zinc-100" />
           <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100">
@@ -409,7 +409,7 @@ export function ClusterSettingsForm({
           rows={6}
           value={settings.subscriptionTiersJson ?? ''}
           onChange={(e) => setSettings({ ...settings, subscriptionTiersJson: e.target.value })}
-          className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none leading-relaxed"
+          className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md leading-relaxed"
           placeholder='[{"tier":"Free","priceMonthly":0,"maxInstances":1,"allowLiveTrading":false,"allowOptimization":true,"storageDays":7}, ...]'
         />
       </div>
@@ -420,7 +420,7 @@ export function ClusterSettingsForm({
           type="button"
           onClick={onReset}
           disabled={savingSettings}
-          className="flex items-center gap-2 px-4 py-2 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-mono text-xs font-bold uppercase rounded-none transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-5 py-2 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium font-mono text-xs font-bold uppercase transition-colors disabled:opacity-50"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           <span>Reset Factory Defaults</span>
@@ -428,7 +428,7 @@ export function ClusterSettingsForm({
         <button
           type="submit"
           disabled={savingSettings}
-          className="flex items-center gap-2 px-6 py-2 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium font-mono text-xs font-bold uppercase rounded-none transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-6 py-2 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium font-mono text-xs font-bold uppercase transition-colors disabled:opacity-50"
         >
           <Save className="w-3.5 h-3.5" />
           <span>{savingSettings ? 'Saving...' : 'Save Platform Policies'}</span>

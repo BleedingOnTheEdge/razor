@@ -62,11 +62,11 @@ export function EquityCurveChart({ equityPoints }: EquityCurveChartProps) {
   if (equityPoints.length === 0) return null;
 
   return (
-    <div className="p-6 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-4">
+    <div className="p-6 rounded-2xl bg-[#171717] border border-[#262626] space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-4 pb-2">
         <div>
-          <h3 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-cyan-600" />
+          <h3 className="text-sm font-bold text-zinc-100 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-[#3ECF8E]" />
             <span>Realized Equity & Balance Progression Curve</span>
           </h3>
           <p className="text-xs text-zinc-500 mt-0.5 font-sans">
@@ -76,9 +76,9 @@ export function EquityCurveChart({ equityPoints }: EquityCurveChartProps) {
 
         {/* Inspect Tooltip Pill */}
         {hoveredPoint ? (
-          <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg bg-zinc-900 text-white font-mono text-xs">
+          <div className="flex items-center gap-3 px-3.5 py-1.5 rounded-full bg-[#141414] border border-[#262626] text-zinc-100 font-mono text-xs">
             <span className="text-zinc-400">{hoveredPoint.timestamp}</span>
-            <span className="font-bold text-cyan-400">Equity: {formatCurrency(hoveredPoint.equity)}</span>
+            <span className="font-bold text-[#3ECF8E]">Equity: {formatCurrency(hoveredPoint.equity)}</span>
             <span className="text-zinc-300">Bal: {formatCurrency(hoveredPoint.balance)}</span>
             <span className="text-rose-400">DD: -{(hoveredPoint.drawdownPct ?? 0).toFixed(2)}%</span>
           </div>
@@ -96,8 +96,8 @@ export function EquityCurveChart({ equityPoints }: EquityCurveChartProps) {
         >
           <defs>
             <linearGradient id="equityGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.25" />
-              <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.0" />
+              <stop offset="0%" stopColor="#3ECF8E" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="#3ECF8E" stopOpacity="0.0" />
             </linearGradient>
           </defs>
 

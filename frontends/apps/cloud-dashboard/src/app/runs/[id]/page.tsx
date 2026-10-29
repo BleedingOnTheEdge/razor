@@ -303,7 +303,7 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
 
   if (loading && !run) {
     return (
-      <div className="py-24 text-center text-sm font-medium text-slate-500 max-w-7xl">
+      <div className="py-24 text-center text-sm font-medium text-zinc-400 max-w-7xl">
         Connecting to live execution telemetry...
       </div>
     );
@@ -311,11 +311,11 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
 
   if (!run) {
     return (
-      <div className="p-8 text-center bg-white border border-slate-200 rounded-2xl max-w-md mx-auto mt-12 shadow-sm">
+      <div className="p-8 text-center bg-[#171717] border border-[#262626] rounded-2xl max-w-md mx-auto mt-12">
         <Activity className="w-10 h-10 text-rose-500 mx-auto mb-3" />
-        <h3 className="text-base font-bold text-slate-900 font-sans">Run Not Found</h3>
-        <p className="text-sm text-slate-500 mt-1">This flow run could not be found or has expired.</p>
-        <Link href="/panel/runs" className="mt-5 inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
+        <h3 className="text-base font-bold text-zinc-100 font-sans">Run Not Found</h3>
+        <p className="text-sm text-zinc-400 mt-1">This flow run could not be found or has expired.</p>
+        <Link href="/panel/runs" className="mt-5 inline-flex items-center gap-2 px-5 py-2 bg-[#3ECF8E] hover:bg-[#34b27b] text-[#0f0f0f] rounded-full text-sm font-semibold transition-colors">
           <ArrowLeft className="w-4 h-4" /> Return to Runs
         </Link>
       </div>
@@ -341,48 +341,48 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
       title: 'Net Profit',
       val: effMetrics.netProfit != null ? formatCurrency(effMetrics.netProfit) : '—',
       sub: effMetrics.totalReturn != null ? `${effMetrics.totalReturn >= 0 ? '+' : ''}${effMetrics.totalReturn.toFixed(2)}%` : 'Realized PnL',
-      col: (effMetrics.netProfit ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-700',
+      col: (effMetrics.netProfit ?? 0) >= 0 ? 'text-[#3ECF8E]' : 'text-rose-400',
     },
     {
       title: 'Sharpe Ratio',
       val: effMetrics.sharpeRatio != null ? effMetrics.sharpeRatio.toFixed(2) : '—',
       sub: 'Risk-adjusted return',
-      col: 'text-slate-900',
+      col: 'text-zinc-100',
     },
     {
       title: 'Max Drawdown',
       val: effMetrics.maxDrawdown != null ? `${effMetrics.maxDrawdown.toFixed(2)}%` : '—',
       sub: `Limit: ${cfg?.hooks?.maxDrawdownPct ?? 10}%`,
-      col: 'text-rose-700',
+      col: 'text-rose-400',
     },
     {
       title: 'Trade Count',
       val: effMetrics.tradeCount != null ? String(effMetrics.tradeCount) : '—',
       sub: 'Executed fills',
-      col: 'text-slate-900',
+      col: 'text-zinc-100',
     },
     {
       title: 'Best Fitness',
       val: effMetrics.bestFitness != null ? effMetrics.bestFitness.toFixed(4) : '—',
       sub: 'Objective metric',
-      col: 'text-amber-700',
+      col: 'text-amber-400',
     },
   ];
 
   return (
     <div className="space-y-6 max-w-7xl font-sans pb-16">
       {/* Top Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#262626]">
         <div>
-          <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
-            <Link href="/panel/runs" className="hover:text-slate-900 transition-colors font-medium flex items-center gap-1">
+          <div className="flex items-center gap-2 text-sm text-zinc-400 mb-1">
+            <Link href="/panel/runs" className="hover:text-zinc-100 transition-colors font-medium flex items-center gap-1">
               <ArrowLeft className="w-3.5 h-3.5" /> All Runs
             </Link>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="font-mono text-slate-800 font-semibold">Run {formatHash(run.id, 8)}</span>
+            <ChevronRight className="w-3.5 h-3.5 text-zinc-500" />
+            <span className="font-mono text-zinc-200 font-semibold">Run {formatHash(run.id, 8)}</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5">
-            <Activity className="w-6 h-6 text-indigo-600" />
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-100 flex items-center gap-2.5">
+            <Activity className="w-6 h-6 text-[#3ECF8E]" />
             <span>Live Flow Execution Monitor</span>
           </h1>
         </div>
@@ -394,7 +394,7 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
               type="button"
               onClick={() => handleControl('pause')}
               disabled={busy}
-              className="px-3.5 py-2 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-sm font-medium flex items-center gap-2 shadow-xs transition-colors"
+              className="px-4 py-2 rounded-full bg-amber-950/20 hover:bg-amber-950/40 border border-amber-500/30 text-amber-400 text-sm font-medium flex items-center gap-2 transition-colors"
             >
               <Pause className="w-4 h-4 text-amber-600" />
               <span>Pause</span>
@@ -405,7 +405,7 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
               type="button"
               onClick={() => handleControl('resume')}
               disabled={busy}
-              className="px-3.5 py-2 rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-900 text-sm font-medium flex items-center gap-2 shadow-xs transition-colors"
+              className="px-4 py-2 rounded-full bg-sky-950/20 hover:bg-sky-950/40 border border-sky-500/30 text-sky-400 text-sm font-medium flex items-center gap-2 transition-colors"
             >
               <Play className="w-4 h-4 text-sky-600" />
               <span>Resume</span>
@@ -416,7 +416,7 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
               type="button"
               onClick={() => handleControl('complete')}
               disabled={busy}
-              className="px-3.5 py-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-sm font-medium flex items-center gap-2 shadow-xs transition-colors"
+              className="px-5 py-2 rounded-full bg-[#3ECF8E] hover:bg-[#34b27b] text-[#0f0f0f] text-sm font-semibold flex items-center gap-2 transition-colors"
             >
               <CheckCircle className="w-4 h-4 text-emerald-600" />
               <span>Finalize</span>
@@ -424,14 +424,14 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
           )}
           <Link
             href={`/panel/runs/${run.id}/lineage`}
-            className="px-3.5 py-2 rounded-lg bg-white hover:bg-slate-50 border border-slate-300 text-purple-700 text-sm font-medium flex items-center gap-2 shadow-sm transition-colors"
+            className="px-3.5 py-2 rounded-lg bg-[#171717] hover:bg-[#141414] border border-[#262626] text-purple-700 text-sm font-medium flex items-center gap-2 shadow-sm transition-colors"
           >
             <GitBranch className="w-4 h-4" />
             <span>Lineage</span>
           </Link>
           <Link
             href={`/panel/reports/${run.id}`}
-            className="px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium flex items-center gap-2 shadow-sm transition-colors"
+            className="px-4 py-2 rounded-full bg-[#171717] hover:bg-[#222222] border border-[#262626] text-zinc-100 text-sm font-medium flex items-center gap-2 transition-colors"
           >
             <FileText className="w-4 h-4" />
             <span>Report</span>
@@ -440,53 +440,53 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
       </div>
 
       {/* Status Banner */}
-      <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+      <div className="p-4 rounded-xl bg-[#171717] border border-[#262626] shadow-sm flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <span className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2 ${badge.className}`}>
-            {isRunning && <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />}
+            {isRunning && <span className="w-2 h-2 rounded-full bg-[#3ECF8E] animate-pulse" />}
             <span>{run.status.toUpperCase()}</span>
           </span>
-          <span className="px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-mono font-medium">{run.kind} Execution</span>
-          <div className="text-xs text-slate-500 border-l border-slate-200 pl-4 font-mono">
+          <span className="px-2.5 py-1 rounded-md bg-[#1f1f1f] text-zinc-300 text-xs font-mono font-medium">{run.kind} Execution</span>
+          <div className="text-xs text-zinc-400 border-l border-[#262626] pl-4 font-mono">
             <span>Engine: </span>
-            <Link href={`/panel/instances/${run.engineInstanceId}`} className="font-semibold text-slate-800 hover:text-indigo-600 transition-colors">
+            <Link href={`/panel/instances/${run.engineInstanceId}`} className="font-semibold text-zinc-200 hover:text-[#3ECF8E] transition-colors">
               {engine?.name || formatHash(run.engineInstanceId, 8)}
             </Link>
           </div>
         </div>
         <div className="flex items-center gap-6 font-mono text-xs">
-          <div className="flex items-center gap-1.5 text-slate-600">
-            <Clock className="w-4 h-4 text-slate-400" />
-            <span>Elapsed: </span><span className="font-bold text-slate-900">{timerStr}</span>
+          <div className="flex items-center gap-1.5 text-zinc-400">
+            <Clock className="w-4 h-4 text-zinc-500" />
+            <span>Elapsed: </span><span className="font-bold text-zinc-100">{timerStr}</span>
           </div>
-          <div className="text-slate-600">
-            <span>Deterministic Seed: </span><span className="font-bold text-indigo-700">{run.baseSeed ?? 42}</span>
+          <div className="text-zinc-400">
+            <span>Deterministic Seed: </span><span className="font-bold text-[#3ECF8E]">{run.baseSeed ?? 42}</span>
           </div>
         </div>
       </div>
 
       {/* Winning Strategy DNA Injected Banner */}
       {(run.winningDnaJson || run.winningDna) && (
-        <div className="p-4 rounded-xl bg-gradient-to-r from-purple-50 via-indigo-50 to-purple-50 border border-purple-200 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+        <div className="p-4 rounded-xl bg-[#171717] border border-[#262626] flex flex-wrap items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-lg bg-purple-600 text-white shadow-xs">
               <Dna className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-sm font-bold text-purple-950 font-sans flex items-center gap-2">
+              <div className="text-sm font-bold text-zinc-100 font-sans flex items-center gap-2">
                 <span>Winning Strategy DNA Captured</span>
-                <span className="px-2 py-0.5 rounded-full bg-purple-200/80 text-purple-900 text-xs font-semibold font-mono">
+                <span className="px-2 py-0.5 rounded-full bg-purple-950/40 text-purple-300 border border-purple-500/30 text-xs font-semibold font-mono">
                   Portable DNA
                 </span>
               </div>
-              <p className="text-xs text-purple-800 font-sans mt-0.5">
+              <p className="text-xs text-zinc-400 font-sans mt-0.5">
                 Portable chromosome genes and decoded parameters are ready for 1-click backtest verification or live deployment.
               </p>
             </div>
           </div>
           <Link
             href={`/panel/reports/${run.id}`}
-            className="px-3.5 py-2 rounded-lg bg-purple-700 hover:bg-purple-800 text-white text-xs font-medium flex items-center gap-2 shadow-xs transition-colors"
+            className="px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold flex items-center gap-2 transition-colors"
           >
             <span>View Full Report & Deploy</span>
             <ArrowRight className="w-4 h-4" />
@@ -497,10 +497,10 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
       {/* Metric Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
         {metricCards.map((m) => (
-          <div key={m.title} className="p-4 rounded-xl bg-white border border-slate-200 shadow-sm">
-            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">{m.title}</span>
+          <div key={m.title} className="p-4 rounded-xl bg-[#171717] border border-[#262626] shadow-sm">
+            <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider block">{m.title}</span>
             <span className={`text-xl font-bold mt-1.5 block font-mono ${m.col}`}>{m.val}</span>
-            <span className="text-xs text-slate-400 mt-1 block font-sans">{m.sub}</span>
+            <span className="text-xs text-zinc-500 mt-1 block font-sans">{m.sub}</span>
           </div>
         ))}
       </div>
@@ -508,16 +508,16 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
       {/* Grid: Inputs/Specs + Live Telemetry */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Inputs & Specifications */}
-        <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Sliders className="w-4 h-4 text-indigo-600" />
+        <div className="p-5 rounded-xl bg-[#171717] border border-[#262626] shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
+            <h3 className="text-sm font-bold text-zinc-100 flex items-center gap-2">
+              <Sliders className="w-4 h-4 text-[#3ECF8E]" />
               <span>Execution Inputs & Specifications</span>
             </h3>
             <button
               type="button"
               onClick={() => setShowJson(!showJson)}
-              className="text-xs font-mono text-slate-500 hover:text-slate-800 flex items-center gap-1 transition-colors"
+              className="text-xs font-mono text-zinc-400 hover:text-zinc-100 flex items-center gap-1 transition-colors"
             >
               <Code2 className="w-3.5 h-3.5" />
               <span>{showJson ? 'Structured View' : 'Raw JSON'}</span>
@@ -525,62 +525,62 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
           </div>
 
           {showJson ? (
-            <pre className="p-3.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-800 overflow-x-auto max-h-96">
+            <pre className="p-3.5 bg-[#141414] border border-[#262626] rounded-lg text-xs font-mono text-zinc-200 overflow-x-auto max-h-96">
               {run.configurationJson || JSON.stringify(cfg, null, 2) || '// No configuration payload'}
             </pre>
           ) : (
             <div className="space-y-3.5 text-xs font-mono">
-              <div className="bg-slate-50 border border-slate-200/80 rounded-lg p-3.5">
-                <div className="text-xs font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-1.5 mb-2 font-sans">
-                  <TrendingUp className="w-4 h-4 text-indigo-600" />
+              <div className="bg-[#141414] border border-[#262626]/80 rounded-lg p-3.5">
+                <div className="text-xs font-semibold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5 mb-2 font-sans">
+                  <TrendingUp className="w-4 h-4 text-[#3ECF8E]" />
                   <span>Market & Capital</span>
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-slate-800">
-                  <div><span className="text-slate-500">Pair:</span> <span className="font-bold">{cfg?.market?.symbol ?? cfg?.Symbols?.[0] ?? 'BTC/USDT'}</span></div>
-                  <div><span className="text-slate-500">Bar:</span> <span className="font-bold">{cfg?.market?.barSize ?? '1m'}</span></div>
-                  <div><span className="text-slate-500">Capital:</span> <span className="font-bold">${(cfg?.market?.initialCapital ?? cfg?.InitialBalance ?? 100000).toLocaleString()}</span></div>
+                <div className="grid grid-cols-3 gap-2 text-zinc-200">
+                  <div><span className="text-zinc-400">Pair:</span> <span className="font-bold">{cfg?.market?.symbol ?? cfg?.Symbols?.[0] ?? 'BTC/USDT'}</span></div>
+                  <div><span className="text-zinc-400">Bar:</span> <span className="font-bold">{cfg?.market?.barSize ?? '1m'}</span></div>
+                  <div><span className="text-zinc-400">Capital:</span> <span className="font-bold">${(cfg?.market?.initialCapital ?? cfg?.InitialBalance ?? 100000).toLocaleString()}</span></div>
                 </div>
                 {(cfg?.StartDate || cfg?.market?.startDate) && (
-                  <div className="mt-2.5 pt-2.5 border-t border-slate-200/80 text-xs text-slate-600 flex items-center justify-between font-sans">
+                  <div className="mt-2.5 pt-2.5 border-t border-[#262626]/80 text-xs text-zinc-400 flex items-center justify-between font-sans">
                     <span>Range: {new Date(cfg?.StartDate || cfg?.market?.startDate).toLocaleDateString()}</span>
                     <span>→ {new Date(cfg?.EndDate || cfg?.market?.endDate).toLocaleDateString()}</span>
                   </div>
                 )}
               </div>
 
-              <div className="bg-slate-50 border border-slate-200/80 rounded-lg p-3.5">
-                <div className="text-xs font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-1.5 mb-2 font-sans">
+              <div className="bg-[#141414] border border-[#262626]/80 rounded-lg p-3.5">
+                <div className="text-xs font-semibold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5 mb-2 font-sans">
                   <Zap className="w-4 h-4 text-amber-500" />
                   <span>Strategy Slot ({cfg?.strategy?.name ?? cfg?.StrategyName ?? 'TrendFollowing'})</span>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-slate-800">
-                  <div><span className="text-slate-500">Fast:</span> <span className="font-bold">{cfg?.strategy?.fastPeriod ?? 14}</span></div>
-                  <div><span className="text-slate-500">Slow:</span> <span className="font-bold">{cfg?.strategy?.slowPeriod ?? 50}</span></div>
-                  <div><span className="text-slate-500">SL:</span> <span className="font-bold">{cfg?.strategy?.stopLossPct ?? 2.0}%</span></div>
-                  <div><span className="text-slate-500">TP:</span> <span className="font-bold">{cfg?.strategy?.takeProfitPct ?? 5.0}%</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-zinc-200">
+                  <div><span className="text-zinc-400">Fast:</span> <span className="font-bold">{cfg?.strategy?.fastPeriod ?? 14}</span></div>
+                  <div><span className="text-zinc-400">Slow:</span> <span className="font-bold">{cfg?.strategy?.slowPeriod ?? 50}</span></div>
+                  <div><span className="text-zinc-400">SL:</span> <span className="font-bold">{cfg?.strategy?.stopLossPct ?? 2.0}%</span></div>
+                  <div><span className="text-zinc-400">TP:</span> <span className="font-bold">{cfg?.strategy?.takeProfitPct ?? 5.0}%</span></div>
                 </div>
               </div>
 
-              <div className="bg-slate-50 border border-slate-200/80 rounded-lg p-3.5">
-                <div className="text-xs font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-1.5 mb-2 font-sans">
+              <div className="bg-[#141414] border border-[#262626]/80 rounded-lg p-3.5">
+                <div className="text-xs font-semibold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5 mb-2 font-sans">
                   <Cpu className="w-4 h-4 text-blue-600" />
                   <span>Broker Adapter ({cfg?.adapter?.name ?? cfg?.AdapterName ?? 'PaperBroker'})</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-slate-800">
-                  <div><span className="text-slate-500">Slippage:</span> <span className="font-bold">{cfg?.adapter?.slippageBps ?? 2} bps</span></div>
-                  <div><span className="text-slate-500">Fee:</span> <span className="font-bold">{cfg?.adapter?.feeBps ?? 5} bps</span></div>
+                <div className="grid grid-cols-2 gap-2 text-zinc-200">
+                  <div><span className="text-zinc-400">Slippage:</span> <span className="font-bold">{cfg?.adapter?.slippageBps ?? 2} bps</span></div>
+                  <div><span className="text-zinc-400">Fee:</span> <span className="font-bold">{cfg?.adapter?.feeBps ?? 5} bps</span></div>
                 </div>
               </div>
 
-              <div className="bg-slate-50 border border-slate-200/80 rounded-lg p-3.5">
-                <div className="text-xs font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-1.5 mb-2 font-sans">
+              <div className="bg-[#141414] border border-[#262626]/80 rounded-lg p-3.5">
+                <div className="text-xs font-semibold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5 mb-2 font-sans">
                   <Shield className="w-4 h-4 text-purple-600" />
                   <span>Safety Hooks & Guardrails</span>
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-slate-800">
-                  <div><span className="text-slate-500">Max DD:</span> <span className="font-bold">{cfg?.hooks?.maxDrawdownPct ?? 10}%</span></div>
-                  <div><span className="text-slate-500">Max Pos:</span> <span className="font-bold">{cfg?.hooks?.maxPositionPct ?? 25}%</span></div>
-                  <div><span className="text-slate-500">Rate:</span> <span className="font-bold">{cfg?.hooks?.orderRateLimit ?? 100} req/s</span></div>
+                <div className="grid grid-cols-3 gap-2 text-zinc-200">
+                  <div><span className="text-zinc-400">Max DD:</span> <span className="font-bold">{cfg?.hooks?.maxDrawdownPct ?? 10}%</span></div>
+                  <div><span className="text-zinc-400">Max Pos:</span> <span className="font-bold">{cfg?.hooks?.maxPositionPct ?? 25}%</span></div>
+                  <div><span className="text-zinc-400">Rate:</span> <span className="font-bold">{cfg?.hooks?.orderRateLimit ?? 100} req/s</span></div>
                 </div>
               </div>
             </div>
@@ -588,36 +588,36 @@ export default function RunLiveMonitorPage({ params }: { params: Promise<{ id: s
         </div>
 
         {/* Right: Live Telemetry */}
-        <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm flex flex-col h-[520px]">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Terminal className="w-4 h-4 text-slate-700" />
+        <div className="p-5 rounded-xl bg-[#171717] border border-[#262626] shadow-sm flex flex-col h-[520px]">
+          <div className="flex items-center justify-between pb-3 border-b border-[#262626] mb-3">
+            <h3 className="text-sm font-bold text-zinc-100 flex items-center gap-2">
+              <Terminal className="w-4 h-4 text-zinc-300" />
               <span>Live Execution Telemetry</span>
             </h3>
-            <div className="flex items-center gap-3 text-xs font-mono text-slate-500">
+            <div className="flex items-center gap-3 text-xs font-mono text-zinc-400">
               <button
                 type="button"
                 onClick={handleClearLogs}
                 title="Clear local logs buffer"
-                className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
+                className="p-1 text-zinc-500 hover:text-rose-600 transition-colors"
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
               <div className="flex items-center gap-1.5 font-sans">
-                {isRunning && <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />}
-                <span className="text-slate-600 font-medium">{isRunning ? 'Receiving Ticks' : 'Stream Closed'}</span>
+                {isRunning && <span className="w-2 h-2 rounded-full bg-[#3ECF8E] animate-pulse" />}
+                <span className="text-zinc-400 font-medium">{isRunning ? 'Receiving Ticks' : 'Stream Closed'}</span>
               </div>
             </div>
           </div>
 
-          <div className="flex-1 bg-slate-950 rounded-xl p-4 font-mono text-xs overflow-y-auto space-y-2 text-slate-300 shadow-inner">
+          <div className="flex-1 bg-[#141414] rounded-xl p-4 font-mono text-xs overflow-y-auto space-y-2 text-zinc-300 shadow-inner">
             {telemetry.map((evt) => {
-              const col = evt.type === 'SIGNAL' ? 'text-amber-400' : evt.type === 'HOOK' ? 'text-purple-400' : evt.type === 'ORDER' ? 'text-emerald-400' : evt.type === 'METRIC' ? 'text-cyan-400' : 'text-slate-400';
+              const col = evt.type === 'SIGNAL' ? 'text-amber-400' : evt.type === 'HOOK' ? 'text-purple-400' : evt.type === 'ORDER' ? 'text-emerald-400' : evt.type === 'METRIC' ? 'text-cyan-400' : 'text-zinc-500';
               return (
-                <div key={evt.id} className="leading-relaxed hover:bg-slate-900/60 p-1.5 rounded transition-colors">
-                  <span className="text-slate-500">[{evt.timestamp}]</span>{' '}
+                <div key={evt.id} className="leading-relaxed hover:bg-[#1f1f1f] p-1.5 rounded transition-colors">
+                  <span className="text-zinc-400">[{evt.timestamp}]</span>{' '}
                   <span className={`font-semibold ${col}`}>[{evt.type}]</span>{' '}
-                  <span className="text-slate-200">{evt.message}</span>
+                  <span className="text-zinc-200">{evt.message}</span>
                 </div>
               );
             })}

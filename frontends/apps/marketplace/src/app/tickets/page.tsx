@@ -166,7 +166,7 @@ export default function TicketsPage() {
         );
       case 'Closed':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-zinc-100 text-zinc-600 border border-zinc-200">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-[#1f1f1f] text-zinc-400 border border-[#262626]">
             Closed
           </span>
         );
@@ -180,7 +180,7 @@ export default function TicketsPage() {
       case 'High':
         return <span className="text-[10px] font-mono text-amber-600 uppercase font-semibold">High</span>;
       case 'Medium':
-        return <span className="text-[10px] font-mono text-cyan-700 uppercase">Medium</span>;
+        return <span className="text-[10px] font-mono text-[#3ECF8E] uppercase">Medium</span>;
       default:
         return <span className="text-[10px] font-mono text-zinc-500 uppercase">Low</span>;
     }
@@ -189,15 +189,15 @@ export default function TicketsPage() {
   return (
     <div className="max-w-7xl mx-auto px-6 py-8 space-y-8 font-sans">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#262626] pb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <LifeBuoy className="w-5 h-5 text-cyan-600" />
-            <span className="text-xs font-mono text-cyan-700 uppercase tracking-wider font-semibold">
+            <LifeBuoy className="w-5 h-5 text-[#3ECF8E]" />
+            <span className="text-xs font-mono text-[#3ECF8E] uppercase tracking-wider font-semibold">
               Support & Inquiries
             </span>
           </div>
-          <h1 className="text-2xl font-extrabold text-zinc-900">Unified Ticketing Center</h1>
+          <h1 className="text-2xl font-extrabold text-zinc-100">Unified Ticketing Center</h1>
           <p className="text-xs text-zinc-500 mt-1">
             Submit inquiries to additive developers or directly escalate infrastructure issues to Razor Cloud operators.
           </p>
@@ -221,7 +221,7 @@ export default function TicketsPage() {
             className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-colors cursor-pointer ${
               statusFilter === s
                 ? 'bg-zinc-900 text-white font-semibold'
-                : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
+                : 'text-zinc-400 hover:text-zinc-100 hover:bg-[#1f1f1f]'
             }`}
           >
             {s}
@@ -234,14 +234,14 @@ export default function TicketsPage() {
         {/* Tickets List */}
         <div className="lg:col-span-5 space-y-3">
           {loading ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-3 text-zinc-500 bg-white border border-zinc-200 rounded-2xl shadow-sm">
-              <Loader2 className="w-6 h-6 animate-spin text-cyan-600" />
+            <div className="py-20 flex flex-col items-center justify-center gap-3 text-zinc-500 bg-[#171717] border border-[#262626] rounded-2xl shadow-sm">
+              <Loader2 className="w-6 h-6 animate-spin text-[#3ECF8E]" />
               <p className="text-xs font-mono">Loading tickets...</p>
             </div>
           ) : tickets.length === 0 ? (
-            <div className="py-16 text-center border border-dashed border-zinc-200 rounded-2xl p-6 bg-zinc-50">
+            <div className="py-16 text-center border border-dashed border-[#262626] rounded-2xl p-6 bg-[#141414]">
               <LifeBuoy className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
-              <p className="text-xs font-medium text-zinc-700">No support tickets found</p>
+              <p className="text-xs font-medium text-zinc-300">No support tickets found</p>
               <p className="text-[11px] text-zinc-500 mt-1">Open a ticket if you need assistance with an extension or the cluster.</p>
             </div>
           ) : (
@@ -251,24 +251,24 @@ export default function TicketsPage() {
                 onClick={() => setSelectedTicket(t)}
                 className={`p-4 rounded-xl border transition-all cursor-pointer ${
                   selectedTicket?.id === t.id
-                    ? 'bg-white border-cyan-500 shadow-md ring-2 ring-cyan-100'
-                    : 'bg-white hover:border-zinc-300 border-zinc-200 shadow-sm'
+                    ? 'bg-[#171717] border-cyan-500 shadow-md ring-2 ring-cyan-100'
+                    : 'bg-[#171717] hover:border-[#262626] border-[#262626] shadow-sm'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <div className="flex items-center gap-2">
                     {getStatusBadge(t.status)}
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-100 text-zinc-700">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#1f1f1f] text-zinc-300">
                       {t.targetType === 'SystemManager' ? 'Platform Operations' : `Additive: ${t.targetItemName || 'Custom'}`}
                     </span>
                   </div>
                   {getPriorityBadge(t.priority)}
                 </div>
 
-                <h3 className="text-sm font-semibold text-zinc-900 truncate">{t.title}</h3>
+                <h3 className="text-sm font-semibold text-zinc-100 truncate">{t.title}</h3>
                 <p className="text-xs text-zinc-500 line-clamp-2 mt-1">{t.description}</p>
 
-                <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 mt-3 pt-2 border-t border-zinc-100">
+                <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 mt-3 pt-2 border-t border-[#262626]">
                   <span>Author: {t.authorName}</span>
                   <span>{t.messages?.length ?? 1} message(s)</span>
                 </div>
@@ -280,8 +280,8 @@ export default function TicketsPage() {
         {/* Selected Ticket Thread View */}
         <div className="lg:col-span-7">
           {selectedTicket ? (
-            <div className="bg-white border border-zinc-200 rounded-2xl p-6 space-y-6 shadow-sm sticky top-24">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 pb-4">
+            <div className="bg-[#171717] border border-[#262626] rounded-2xl p-6 space-y-6 shadow-sm sticky top-24">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#262626] pb-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     {getStatusBadge(selectedTicket.status)}
@@ -289,7 +289,7 @@ export default function TicketsPage() {
                       Category: {selectedTicket.category}
                     </span>
                   </div>
-                  <h2 className="text-lg font-bold text-zinc-900">{selectedTicket.title}</h2>
+                  <h2 className="text-lg font-bold text-zinc-100">{selectedTicket.title}</h2>
                 </div>
                 {getPriorityBadge(selectedTicket.priority)}
               </div>
@@ -297,14 +297,14 @@ export default function TicketsPage() {
               {/* Messages Timeline */}
               <div className="space-y-4 max-h-[460px] overflow-y-auto pr-2">
                 {/* Original Description */}
-                <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-4 space-y-2">
+                <div className="bg-[#141414] border border-[#262626] rounded-xl p-4 space-y-2">
                   <div className="flex items-center justify-between text-xs text-zinc-500">
-                    <span className="font-semibold text-zinc-800">{selectedTicket.authorName} (Ticket Author)</span>
+                    <span className="font-semibold text-zinc-200">{selectedTicket.authorName} (Ticket Author)</span>
                     <span className="text-[10px] font-mono text-zinc-400">
                       {new Date(selectedTicket.createdAt).toLocaleString()}
                     </span>
                   </div>
-                  <p className="text-xs text-zinc-700 leading-relaxed whitespace-pre-wrap font-sans">
+                  <p className="text-xs text-zinc-300 leading-relaxed whitespace-pre-wrap font-sans">
                     {selectedTicket.description}
                   </p>
                 </div>
@@ -316,13 +316,13 @@ export default function TicketsPage() {
                     className={`border rounded-xl p-4 space-y-2 ${
                       m.authorRole === 'Operator' || m.authorRole === 'SystemManager'
                         ? 'bg-cyan-50/50 border-cyan-200 ml-4'
-                        : 'bg-zinc-50 border-zinc-200 mr-4'
+                        : 'bg-[#141414] border-[#262626] mr-4'
                     }`}
                   >
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-zinc-900">{m.authorName}</span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-zinc-200 text-zinc-800">
+                        <span className="font-semibold text-zinc-100">{m.authorName}</span>
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-[#262626] text-zinc-200">
                           {m.authorRole}
                         </span>
                       </div>
@@ -330,7 +330,7 @@ export default function TicketsPage() {
                         {new Date(m.createdAt).toLocaleString()}
                       </span>
                     </div>
-                    <p className="text-xs text-zinc-800 leading-relaxed whitespace-pre-wrap font-sans">
+                    <p className="text-xs text-zinc-200 leading-relaxed whitespace-pre-wrap font-sans">
                       {m.message}
                     </p>
                   </div>
@@ -339,13 +339,13 @@ export default function TicketsPage() {
 
               {/* Reply Box */}
               {selectedTicket.status !== 'Closed' ? (
-                <form onSubmit={handleSendReply} className="space-y-3 pt-2 border-t border-zinc-100">
+                <form onSubmit={handleSendReply} className="space-y-3 pt-2 border-t border-[#262626]">
                   <textarea
                     value={replyMessage}
                     onChange={(e) => setReplyMessage(e.target.value)}
                     rows={3}
                     placeholder="Type your response to the support team or developer..."
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-3 text-xs text-zinc-900 focus:outline-none focus:bg-white focus:border-cyan-600 font-sans"
+                    className="w-full bg-[#141414] border border-[#262626] rounded-xl p-3 text-xs text-zinc-100 focus:outline-none focus:bg-[#171717] focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 font-sans"
                     required
                   />
                   <div className="flex justify-end">
@@ -364,15 +364,15 @@ export default function TicketsPage() {
                   </div>
                 </form>
               ) : (
-                <div className="p-3 bg-zinc-50 border border-zinc-200 rounded-xl text-center text-xs text-zinc-500 font-mono">
+                <div className="p-3 bg-[#141414] border border-[#262626] rounded-xl text-center text-xs text-zinc-500 font-mono">
                   This support ticket is closed.
                 </div>
               )}
             </div>
           ) : (
-            <div className="h-full min-h-[300px] flex flex-col items-center justify-center border border-dashed border-zinc-200 rounded-2xl p-8 text-center text-zinc-400 bg-zinc-50/50">
+            <div className="h-full min-h-[300px] flex flex-col items-center justify-center border border-dashed border-[#262626] rounded-2xl p-8 text-center text-zinc-400 bg-[#141414]">
               <MessageSquare className="w-8 h-8 mb-2 text-zinc-400" />
-              <p className="text-xs font-medium text-zinc-600">Select a ticket from the left to view messages and reply</p>
+              <p className="text-xs font-medium text-zinc-400">Select a ticket from the left to view messages and reply</p>
             </div>
           )}
         </div>

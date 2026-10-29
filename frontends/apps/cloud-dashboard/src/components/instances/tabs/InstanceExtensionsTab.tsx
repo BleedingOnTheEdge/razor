@@ -25,7 +25,7 @@ export function InstanceExtensionsTab({
   return (
     <div className="space-y-6">
       {/* Active Slots Card */}
-      <div className="p-5 border border-[#262626] bg-[#171717] space-y-4 font-mono">
+      <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-4 font-mono">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h3 className="text-sm font-bold text-zinc-100 uppercase tracking-wider flex items-center gap-2">
@@ -40,7 +40,7 @@ export function InstanceExtensionsTab({
           <button
             type="button"
             onClick={() => onOpenSlotModal('Strategy')}
-            className="px-3 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold text-xs transition-colors flex items-center gap-1.5 self-start sm:self-auto"
+            className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-bold text-xs transition-colors flex items-center gap-1.5 self-start sm:self-auto"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Configure Slot</span>
@@ -49,11 +49,11 @@ export function InstanceExtensionsTab({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Adapter Slot */}
-          <div className="p-4 border border-[#262626] bg-[#141414] flex flex-col justify-between">
+          <div className="p-4 border border-[#262626] bg-[#141414] rounded-xl flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-zinc-100 uppercase">Adapter Slot</span>
-                <span className="text-[10px] font-bold border border-[#262626] px-1.5 py-0.5 bg-[#171717] text-zinc-100 rounded-xl">
+                <span className="text-[10px] font-bold border border-[#262626] px-2.5 py-0.5 bg-[#171717] text-zinc-300 rounded-full">
                   Feed / Broker
                 </span>
               </div>
@@ -70,17 +70,17 @@ export function InstanceExtensionsTab({
                 onClick={() => onOpenSlotModal('Adapter', instance.activeSelections?.adapter || undefined)}
                 className="font-bold text-zinc-100 hover:underline"
               >
-                [REASSIGN]
+                Reassign
               </button>
             </div>
           </div>
 
           {/* Strategy Slot */}
-          <div className="p-4 border border-[#262626] bg-[#141414] flex flex-col justify-between">
+          <div className="p-4 border border-[#262626] bg-[#141414] rounded-xl flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-zinc-100 uppercase">Strategy Slot</span>
-                <span className="text-[10px] font-bold border border-[#262626] px-1.5 py-0.5 bg-[#171717] text-zinc-100 rounded-xl">
+                <span className="text-[10px] font-bold border border-[#262626] px-2.5 py-0.5 bg-[#171717] text-zinc-300 rounded-full">
                   Signals / Orders
                 </span>
               </div>
@@ -97,17 +97,17 @@ export function InstanceExtensionsTab({
                 onClick={() => onOpenSlotModal('Strategy', instance.activeSelections?.strategy || undefined)}
                 className="font-bold text-zinc-100 hover:underline"
               >
-                [REASSIGN]
+                Reassign
               </button>
             </div>
           </div>
 
           {/* Neural Network Slot */}
-          <div className="p-4 border border-[#262626] bg-[#141414] flex flex-col justify-between">
+          <div className="p-4 border border-[#262626] bg-[#141414] rounded-xl flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-zinc-100 uppercase">Neural Network Slot</span>
-                <span className="text-[10px] font-bold border border-[#262626] px-1.5 py-0.5 bg-[#171717] text-zinc-100 rounded-xl">
+                <span className="text-[10px] font-bold border border-[#262626] px-2.5 py-0.5 bg-[#171717] text-zinc-300 rounded-full">
                   Weights / Inference
                 </span>
               </div>
@@ -124,17 +124,17 @@ export function InstanceExtensionsTab({
                 onClick={() => onOpenSlotModal('NeuralNetwork', instance.activeSelections?.neuralNetwork || undefined)}
                 className="font-bold text-zinc-100 hover:underline"
               >
-                [REASSIGN]
+                Reassign
               </button>
             </div>
           </div>
 
           {/* Hook Interceptors Slot */}
-          <div className="p-4 border border-[#262626] bg-[#141414] flex flex-col justify-between">
+          <div className="p-4 border border-[#262626] bg-[#141414] rounded-xl flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-zinc-100 uppercase">Hook Interceptors</span>
-                <span className="text-[10px] font-bold border border-[#262626] px-1.5 py-0.5 bg-[#171717] text-zinc-100 rounded-xl">
+                <span className="text-[10px] font-bold border border-[#262626] px-2.5 py-0.5 bg-[#171717] text-zinc-300 rounded-full">
                   Filters / Logging
                 </span>
               </div>
@@ -159,7 +159,7 @@ export function InstanceExtensionsTab({
                 onClick={() => onOpenSlotModal('HookPlugin')}
                 className="font-bold text-zinc-100 hover:underline"
               >
-                [MANAGE HOOKS]
+                Manage Hooks
               </button>
             </div>
           </div>
@@ -167,7 +167,7 @@ export function InstanceExtensionsTab({
       </div>
 
       {/* Manifest Inventory */}
-      <div className="p-5 border border-[#262626] bg-[#171717] space-y-4 font-mono">
+      <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-4 font-mono">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h3 className="text-sm font-bold text-zinc-100 uppercase tracking-wider">
@@ -184,17 +184,17 @@ export function InstanceExtensionsTab({
               value={manifestFilter}
               onChange={(e) => setManifestFilter(e.target.value)}
               placeholder="Search extensions..."
-              className="w-full px-3 py-1.5 border border-[#262626] bg-[#171717] text-xs font-mono text-zinc-100 focus:outline-none focus:border-[#3ECF8E]"
+              className="w-full px-3 py-1.5 rounded-md border border-[#262626] bg-[#171717] text-xs font-mono text-zinc-100 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
             />
           </div>
         </div>
 
         {filteredManifest.length === 0 ? (
-          <div className="py-8 text-center text-xs font-mono text-zinc-100 border border-[#262626]">
+          <div className="py-8 text-center text-xs font-mono text-zinc-400 border border-[#262626] rounded-lg">
             [NO EXTENSIONS MATCHING QUERY]
           </div>
         ) : (
-          <div className="border border-[#262626] overflow-x-auto">
+          <div className="border border-[#262626] rounded-xl overflow-hidden overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-[#262626] bg-[#141414] font-bold text-zinc-100 uppercase">
@@ -209,16 +209,16 @@ export function InstanceExtensionsTab({
                 {filteredManifest.map((ext) => (
                   <tr key={ext.name} className="hover:bg-[#141414] transition-colors">
                     <td className="p-2.5 font-bold text-zinc-100">{ext.name}</td>
-                    <td className="p-2.5 font-bold text-zinc-100 uppercase">[{ext.kind}]</td>
+                    <td className="p-2.5 font-bold text-zinc-100 uppercase"><span className="px-2 py-0.5 rounded-full border border-[#262626] bg-[#141414] text-[10px]">{ext.kind}</span></td>
                     <td className="p-2.5 text-zinc-100">{(ext as any).version || '1.0.0'}</td>
                     <td className="p-2.5 text-zinc-100 max-w-xs truncate">{(ext as any).description || 'Standard module'}</td>
                     <td className="p-2.5 text-right">
                       <button
                         type="button"
                         onClick={() => onOpenSlotModal(ext.kind as any, ext.name)}
-                        className="px-2 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold text-[11px] transition-colors"
+                        className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-bold text-[11px] transition-colors"
                       >
-                        [ASSIGN TO SLOT]
+                        Assign to Slot
                       </button>
                     </td>
                   </tr>

@@ -81,16 +81,16 @@ export default function MarketplacePaymentsPage() {
   return (
     <div className="space-y-8 font-sans max-w-5xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#262626]">
         <div>
-          <div className="flex items-center gap-2 text-xs font-mono text-indigo-600 uppercase tracking-wider mb-1">
+          <div className="flex items-center gap-2 text-xs font-mono text-[#3ECF8E] uppercase tracking-wider mb-1">
             <CreditCard className="w-4 h-4" />
             <span>Marketplace Treasury & Gateways</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
             Payment Provider Configurations
           </h1>
-          <p className="text-xs text-zinc-600 font-mono mt-1">
+          <p className="text-xs text-zinc-400 font-mono mt-1">
             Configure multi-tenant payment gateways associated with each supported currency (USDT, IRT, USD).
           </p>
         </div>
@@ -108,14 +108,14 @@ export default function MarketplacePaymentsPage() {
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* SECTION 1: Crypto Gateways (USDT / Multi-Tenant) */}
-        <div className="p-6 rounded-xl border border-zinc-200 bg-white shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+        <div className="p-6 rounded-xl border border-[#262626] bg-[#171717] shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
                 ₮
               </div>
               <div>
-                <h2 className="text-sm font-bold text-zinc-900">Crypto Gateways (USDT / Multi-Tenant)</h2>
+                <h2 className="text-sm font-bold text-zinc-100">Crypto Gateways (USDT / Multi-Tenant)</h2>
                 <span className="text-[11px] text-zinc-500 font-mono">Tether USDT, Bitcoin, Ethereum</span>
               </div>
             </div>
@@ -126,9 +126,9 @@ export default function MarketplacePaymentsPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
             {/* NowPayments Card */}
-            <div className="p-4 rounded-lg border border-zinc-200 bg-zinc-50/50 space-y-3">
+            <div className="p-4 rounded-lg border border-[#262626] bg-[#141414] space-y-3">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-xs text-zinc-900 font-mono">NowPayments Direct Gateway</span>
+                <span className="font-bold text-xs text-zinc-100 font-mono">NowPayments Direct Gateway</span>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -136,29 +136,29 @@ export default function MarketplacePaymentsPage() {
                     onChange={(e) => setNowPaymentsEnabled(e.target.checked)}
                     className="w-4 h-4 accent-indigo-600"
                   />
-                  <span className="text-xs font-semibold text-zinc-700">Enabled</span>
+                  <span className="text-xs font-semibold text-zinc-300">Enabled</span>
                 </label>
               </div>
 
               <div className="space-y-2">
                 <div>
-                  <label className="block text-[11px] font-mono text-zinc-600 mb-1">API Key</label>
+                  <label className="block text-[11px] font-mono text-zinc-400 mb-1">API Key</label>
                   <input
                     type="password"
                     value={nowPaymentsApiKey}
                     onChange={(e) => setNowPaymentsApiKey(e.target.value)}
                     placeholder="np_live_..."
-                    className="w-full px-3 py-1.5 border border-zinc-200 rounded-md text-xs font-mono bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full px-3 py-1.5 border border-[#262626] rounded-md text-xs font-mono bg-[#171717] focus:outline-none focus:ring-1 focus:ring-1 focus:ring-[#3ECF8E]/30 focus:border-[#3ECF8E]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-mono text-zinc-600 mb-1">IPN Secret</label>
+                  <label className="block text-[11px] font-mono text-zinc-400 mb-1">IPN Secret</label>
                   <input
                     type="password"
                     value={nowPaymentsIpnSecret}
                     onChange={(e) => setNowPaymentsIpnSecret(e.target.value)}
                     placeholder="ipn_sec_..."
-                    className="w-full px-3 py-1.5 border border-zinc-200 rounded-md text-xs font-mono bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full px-3 py-1.5 border border-[#262626] rounded-md text-xs font-mono bg-[#171717] focus:outline-none focus:ring-1 focus:ring-1 focus:ring-[#3ECF8E]/30 focus:border-[#3ECF8E]"
                   />
                 </div>
                 <div className="flex items-center gap-2 pt-1">
@@ -169,7 +169,7 @@ export default function MarketplacePaymentsPage() {
                     onChange={(e) => setNowPaymentsSandbox(e.target.checked)}
                     className="w-3.5 h-3.5 accent-indigo-600"
                   />
-                  <label htmlFor="np_sandbox" className="text-[11px] font-mono text-zinc-600 cursor-pointer">
+                  <label htmlFor="np_sandbox" className="text-[11px] font-mono text-zinc-400 cursor-pointer">
                     Enable Sandbox Mode
                   </label>
                 </div>
@@ -177,9 +177,9 @@ export default function MarketplacePaymentsPage() {
             </div>
 
             {/* Paymento Card */}
-            <div className="p-4 rounded-lg border border-zinc-200 bg-zinc-50/50 space-y-3">
+            <div className="p-4 rounded-lg border border-[#262626] bg-[#141414] space-y-3">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-xs text-zinc-900 font-mono">Paymento Multi-Tenant Gateway</span>
+                <span className="font-bold text-xs text-zinc-100 font-mono">Paymento Multi-Tenant Gateway</span>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -187,29 +187,29 @@ export default function MarketplacePaymentsPage() {
                     onChange={(e) => setPaymentoEnabled(e.target.checked)}
                     className="w-4 h-4 accent-indigo-600"
                   />
-                  <span className="text-xs font-semibold text-zinc-700">Enabled</span>
+                  <span className="text-xs font-semibold text-zinc-300">Enabled</span>
                 </label>
               </div>
 
               <div className="space-y-2">
                 <div>
-                  <label className="block text-[11px] font-mono text-zinc-600 mb-1">Merchant Token</label>
+                  <label className="block text-[11px] font-mono text-zinc-400 mb-1">Merchant Token</label>
                   <input
                     type="password"
                     value={paymentoMerchantToken}
                     onChange={(e) => setPaymentoMerchantToken(e.target.value)}
                     placeholder="pay_token_..."
-                    className="w-full px-3 py-1.5 border border-zinc-200 rounded-md text-xs font-mono bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full px-3 py-1.5 border border-[#262626] rounded-md text-xs font-mono bg-[#171717] focus:outline-none focus:ring-1 focus:ring-1 focus:ring-[#3ECF8E]/30 focus:border-[#3ECF8E]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-mono text-zinc-600 mb-1">Client ID</label>
+                  <label className="block text-[11px] font-mono text-zinc-400 mb-1">Client ID</label>
                   <input
                     type="text"
                     value={paymentoClientId}
                     onChange={(e) => setPaymentoClientId(e.target.value)}
                     placeholder="client_id_..."
-                    className="w-full px-3 py-1.5 border border-zinc-200 rounded-md text-xs font-mono bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full px-3 py-1.5 border border-[#262626] rounded-md text-xs font-mono bg-[#171717] focus:outline-none focus:ring-1 focus:ring-1 focus:ring-[#3ECF8E]/30 focus:border-[#3ECF8E]"
                   />
                 </div>
               </div>
@@ -218,14 +218,14 @@ export default function MarketplacePaymentsPage() {
         </div>
 
         {/* SECTION 2: Iran Fiat Gateways (IRT - Toman) */}
-        <div className="p-6 rounded-xl border border-zinc-200 bg-white shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+        <div className="p-6 rounded-xl border border-[#262626] bg-[#171717] shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center font-bold text-xs">
                 تومان
               </div>
               <div>
-                <h2 className="text-sm font-bold text-zinc-900">National Fiat Gateways (IRT - Toman)</h2>
+                <h2 className="text-sm font-bold text-zinc-100">National Fiat Gateways (IRT - Toman)</h2>
                 <span className="text-[11px] text-zinc-500 font-mono">
                   Iranian Toman (IRR dropped; adopting direct IRT denomination)
                 </span>
@@ -239,7 +239,7 @@ export default function MarketplacePaymentsPage() {
           <div className="p-4 rounded-lg border border-amber-200 bg-amber-50/50 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="font-bold text-xs text-zinc-900 font-mono">ZarinPal Payment Gateway</span>
+                <span className="font-bold text-xs text-zinc-100 font-mono">ZarinPal Payment Gateway</span>
                 <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-mono font-semibold">
                   Domain Verification Required
                 </span>
@@ -251,7 +251,7 @@ export default function MarketplacePaymentsPage() {
                   onChange={(e) => setZarinPalEnabled(e.target.checked)}
                   className="w-4 h-4 accent-amber-600"
                 />
-                <span className="text-xs font-semibold text-zinc-700">Enabled</span>
+                <span className="text-xs font-semibold text-zinc-300">Enabled</span>
               </label>
             </div>
 
@@ -264,13 +264,13 @@ export default function MarketplacePaymentsPage() {
 
             <div className="space-y-2 pt-1">
               <div>
-                <label className="block text-[11px] font-mono text-zinc-600 mb-1">Merchant ID (UUID)</label>
+                <label className="block text-[11px] font-mono text-zinc-400 mb-1">Merchant ID (UUID)</label>
                 <input
                   type="text"
                   value={zarinPalMerchantId}
                   onChange={(e) => setZarinPalMerchantId(e.target.value)}
                   placeholder="00000000-0000-0000-0000-000000000000"
-                  className="w-full px-3 py-1.5 border border-zinc-200 rounded-md text-xs font-mono bg-white focus:outline-none"
+                  className="w-full px-3 py-1.5 border border-[#262626] rounded-md text-xs font-mono bg-[#171717] focus:outline-none"
                 />
               </div>
             </div>
@@ -278,14 +278,14 @@ export default function MarketplacePaymentsPage() {
         </div>
 
         {/* SECTION 3: Global Fiat Gateways (USD/EUR) */}
-        <div className="p-6 rounded-xl border border-zinc-200 bg-white shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+        <div className="p-6 rounded-xl border border-[#262626] bg-[#171717] shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
                 $
               </div>
               <div>
-                <h2 className="text-sm font-bold text-zinc-900">Global Fiat Gateways (USD / EUR)</h2>
+                <h2 className="text-sm font-bold text-zinc-100">Global Fiat Gateways (USD / EUR)</h2>
                 <span className="text-[11px] text-zinc-500 font-mono">Credit Card, Apple Pay, SEPA Direct Debit</span>
               </div>
             </div>
@@ -294,9 +294,9 @@ export default function MarketplacePaymentsPage() {
             </span>
           </div>
 
-          <div className="p-4 rounded-lg border border-zinc-200 bg-zinc-50/50 space-y-3">
+          <div className="p-4 rounded-lg border border-[#262626] bg-[#141414] space-y-3">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-xs text-zinc-900 font-mono">Stripe Connect Marketplace</span>
+              <span className="font-bold text-xs text-zinc-100 font-mono">Stripe Connect Marketplace</span>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -304,27 +304,27 @@ export default function MarketplacePaymentsPage() {
                   onChange={(e) => setStripeEnabled(e.target.checked)}
                   className="w-4 h-4 accent-indigo-600"
                 />
-                <span className="text-xs font-semibold text-zinc-700">Enabled</span>
+                <span className="text-xs font-semibold text-zinc-300">Enabled</span>
               </label>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-mono text-zinc-600 mb-1">Publishable Key</label>
+                <label className="block text-[11px] font-mono text-zinc-400 mb-1">Publishable Key</label>
                 <input
                   type="text"
                   value={stripePublishableKey}
                   onChange={(e) => setStripePublishableKey(e.target.value)}
-                  className="w-full px-3 py-1.5 border border-zinc-200 rounded-md text-xs font-mono bg-white focus:outline-none"
+                  className="w-full px-3 py-1.5 border border-[#262626] rounded-md text-xs font-mono bg-[#171717] focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-mono text-zinc-600 mb-1">Secret Key</label>
+                <label className="block text-[11px] font-mono text-zinc-400 mb-1">Secret Key</label>
                 <input
                   type="password"
                   value={stripeSecretKey}
                   onChange={(e) => setStripeSecretKey(e.target.value)}
-                  className="w-full px-3 py-1.5 border border-zinc-200 rounded-md text-xs font-mono bg-white focus:outline-none"
+                  className="w-full px-3 py-1.5 border border-[#262626] rounded-md text-xs font-mono bg-[#171717] focus:outline-none"
                 />
               </div>
             </div>

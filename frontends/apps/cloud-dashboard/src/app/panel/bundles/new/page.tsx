@@ -305,7 +305,7 @@ function BundleEditorContent() {
         <div className="flex items-center gap-3">
           <Link
             href="/panel/bundles"
-            className="p-2 border border-[#262626] hover:bg-[#1f1f1f] transition-colors"
+            className="p-2 border border-[#262626] hover:bg-[#1f1f1f] rounded-lg transition-colors"
             title="Back to Bundles Catalogue"
           >
             <ArrowLeft className="w-4 h-4 text-zinc-100" />
@@ -334,7 +334,7 @@ function BundleEditorContent() {
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* SECTION 1: Package Identity & Metadata */}
-        <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
           <h2 className="text-sm font-bold uppercase tracking-wider border-b border-[#262626] pb-2 flex items-center gap-2">
             <Package className="w-4 h-4 text-zinc-100" />
             <span>1. Package Identity & Pricing</span>
@@ -362,7 +362,7 @@ function BundleEditorContent() {
                 maxLength={12}
                 minLength={8}
                 placeholder="BND-8X2K4M"
-                className="w-full px-3 py-2 bg-[#141414] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E] focus:bg-[#171717]"
+                className="w-full px-3 py-2 bg-[#141414] border border-[#262626] text-zinc-100 font-mono font-bold rounded-md focus:outline-none focus:border-[#3ECF8E] focus:bg-[#171717]"
               />
             </div>
 
@@ -375,7 +375,7 @@ function BundleEditorContent() {
                 onChange={(e) => setName(e.target.value)}
                 required
                 placeholder="e.g. Trend Scalper Elite Bundle"
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-bold focus:outline-none focus:border-[#3ECF8E]"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-bold rounded-md focus:outline-none focus:border-[#3ECF8E]"
               />
             </div>
           </div>
@@ -390,7 +390,7 @@ function BundleEditorContent() {
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value as any)}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-bold focus:outline-none focus:border-[#3ECF8E]"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-bold rounded-md focus:outline-none focus:border-[#3ECF8E]"
               >
                 <option value="Free">Free (Community / Open)</option>
                 <option value="IRT">IRT (Toman - Direct Gateway)</option>
@@ -409,7 +409,7 @@ function BundleEditorContent() {
                   value={price}
                   onChange={(e) => setPrice(Number(e.target.value))}
                   required
-                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-bold focus:outline-none focus:border-[#3ECF8E]"
+                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-bold rounded-md focus:outline-none focus:border-[#3ECF8E]"
                 />
               </div>
             )}
@@ -421,7 +421,7 @@ function BundleEditorContent() {
                   type="checkbox"
                   checked={isPublic}
                   onChange={(e) => setIsPublic(e.target.checked)}
-                  className="w-4 h-4 accent-black"
+                  className="w-4 h-4 rounded accent-[#3ECF8E]"
                 />
                 <span className="font-bold flex items-center gap-1">
                   <Globe className="w-3.5 h-3.5" /> Public Discovery
@@ -433,7 +433,7 @@ function BundleEditorContent() {
                   type="checkbox"
                   checked={publishedToMarketplace}
                   onChange={(e) => setPublishedToMarketplace(e.target.checked)}
-                  className="w-4 h-4 accent-black"
+                  className="w-4 h-4 rounded accent-[#3ECF8E]"
                 />
                 <span className="font-bold flex items-center gap-1 text-blue-700">
                   <Store className="w-3.5 h-3.5" /> Publish to Marketplace
@@ -450,7 +450,7 @@ function BundleEditorContent() {
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
               placeholder="Detailed description of strategy behavior, market regime prerequisites, and performance expectations..."
-              className="w-full p-3 bg-[#171717] border border-[#262626] text-zinc-100 font-sans text-xs focus:outline-none focus:border-[#3ECF8E] min-h-[110px]"
+              className="w-full p-3 bg-[#171717] border border-[#262626] text-zinc-100 font-sans text-xs rounded-md focus:outline-none focus:border-[#3ECF8E] min-h-[110px]"
             />
           </div>
 
@@ -472,7 +472,7 @@ function BundleEditorContent() {
             </div>
 
             {previewDoc ? (
-              <div className="w-full p-4 bg-[#141414] border border-[#262626] font-sans text-xs text-zinc-100 min-h-[260px] whitespace-pre-wrap leading-relaxed">
+              <div className="w-full p-4 bg-[#141414] border border-[#262626] rounded-xl font-sans text-xs text-zinc-100 min-h-[260px] whitespace-pre-wrap leading-relaxed">
                 {documentationMarkdown || '*No documentation written.*'}
               </div>
             ) : (
@@ -481,7 +481,7 @@ function BundleEditorContent() {
                 onChange={(e) => setDocumentationMarkdown(e.target.value)}
                 rows={10}
                 placeholder="Write full deployment guidelines, parameter sensitivities, and setup instructions..."
-                className="w-full p-3 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] min-h-[260px]"
+                className="w-full p-3 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs rounded-md focus:outline-none focus:border-[#3ECF8E] min-h-[260px]"
               />
             )}
           </div>
@@ -489,7 +489,7 @@ function BundleEditorContent() {
 
         {/* SECTION 2: Initial Component Slots & Hook Interceptors (Interactive Grids) */}
         <div className="space-y-4">
-          <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+          <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
             <h2 className="text-sm font-bold uppercase tracking-wider border-b border-[#262626] pb-2 flex items-center gap-2">
               <Layers className="w-4 h-4 text-zinc-100" />
               <span>2. Component Slots & Hook Interceptors</span>

@@ -360,7 +360,7 @@ function NewRunForm() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* SECTION 1: Target Engine & Execution Kind */}
-        <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
           <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b border-[#262626] pb-2">
             <Server className="w-4 h-4 text-zinc-100" />
             <span>1. Target Engine & Flow Mode</span>
@@ -375,7 +375,7 @@ function NewRunForm() {
                 value={selectedInstanceId}
                 onChange={(e) => setSelectedInstanceId(e.target.value)}
                 required
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
+                className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
               >
                 {instances.map((inst) => (
                   <option key={inst.instanceId} value={inst.instanceId}>
@@ -392,7 +392,7 @@ function NewRunForm() {
               <select
                 value={runKind}
                 onChange={(e) => setRunKind(e.target.value as any)}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E]"
+                className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
               >
                 <option value="Backtest">Backtest (Deterministic Single Run)</option>
                 <option value="Optimization">Optimization (GA Genetic Evolution)</option>
@@ -409,7 +409,7 @@ function NewRunForm() {
         </div>
 
         {/* SECTION 2: DNA & Chromosome Injection */}
-        <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
           <div className="flex items-center justify-between border-b border-[#262626] pb-2">
             <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
               <Dna className="w-4 h-4 text-zinc-100" />
@@ -425,7 +425,7 @@ function NewRunForm() {
           </div>
 
           {activeDna ? (
-            <div className="p-3 border border-[#262626] bg-[#141414] flex items-center justify-between">
+            <div className="p-3 border border-[#262626] bg-[#141414] rounded-lg flex items-center justify-between">
               <div>
                 <span className="font-bold text-zinc-100 block">
                   ACTIVE CHROMOSOME: {activeDna.id || activeDna.genomeHash || 'Custom DNA'} (Gen {activeDna.generation ?? 0})
@@ -440,7 +440,7 @@ function NewRunForm() {
                   setActiveDna(null);
                   toast.info('DNA Cleared', 'Reverted to manual parameter inputs.');
                 }}
-                className="px-2.5 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold"
+                className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-bold"
               >
                 CLEAR DNA
               </button>
@@ -452,13 +452,13 @@ function NewRunForm() {
           )}
 
           {isDnaDrawerOpen && (
-            <div className="p-3 border border-[#262626] bg-[#141414] space-y-2">
+            <div className="p-3 border border-[#262626] bg-[#141414] rounded-lg space-y-2">
               <div className="flex items-center justify-between">
                 <span className="font-bold uppercase text-zinc-100">Paste Winning DNA (JSON)</span>
                 <button
                   type="button"
                   onClick={handlePasteFromClipboard}
-                  className="px-2 py-0.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold text-[11px] flex items-center gap-1"
+                  className="px-2.5 py-0.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-bold text-[11px] flex items-center gap-1"
                 >
                   <ClipboardPaste className="w-3 h-3" />
                   <span>PASTE FROM CLIPBOARD</span>
@@ -469,12 +469,12 @@ function NewRunForm() {
                 onChange={(e) => setRawDnaText(e.target.value)}
                 rows={3}
                 placeholder='{"id":"dna-01","genes":{"fastPeriod":12,"slowPeriod":26,"stopLossPct":1.5}}'
-                className="w-full p-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
+                className="w-full p-2 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
               />
               <button
                 type="button"
                 onClick={handleApplyRawDna}
-                className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold"
+                className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-bold"
               >
                 INJECT DNA INTO FORM
               </button>
@@ -483,7 +483,7 @@ function NewRunForm() {
         </div>
 
         {/* SECTION 3: Strategy & Extension Slots */}
-        <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
           <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b border-[#262626] pb-2">
             <Settings2 className="w-4 h-4 text-zinc-100" />
             <span>3. Extension Slots & Configured Genes</span>
@@ -495,7 +495,7 @@ function NewRunForm() {
               <select
                 value={strategyName}
                 onChange={(e) => setStrategyName(e.target.value)}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E]"
+                className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
               >
                 <option value="TrendFollowing">TrendFollowing (Moving Average Crossover)</option>
                 <option value="MeanRevertingPairs">MeanRevertingPairs (Statistical Deviation)</option>
@@ -507,7 +507,7 @@ function NewRunForm() {
               <select
                 value={adapterName}
                 onChange={(e) => setAdapterName(e.target.value)}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E]"
+                className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
               >
                 <option value="PaperBroker">PaperBroker (Built-in Simulated Execution)</option>
               </select>
@@ -523,7 +523,7 @@ function NewRunForm() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {activeGeneDefs.map((gene) => (
-                <div key={gene.name} className="p-3 border border-[#262626] bg-[#141414] space-y-1">
+                <div key={gene.name} className="p-3 border border-[#262626] bg-[#141414] rounded-lg space-y-1">
                   <div className="flex justify-between items-center">
                     <label className="font-bold text-zinc-100 uppercase text-[11px]">{gene.label}</label>
                     <span className="text-[10px] text-zinc-500 font-mono">[{gene.min} - {gene.max}]</span>
@@ -538,7 +538,7 @@ function NewRunForm() {
                       const val = Number(e.target.value);
                       setStrategyGenes((prev) => ({ ...prev, [gene.name]: val }));
                     }}
-                    className="w-full px-2 py-1.5 bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E]"
+                    className="w-full px-2 py-1.5 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
                   />
                   <p className="text-[10px] text-zinc-400 font-sans">{gene.description}</p>
                 </div>
@@ -550,7 +550,7 @@ function NewRunForm() {
           <div className="pt-2 border-t border-[#262626] space-y-3">
             <span className="font-bold uppercase text-zinc-100 text-xs">Adapter Cost & Execution Genes</span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="p-3 border border-[#262626] bg-[#141414] space-y-1">
+              <div className="p-3 border border-[#262626] bg-[#141414] rounded-lg space-y-1">
                 <div className="flex justify-between items-center">
                   <label className="font-bold text-zinc-100 uppercase text-[11px]">Slippage (Basis Points)</label>
                   <span className="text-[10px] text-zinc-500 font-mono">[0 - 50 bps]</span>
@@ -562,12 +562,12 @@ function NewRunForm() {
                   step={1}
                   value={slippageBps}
                   onChange={(e) => setSlippageBps(Number(e.target.value))}
-                  className="w-full px-2 py-1.5 bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E]"
+                  className="w-full px-2 py-1.5 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
                 />
                 <p className="text-[10px] text-zinc-400 font-sans">Simulated execution slippage per fill</p>
               </div>
 
-              <div className="p-3 border border-[#262626] bg-[#141414] space-y-1">
+              <div className="p-3 border border-[#262626] bg-[#141414] rounded-lg space-y-1">
                 <div className="flex justify-between items-center">
                   <label className="font-bold text-zinc-100 uppercase text-[11px]">Exchange Fee (Basis Points)</label>
                   <span className="text-[10px] text-zinc-500 font-mono">[0 - 100 bps]</span>
@@ -579,7 +579,7 @@ function NewRunForm() {
                   step={1}
                   value={feeBps}
                   onChange={(e) => setFeeBps(Number(e.target.value))}
-                  className="w-full px-2 py-1.5 bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E]"
+                  className="w-full px-2 py-1.5 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
                 />
                 <p className="text-[10px] text-zinc-400 font-sans">Per-trade taker/maker fee</p>
               </div>
@@ -588,7 +588,7 @@ function NewRunForm() {
         </div>
 
         {/* SECTION 4: Market Specifications */}
-        <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
           <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b border-[#262626] pb-2">
             <Calendar className="w-4 h-4 text-zinc-100" />
             <span>4. Market Specifications & Date Boundaries</span>
@@ -602,7 +602,7 @@ function NewRunForm() {
                 value={symbol}
                 onChange={(e) => setSymbol(e.target.value)}
                 required
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
+                className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
               />
             </div>
 
@@ -611,7 +611,7 @@ function NewRunForm() {
               <select
                 value={barSize}
                 onChange={(e) => setBarSize(e.target.value)}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E]"
+                className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
               >
                 <option value="Tick">Tick (Native Real-Time Execution)</option>
                 <option value="1s">1 Second</option>
@@ -635,7 +635,7 @@ function NewRunForm() {
                 onChange={(e) => setInitialCapital(Number(e.target.value))}
                 min={100}
                 required
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
+                className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
               />
             </div>
 
@@ -646,7 +646,7 @@ function NewRunForm() {
                 value={seed}
                 onChange={(e) => setSeed(Number(e.target.value))}
                 required
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
+                className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
               />
             </div>
           </div>
@@ -659,7 +659,7 @@ function NewRunForm() {
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 required
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
+                className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
               />
             </div>
 
@@ -670,7 +670,7 @@ function NewRunForm() {
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 required
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
+                className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
               />
             </div>
           </div>
@@ -678,7 +678,7 @@ function NewRunForm() {
 
         {/* SECTION 5: Mode-Specific Optimization / WalkForward Knobs */}
         {runKind === 'Optimization' && (
-          <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+          <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
             <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b border-[#262626] pb-2">
               <Zap className="w-4 h-4 text-zinc-100" />
               <span>5. Genetic Algorithm Evolution Parameters</span>
@@ -693,7 +693,7 @@ function NewRunForm() {
                   onChange={(e) => setGenerations(Number(e.target.value))}
                   min={1}
                   max={500}
-                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
+                  className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
                 />
               </div>
 
@@ -705,7 +705,7 @@ function NewRunForm() {
                   onChange={(e) => setPopulationSize(Number(e.target.value))}
                   min={10}
                   max={500}
-                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
+                  className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
                 />
               </div>
 
@@ -718,7 +718,7 @@ function NewRunForm() {
                   onChange={(e) => setMutationRate(Number(e.target.value))}
                   min={0.01}
                   max={0.5}
-                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
+                  className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
                 />
               </div>
 
@@ -727,7 +727,7 @@ function NewRunForm() {
                 <select
                   value={objectiveMetric}
                   onChange={(e) => setObjectiveMetric(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E]"
+                  className="w-full px-3 py-2 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
                 >
                   <option value="SharpeRatio">Sharpe Ratio</option>
                   <option value="SortinoRatio">Sortino Ratio</option>
@@ -764,7 +764,7 @@ function NewRunForm() {
           <button
             type="submit"
             disabled={submitting || loadingInstances}
-            className="w-full py-3 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] disabled:opacity-50 text-zinc-100 font-bold text-sm uppercase transition-colors flex items-center justify-center gap-2 select-none"
+            className="w-full py-3 border border-[#262626] bg-[#3ECF8E] hover:bg-[#34b27b] text-[#0f0f0f] rounded-full disabled:opacity-50 font-bold text-sm uppercase transition-colors flex items-center justify-center gap-2 select-none shadow-lg shadow-[#3ECF8E]/10"
           >
             <Play className="w-4 h-4" />
             <span>{submitting ? 'TRANSMITTING WIRE CONFIGURATION...' : `TRANSMIT & LAUNCH ${runKind.toUpperCase()} →`}</span>

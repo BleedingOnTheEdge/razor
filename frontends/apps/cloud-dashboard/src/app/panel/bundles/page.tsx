@@ -116,7 +116,7 @@ export default function BundlesListPage() {
             type="button"
             onClick={loadBundles}
             disabled={loading}
-            className="px-3 py-2 border border-[#262626] bg-[#171717] hover:bg-[#1f1f1f] text-zinc-200 font-bold flex items-center gap-1.5 transition-colors"
+            className="px-3.5 py-1.5 rounded-full border border-[#262626] bg-[#171717] hover:bg-[#1f1f1f] text-zinc-200 font-bold text-xs flex items-center gap-1.5 transition-colors"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>REFRESH</span>
@@ -140,7 +140,7 @@ export default function BundlesListPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search bundles by name, ID, or description..."
-            className="w-full pl-9 pr-3 py-2 border border-[#262626] bg-[#171717] text-xs text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-[#3ECF8E]"
+            className="w-full pl-9 pr-3 py-2 rounded-md border border-[#262626] bg-[#171717] text-xs text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
           />
         </div>
 
@@ -149,7 +149,7 @@ export default function BundlesListPage() {
           <select
             value={currencyFilter}
             onChange={(e) => setCurrencyFilter(e.target.value)}
-            className="px-3 py-2 border border-[#262626] bg-[#171717] text-xs font-mono font-bold text-zinc-100 focus:outline-none focus:border-[#3ECF8E]"
+            className="px-3 py-2 rounded-md border border-[#262626] bg-[#171717] text-xs font-mono font-bold text-zinc-100 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30"
           >
             <option value="All">All Currencies</option>
             <option value="Free">Free</option>
@@ -162,7 +162,7 @@ export default function BundlesListPage() {
 
       {/* Bundles Grid */}
       {filteredBundles.length === 0 ? (
-        <div className="p-12 border border-[#262626] bg-[#171717] text-center space-y-3">
+        <div className="p-12 border border-[#262626] bg-[#171717] rounded-xl text-center space-y-3">
           <Package className="w-8 h-8 text-zinc-100 mx-auto opacity-40" />
           <p className="font-bold text-sm text-zinc-100">NO BUNDLES FOUND</p>
           <p className="text-zinc-400 font-sans text-xs">
@@ -170,7 +170,7 @@ export default function BundlesListPage() {
           </p>
           <Link
             href="/panel/bundles/new"
-            className="inline-flex items-center gap-2 px-4 py-2 border border-[#262626] bg-black text-white font-bold hover:bg-zinc-800"
+            className="inline-flex items-center gap-2 px-4 py-2 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] rounded-full font-bold hover:bg-[#34b27b] transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Create First Bundle</span>
@@ -189,18 +189,18 @@ export default function BundlesListPage() {
             return (
               <div
                 key={bundle.id}
-                className="border border-[#262626] bg-[#171717] p-5 space-y-4 flex flex-col justify-between"
+                className="border border-[#262626] bg-[#171717] rounded-xl p-5 space-y-4 flex flex-col justify-between"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold font-mono text-[11px] px-2 py-0.5 border border-[#262626] bg-[#1f1f1f]">
+                    <span className="font-bold font-mono text-[11px] px-2.5 py-0.5 rounded-full border border-[#262626] bg-[#141414] text-zinc-300">
                       {bundle.id}
                     </span>
                     <span
-                      className={`px-2 py-0.5 border text-[10px] font-bold ${
+                      className={`px-2.5 py-0.5 rounded-full border text-[10px] font-bold uppercase ${
                         bundle.currency === 'Free'
-                          ? 'border-green-600 bg-green-50 text-green-700'
-                          : 'border-[#262626] bg-black text-white'
+                          ? 'border-[#3ECF8E]/30 bg-emerald-950/20 text-[#3ECF8E]'
+                          : 'border-[#262626] bg-[#141414] text-zinc-300'
                       }`}
                     >
                       {bundle.currency === 'Free' ? 'FREE' : `${bundle.price} ${bundle.currency}`}
@@ -233,7 +233,7 @@ export default function BundlesListPage() {
 
                   <div className="flex items-center gap-1.5 pt-1 text-[10px]">
                     {bundle.isPublic && (
-                      <span className="px-1.5 py-0.5 border border-[#262626] bg-[#141414] font-bold">
+                      <span className="px-2 py-0.5 rounded-md border border-[#262626] bg-[#141414] font-bold text-xs">
                         PUBLIC
                       </span>
                     )}

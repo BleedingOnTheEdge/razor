@@ -94,17 +94,17 @@ export default function GranularTradeDetailPage() {
           COMPILING TRADE #{ticket} AUDIT DATA FROM CLOUD API...
         </div>
       ) : error ? (
-        <div className="p-4 border border-[#262626] text-rose-400 font-bold">
+        <div className="p-4 border border-rose-800/40 bg-rose-950/20 text-rose-300 font-bold rounded-xl">
           ERROR: {error}
         </div>
       ) : !trade ? (
-        <div className="py-16 text-center border border-[#262626] p-8 font-bold">
+        <div className="py-16 text-center border border-[#262626] p-8 bg-[#141414] rounded-xl text-zinc-400 font-bold bg-[#141414] rounded-xl text-zinc-400">
           [TRADE #{ticket} NOT FOUND]
         </div>
       ) : (
         <div className="space-y-6">
           {/* Primary Result Banner */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 border border-[#262626] bg-[#171717]">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 border border-[#262626] bg-[#171717] rounded-xl">
             <div>
               <span className="text-zinc-100 font-bold block">Realized Profit / Loss</span>
               <span className={`text-2xl font-bold mt-1 block ${isProfit ? 'text-[#3ECF8E]' : 'text-rose-400'}`}>
@@ -132,50 +132,50 @@ export default function GranularTradeDetailPage() {
           </div>
 
           {/* Pricing Ladder & Risk Parameters */}
-          <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+          <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
             <h2 className="text-sm font-bold uppercase text-zinc-100">Price Execution Ladder & Guardrails</h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono">
-              <div className="p-3 border border-[#262626]">
+              <div className="p-3 border border-[#262626] bg-[#141414] rounded-lg">
                 <span className="block font-bold text-zinc-100 uppercase">Open Entry Price</span>
                 <span className="text-base font-bold text-zinc-100 mt-1 block">
                   {trade.openPrice != null ? trade.openPrice.toFixed(2) : '—'}
                 </span>
-                <span className="text-[10px] text-zinc-100 block mt-1">
+                <span className="text-[10px] text-zinc-400 block mt-1">
                   {trade.openTime ? formatTimestamp(trade.openTime) : '—'}
                 </span>
               </div>
 
-              <div className="p-3 border border-[#262626]">
+              <div className="p-3 border border-[#262626] bg-[#141414] rounded-lg">
                 <span className="block font-bold text-zinc-100 uppercase">Close Exit Price</span>
                 <span className="text-base font-bold text-zinc-100 mt-1 block">
                   {trade.closePrice != null ? trade.closePrice.toFixed(2) : '—'}
                 </span>
-                <span className="text-[10px] text-zinc-100 block mt-1">
+                <span className="text-[10px] text-zinc-400 block mt-1">
                   {trade.closeTime ? formatTimestamp(trade.closeTime) : 'Open Position'}
                 </span>
               </div>
 
-              <div className="p-3 border border-[#262626]">
-                <span className="block font-bold text-zinc-100 uppercase">Stop Loss Level</span>
+              <div className="p-3 border border-rose-800/30 bg-rose-950/20 text-zinc-100 rounded-lg">
+                <span className="block font-bold text-rose-400 uppercase">Stop Loss Level</span>
                 <span className="text-base font-bold text-rose-400 mt-1 block">
                   {trade.stopLoss != null ? trade.stopLoss.toFixed(2) : 'NONE'}
                 </span>
-                <span className="text-[10px] text-zinc-100 block mt-1">Hard Risk Cap</span>
+                <span className="text-[10px] text-zinc-400 block mt-1">Hard Risk Cap</span>
               </div>
 
-              <div className="p-3 border border-[#262626]">
-                <span className="block font-bold text-zinc-100 uppercase">Take Profit Level</span>
+              <div className="p-3 border border-[#3ECF8E]/30 bg-emerald-950/20 text-zinc-100 rounded-lg">
+                <span className="block font-bold text-[#3ECF8E] uppercase">Take Profit Level</span>
                 <span className="text-base font-bold text-[#3ECF8E] mt-1 block">
                   {trade.takeProfit != null ? trade.takeProfit.toFixed(2) : 'NONE'}
                 </span>
-                <span className="text-[10px] text-zinc-100 block mt-1">Target Boundary</span>
+                <span className="text-[10px] text-zinc-400 block mt-1">Target Boundary</span>
               </div>
             </div>
           </div>
 
           {/* Institutional Telemetry Breakdown */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 border border-[#262626] bg-[#171717]">
+            <div className="p-4 border border-[#262626] bg-[#171717] rounded-xl">
               <span className="block font-bold text-zinc-100 uppercase">Holding Duration</span>
               <span className="text-lg font-bold text-zinc-100 mt-1 block">
                 {trade.durationSeconds
@@ -185,7 +185,7 @@ export default function GranularTradeDetailPage() {
               <span className="text-[10px] text-zinc-100 block mt-1">Elapsed In Market</span>
             </div>
 
-            <div className="p-4 border border-[#262626] bg-[#171717]">
+            <div className="p-4 border border-[#262626] bg-[#171717] rounded-xl">
               <span className="block font-bold text-zinc-100 uppercase">Execution Slippage</span>
               <span className="text-lg font-bold text-zinc-100 mt-1 block">
                 {trade.slippageTicks ?? 0.2} Ticks
@@ -193,7 +193,7 @@ export default function GranularTradeDetailPage() {
               <span className="text-[10px] text-zinc-100 block mt-1">Engine vs Broker Delta</span>
             </div>
 
-            <div className="p-4 border border-[#262626] bg-[#171717]">
+            <div className="p-4 border border-[#262626] bg-[#171717] rounded-xl">
               <span className="block font-bold text-zinc-100 uppercase">Commission & Fees</span>
               <span className="text-lg font-bold text-zinc-100 mt-1 block">
                 {formatCurrency(trade.commission ?? 0)}
