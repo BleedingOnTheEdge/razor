@@ -279,6 +279,7 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `frontends/apps/cloud-dashboard/src/components/instances/instance-detail-content.tsx`: Decomposed from 698 lines down to 443 lines via extracted modals.
 - `frontends/apps/cloud-dashboard/src/components/lineage/lineage-content.tsx`: Decomposed from 655 lines down to 312 lines via extracted modals and node views.
 - `frontends/apps/cloud-dashboard/src/components/reports/report-content.tsx`: Decomposed from 512 lines down to 414 lines via `CompleteRunModal.tsx`.
+- `frontends/apps/marketplace/src/app/login/page.tsx`: Marketplace authentication portal with quick demo personas.
 - `frontends/apps/marketplace/src/app/tickets/page.tsx`: Decomposed from 504 lines down to 396 lines via `CreateTicketModal.tsx`.
 - `frontends/apps/marketplace/src/components/items/item-detail-content.tsx`: Decomposed from 517 lines down to 340 lines via extracted card and modal components.
 - `frontends/packages/api-client/src/index.ts`: Bundler-compatible extensionless module imports for Next.js webpack compatibility.

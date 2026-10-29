@@ -103,8 +103,8 @@ public sealed class CloudBranchCoverageTests
             await DatabaseSeeder.SeedAsync(db, hasher).ConfigureAwait(true);
 
             Assert.True(await db.Users.AnyAsync(u => u.UserName == "superadmin").ConfigureAwait(true));
-            Assert.Equal(3, await db.Users.CountAsync(u => u.Role == UserRole.Operator).ConfigureAwait(true));
-            Assert.Equal(40, await db.Users.CountAsync(u => u.Role == UserRole.Trader).ConfigureAwait(true));
+            Assert.Equal(4, await db.Users.CountAsync(u => u.Role == UserRole.Operator).ConfigureAwait(true));
+            Assert.Equal(42, await db.Users.CountAsync(u => u.Role == UserRole.Trader).ConfigureAwait(true));
             Assert.Equal(18, await db.MarketplaceItems.CountAsync().ConfigureAwait(true));
         }
 
@@ -115,8 +115,8 @@ public sealed class CloudBranchCoverageTests
 
             // Counts should remain exact
             Assert.Equal(1, await db.Users.CountAsync(u => u.UserName == "superadmin").ConfigureAwait(true));
-            Assert.Equal(3, await db.Users.CountAsync(u => u.Role == UserRole.Operator).ConfigureAwait(true));
-            Assert.Equal(40, await db.Users.CountAsync(u => u.Role == UserRole.Trader).ConfigureAwait(true));
+            Assert.Equal(4, await db.Users.CountAsync(u => u.Role == UserRole.Operator).ConfigureAwait(true));
+            Assert.Equal(42, await db.Users.CountAsync(u => u.Role == UserRole.Trader).ConfigureAwait(true));
             Assert.Equal(18, await db.MarketplaceItems.CountAsync().ConfigureAwait(true));
         }
     }
