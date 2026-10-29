@@ -72,9 +72,9 @@ export default function WindowDetailPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl font-mono text-xs text-black">
+    <div className="space-y-6 max-w-5xl font-sans text-xs text-zinc-100">
       {/* Navigation Breadcrumb */}
-      <div className="flex items-center gap-2 pb-2 border-b border-black">
+      <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
         <Link href="/panel/reports" className="hover:underline font-bold">
           REPORTS
         </Link>
@@ -93,11 +93,11 @@ export default function WindowDetailPage() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold uppercase text-black flex items-center gap-2">
-            <Layers className="w-5 h-5 text-black" />
+          <h1 className="text-xl font-bold uppercase text-zinc-100 flex items-center gap-2">
+            <Layers className="w-5 h-5 text-zinc-100" />
             <span>Walk-Forward Window #{windowIndex} Granular Analytics</span>
           </h1>
-          <p className="text-zinc-600 font-sans mt-1">
+          <p className="text-zinc-400 font-sans mt-1">
             Comparative performance telemetry for in-sample optimization training versus out-of-sample forward execution.
           </p>
         </div>
@@ -105,7 +105,7 @@ export default function WindowDetailPage() {
         <div className="flex items-center gap-2">
           <Link
             href={`/panel/reports/${runId}/windows`}
-            className="px-3.5 py-1.5 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors inline-flex items-center gap-1.5 select-none"
+            className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors inline-flex items-center gap-1.5 select-none"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>ALL WINDOWS</span>
@@ -113,20 +113,20 @@ export default function WindowDetailPage() {
           <button
             type="button"
             onClick={handleCopyDna}
-            className="px-3.5 py-1.5 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors inline-flex items-center gap-1.5 select-none"
+            className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors inline-flex items-center gap-1.5 select-none"
           >
-            {copiedDna ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Dna className="w-3.5 h-3.5" />}
+            {copiedDna ? <Check className="w-3.5 h-3.5 text-[#3ECF8E]" /> : <Dna className="w-3.5 h-3.5" />}
             <span>{copiedDna ? 'COPIED TO CLIPBOARD' : 'COPY WINDOW DNA'}</span>
           </button>
         </div>
       </div>
 
       {loading ? (
-        <div className="py-16 text-center text-black font-bold border border-black">
+        <div className="py-16 text-center text-zinc-100 font-bold border border-[#262626]">
           COMPILING WINDOW #{windowIndex} TELEMETRY FROM CLOUD API...
         </div>
       ) : error ? (
-        <div className="p-4 border border-black text-red-600 font-bold">
+        <div className="p-4 border border-[#262626] text-rose-400 font-bold">
           ERROR: {error}
         </div>
       ) : (
@@ -134,15 +134,15 @@ export default function WindowDetailPage() {
           {/* Comparative In-Sample vs Out-of-Sample Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* In-Sample Card */}
-            <div className="p-5 border border-black bg-zinc-50 space-y-3">
-              <div className="flex justify-between items-center border-b border-black pb-2">
-                <span className="font-bold uppercase text-black text-sm">In-Sample Training (IS)</span>
-                <span className="px-2 py-0.5 border border-black bg-white font-bold text-[10px]">Slice {idxNum}A</span>
+            <div className="p-5 border border-[#262626] bg-[#141414] space-y-3">
+              <div className="flex justify-between items-center border-b border-[#262626] pb-2">
+                <span className="font-bold uppercase text-zinc-100 text-sm">In-Sample Training (IS)</span>
+                <span className="px-2 py-0.5 border border-[#262626] bg-[#171717] font-bold text-[10px]">Slice {idxNum}A</span>
               </div>
               <div className="grid grid-cols-2 gap-3 pt-1">
                 <div>
                   <span className="text-zinc-500 font-sans block text-[11px]">Annualized Return</span>
-                  <span className="text-lg font-bold font-mono text-green-600">+{isReturn}%</span>
+                  <span className="text-lg font-bold font-mono text-[#3ECF8E]">+{isReturn}%</span>
                 </div>
                 <div>
                   <span className="text-zinc-500 font-sans block text-[11px]">Sharpe Ratio</span>
@@ -160,15 +160,15 @@ export default function WindowDetailPage() {
             </div>
 
             {/* Out-of-Sample Card */}
-            <div className="p-5 border border-black bg-zinc-50 space-y-3">
-              <div className="flex justify-between items-center border-b border-black pb-2">
-                <span className="font-bold uppercase text-black text-sm">Out-of-Sample Test (OOS)</span>
-                <span className="px-2 py-0.5 border border-black bg-white font-bold text-[10px]">Slice {idxNum}B</span>
+            <div className="p-5 border border-[#262626] bg-[#141414] space-y-3">
+              <div className="flex justify-between items-center border-b border-[#262626] pb-2">
+                <span className="font-bold uppercase text-zinc-100 text-sm">Out-of-Sample Test (OOS)</span>
+                <span className="px-2 py-0.5 border border-[#262626] bg-[#171717] font-bold text-[10px]">Slice {idxNum}B</span>
               </div>
               <div className="grid grid-cols-2 gap-3 pt-1">
                 <div>
                   <span className="text-zinc-500 font-sans block text-[11px]">Forward Return</span>
-                  <span className="text-lg font-bold font-mono text-green-600">+{oosReturn}%</span>
+                  <span className="text-lg font-bold font-mono text-[#3ECF8E]">+{oosReturn}%</span>
                 </div>
                 <div>
                   <span className="text-zinc-500 font-sans block text-[11px]">Forward Sharpe</span>
@@ -180,32 +180,32 @@ export default function WindowDetailPage() {
                 </div>
                 <div>
                   <span className="text-zinc-500 font-sans block text-[11px]">WFE Efficiency</span>
-                  <span className="text-base font-bold font-mono text-green-600">{wfe.toFixed(2)}</span>
+                  <span className="text-base font-bold font-mono text-[#3ECF8E]">{wfe.toFixed(2)}</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Optimal Chromosome Decoded Parameters Table */}
-          <div className="p-5 border border-black bg-white space-y-3">
-            <span className="font-bold uppercase text-black block">
+          <div className="p-5 border border-[#262626] bg-[#171717] space-y-3">
+            <span className="font-bold uppercase text-zinc-100 block">
               Optimal Strategy Parameters for Window #{windowIndex}
             </span>
-            <div className="border border-black overflow-hidden">
+            <div className="border border-[#262626] overflow-hidden">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-black bg-zinc-100 font-bold uppercase text-[11px]">
+                  <tr className="border-b border-[#262626] bg-[#1f1f1f] font-bold uppercase text-[11px]">
                     <th className="py-2.5 px-3">Parameter Name</th>
                     <th className="py-2.5 px-3 text-right">Fitted Value</th>
                     <th className="py-2.5 px-3">Description</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200">
+                <tbody className="divide-y divide-[#262626]">
                   {Object.entries(windowDna.parameters).map(([name, val]) => (
-                    <tr key={name} className="hover:bg-zinc-50 transition-colors">
-                      <td className="py-2 px-3 font-bold text-black">{name}</td>
-                      <td className="py-2 px-3 text-right font-mono font-bold text-black">{val}</td>
-                      <td className="py-2 px-3 text-zinc-600 font-sans text-[11px]">Fitted via genetic evolution</td>
+                    <tr key={name} className="hover:bg-[#141414] transition-colors">
+                      <td className="py-2 px-3 font-bold text-zinc-100">{name}</td>
+                      <td className="py-2 px-3 text-right font-mono font-bold text-zinc-100">{val}</td>
+                      <td className="py-2 px-3 text-zinc-400 font-sans text-[11px]">Fitted via genetic evolution</td>
                     </tr>
                   ))}
                 </tbody>

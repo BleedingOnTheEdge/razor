@@ -61,40 +61,40 @@ export function GranularTradeDetailModal({ isOpen, onClose, trade, runId }: Gran
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 font-mono text-xs text-black"
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 font-sans text-xs text-zinc-100"
       onClick={onClose}
     >
       <div
-        className="bg-white border border-black max-w-2xl w-full p-4 sm:p-6 text-black space-y-5 max-h-[92vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150"
+        className="bg-[#171717] border border-[#262626] max-w-2xl w-full p-4 sm:p-6 text-zinc-100 space-y-5 max-h-[92vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between pb-3 border-b border-black">
+        <div className="flex items-start justify-between pb-3 border-b border-[#262626]">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-bold text-black">
+              <span className="font-bold text-zinc-100">
                 Ticket #{trade.ticket}
               </span>
-              <span className="text-base font-bold text-black uppercase">{trade.symbol}</span>
+              <span className="text-base font-bold text-zinc-100 uppercase">{trade.symbol}</span>
               <span
-                className={`px-2 py-0.5 font-bold border border-black ${
+                className={`px-2 py-0.5 font-bold border border-[#262626] ${
                   isBuy ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
                 }`}
               >
                 [{trade.side}]
               </span>
-              <span className="px-2 py-0.5 bg-zinc-100 border border-black text-black font-bold">
+              <span className="px-2 py-0.5 bg-[#1f1f1f] border border-[#262626] text-zinc-100 font-bold">
                 {trade.volume} LOTS
               </span>
             </div>
-            <p className="text-[11px] text-zinc-600 font-sans mt-1">
+            <p className="text-[11px] text-zinc-400 font-sans mt-1">
               Fill execution telemetry, price markers, risk targets, and audit trail.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 border border-black hover:bg-black hover:text-white transition-colors"
+            className="p-1 border border-[#262626] hover:bg-black hover:text-white transition-colors"
             title="Close"
           >
             <X className="w-4 h-4" />
@@ -103,35 +103,35 @@ export function GranularTradeDetailModal({ isOpen, onClose, trade, runId }: Gran
 
         {/* Headline Result Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="p-3 border border-black bg-zinc-50">
-            <span className="text-zinc-600 text-[10px] block font-bold uppercase">Realized PnL</span>
-            <span className={`text-base font-bold mt-1 block ${isProfit ? 'text-green-600' : 'text-red-600'}`}>
+          <div className="p-3 border border-[#262626] bg-[#141414]">
+            <span className="text-zinc-400 text-[10px] block font-bold uppercase">Realized PnL</span>
+            <span className={`text-base font-bold mt-1 block ${isProfit ? 'text-[#3ECF8E]' : 'text-rose-400'}`}>
               {trade.profit != null ? (trade.profit >= 0 ? `+${formatCurrency(trade.profit)}` : formatCurrency(trade.profit)) : '—'}
             </span>
-            <span className={`text-[11px] font-bold ${isProfit ? 'text-green-600' : 'text-red-600'}`}>
+            <span className={`text-[11px] font-bold ${isProfit ? 'text-[#3ECF8E]' : 'text-rose-400'}`}>
               Return: {trade.returnPct != null ? (trade.returnPct >= 0 ? `+${trade.returnPct.toFixed(2)}%` : `${trade.returnPct.toFixed(2)}%`) : '—'}
             </span>
           </div>
 
-          <div className="p-3 border border-black bg-zinc-50">
-            <span className="text-zinc-600 text-[10px] block font-bold uppercase">Execution Duration</span>
-            <span className="text-base font-bold text-black mt-1 block">
+          <div className="p-3 border border-[#262626] bg-[#141414]">
+            <span className="text-zinc-400 text-[10px] block font-bold uppercase">Execution Duration</span>
+            <span className="text-base font-bold text-zinc-100 mt-1 block">
               {durationStr}
             </span>
             <span className="text-[10px] text-zinc-500 font-sans">Fill lifespan</span>
           </div>
 
-          <div className="p-3 border border-black bg-zinc-50">
-            <span className="text-zinc-600 text-[10px] block font-bold uppercase">Entry Price</span>
-            <span className="text-base font-bold text-black mt-1 block">
+          <div className="p-3 border border-[#262626] bg-[#141414]">
+            <span className="text-zinc-400 text-[10px] block font-bold uppercase">Entry Price</span>
+            <span className="text-base font-bold text-zinc-100 mt-1 block">
               ${openPx.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
             </span>
             <span className="text-[10px] text-zinc-500 font-sans">Market fill</span>
           </div>
 
-          <div className="p-3 border border-black bg-zinc-50">
-            <span className="text-zinc-600 text-[10px] block font-bold uppercase">Exit Price</span>
-            <span className="text-base font-bold text-black mt-1 block">
+          <div className="p-3 border border-[#262626] bg-[#141414]">
+            <span className="text-zinc-400 text-[10px] block font-bold uppercase">Exit Price</span>
+            <span className="text-base font-bold text-zinc-100 mt-1 block">
               ${closePx.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
             </span>
             <span className="text-[10px] text-zinc-500 font-sans">Trigger: {trade.exitReason}</span>
@@ -139,12 +139,12 @@ export function GranularTradeDetailModal({ isOpen, onClose, trade, runId }: Gran
         </div>
 
         {/* Mobile-Friendly Execution Price Level Ladder */}
-        <div className="p-4 border border-black bg-white space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs font-bold border-b border-black pb-2">
+        <div className="p-4 border border-[#262626] bg-[#171717] space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs font-bold border-b border-[#262626] pb-2">
             <span className="uppercase tracking-wider">
               Execution Price Level Ladder
             </span>
-            <span className="text-[11px] text-zinc-600 font-normal">
+            <span className="text-[11px] text-zinc-400 font-normal">
               Ordered Price Levels & Target Thresholds
             </span>
           </div>
@@ -152,47 +152,47 @@ export function GranularTradeDetailModal({ isOpen, onClose, trade, runId }: Gran
           {/* Structured Level Ladder Cards (Adaptive Mobile & Desktop Grid) */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             {/* Stop Loss */}
-            <div className="p-2.5 border border-black bg-red-50 text-black">
+            <div className="p-2.5 border border-[#262626] bg-red-50 text-zinc-100">
               <span className="text-[10px] font-bold text-red-700 uppercase block">1. Stop Loss</span>
-              <span className="font-bold text-sm text-red-600 block mt-0.5 font-mono">
+              <span className="font-bold text-sm text-rose-400 block mt-0.5 font-mono">
                 ${slPx.toFixed(2)}
               </span>
-              <span className="text-[10px] text-zinc-600 font-sans block mt-1">
+              <span className="text-[10px] text-zinc-400 font-sans block mt-1">
                 Risk boundary
               </span>
             </div>
 
             {/* Entry Price */}
-            <div className="p-2.5 border border-black bg-zinc-50 text-black">
-              <span className="text-[10px] font-bold text-black uppercase block">2. Entry Fill</span>
-              <span className="font-bold text-sm text-black block mt-0.5 font-mono">
+            <div className="p-2.5 border border-[#262626] bg-[#141414] text-zinc-200">
+              <span className="text-[10px] font-bold text-zinc-100 uppercase block">2. Entry Fill</span>
+              <span className="font-bold text-sm text-zinc-100 block mt-0.5 font-mono">
                 ${openPx.toFixed(2)}
               </span>
-              <span className="text-[10px] text-zinc-600 font-sans block mt-1">
+              <span className="text-[10px] text-zinc-400 font-sans block mt-1">
                 Executed at market
               </span>
             </div>
 
             {/* Exit Price */}
-            <div className={`p-2.5 border border-black ${isProfit ? 'bg-green-50' : 'bg-red-50'} text-black`}>
+            <div className={`p-2.5 border border-[#262626] ${isProfit ? 'bg-green-50' : 'bg-red-50'} text-zinc-100`}>
               <span className={`text-[10px] font-bold uppercase block ${isProfit ? 'text-green-700' : 'text-red-700'}`}>
                 3. Exit Fill
               </span>
-              <span className={`font-bold text-sm block mt-0.5 font-mono ${isProfit ? 'text-green-600' : 'text-red-600'}`}>
+              <span className={`font-bold text-sm block mt-0.5 font-mono ${isProfit ? 'text-[#3ECF8E]' : 'text-rose-400'}`}>
                 ${closePx.toFixed(2)}
               </span>
-              <span className="text-[10px] text-zinc-600 font-sans block mt-1">
+              <span className="text-[10px] text-zinc-400 font-sans block mt-1">
                 Reason: {trade.exitReason}
               </span>
             </div>
 
             {/* Take Profit */}
-            <div className="p-2.5 border border-black bg-green-50 text-black">
+            <div className="p-2.5 border border-[#262626] bg-green-50 text-zinc-100">
               <span className="text-[10px] font-bold text-green-700 uppercase block">4. Take Profit</span>
-              <span className="font-bold text-sm text-green-600 block mt-0.5 font-mono">
+              <span className="font-bold text-sm text-[#3ECF8E] block mt-0.5 font-mono">
                 ${tpPx.toFixed(2)}
               </span>
-              <span className="text-[10px] text-zinc-600 font-sans block mt-1">
+              <span className="text-[10px] text-zinc-400 font-sans block mt-1">
                 Reward target
               </span>
             </div>
@@ -201,54 +201,54 @@ export function GranularTradeDetailModal({ isOpen, onClose, trade, runId }: Gran
 
         {/* Enhanced Open/Close Equity & MAE/MFE Telemetry Grid */}
         <div className="space-y-2">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-black">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-100">
             Account Equity & Risk Telemetry
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-            <div className="p-3 border border-black bg-zinc-50 flex items-center justify-between">
-              <span className="font-bold uppercase text-black">Before Open Equity:</span>
-              <span className="font-bold text-black font-mono">${beforeOpenEquity.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+            <div className="p-3 border border-[#262626] bg-[#141414] flex items-center justify-between">
+              <span className="font-bold uppercase text-zinc-100">Before Open Equity:</span>
+              <span className="font-bold text-zinc-100 font-mono">${beforeOpenEquity.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
             </div>
-            <div className="p-3 border border-black bg-zinc-50 flex items-center justify-between">
-              <span className="font-bold uppercase text-black">After Close Equity:</span>
-              <span className={`font-bold font-mono ${isProfit ? 'text-green-600' : 'text-red-600'}`}>
+            <div className="p-3 border border-[#262626] bg-[#141414] flex items-center justify-between">
+              <span className="font-bold uppercase text-zinc-100">After Close Equity:</span>
+              <span className={`font-bold font-mono ${isProfit ? 'text-[#3ECF8E]' : 'text-rose-400'}`}>
                 ${afterCloseEquity.toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </span>
             </div>
-            <div className="p-3 border border-black bg-zinc-50 flex items-center justify-between">
-              <span className="font-bold uppercase text-black">Max Adverse Excursion (MAE):</span>
-              <span className="font-bold text-red-600 font-mono">-{maePct.toFixed(2)}%</span>
+            <div className="p-3 border border-[#262626] bg-[#141414] flex items-center justify-between">
+              <span className="font-bold uppercase text-zinc-100">Max Adverse Excursion (MAE):</span>
+              <span className="font-bold text-rose-400 font-mono">-{maePct.toFixed(2)}%</span>
             </div>
-            <div className="p-3 border border-black bg-zinc-50 flex items-center justify-between">
-              <span className="font-bold uppercase text-black">Max Favorable Excursion (MFE):</span>
-              <span className="font-bold text-green-600 font-mono">+{mfePct.toFixed(2)}%</span>
+            <div className="p-3 border border-[#262626] bg-[#141414] flex items-center justify-between">
+              <span className="font-bold uppercase text-zinc-100">Max Favorable Excursion (MFE):</span>
+              <span className="font-bold text-[#3ECF8E] font-mono">+{mfePct.toFixed(2)}%</span>
             </div>
-            <div className="p-3 border border-black bg-zinc-50 flex items-center justify-between">
-              <span className="font-bold uppercase text-black">Execution Slippage:</span>
-              <span className="font-bold text-black font-mono">{slippageTicks} ticks (${slippageCost.toFixed(2)})</span>
+            <div className="p-3 border border-[#262626] bg-[#141414] flex items-center justify-between">
+              <span className="font-bold uppercase text-zinc-100">Execution Slippage:</span>
+              <span className="font-bold text-zinc-100 font-mono">{slippageTicks} ticks (${slippageCost.toFixed(2)})</span>
             </div>
-            <div className="p-3 border border-black bg-zinc-50 flex items-center justify-between">
-              <span className="font-bold uppercase text-black">Broker Commission & Swap:</span>
-              <span className="font-bold text-black font-mono">${((trade.commission ?? 1.5) + (trade.swap ?? 0)).toFixed(2)} USD</span>
+            <div className="p-3 border border-[#262626] bg-[#141414] flex items-center justify-between">
+              <span className="font-bold uppercase text-zinc-100">Broker Commission & Swap:</span>
+              <span className="font-bold text-zinc-100 font-mono">${((trade.commission ?? 1.5) + (trade.swap ?? 0)).toFixed(2)} USD</span>
             </div>
           </div>
         </div>
 
         {/* Audit Timestamps & Execution Route */}
-        <div className="p-3 border border-black bg-zinc-50 space-y-1.5 text-[11px]">
+        <div className="p-3 border border-[#262626] bg-[#141414] space-y-1.5 text-[11px]">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span>
-              <strong className="text-black uppercase">Open Timestamp: </strong>
+              <strong className="text-zinc-100 uppercase">Open Timestamp: </strong>
               {trade.openTime ? formatTimestamp(trade.openTime) : '—'}
             </span>
             <span>
-              <strong className="text-black uppercase">Close Timestamp: </strong>
+              <strong className="text-zinc-100 uppercase">Close Timestamp: </strong>
               {trade.closeTime ? formatTimestamp(trade.closeTime) : '—'}
             </span>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-zinc-300">
             <span>
-              <strong className="text-black uppercase">Execution Venue: </strong>
+              <strong className="text-zinc-100 uppercase">Execution Venue: </strong>
               {trade.executionVenue || 'Binance Futures Direct'}
             </span>
             <span className="font-bold text-green-700 flex items-center gap-1">
@@ -259,11 +259,11 @@ export function GranularTradeDetailModal({ isOpen, onClose, trade, runId }: Gran
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-2 border-t border-black">
+        <div className="flex items-center justify-between pt-2 border-t border-[#262626]">
           {runId && trade?.ticket ? (
             <Link
               href={'/panel/reports/' + runId + '/trades/' + trade.ticket}
-              className="px-3.5 py-1.5 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors inline-flex items-center gap-1.5"
+              className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors inline-flex items-center gap-1.5"
             >
               <span>OPEN FULL TRADE PAGE →</span>
             </Link>
@@ -271,7 +271,7 @@ export function GranularTradeDetailModal({ isOpen, onClose, trade, runId }: Gran
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors"
+            className="px-4 py-2 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors"
           >
             Close Telemetry
           </button>

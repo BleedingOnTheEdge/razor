@@ -34,7 +34,7 @@ export function GenerationDetailModal({
       onClick={onClose}
     >
       <div
-        className="bg-white border border-slate-200 rounded-2xl shadow-xl max-w-4xl w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto text-slate-900 animate-in fade-in-0 zoom-in-95 duration-150"
+        className="bg-[#171717] border border-slate-200 rounded-2xl shadow-xl max-w-4xl w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto text-slate-900 animate-in fade-in-0 zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -121,7 +121,7 @@ export function GenerationDetailModal({
                   <th className="py-3 px-4 text-right">Backtest Report</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 bg-white font-mono text-xs">
+              <tbody className="divide-y divide-slate-100 bg-[#171717] font-mono text-xs">
                 {populations.map((ind) => (
                   <tr
                     key={ind.id}
@@ -174,7 +174,7 @@ export function GenerationDetailModal({
           {runId && generation.generation !== undefined ? (
             <Link
               href={'/panel/reports/' + runId + '/generations/' + generation.generation}
-              className="px-3.5 py-1.5 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors inline-flex items-center gap-1.5 text-xs font-mono"
+              className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors inline-flex items-center gap-1.5 text-xs font-mono"
             >
               <span>OPEN FULL GENERATION PAGE →</span>
             </Link>
@@ -182,7 +182,7 @@ export function GenerationDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 text-slate-700 font-medium text-sm transition-colors"
+            className="px-4 py-2 border border-slate-300 rounded-lg bg-[#171717] hover:bg-slate-50 text-slate-700 font-medium text-sm transition-colors"
           >
             Close Generation
           </button>

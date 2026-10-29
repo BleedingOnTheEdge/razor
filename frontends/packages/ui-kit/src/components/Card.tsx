@@ -1,27 +1,69 @@
 import React from 'react';
+import { cn } from '../lib/utils';
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   interactive?: boolean;
 }
 
 /**
- * Apple-style translucent material container featuring subtle depth,
- * backdrop blur, hairline borders, and optional interactive surface feedback.
+ * Supabase-style near-black surface container (#171717)
+ * featuring hairline borders (#262626), subtle shadow, and optional interactive hover feedback.
  */
-export const Card: React.FC<CardProps> = ({
-  children,
-  interactive = false,
-  className = '',
-  ...props
-}) => {
-  return (
-    <div
-      className={`rounded-2xl bg-white/80 dark:bg-zinc-900/70 backdrop-blur-md border border-zinc-200 dark:border-zinc-800/80 shadow-xl shadow-zinc-200/50 dark:shadow-black/20 p-6 text-zinc-900 dark:text-zinc-100
-        ${interactive ? 'transition-all duration-150 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-white/95 dark:hover:bg-zinc-900/90 active:scale-[0.99] cursor-pointer' : ''}
-        ${className}`}
+export const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ children, interactive = false, className = '', ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          'rounded-xl bg-[#171717] border border-[#262626] p-6 text-zinc-100 shadow-sm shadow-black/40',
+          interactive &&
+            'transition-all duration-150 hover:border-[#383838] hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer',
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+Card.displayName = 'Card';
+
+export const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className = '', ...props }, ref) => (
+    <div ref={ref} className={cn('flex flex-col space-y-1.5 pb-4', className)} {...props} />
+  )
+);
+CardHeader.displayName = 'CardHeader';
+
+export const CardTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
+  ({ className = '', ...props }, ref) => (
+    <h3
+      ref={ref}
+      className={cn('text-base font-semibold leading-none tracking-tight text-zinc-100 font-sans', className)}
       {...props}
-    >
-      {children}
-    </div>
-  );
-};
+    />
+  )
+);
+CardTitle.displayName = 'CardTitle';
+
+export const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
+  ({ className = '', ...props }, ref) => (
+    <p ref={ref} className={cn('text-xs text-zinc-400 font-sans leading-relaxed', className)} {...props} />
+  )
+);
+CardDescription.displayName = 'CardDescription';
+
+export const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className = '', ...props }, ref) => (
+    <div ref={ref} className={cn('pt-0', className)} {...props} />
+  )
+);
+CardContent.displayName = 'CardContent';
+
+export const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className = '', ...props }, ref) => (
+    <div ref={ref} className={cn('flex items-center pt-4 border-t border-[#262626]', className)} {...props} />
+  )
+);
+CardFooter.displayName = 'CardFooter';

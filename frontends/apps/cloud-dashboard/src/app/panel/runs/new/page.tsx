@@ -326,7 +326,7 @@ function NewRunForm() {
   const activeGeneDefs = STRATEGY_GENES[strategyName] || STRATEGY_GENES.TrendFollowing;
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto font-mono text-xs text-black">
+    <div className="space-y-6 max-w-5xl mx-auto font-sans text-xs text-zinc-100">
       {/* Back Link */}
       <div className="flex items-center gap-2">
         <Link href="/panel/runs" className="hover:underline flex items-center gap-1 font-bold">
@@ -336,20 +336,20 @@ function NewRunForm() {
         <span>/</span>
         <span className="font-bold">Launch Flow Run</span>
         {cloneFromId && (
-          <span className="border border-black px-2 py-0.5 bg-zinc-50 font-bold">
+          <span className="border border-[#262626] px-2 py-0.5 bg-[#141414] font-bold">
             CLONED FROM: {formatHash(cloneFromId, 8)}
           </span>
         )}
       </div>
 
       {/* Header */}
-      <div className="pb-4 border-b border-black flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="pb-4 border-b border-[#262626] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-black flex items-center gap-2 uppercase">
-            <Play className="w-5 h-5 text-black" />
+          <h1 className="text-xl font-bold tracking-tight text-zinc-100 flex items-center gap-2 uppercase">
+            <Play className="w-5 h-5 text-zinc-100" />
             <span>Launch Deterministic Flow Run</span>
           </h1>
-          <p className="text-xs text-black font-normal mt-1 font-sans">
+          <p className="text-xs text-zinc-100 font-normal mt-1 font-sans">
             Configure algorithmic parameters, chromosomes, genetic optimization, and execution risk guardrails.
           </p>
         </div>
@@ -357,22 +357,22 @@ function NewRunForm() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* SECTION 1: Target Engine & Execution Kind */}
-        <div className="p-5 border border-black bg-white space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b border-black pb-2">
-            <Server className="w-4 h-4 text-black" />
+        <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+          <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b border-[#262626] pb-2">
+            <Server className="w-4 h-4 text-zinc-100" />
             <span>1. Target Engine & Flow Mode</span>
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="sm:col-span-2">
-              <label className="block text-black font-bold uppercase mb-1">
+              <label className="block text-zinc-100 font-bold uppercase mb-1">
                 Target Engine Instance
               </label>
               <select
                 value={selectedInstanceId}
                 onChange={(e) => setSelectedInstanceId(e.target.value)}
                 required
-                className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
               >
                 {instances.map((inst) => (
                   <option key={inst.instanceId} value={inst.instanceId}>
@@ -383,21 +383,21 @@ function NewRunForm() {
             </div>
 
             <div>
-              <label className="block text-black font-bold uppercase mb-1">
+              <label className="block text-zinc-100 font-bold uppercase mb-1">
                 Flow Mode (Kind)
               </label>
               <select
                 value={runKind}
                 onChange={(e) => setRunKind(e.target.value as any)}
-                className="w-full px-3 py-2 bg-white border border-black text-black font-mono font-bold focus:outline-none"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E]"
               >
                 <option value="Backtest">Backtest (Deterministic Single Run)</option>
                 <option value="Optimization">Optimization (GA Genetic Evolution)</option>
                 <option value="WalkForward">Walk-Forward (Sliding Out-of-Sample)</option>
               </select>
-              <div className="mt-1 text-[10px] text-zinc-600 font-sans">
+              <div className="mt-1 text-[10px] text-zinc-400 font-sans">
                 Looking for Real-Time Execution? Live trading is decoupled from flow runs and managed directly in the{' '}
-                <Link href="/panel/live" className="font-bold underline text-black">
+                <Link href="/panel/live" className="font-bold underline text-zinc-100">
                   Live Trading Manager →
                 </Link>
               </div>
@@ -406,28 +406,28 @@ function NewRunForm() {
         </div>
 
         {/* SECTION 2: DNA & Chromosome Injection */}
-        <div className="p-5 border border-black bg-white space-y-4">
-          <div className="flex items-center justify-between border-b border-black pb-2">
+        <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+          <div className="flex items-center justify-between border-b border-[#262626] pb-2">
             <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
-              <Dna className="w-4 h-4 text-black" />
+              <Dna className="w-4 h-4 text-zinc-100" />
               <span>2. Strategy DNA & Chromosome Seed</span>
             </h2>
             <button
               type="button"
               onClick={() => setIsDnaDrawerOpen(!isDnaDrawerOpen)}
-              className="text-xs font-bold text-black hover:underline"
+              className="text-xs font-bold text-zinc-100 hover:underline"
             >
               {isDnaDrawerOpen ? 'HIDE DNA PASTE' : 'PASTE CUSTOM DNA'}
             </button>
           </div>
 
           {activeDna ? (
-            <div className="p-3 border border-black bg-zinc-50 flex items-center justify-between">
+            <div className="p-3 border border-[#262626] bg-[#141414] flex items-center justify-between">
               <div>
-                <span className="font-bold text-black block">
+                <span className="font-bold text-zinc-100 block">
                   ACTIVE CHROMOSOME: {activeDna.id || activeDna.genomeHash || 'Custom DNA'} (Gen {activeDna.generation ?? 0})
                 </span>
-                <span className="text-[11px] text-zinc-600 font-sans block mt-0.5">
+                <span className="text-[11px] text-zinc-400 font-sans block mt-0.5">
                   Fitness: {(activeDna as any).fitnessScore?.toFixed(3) || activeDna.fitness?.toFixed(3) || '1.000'}
                 </span>
               </div>
@@ -437,25 +437,25 @@ function NewRunForm() {
                   setActiveDna(null);
                   toast.info('DNA Cleared', 'Reverted to manual parameter inputs.');
                 }}
-                className="px-2.5 py-1 border border-black bg-white hover:bg-black hover:text-white font-bold"
+                className="px-2.5 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold"
               >
                 CLEAR DNA
               </button>
             </div>
           ) : (
-            <p className="text-zinc-600 font-sans text-xs">
+            <p className="text-zinc-400 font-sans text-xs">
               No DNA injected. Default algorithmic parameter values are active below. You can paste a Winning DNA JSON from any previous backtest or report.
             </p>
           )}
 
           {isDnaDrawerOpen && (
-            <div className="p-3 border border-black bg-zinc-50 space-y-2">
+            <div className="p-3 border border-[#262626] bg-[#141414] space-y-2">
               <div className="flex items-center justify-between">
-                <span className="font-bold uppercase text-black">Paste Winning DNA (JSON)</span>
+                <span className="font-bold uppercase text-zinc-100">Paste Winning DNA (JSON)</span>
                 <button
                   type="button"
                   onClick={handlePasteFromClipboard}
-                  className="px-2 py-0.5 border border-black bg-white hover:bg-black hover:text-white font-bold text-[11px] flex items-center gap-1"
+                  className="px-2 py-0.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold text-[11px] flex items-center gap-1"
                 >
                   <ClipboardPaste className="w-3 h-3" />
                   <span>PASTE FROM CLIPBOARD</span>
@@ -466,12 +466,12 @@ function NewRunForm() {
                 onChange={(e) => setRawDnaText(e.target.value)}
                 rows={3}
                 placeholder='{"id":"dna-01","genes":{"fastPeriod":12,"slowPeriod":26,"stopLossPct":1.5}}'
-                className="w-full p-2 bg-white border border-black text-black font-mono focus:outline-none"
+                className="w-full p-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
               />
               <button
                 type="button"
                 onClick={handleApplyRawDna}
-                className="px-3 py-1 border border-black bg-white hover:bg-black hover:text-white font-bold"
+                className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold"
               >
                 INJECT DNA INTO FORM
               </button>
@@ -480,19 +480,19 @@ function NewRunForm() {
         </div>
 
         {/* SECTION 3: Strategy & Extension Slots */}
-        <div className="p-5 border border-black bg-white space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b border-black pb-2">
-            <Settings2 className="w-4 h-4 text-black" />
+        <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+          <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b border-[#262626] pb-2">
+            <Settings2 className="w-4 h-4 text-zinc-100" />
             <span>3. Extension Slots & Configured Genes</span>
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-black font-bold uppercase mb-1">Strategy Extension Slot</label>
+              <label className="block text-zinc-100 font-bold uppercase mb-1">Strategy Extension Slot</label>
               <select
                 value={strategyName}
                 onChange={(e) => setStrategyName(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-black text-black font-mono font-bold focus:outline-none"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E]"
               >
                 <option value="TrendFollowing">TrendFollowing (Moving Average Crossover)</option>
                 <option value="MeanRevertingPairs">MeanRevertingPairs (Statistical Deviation)</option>
@@ -500,11 +500,11 @@ function NewRunForm() {
             </div>
 
             <div>
-              <label className="block text-black font-bold uppercase mb-1">Broker Adapter Slot</label>
+              <label className="block text-zinc-100 font-bold uppercase mb-1">Broker Adapter Slot</label>
               <select
                 value={adapterName}
                 onChange={(e) => setAdapterName(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-black text-black font-mono font-bold focus:outline-none"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E]"
               >
                 <option value="PaperBroker">PaperBroker (Built-in Simulated Execution)</option>
               </select>
@@ -512,17 +512,17 @@ function NewRunForm() {
           </div>
 
           {/* Strategy Genes Listing */}
-          <div className="pt-2 border-t border-black space-y-3">
+          <div className="pt-2 border-t border-[#262626] space-y-3">
             <div className="flex items-center justify-between">
-              <span className="font-bold uppercase text-black text-xs">Strategy Genes & Parameter Boundaries</span>
+              <span className="font-bold uppercase text-zinc-100 text-xs">Strategy Genes & Parameter Boundaries</span>
               <span className="text-[11px] text-zinc-500 font-sans">Validated boundaries strictly enforced</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {activeGeneDefs.map((gene) => (
-                <div key={gene.name} className="p-3 border border-black bg-zinc-50 space-y-1">
+                <div key={gene.name} className="p-3 border border-[#262626] bg-[#141414] space-y-1">
                   <div className="flex justify-between items-center">
-                    <label className="font-bold text-black uppercase text-[11px]">{gene.label}</label>
+                    <label className="font-bold text-zinc-100 uppercase text-[11px]">{gene.label}</label>
                     <span className="text-[10px] text-zinc-500 font-mono">[{gene.min} - {gene.max}]</span>
                   </div>
                   <input
@@ -535,21 +535,21 @@ function NewRunForm() {
                       const val = Number(e.target.value);
                       setStrategyGenes((prev) => ({ ...prev, [gene.name]: val }));
                     }}
-                    className="w-full px-2 py-1.5 bg-white border border-black text-black font-mono font-bold focus:outline-none"
+                    className="w-full px-2 py-1.5 bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E]"
                   />
-                  <p className="text-[10px] text-zinc-600 font-sans">{gene.description}</p>
+                  <p className="text-[10px] text-zinc-400 font-sans">{gene.description}</p>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Adapter Genes Listing */}
-          <div className="pt-2 border-t border-black space-y-3">
-            <span className="font-bold uppercase text-black text-xs">Adapter Cost & Execution Genes</span>
+          <div className="pt-2 border-t border-[#262626] space-y-3">
+            <span className="font-bold uppercase text-zinc-100 text-xs">Adapter Cost & Execution Genes</span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="p-3 border border-black bg-zinc-50 space-y-1">
+              <div className="p-3 border border-[#262626] bg-[#141414] space-y-1">
                 <div className="flex justify-between items-center">
-                  <label className="font-bold text-black uppercase text-[11px]">Slippage (Basis Points)</label>
+                  <label className="font-bold text-zinc-100 uppercase text-[11px]">Slippage (Basis Points)</label>
                   <span className="text-[10px] text-zinc-500 font-mono">[0 - 50 bps]</span>
                 </div>
                 <input
@@ -559,14 +559,14 @@ function NewRunForm() {
                   step={1}
                   value={slippageBps}
                   onChange={(e) => setSlippageBps(Number(e.target.value))}
-                  className="w-full px-2 py-1.5 bg-white border border-black text-black font-mono font-bold focus:outline-none"
+                  className="w-full px-2 py-1.5 bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E]"
                 />
-                <p className="text-[10px] text-zinc-600 font-sans">Simulated execution slippage per fill</p>
+                <p className="text-[10px] text-zinc-400 font-sans">Simulated execution slippage per fill</p>
               </div>
 
-              <div className="p-3 border border-black bg-zinc-50 space-y-1">
+              <div className="p-3 border border-[#262626] bg-[#141414] space-y-1">
                 <div className="flex justify-between items-center">
-                  <label className="font-bold text-black uppercase text-[11px]">Exchange Fee (Basis Points)</label>
+                  <label className="font-bold text-zinc-100 uppercase text-[11px]">Exchange Fee (Basis Points)</label>
                   <span className="text-[10px] text-zinc-500 font-mono">[0 - 100 bps]</span>
                 </div>
                 <input
@@ -576,39 +576,39 @@ function NewRunForm() {
                   step={1}
                   value={feeBps}
                   onChange={(e) => setFeeBps(Number(e.target.value))}
-                  className="w-full px-2 py-1.5 bg-white border border-black text-black font-mono font-bold focus:outline-none"
+                  className="w-full px-2 py-1.5 bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E]"
                 />
-                <p className="text-[10px] text-zinc-600 font-sans">Per-trade taker/maker fee</p>
+                <p className="text-[10px] text-zinc-400 font-sans">Per-trade taker/maker fee</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* SECTION 4: Market Specifications */}
-        <div className="p-5 border border-black bg-white space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b border-black pb-2">
-            <Calendar className="w-4 h-4 text-black" />
+        <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+          <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b border-[#262626] pb-2">
+            <Calendar className="w-4 h-4 text-zinc-100" />
             <span>4. Market Specifications & Date Boundaries</span>
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div>
-              <label className="block text-black font-bold uppercase mb-1">Symbol</label>
+              <label className="block text-zinc-100 font-bold uppercase mb-1">Symbol</label>
               <input
                 type="text"
                 value={symbol}
                 onChange={(e) => setSymbol(e.target.value)}
                 required
-                className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
               />
             </div>
 
             <div>
-              <label className="block text-black font-bold uppercase mb-1">Bar Size</label>
+              <label className="block text-zinc-100 font-bold uppercase mb-1">Bar Size</label>
               <select
                 value={barSize}
                 onChange={(e) => setBarSize(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-black text-black font-mono font-bold focus:outline-none"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E]"
               >
                 <option value="Tick">Tick (Native Real-Time Execution)</option>
                 <option value="1s">1 Second</option>
@@ -625,49 +625,49 @@ function NewRunForm() {
             </div>
 
             <div>
-              <label className="block text-black font-bold uppercase mb-1">Initial Capital ($)</label>
+              <label className="block text-zinc-100 font-bold uppercase mb-1">Initial Capital ($)</label>
               <input
                 type="number"
                 value={initialCapital}
                 onChange={(e) => setInitialCapital(Number(e.target.value))}
                 min={100}
                 required
-                className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
               />
             </div>
 
             <div>
-              <label className="block text-black font-bold uppercase mb-1">Master Random Seed</label>
+              <label className="block text-zinc-100 font-bold uppercase mb-1">Master Random Seed</label>
               <input
                 type="number"
                 value={seed}
                 onChange={(e) => setSeed(Number(e.target.value))}
                 required
-                className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-black">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-[#262626]">
             <div>
-              <label className="block text-black font-bold uppercase mb-1">Start Date</label>
+              <label className="block text-zinc-100 font-bold uppercase mb-1">Start Date</label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 required
-                className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
               />
             </div>
 
             <div>
-              <label className="block text-black font-bold uppercase mb-1">End Date</label>
+              <label className="block text-zinc-100 font-bold uppercase mb-1">End Date</label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 required
-                className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
               />
             </div>
           </div>
@@ -675,39 +675,39 @@ function NewRunForm() {
 
         {/* SECTION 5: Mode-Specific Optimization / WalkForward Knobs */}
         {runKind === 'Optimization' && (
-          <div className="p-5 border border-black bg-white space-y-4">
-            <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b border-black pb-2">
-              <Zap className="w-4 h-4 text-black" />
+          <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+            <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b border-[#262626] pb-2">
+              <Zap className="w-4 h-4 text-zinc-100" />
               <span>5. Genetic Algorithm Evolution Parameters</span>
             </h2>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
-                <label className="block text-black font-bold uppercase mb-1">Generations</label>
+                <label className="block text-zinc-100 font-bold uppercase mb-1">Generations</label>
                 <input
                   type="number"
                   value={generations}
                   onChange={(e) => setGenerations(Number(e.target.value))}
                   min={1}
                   max={500}
-                  className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
+                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
                 />
               </div>
 
               <div>
-                <label className="block text-black font-bold uppercase mb-1">Population Size</label>
+                <label className="block text-zinc-100 font-bold uppercase mb-1">Population Size</label>
                 <input
                   type="number"
                   value={populationSize}
                   onChange={(e) => setPopulationSize(Number(e.target.value))}
                   min={10}
                   max={500}
-                  className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
+                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
                 />
               </div>
 
               <div>
-                <label className="block text-black font-bold uppercase mb-1">Mutation Rate</label>
+                <label className="block text-zinc-100 font-bold uppercase mb-1">Mutation Rate</label>
                 <input
                   type="number"
                   step="0.01"
@@ -715,16 +715,16 @@ function NewRunForm() {
                   onChange={(e) => setMutationRate(Number(e.target.value))}
                   min={0.01}
                   max={0.5}
-                  className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
+                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
                 />
               </div>
 
               <div>
-                <label className="block text-black font-bold uppercase mb-1">Objective KPI</label>
+                <label className="block text-zinc-100 font-bold uppercase mb-1">Objective KPI</label>
                 <select
                   value={objectiveMetric}
                   onChange={(e) => setObjectiveMetric(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-black text-black font-mono font-bold focus:outline-none"
+                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E]"
                 >
                   <option value="SharpeRatio">Sharpe Ratio</option>
                   <option value="SortinoRatio">Sortino Ratio</option>
@@ -737,15 +737,15 @@ function NewRunForm() {
         )}
 
         {runKind === 'WalkForward' && (
-          <div className="p-5 border border-black bg-white space-y-4">
-            <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b border-black pb-2">
-              <Layers className="w-4 h-4 text-black" />
+          <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+            <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b border-[#262626] pb-2">
+              <Layers className="w-4 h-4 text-zinc-100" />
               <span>5. Walk-Forward Window Partitioning</span>
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-black font-bold uppercase mb-1">In-Sample Training %</label>
+                <label className="block text-zinc-100 font-bold uppercase mb-1">In-Sample Training %</label>
                 <input
                   type="number"
                   value={inSamplePct}
@@ -758,12 +758,12 @@ function NewRunForm() {
                   }}
                   min={1}
                   max={99}
-                  className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
+                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
                 />
               </div>
 
               <div>
-                <label className="block text-black font-bold uppercase mb-1">Out-of-Sample Test %</label>
+                <label className="block text-zinc-100 font-bold uppercase mb-1">Out-of-Sample Test %</label>
                 <input
                   type="number"
                   value={outOfSamplePct}
@@ -776,19 +776,19 @@ function NewRunForm() {
                   }}
                   min={1}
                   max={99}
-                  className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
+                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
                 />
               </div>
 
               <div>
-                <label className="block text-black font-bold uppercase mb-1">Number of Splits</label>
+                <label className="block text-zinc-100 font-bold uppercase mb-1">Number of Splits</label>
                 <input
                   type="number"
                   value={windowSplits}
                   onChange={(e) => setWindowSplits(Number(e.target.value))}
                   min={2}
                   max={20}
-                  className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
+                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
                 />
               </div>
             </div>
@@ -796,15 +796,15 @@ function NewRunForm() {
         )}
 
         {/* SECTION 6: Safety Guardrails */}
-        <div className="p-5 border border-black bg-white space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b border-black pb-2">
-            <Shield className="w-4 h-4 text-black" />
+        <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+          <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b border-[#262626] pb-2">
+            <Shield className="w-4 h-4 text-zinc-100" />
             <span>6. Risk Guardrails & Circuit Breakers</span>
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-black font-bold uppercase mb-1">Max Drawdown Breach %</label>
+              <label className="block text-zinc-100 font-bold uppercase mb-1">Max Drawdown Breach %</label>
               <input
                 type="number"
                 step="0.5"
@@ -812,12 +812,12 @@ function NewRunForm() {
                 onChange={(e) => setMaxDrawdownPct(Number(e.target.value))}
                 min={1}
                 max={50}
-                className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
               />
             </div>
 
             <div>
-              <label className="block text-black font-bold uppercase mb-1">Max Position Size %</label>
+              <label className="block text-zinc-100 font-bold uppercase mb-1">Max Position Size %</label>
               <input
                 type="number"
                 step="1"
@@ -825,19 +825,19 @@ function NewRunForm() {
                 onChange={(e) => setMaxPositionPct(Number(e.target.value))}
                 min={1}
                 max={100}
-                className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
               />
             </div>
 
             <div>
-              <label className="block text-black font-bold uppercase mb-1">Order Rate Limit / Min</label>
+              <label className="block text-zinc-100 font-bold uppercase mb-1">Order Rate Limit / Min</label>
               <input
                 type="number"
                 value={orderRateLimit}
                 onChange={(e) => setOrderRateLimit(Number(e.target.value))}
                 min={1}
                 max={1000}
-                className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
               />
             </div>
           </div>
@@ -848,7 +848,7 @@ function NewRunForm() {
           <button
             type="submit"
             disabled={submitting || loadingInstances}
-            className="w-full py-3 border-2 border-black bg-white hover:bg-black hover:text-white disabled:opacity-50 text-black font-bold text-sm uppercase transition-colors flex items-center justify-center gap-2 select-none"
+            className="w-full py-3 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] disabled:opacity-50 text-zinc-100 font-bold text-sm uppercase transition-colors flex items-center justify-center gap-2 select-none"
           >
             <Play className="w-4 h-4" />
             <span>{submitting ? 'TRANSMITTING WIRE CONFIGURATION...' : `TRANSMIT & LAUNCH ${runKind.toUpperCase()} →`}</span>
@@ -861,7 +861,7 @@ function NewRunForm() {
 
 export default function NewRunPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-xs font-mono font-bold text-black">LOADING RUN LAUNCHER...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-xs font-mono font-bold text-zinc-100">LOADING RUN LAUNCHER...</div>}>
       <NewRunForm />
     </Suspense>
   );

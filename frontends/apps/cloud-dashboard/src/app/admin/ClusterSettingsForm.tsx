@@ -22,87 +22,87 @@ export function ClusterSettingsForm({
   return (
     <form onSubmit={onSave} className="space-y-6">
       {/* 1. Fleet Policies */}
-      <div className="p-6 border border-black bg-white space-y-4">
-        <div className="flex items-center gap-2 pb-2 border-b border-black">
-          <Server className="w-4 h-4 text-black" />
-          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-black">
+      <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
+          <Server className="w-4 h-4 text-zinc-100" />
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100">
             Fleet & Engine Execution Policies
           </h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs font-mono">
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Heartbeat Interval (sec)</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Heartbeat Interval (sec)</label>
             <input
               type="number"
               value={settings.heartbeatIntervalSeconds}
               onChange={(e) => setSettings({ ...settings, heartbeatIntervalSeconds: Number(e.target.value) })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             />
           </div>
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Heartbeat Timeout (sec)</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Heartbeat Timeout (sec)</label>
             <input
               type="number"
               value={settings.heartbeatTimeoutSeconds}
               onChange={(e) => setSettings({ ...settings, heartbeatTimeoutSeconds: Number(e.target.value) })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             />
           </div>
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Max Fleet Size / Account</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Max Fleet Size / Account</label>
             <input
               type="number"
               value={settings.maxFleetSizePerAccount}
               onChange={(e) => setSettings({ ...settings, maxFleetSizePerAccount: Number(e.target.value) })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             />
           </div>
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Command Queue Expiry (sec)</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Command Queue Expiry (sec)</label>
             <input
               type="number"
               value={settings.commandQueueExpirySeconds}
               onChange={(e) => setSettings({ ...settings, commandQueueExpirySeconds: Number(e.target.value) })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             />
           </div>
         </div>
       </div>
 
       {/* 2. Security & Access */}
-      <div className="p-6 border border-black bg-white space-y-4">
-        <div className="flex items-center gap-2 pb-2 border-b border-black">
-          <Shield className="w-4 h-4 text-black" />
-          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-black">
+      <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
+          <Shield className="w-4 h-4 text-zinc-100" />
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100">
             Security & Access Control
           </h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs font-mono">
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Key Rotation Cadence (days)</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Key Rotation Cadence (days)</label>
             <input
               type="number"
               value={settings.enforceStrictKeyRotationDays}
               onChange={(e) => setSettings({ ...settings, enforceStrictKeyRotationDays: Number(e.target.value) })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             />
           </div>
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Allowed IP Range Whitelist</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Allowed IP Range Whitelist</label>
             <input
               type="text"
               value={settings.allowedIpRanges}
               onChange={(e) => setSettings({ ...settings, allowedIpRanges: e.target.value })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             />
           </div>
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Session Timeout (minutes)</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Session Timeout (minutes)</label>
             <input
               type="number"
               value={settings.sessionTimeoutMinutes ?? 120}
               onChange={(e) => setSettings({ ...settings, sessionTimeoutMinutes: Number(e.target.value) })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             />
           </div>
           <div className="flex items-center gap-2 pt-2">
@@ -111,9 +111,9 @@ export function ClusterSettingsForm({
               id="selfReg"
               checked={settings.allowSelfRegistration}
               onChange={(e) => setSettings({ ...settings, allowSelfRegistration: e.target.checked })}
-              className="w-4 h-4 border border-black rounded-none text-black cursor-pointer accent-black"
+              className="w-4 h-4 border border-[#262626] rounded-none text-zinc-100 cursor-pointer accent-black"
             />
-            <label htmlFor="selfReg" className="text-black font-semibold uppercase text-[11px] cursor-pointer">Allow Public Self-Registration</label>
+            <label htmlFor="selfReg" className="text-zinc-100 font-semibold uppercase text-[11px] cursor-pointer">Allow Public Self-Registration</label>
           </div>
           <div className="flex items-center gap-2 pt-2">
             <input
@@ -121,30 +121,30 @@ export function ClusterSettingsForm({
               id="mfa"
               checked={settings.requireMfaForLiveTrading}
               onChange={(e) => setSettings({ ...settings, requireMfaForLiveTrading: e.target.checked })}
-              className="w-4 h-4 border border-black rounded-none text-black cursor-pointer accent-black"
+              className="w-4 h-4 border border-[#262626] rounded-none text-zinc-100 cursor-pointer accent-black"
             />
-            <label htmlFor="mfa" className="text-black font-semibold uppercase text-[11px] cursor-pointer">Require 2FA For Live Execution</label>
+            <label htmlFor="mfa" className="text-zinc-100 font-semibold uppercase text-[11px] cursor-pointer">Require 2FA For Live Execution</label>
           </div>
         </div>
       </div>
 
       {/* 3. Marketplace & Additives */}
-      <div className="p-6 border border-black bg-white space-y-4">
-        <div className="flex items-center gap-2 pb-2 border-b border-black">
-          <ShoppingBag className="w-4 h-4 text-black" />
-          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-black">
+      <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
+          <ShoppingBag className="w-4 h-4 text-zinc-100" />
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100">
             Marketplace & Strategy Additive Policies
           </h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Platform Royalty / Protocol Fee (%)</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Platform Royalty / Protocol Fee (%)</label>
             <input
               type="number"
               step="0.1"
               value={settings.platformFeePercent}
               onChange={(e) => setSettings({ ...settings, platformFeePercent: Number(e.target.value) })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             />
           </div>
           <div className="flex items-center gap-2 pt-6">
@@ -153,38 +153,38 @@ export function ClusterSettingsForm({
               id="curation"
               checked={settings.requireCurationApproval}
               onChange={(e) => setSettings({ ...settings, requireCurationApproval: e.target.checked })}
-              className="w-4 h-4 border border-black rounded-none text-black cursor-pointer accent-black"
+              className="w-4 h-4 border border-[#262626] rounded-none text-zinc-100 cursor-pointer accent-black"
             />
-            <label htmlFor="curation" className="text-black font-semibold uppercase text-[11px] cursor-pointer">Require Staff Curation Before Public Listing</label>
+            <label htmlFor="curation" className="text-zinc-100 font-semibold uppercase text-[11px] cursor-pointer">Require Staff Curation Before Public Listing</label>
           </div>
         </div>
       </div>
 
       {/* 4. Telemetry & Retention */}
-      <div className="p-6 border border-black bg-white space-y-4">
-        <div className="flex items-center gap-2 pb-2 border-b border-black">
-          <Database className="w-4 h-4 text-black" />
-          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-black">
+      <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
+          <Database className="w-4 h-4 text-zinc-100" />
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100">
             Telemetry Storage & Audit Ledger Retention
           </h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono">
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Metrics Retention (Days)</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Metrics Retention (Days)</label>
             <input
               type="number"
               value={settings.metricsRetentionDays ?? 30}
               onChange={(e) => setSettings({ ...settings, metricsRetentionDays: Number(e.target.value) })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             />
           </div>
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Audit Log Retention (Days)</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Audit Log Retention (Days)</label>
             <input
               type="number"
               value={settings.auditLogRetentionDays ?? 365}
               onChange={(e) => setSettings({ ...settings, auditLogRetentionDays: Number(e.target.value) })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             />
           </div>
           <div className="flex items-center gap-2 pt-6">
@@ -193,19 +193,19 @@ export function ClusterSettingsForm({
               id="detailedLog"
               checked={settings.detailedBehaviorLogging ?? true}
               onChange={(e) => setSettings({ ...settings, detailedBehaviorLogging: e.target.checked })}
-              className="w-4 h-4 border border-black rounded-none text-black cursor-pointer accent-black"
+              className="w-4 h-4 border border-[#262626] rounded-none text-zinc-100 cursor-pointer accent-black"
             />
-            <label htmlFor="detailedLog" className="text-black font-semibold uppercase text-[11px] cursor-pointer">Record Granular Execution Telemetry</label>
+            <label htmlFor="detailedLog" className="text-zinc-100 font-semibold uppercase text-[11px] cursor-pointer">Record Granular Execution Telemetry</label>
           </div>
         </div>
       </div>
 
       {/* 5. Messengers & Notification Integrations */}
-      <div className="p-6 border border-black bg-white space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-black">
+      <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-[#262626]">
           <div className="flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-black" />
-            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-black">
+            <MessageSquare className="w-4 h-4 text-zinc-100" />
+            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100">
               Messengers & Notification Bots
             </h2>
           </div>
@@ -215,63 +215,63 @@ export function ClusterSettingsForm({
               id="msgAlerts"
               checked={settings.enableMessengerAlerts ?? true}
               onChange={(e) => setSettings({ ...settings, enableMessengerAlerts: e.target.checked })}
-              className="w-4 h-4 border border-black rounded-none text-black cursor-pointer accent-black"
+              className="w-4 h-4 border border-[#262626] rounded-none text-zinc-100 cursor-pointer accent-black"
             />
-            <label htmlFor="msgAlerts" className="text-black font-mono font-bold uppercase text-[11px] cursor-pointer">
+            <label htmlFor="msgAlerts" className="text-zinc-100 font-mono font-bold uppercase text-[11px] cursor-pointer">
               Active Dispatch
             </label>
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Telegram Bot API Token</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Telegram Bot API Token</label>
             <input
               type="password"
               placeholder="bot123456789:ABCdefGHIjkl..."
               value={settings.telegramBotToken ?? ''}
               onChange={(e) => setSettings({ ...settings, telegramBotToken: e.target.value })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             />
           </div>
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Telegram Broadcast Channel / Chat ID</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Telegram Broadcast Channel / Chat ID</label>
             <input
               type="text"
               placeholder="@razor_desk_alerts or -100123456789"
               value={settings.telegramDefaultChannel ?? ''}
               onChange={(e) => setSettings({ ...settings, telegramDefaultChannel: e.target.value })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             />
           </div>
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Discord Incident Webhook URL</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Discord Incident Webhook URL</label>
             <input
               type="url"
               placeholder="https://discord.com/api/webhooks/..."
               value={settings.discordWebhookUrl ?? ''}
               onChange={(e) => setSettings({ ...settings, discordWebhookUrl: e.target.value })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             />
           </div>
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Slack Alerts Webhook URL</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Slack Alerts Webhook URL</label>
             <input
               type="url"
               placeholder="https://hooks.slack.com/services/..."
               value={settings.slackWebhookUrl ?? ''}
               onChange={(e) => setSettings({ ...settings, slackWebhookUrl: e.target.value })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             />
           </div>
         </div>
       </div>
 
       {/* 6. SMS Gateways */}
-      <div className="p-6 border border-black bg-white space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-black">
+      <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-[#262626]">
           <div className="flex items-center gap-2">
-            <PhoneCall className="w-4 h-4 text-black" />
-            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-black">
+            <PhoneCall className="w-4 h-4 text-zinc-100" />
+            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100">
               SMS Gateway Providers & OTP Delivery
             </h2>
           </div>
@@ -281,20 +281,20 @@ export function ClusterSettingsForm({
               id="smsAlerts"
               checked={settings.enableSmsAlerts ?? false}
               onChange={(e) => setSettings({ ...settings, enableSmsAlerts: e.target.checked })}
-              className="w-4 h-4 border border-black rounded-none text-black cursor-pointer accent-black"
+              className="w-4 h-4 border border-[#262626] rounded-none text-zinc-100 cursor-pointer accent-black"
             />
-            <label htmlFor="smsAlerts" className="text-black font-mono font-bold uppercase text-[11px] cursor-pointer">
+            <label htmlFor="smsAlerts" className="text-zinc-100 font-mono font-bold uppercase text-[11px] cursor-pointer">
               Enable SMS Delivery
             </label>
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono">
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">SMS Gateway Provider</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">SMS Gateway Provider</label>
             <select
               value={settings.smsProvider ?? 'Twilio'}
               onChange={(e) => setSettings({ ...settings, smsProvider: e.target.value })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             >
               <option value="Twilio">Twilio Communications</option>
               <option value="AwsSns">AWS SNS Worldwide</option>
@@ -304,43 +304,43 @@ export function ClusterSettingsForm({
             </select>
           </div>
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">API Key / Secret Token</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">API Key / Secret Token</label>
             <input
               type="password"
               placeholder="ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
               value={settings.smsApiKey ?? ''}
               onChange={(e) => setSettings({ ...settings, smsApiKey: e.target.value })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             />
           </div>
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Sender ID / Origination Number</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Sender ID / Origination Number</label>
             <input
               type="text"
               placeholder="+12025550192 or RAZOR_ALERT"
               value={settings.smsSenderNumber ?? ''}
               onChange={(e) => setSettings({ ...settings, smsSenderNumber: e.target.value })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             />
           </div>
         </div>
       </div>
 
       {/* 7. Payment Providers */}
-      <div className="p-6 border border-black bg-white space-y-4">
-        <div className="flex items-center gap-2 pb-2 border-b border-black">
-          <CreditCard className="w-4 h-4 text-black" />
-          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-black">
+      <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
+          <CreditCard className="w-4 h-4 text-zinc-100" />
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100">
             Payment Gateways & Subscriptions Billing
           </h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs font-mono">
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Active Payment Processor</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Active Payment Processor</label>
             <select
               value={settings.paymentProvider ?? 'Stripe'}
               onChange={(e) => setSettings({ ...settings, paymentProvider: e.target.value })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             >
               <option value="Stripe">Stripe Connect</option>
               <option value="LemonSqueezy">Lemon Squeezy</option>
@@ -349,11 +349,11 @@ export function ClusterSettingsForm({
             </select>
           </div>
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Primary Settlement Currency</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Primary Settlement Currency</label>
             <select
               value={settings.paymentCurrency ?? 'USD'}
               onChange={(e) => setSettings({ ...settings, paymentCurrency: e.target.value })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             >
               <option value="USD">USD ($)</option>
               <option value="EUR">EUR (€)</option>
@@ -362,54 +362,54 @@ export function ClusterSettingsForm({
             </select>
           </div>
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Public / Publishable API Key</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Public / Publishable API Key</label>
             <input
               type="text"
               placeholder="pk_live_..."
               value={settings.paymentPublicKey ?? ''}
               onChange={(e) => setSettings({ ...settings, paymentPublicKey: e.target.value })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             />
           </div>
           <div>
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Restricted Secret Key</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Restricted Secret Key</label>
             <input
               type="password"
               placeholder="sk_live_..."
               value={settings.paymentSecretKey ?? ''}
               onChange={(e) => setSettings({ ...settings, paymentSecretKey: e.target.value })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="text-black block mb-1 font-semibold uppercase text-[11px]">Webhook Endpoint Secret</label>
+            <label className="text-zinc-100 block mb-1 font-semibold uppercase text-[11px]">Webhook Endpoint Secret</label>
             <input
               type="password"
               placeholder="whsec_..."
               value={settings.paymentWebhookSecret ?? ''}
               onChange={(e) => setSettings({ ...settings, paymentWebhookSecret: e.target.value })}
-              className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             />
           </div>
         </div>
       </div>
 
       {/* 8. Dynamic Subscription Tiers */}
-      <div className="p-6 border border-black bg-white space-y-4">
-        <div className="flex items-center gap-2 pb-2 border-b border-black">
-          <Layers className="w-4 h-4 text-black" />
-          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-black">
+      <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
+          <Layers className="w-4 h-4 text-zinc-100" />
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-100">
             Dynamic Subscription Tiers JSON Matrix
           </h2>
         </div>
-        <p className="text-xs font-mono text-black">
+        <p className="text-xs font-mono text-zinc-100">
           Define dynamic tier pricing, live trading permissions, node quotas, and storage bounds:
         </p>
         <textarea
           rows={6}
           value={settings.subscriptionTiersJson ?? ''}
           onChange={(e) => setSettings({ ...settings, subscriptionTiersJson: e.target.value })}
-          className="w-full px-3 py-2 bg-white border border-black text-black font-mono text-xs focus:outline-none focus:ring-1 focus:ring-black rounded-none leading-relaxed"
+          className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none leading-relaxed"
           placeholder='[{"tier":"Free","priceMonthly":0,"maxInstances":1,"allowLiveTrading":false,"allowOptimization":true,"storageDays":7}, ...]'
         />
       </div>
@@ -420,7 +420,7 @@ export function ClusterSettingsForm({
           type="button"
           onClick={onReset}
           disabled={savingSettings}
-          className="flex items-center gap-2 px-4 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-mono text-xs font-bold uppercase rounded-none transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-mono text-xs font-bold uppercase rounded-none transition-colors disabled:opacity-50"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           <span>Reset Factory Defaults</span>
@@ -428,7 +428,7 @@ export function ClusterSettingsForm({
         <button
           type="submit"
           disabled={savingSettings}
-          className="flex items-center gap-2 px-6 py-2 border border-black bg-black text-white hover:bg-zinc-800 font-mono text-xs font-bold uppercase rounded-none transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-6 py-2 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium font-mono text-xs font-bold uppercase rounded-none transition-colors disabled:opacity-50"
         >
           <Save className="w-3.5 h-3.5" />
           <span>{savingSettings ? 'Saving...' : 'Save Platform Policies'}</span>

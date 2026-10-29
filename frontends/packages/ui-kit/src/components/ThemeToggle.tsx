@@ -1,10 +1,6 @@
-// -----------------------------------------------------------------------------
-// <copyright file="ThemeToggle.tsx" company="BleedingOnTheEdge">
-//   Copyright (c) BleedingOnTheEdge. All rights reserved.
-// </copyright>
-// -----------------------------------------------------------------------------
-
 import React, { useEffect, useState } from 'react';
+import { Sun, Moon } from 'lucide-react';
+import { cn } from '../lib/utils';
 
 export type Theme = 'dark' | 'light';
 
@@ -14,9 +10,9 @@ export interface ThemeToggleProps {
 }
 
 /**
- * Apple Design inspired tactile theme toggle.
- * Features physical spring-settle motion, translucent frosted glass housing,
- * accessible ARIA states, and persistent theme synchronization.
+ * Supabase-style dark-mode-native theme toggle using Lucide icons.
+ * Features near-black housing (#171717), accessible ARIA states,
+ * and persistent theme synchronization.
  */
 export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '', onThemeChange }) => {
   const [theme, setTheme] = useState<Theme>('dark');
@@ -26,11 +22,10 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '', onThem
     setMounted(true);
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('razor-theme') as Theme | null;
-      const initialTheme: Theme = stored === 'light' || stored === 'dark'
-        ? stored
-        : window.matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light';
+      const initialTheme: Theme =
+        stored === 'light' || stored === 'dark'
+          ? stored
+          : 'dark'; // Dark-mode native default
       setTheme(initialTheme);
       applyTheme(initialTheme);
     }
@@ -66,52 +61,18 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '', onThem
       type="button"
       onClick={toggleTheme}
       aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-      className={`inline-flex items-center justify-center p-2 rounded-lg transition-colors border focus:outline-none focus:ring-2 focus:ring-indigo-500/50 ${
-        theme === 'dark'
-          ? 'bg-zinc-800 hover:bg-zinc-700 text-amber-400 border-zinc-700'
-          : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-700 border-zinc-200'
-      } ${className}`}
+      className={cn(
+        'inline-flex items-center justify-center p-2 rounded-lg transition-colors border',
+        'bg-[#171717] hover:bg-[#222222] border-[#262626] hover:border-[#383838]',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3ECF8E]',
+        theme === 'dark' ? 'text-amber-400' : 'text-zinc-300',
+        className
+      )}
     >
       {theme === 'dark' ? (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="w-4 h-4"
-          aria-hidden="true"
-        >
-          <circle cx="12" cy="12" r="4" />
-          <path d="M12 2v2" />
-          <path d="M12 20v2" />
-          <path d="m4.93 4.93 1.41 1.41" />
-          <path d="m17.66 17.66 1.41 1.41" />
-          <path d="M2 12h2" />
-          <path d="M20 12h2" />
-          <path d="m6.34 17.66-1.41 1.41" />
-          <path d="m19.07 4.93-1.41 1.41" />
-        </svg>
+        <Sun className="w-4 h-4" aria-hidden="true" />
       ) : (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="w-4 h-4"
-          aria-hidden="true"
-        >
-          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-        </svg>
+        <Moon className="w-4 h-4" aria-hidden="true" />
       )}
     </button>
   );

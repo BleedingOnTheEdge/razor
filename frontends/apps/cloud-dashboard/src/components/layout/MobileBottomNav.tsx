@@ -16,35 +16,35 @@ export function MobileBottomNav({ onOpenSidebar }: MobileBottomNavProps) {
   const navItems = [
     {
       id: 'menu',
-      label: 'MENU',
+      label: 'Menu',
       icon: Menu,
       onClick: onOpenSidebar,
       active: false,
     },
     {
       id: 'overview',
-      label: 'OVERVIEW',
+      label: 'Overview',
       icon: LayoutDashboard,
       href: '/panel',
       active: pathname === '/panel' || pathname === '/',
     },
     {
       id: 'fleet',
-      label: 'FLEET',
+      label: 'Fleet',
       icon: Server,
       href: '/panel/instances',
       active: pathname.startsWith('/panel/instances') || pathname.startsWith('/instances'),
     },
     {
       id: 'live',
-      label: 'LIVE',
+      label: 'Live',
       icon: Radio,
       href: '/panel/live',
       active: pathname.startsWith('/panel/live') || pathname.startsWith('/live'),
     },
     {
       id: 'runs',
-      label: 'RUNS',
+      label: 'Runs',
       icon: Activity,
       href: '/panel/runs',
       active: pathname.startsWith('/panel/runs') || pathname.startsWith('/panel/reports') || pathname.startsWith('/runs') || pathname.startsWith('/reports'),
@@ -54,7 +54,7 @@ export function MobileBottomNav({ onOpenSidebar }: MobileBottomNavProps) {
   return (
     <nav
       aria-label="Mobile Navigation"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-black flex items-center justify-around font-mono text-[11px] select-none h-14"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#171717] border-t border-[#262626] flex items-center justify-around font-sans text-[11px] select-none h-14"
     >
       {navItems.map((item) => {
         const Icon = item.icon;
@@ -66,10 +66,10 @@ export function MobileBottomNav({ onOpenSidebar }: MobileBottomNavProps) {
               type="button"
               onClick={item.onClick}
               aria-label="Open sidebar menu"
-              className="flex-1 h-full flex flex-col items-center justify-center bg-white text-black hover:bg-black hover:text-white transition-colors"
+              className="flex-1 h-full flex flex-col items-center justify-center text-zinc-400 hover:text-white hover:bg-[#222222] transition-colors"
             >
               <Icon className="w-4 h-4 mb-0.5" />
-              <span className="font-bold tracking-tight">{item.label}</span>
+              <span className="font-medium tracking-tight">{item.label}</span>
             </button>
           );
         }
@@ -79,10 +79,10 @@ export function MobileBottomNav({ onOpenSidebar }: MobileBottomNavProps) {
             key={item.id}
             href={item.href!}
             className={clsx(
-              'flex-1 h-full flex flex-col items-center justify-center transition-colors border-r border-black last:border-r-0',
+              'flex-1 h-full flex flex-col items-center justify-center transition-colors border-r border-[#262626] last:border-r-0',
               item.active
-                ? 'bg-black text-white font-bold'
-                : 'bg-white text-black hover:bg-black hover:text-white font-bold'
+                ? 'bg-[#222222] text-[#3ECF8E] font-medium'
+                : 'text-zinc-400 hover:text-white hover:bg-[#1f1f1f]'
             )}
           >
             <Icon className="w-4 h-4 mb-0.5" />

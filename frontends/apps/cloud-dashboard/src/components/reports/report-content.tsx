@@ -388,9 +388,9 @@ export function RunReportContent({ runId }: { runId: string }) {
   const relBadge = report?.relation ? getRunRelationBadge(report.relation) : null;
 
   return (
-    <div className="space-y-6 max-w-7xl pb-16 font-mono text-xs text-black">
+    <div className="space-y-6 max-w-7xl pb-16 font-sans text-xs text-zinc-100">
       {/* Navigation Breadcrumb */}
-      <div className="flex items-center gap-2 text-black pb-2">
+      <div className="flex items-center gap-2 text-zinc-100 pb-2">
         <Link href="/panel/reports" className="hover:underline font-bold">
           REPORTS
         </Link>
@@ -405,25 +405,25 @@ export function RunReportContent({ runId }: { runId: string }) {
       </div>
 
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-black">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#262626]">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold tracking-tight text-black flex items-center gap-2 uppercase">
-              <FileText className="w-5 h-5 text-black" />
+            <h1 className="text-xl font-bold tracking-tight text-zinc-100 flex items-center gap-2 uppercase">
+              <FileText className="w-5 h-5 text-zinc-100" />
               <span>Flow Run Report</span>
             </h1>
             {statusBadge && (
-              <span className="px-2.5 py-0.5 text-xs font-bold border border-black bg-zinc-50 text-black">
+              <span className="px-2.5 py-0.5 text-xs font-bold border border-[#262626] bg-[#141414] text-zinc-200">
                 [{statusBadge.label?.toUpperCase()}]
               </span>
             )}
             {relBadge && (
-              <span className="px-2.5 py-0.5 text-xs font-bold border border-black bg-zinc-50 text-black">
+              <span className="px-2.5 py-0.5 text-xs font-bold border border-[#262626] bg-[#141414] text-zinc-200">
                 [{relBadge.label?.toUpperCase()}]
               </span>
             )}
           </div>
-          <p className="text-xs text-black font-normal mt-1 font-sans">
+          <p className="text-xs text-zinc-100 font-normal mt-1 font-sans">
             Authoritative institutional audit report, deterministic reproducibility certification, and performance verification.
           </p>
         </div>
@@ -433,7 +433,7 @@ export function RunReportContent({ runId }: { runId: string }) {
           <button
             type="button"
             onClick={handleInstantReRun}
-            className="px-3.5 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors flex items-center gap-1.5 select-none"
+            className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors flex items-center gap-1.5 select-none"
             title="Execute identical rerun immediately"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -443,7 +443,7 @@ export function RunReportContent({ runId }: { runId: string }) {
           {/* Re-Run With... (Clones to /panel/runs/new?cloneFrom=...) */}
           <Link
             href={`/panel/runs/new?cloneFrom=${runId}`}
-            className="px-3.5 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors flex items-center gap-1.5 select-none"
+            className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors flex items-center gap-1.5 select-none"
             title="Clone settings and modify parameters before running"
           >
             <Play className="w-3.5 h-3.5" />
@@ -454,7 +454,7 @@ export function RunReportContent({ runId }: { runId: string }) {
           {(report?.kind === 'Optimization' || report?.kind === 'WalkForward' || (report?.generationProgress && report.generationProgress.length > 0)) && (
             <Link
               href={`/panel/reports/${runId}/generations`}
-              className="px-3.5 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors flex items-center gap-1.5 select-none"
+              className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors flex items-center gap-1.5 select-none"
               title="Open generational convergence progression grid (Developer View)"
             >
               <TrendingUp className="w-3.5 h-3.5" />
@@ -466,7 +466,7 @@ export function RunReportContent({ runId }: { runId: string }) {
           {report?.kind === 'WalkForward' && (
             <Link
               href={`/panel/reports/${runId}/windows`}
-              className="px-3.5 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors flex items-center gap-1.5 select-none"
+              className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors flex items-center gap-1.5 select-none"
               title="Open walk-forward window splits and degradation analysis"
             >
               <Layers className="w-3.5 h-3.5" />
@@ -481,7 +481,7 @@ export function RunReportContent({ runId }: { runId: string }) {
                   type="button"
                   onClick={handlePauseRun}
                   disabled={pausing}
-                  className="px-3 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors flex items-center gap-1.5 select-none"
+                  className="px-3 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors flex items-center gap-1.5 select-none"
                 >
                   <Pause className="w-3.5 h-3.5" />
                   <span>{pausing ? 'PAUSING...' : 'PAUSE RUN'}</span>
@@ -493,7 +493,7 @@ export function RunReportContent({ runId }: { runId: string }) {
                   type="button"
                   onClick={handleCancelRun}
                   disabled={cancelling}
-                  className="px-3 py-1.5 border border-black bg-white hover:bg-rose-600 hover:text-white text-black font-bold transition-colors flex items-center gap-1.5 select-none"
+                  className="px-3 py-1.5 border border-[#262626] bg-[#171717] hover:bg-rose-600 hover:text-white text-zinc-100 font-bold transition-colors flex items-center gap-1.5 select-none"
                   title="Cancel active run execution"
                 >
                   <AlertTriangle className="w-3.5 h-3.5" />
@@ -505,7 +505,7 @@ export function RunReportContent({ runId }: { runId: string }) {
                 <button
                   type="button"
                   onClick={() => setCompleteModalOpen(true)}
-                  className="px-3 py-1.5 border border-black bg-green-600 hover:bg-green-700 text-white font-bold transition-colors flex items-center gap-1.5 select-none"
+                  className="px-3 py-1.5 border border-[#262626] bg-[#3ECF8E] hover:bg-[#34b27b] text-[#0f0f0f] rounded-full font-bold transition-colors flex items-center gap-1.5 select-none"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   <span>Complete Run</span>
@@ -518,7 +518,7 @@ export function RunReportContent({ runId }: { runId: string }) {
             type="button"
             onClick={handleExportXlsx}
             disabled={exportingXlsx}
-            className="px-3 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors flex items-center gap-1.5 select-none"
+            className="px-3 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors flex items-center gap-1.5 select-none"
           >
             <Download className="w-3.5 h-3.5" />
             <span>{exportingXlsx ? 'EXPORTING...' : 'EXPORT XLSX'}</span>
@@ -546,7 +546,7 @@ export function RunReportContent({ runId }: { runId: string }) {
             type="button"
             onClick={handleManualRefresh}
             disabled={refreshingManual}
-            className="p-1.5 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors"
+            className="p-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] transition-colors"
             title="Refresh Report Data"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${refreshingManual ? 'animate-spin' : ''}`} />
@@ -574,7 +574,7 @@ export function RunReportContent({ runId }: { runId: string }) {
 
       {/* Loading state ONLY when report is not yet loaded */}
       {loading && !report && (
-        <div className="py-20 text-center rounded-xl bg-white border border-slate-200 shadow-sm space-y-3">
+        <div className="py-20 text-center rounded-xl bg-[#171717] border border-slate-200 shadow-sm space-y-3">
           <Activity className="w-8 h-8 text-slate-400 mx-auto animate-pulse" />
           <div className="text-sm font-medium text-slate-600">
             Compiling authoritative execution report from Cloud API...
@@ -590,7 +590,7 @@ export function RunReportContent({ runId }: { runId: string }) {
       )}
 
       {!loading && !report && !error && (
-        <div className="py-16 text-center rounded-xl bg-white border border-slate-200 p-8 shadow-sm">
+        <div className="py-16 text-center rounded-xl bg-[#171717] border border-slate-200 p-8 shadow-sm">
           <h3 className="text-base font-bold text-slate-900">No Report Data Available</h3>
           <p className="text-sm text-slate-500 mt-1">This run is either still pending, missing, or has not emitted execution metrics.</p>
           <div className="mt-5">
@@ -608,7 +608,7 @@ export function RunReportContent({ runId }: { runId: string }) {
       {report && (
         <div className="space-y-6">
           {/* Metadata & Reproducibility Banner */}
-          <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm grid grid-cols-2 md:grid-cols-4 gap-4 text-sm font-sans">
+          <div className="p-5 rounded-xl bg-[#171717] border border-slate-200 shadow-sm grid grid-cols-2 md:grid-cols-4 gap-4 text-sm font-sans">
             <div>
               <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Execution Kind</span>
               <span className="text-base font-bold text-slate-900 mt-1 block">{report.kind || 'Backtest'}</span>
@@ -645,7 +645,7 @@ export function RunReportContent({ runId }: { runId: string }) {
 
           {/* Primary Metrics Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
+            <div className="p-5 rounded-xl bg-[#171717] border border-slate-200 shadow-sm">
               <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Net Profit</span>
               <span className={`text-2xl font-bold font-mono mt-2 block ${(metrics?.netProfit ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
                 {formatCurrency(metrics?.netProfit)}
@@ -653,7 +653,7 @@ export function RunReportContent({ runId }: { runId: string }) {
               <span className="text-xs text-slate-400 mt-1 block font-sans">Realized PnL</span>
             </div>
 
-            <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
+            <div className="p-5 rounded-xl bg-[#171717] border border-slate-200 shadow-sm">
               <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Total Return</span>
               <span className={`text-2xl font-bold font-mono mt-2 block ${(metrics?.totalReturn ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
                 {formatPercentage(metrics?.totalReturn)}
@@ -661,7 +661,7 @@ export function RunReportContent({ runId }: { runId: string }) {
               <span className="text-xs text-slate-400 mt-1 block font-sans">Compounded ROI</span>
             </div>
 
-            <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
+            <div className="p-5 rounded-xl bg-[#171717] border border-slate-200 shadow-sm">
               <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Sharpe Ratio</span>
               <span className="text-2xl font-bold font-mono text-slate-900 mt-2 block">
                 {metrics?.sharpeRatio != null ? metrics.sharpeRatio.toFixed(2) : '—'}
@@ -669,7 +669,7 @@ export function RunReportContent({ runId }: { runId: string }) {
               <span className="text-xs text-slate-400 mt-1 block font-sans">Risk-Adjusted Return</span>
             </div>
 
-            <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
+            <div className="p-5 rounded-xl bg-[#171717] border border-slate-200 shadow-sm">
               <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Max Drawdown</span>
               <span className="text-2xl font-bold font-mono text-rose-700 mt-2 block">
                 {formatPercentage(metrics?.maxDrawdown, false)}
@@ -677,7 +677,7 @@ export function RunReportContent({ runId }: { runId: string }) {
               <span className="text-xs text-slate-400 mt-1 block font-sans">Peak-to-Trough</span>
             </div>
 
-            <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
+            <div className="p-5 rounded-xl bg-[#171717] border border-slate-200 shadow-sm">
               <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Total Trades</span>
               <span className="text-2xl font-bold font-mono text-slate-900 mt-2 block">
                 {metrics?.tradeCount ?? '—'}
@@ -685,7 +685,7 @@ export function RunReportContent({ runId }: { runId: string }) {
               <span className="text-xs text-slate-400 mt-1 block font-sans">Executed Fills</span>
             </div>
 
-            <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm">
+            <div className="p-5 rounded-xl bg-[#171717] border border-slate-200 shadow-sm">
               <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block">Best Fitness</span>
               <span className="text-2xl font-bold font-mono text-amber-700 mt-2 block">
                 {metrics?.bestFitness != null ? metrics.bestFitness.toFixed(3) : '—'}
@@ -721,7 +721,7 @@ export function RunReportContent({ runId }: { runId: string }) {
                 <h3 className="text-base font-bold text-slate-900">Trade Execution Ledger</h3>
                 <Link
                   href={`/panel/reports/${runId}/trades`}
-                  className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 font-medium text-xs text-slate-700 transition-colors shadow-sm inline-flex items-center gap-1.5"
+                  className="px-3 py-1.5 rounded-lg border border-slate-300 bg-[#171717] hover:bg-slate-50 font-medium text-xs text-slate-700 transition-colors shadow-sm inline-flex items-center gap-1.5"
                 >
                   <Layers className="w-3.5 h-3.5 text-slate-500" />
                   <span>Open Full Trades Ledger</span>
@@ -733,18 +733,18 @@ export function RunReportContent({ runId }: { runId: string }) {
 
           {/* Optimization Generational Progression Link Card (Dev Feature) */}
           {report.generationProgress && report.generationProgress.length > 0 && (
-            <div className="p-4 border border-black bg-zinc-50 flex flex-wrap items-center justify-between gap-3">
+            <div className="p-4 border border-[#262626] bg-[#141414] flex flex-wrap items-center justify-between gap-3">
               <div>
-                <span className="font-bold uppercase text-black block">
+                <span className="font-bold uppercase text-zinc-100 block">
                   Genetic Generational Convergence ({report.generationProgress.length} Generations Evaluated)
                 </span>
-                <span className="text-[11px] text-zinc-600 font-sans mt-0.5 block">
+                <span className="text-[11px] text-zinc-400 font-sans mt-0.5 block">
                   Per-generation population diversity, fitness trajectory, and chromosome backtesting metrics moved to dedicated Dev page.
                 </span>
               </div>
               <Link
                 href={'/panel/reports/' + runId + '/generations'}
-                className="px-3.5 py-1.5 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors inline-flex items-center gap-1.5"
+                className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors inline-flex items-center gap-1.5"
               >
                 <TrendingUp className="w-3.5 h-3.5" />
                 <span>OPEN GENERATIONS PROGRESSION GRID</span>
@@ -753,7 +753,7 @@ export function RunReportContent({ runId }: { runId: string }) {
           )}
 
           {/* Append-Only Interventions Audit Log */}
-          <div className="p-6 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4">
+          <div className="p-6 rounded-xl bg-[#171717] border border-slate-200 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm uppercase tracking-wider font-mono text-slate-700 font-semibold flex items-center gap-2">
                 <span>Append-Only Human & System Interventions</span>
@@ -801,7 +801,7 @@ export function RunReportContent({ runId }: { runId: string }) {
           </div>
 
           {/* Recorded Execution Gaps */}
-          <div className="p-6 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4">
+          <div className="p-6 rounded-xl bg-[#171717] border border-slate-200 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm uppercase tracking-wider font-mono text-slate-700 font-semibold flex items-center gap-2">
                 <span>Recorded Execution Gaps</span>

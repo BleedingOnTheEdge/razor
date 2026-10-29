@@ -133,49 +133,49 @@ export function ShareEngineModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 font-mono text-xs">
-      <div className="w-full max-w-2xl bg-white border border-black p-6 space-y-6">
+      <div className="w-full max-w-2xl bg-[#171717] border border-[#262626] p-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-black">
+        <div className="flex items-center justify-between pb-4 border-b border-[#262626]">
           <div>
-            <h2 className="text-base font-bold text-black uppercase">
+            <h2 className="text-base font-bold text-zinc-100 uppercase">
               Temporary Engine Sharing Delegation
             </h2>
-            <p className="text-black font-normal mt-1">
+            <p className="text-zinc-100 font-normal mt-1">
               Grant temporary control and strategy execution permissions on <strong>{instanceName}</strong> ({formatHash(instanceId, 8)}).
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="px-2 py-1 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors"
+            className="px-2 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors"
           >
             [CLOSE]
           </button>
         </div>
 
         {/* Create Share Form */}
-        <form onSubmit={handleCreateShare} className="space-y-4 p-4 border border-black bg-white">
-          <h3 className="font-bold text-black uppercase">Grant New Temporary Delegation</h3>
+        <form onSubmit={handleCreateShare} className="space-y-4 p-4 border border-[#262626] bg-[#171717]">
+          <h3 className="font-bold text-zinc-100 uppercase">Grant New Temporary Delegation</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block font-bold text-black mb-1">Recipient User Email</label>
+              <label className="block font-bold text-zinc-100 mb-1">Recipient User Email</label>
               <input
                 type="email"
                 required
                 value={recipientEmail}
                 onChange={(e) => setRecipientEmail(e.target.value)}
                 placeholder="developer@quant-firm.com"
-                className="w-full px-3 py-2 border border-black bg-white text-black font-mono focus:outline-none"
+                className="w-full px-3 py-2 border border-[#262626] bg-[#171717] text-zinc-100 rounded-xl font-mono focus:outline-none focus:border-[#3ECF8E]"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-black mb-1">Access Duration</label>
+              <label className="block font-bold text-zinc-100 mb-1">Access Duration</label>
               <select
                 value={durationHours}
                 onChange={(e) => setDurationHours(e.target.value)}
-                className="w-full px-3 py-2 border border-black bg-white text-black font-mono font-bold focus:outline-none"
+                className="w-full px-3 py-2 border border-[#262626] bg-[#171717] text-zinc-100 rounded-xl font-mono font-bold focus:outline-none focus:border-[#3ECF8E]"
               >
                 <option value="1">1 Hour (Quick Debug)</option>
                 <option value="6">6 Hours (Half Day)</option>
@@ -223,7 +223,7 @@ export function ShareEngineModal({
             <button
               type="submit"
               disabled={submitting}
-              className="px-4 py-2 border border-black bg-black text-white hover:bg-white hover:text-black font-bold transition-colors disabled:opacity-50"
+              className="px-4 py-2 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium font-bold transition-colors disabled:opacity-50"
             >
               {submitting ? '[CREATING GRANT...]' : '[DELEGATE TEMPORARY ACCESS]'}
             </button>
@@ -232,31 +232,31 @@ export function ShareEngineModal({
 
         {/* Active Shares List */}
         <div className="space-y-3">
-          <h3 className="font-bold text-black uppercase">Active Temporary Delegations</h3>
+          <h3 className="font-bold text-zinc-100 uppercase">Active Temporary Delegations</h3>
           {loading ? (
-            <div className="py-6 text-center text-black font-bold border border-black">
+            <div className="py-6 text-center text-zinc-100 font-bold border border-[#262626]">
               [FETCHING ACTIVE DELEGATIONS...]
             </div>
           ) : shares.length === 0 ? (
-            <div className="py-6 text-center text-black font-normal border border-black">
+            <div className="py-6 text-center text-zinc-100 font-normal border border-[#262626]">
               No active delegations on this Engine instance. This engine is private to you.
             </div>
           ) : (
-            <div className="border border-black overflow-x-auto">
+            <div className="border border-[#262626] overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-black bg-white">
-                    <th className="p-2 font-bold text-black">Recipient</th>
-                    <th className="p-2 font-bold text-black">Permissions</th>
-                    <th className="p-2 font-bold text-black">Expires At</th>
-                    <th className="p-2 font-bold text-black">Status</th>
-                    <th className="p-2 font-bold text-black text-right">Action</th>
+                  <tr className="border-b border-[#262626] bg-[#171717]">
+                    <th className="p-2 font-bold text-zinc-100">Recipient</th>
+                    <th className="p-2 font-bold text-zinc-100">Permissions</th>
+                    <th className="p-2 font-bold text-zinc-100">Expires At</th>
+                    <th className="p-2 font-bold text-zinc-100">Status</th>
+                    <th className="p-2 font-bold text-zinc-100 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {shares.map((share) => (
-                    <tr key={share.id} className="border-b border-black hover:bg-zinc-50">
-                      <td className="p-2 font-bold text-black">{share.sharedWithEmail}</td>
+                    <tr key={share.id} className="border-b border-[#262626] hover:bg-[#141414]">
+                      <td className="p-2 font-bold text-zinc-100">{share.sharedWithEmail}</td>
                       <td className="p-2">
                         {[
                           share.canRead && 'Read',
@@ -269,16 +269,16 @@ export function ShareEngineModal({
                       <td className="p-2">{formatTimestamp(share.expiresAtUtc)}</td>
                       <td className="p-2">
                         {share.isExpired ? (
-                          <span className="text-red-600 font-bold">[EXPIRED]</span>
+                          <span className="text-rose-400 font-bold">[EXPIRED]</span>
                         ) : (
-                          <span className="text-green-600 font-bold">[ACTIVE]</span>
+                          <span className="text-[#3ECF8E] font-bold">[ACTIVE]</span>
                         )}
                       </td>
                       <td className="p-2 text-right">
                         <button
                           type="button"
                           onClick={() => handleRevokeShare(share.id)}
-                          className="px-2 py-1 border border-black bg-white hover:bg-red-600 hover:text-white text-black font-bold transition-colors"
+                          className="px-2 py-1 border border-[#262626] bg-[#171717] hover:bg-red-600 hover:text-white text-zinc-100 font-bold transition-colors"
                         >
                           [REVOKE]
                         </button>

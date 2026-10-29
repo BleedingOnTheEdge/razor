@@ -132,15 +132,15 @@ function MaintenanceContent() {
     : false;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto font-mono text-xs text-black">
+    <div className="space-y-6 max-w-7xl mx-auto font-sans text-xs text-zinc-100">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-black">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#262626]">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-black flex items-center gap-2 uppercase">
-            <Terminal className="w-5 h-5 text-black" />
+          <h1 className="text-xl font-bold tracking-tight text-zinc-100 flex items-center gap-2 uppercase">
+            <Terminal className="w-5 h-5 text-zinc-100" />
             <span>Maintenance & Command Dispatch Console</span>
           </h1>
-          <p className="text-xs text-black font-normal mt-1 font-sans">
+          <p className="text-xs text-zinc-100 font-normal mt-1 font-sans">
             Execute operational diagnostics, state-machine transitions, and hot-reload commands across engine instances.
           </p>
         </div>
@@ -153,33 +153,33 @@ function MaintenanceContent() {
               if (selectedInstanceId) loadCommands(selectedInstanceId);
             }}
             disabled={loadingInstances || loadingCommands}
-            className="px-3 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors flex items-center gap-1.5"
+            className="px-3 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors flex items-center gap-1.5"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loadingInstances || loadingCommands ? 'animate-spin' : ''}`} />
-            <span>[REFRESH]</span>
+            <span>Refresh</span>
           </button>
         </div>
       </div>
 
       {/* Target Node Selector */}
-      <div className="p-4 border border-black bg-white space-y-3">
+      <div className="p-4 border border-[#262626] bg-[#171717] space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Server className="w-4 h-4 text-black" />
-            <span className="font-bold text-black uppercase">
+            <Server className="w-4 h-4 text-zinc-100" />
+            <span className="font-bold text-zinc-100 uppercase">
               Target Engine Node
             </span>
           </div>
           {selectedEngine && (
             <div className="flex items-center gap-2">
               <span
-                className={`px-2 py-0.5 font-bold border border-black ${
-                  isSelectedOnline ? 'bg-green-50 text-green-700' : 'bg-zinc-100 text-black'
+                className={`px-2 py-0.5 font-bold border border-[#262626] ${
+                  isSelectedOnline ? 'bg-green-50 text-green-700' : 'bg-[#1f1f1f] text-zinc-200'
                 }`}
               >
-                {isSelectedOnline ? '[ONLINE & ACTIVE]' : '[OFFLINE]'}
+                {isSelectedOnline ? '[ONLINE & ACTIVE]' : 'Offline'}
               </span>
-              <span className="text-black">
+              <span className="text-zinc-100">
                 ID: {formatHash(selectedEngine.instanceId, 8)}
               </span>
             </div>
@@ -189,7 +189,7 @@ function MaintenanceContent() {
         <select
           value={selectedInstanceId}
           onChange={(e) => setSelectedInstanceId(e.target.value)}
-          className="w-full px-3 py-2 bg-white border border-black text-black font-mono focus:outline-none"
+          className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
         >
           {instances.map((inst) => {
             const isOnline = inst.isConnected || inst.status === 'Active' || inst.status === 'Healthy';
@@ -206,14 +206,14 @@ function MaintenanceContent() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Form & Presets (2 cols) */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="p-5 border border-black bg-white space-y-4">
+          <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <h2 className="text-sm font-bold text-black uppercase tracking-wider flex items-center gap-2">
-                  <Send className="w-4 h-4 text-black" />
+                <h2 className="text-sm font-bold text-zinc-100 uppercase tracking-wider flex items-center gap-2">
+                  <Send className="w-4 h-4 text-zinc-100" />
                   <span>Command Execution Form</span>
                 </h2>
-                <p className="text-xs text-black font-normal mt-0.5 font-sans">
+                <p className="text-xs text-zinc-100 font-normal mt-0.5 font-sans">
                   Select a preset or configure custom opcode and payload parameters.
                 </p>
               </div>
@@ -223,7 +223,7 @@ function MaintenanceContent() {
                 type="button"
                 onClick={handleDispatch}
                 disabled={dispatching || !selectedInstanceId}
-                className="px-4 py-2 border border-black bg-black text-white hover:bg-zinc-800 disabled:opacity-50 text-xs font-bold uppercase transition-colors flex items-center gap-2 shrink-0 self-start sm:self-auto"
+                className="px-4 py-2 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium disabled:opacity-50 text-xs font-bold uppercase transition-colors flex items-center gap-2 shrink-0 self-start sm:self-auto"
                 title="Execute command directly from top"
               >
                 <Send className="w-3.5 h-3.5" />
@@ -233,7 +233,7 @@ function MaintenanceContent() {
 
             {/* Presets */}
             <div className="space-y-1.5">
-              <span className="text-[11px] font-bold text-black uppercase tracking-wider block">
+              <span className="text-[11px] font-bold text-zinc-100 uppercase tracking-wider block">
                 Standard Control Presets
               </span>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -244,8 +244,8 @@ function MaintenanceContent() {
                     onClick={() => handleApplyPreset(preset)}
                     className={`p-2.5 border text-left transition-colors flex flex-col justify-between ${
                       cmdId === preset.id
-                        ? 'border-black bg-black text-white font-bold'
-                        : 'border-black bg-white hover:bg-zinc-100 text-black'
+                        ? 'border-[#262626] bg-black text-white font-bold'
+                        : 'border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626]'
                     }`}
                   >
                     <span className="font-bold">{preset.label}</span>
@@ -255,32 +255,32 @@ function MaintenanceContent() {
               </div>
             </div>
 
-            <form onSubmit={handleDispatch} className="space-y-4 pt-3 border-t border-black">
+            <form onSubmit={handleDispatch} className="space-y-4 pt-3 border-t border-[#262626]">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-black mb-1 font-bold uppercase">Numeric Opcode</label>
+                  <label className="block text-zinc-100 mb-1 font-bold uppercase">Numeric Opcode</label>
                   <input
                     type="number"
                     value={cmdId}
                     onChange={(e) => setCmdId(Number(e.target.value))}
                     required
-                    className="w-full px-3 py-2 bg-white border border-black text-black focus:outline-none"
+                    className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 focus:outline-none focus:border-[#3ECF8E]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-black mb-1 font-bold uppercase">Command Type</label>
+                  <label className="block text-zinc-100 mb-1 font-bold uppercase">Command Type</label>
                   <input
                     type="text"
                     value={cmdType}
                     onChange={(e) => setCmdType(e.target.value)}
                     required
-                    className="w-full px-3 py-2 bg-white border border-black text-black focus:outline-none"
+                    className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 focus:outline-none focus:border-[#3ECF8E]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-black mb-1 font-bold uppercase">Timeout (Seconds)</label>
+                  <label className="block text-zinc-100 mb-1 font-bold uppercase">Timeout (Seconds)</label>
                   <input
                     type="number"
                     value={timeoutSeconds}
@@ -288,18 +288,18 @@ function MaintenanceContent() {
                     min={1}
                     max={300}
                     required
-                    className="w-full px-3 py-2 bg-white border border-black text-black focus:outline-none"
+                    className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 focus:outline-none focus:border-[#3ECF8E]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-black mb-1 font-bold uppercase">Parameters JSON Payload</label>
+                <label className="block text-zinc-100 mb-1 font-bold uppercase">Parameters JSON Payload</label>
                 <textarea
                   value={cmdParams}
                   onChange={(e) => setCmdParams(e.target.value)}
                   rows={4}
-                  className="w-full p-3 bg-white border border-black text-black focus:outline-none text-xs font-mono"
+                  className="w-full p-3 bg-[#171717] border border-[#262626] text-zinc-100 focus:outline-none focus:border-[#3ECF8E] text-xs font-mono"
                   placeholder="{}"
                 />
               </div>
@@ -307,7 +307,7 @@ function MaintenanceContent() {
               <button
                 type="submit"
                 disabled={dispatching || !selectedInstanceId}
-                className="w-full sm:w-auto px-6 py-2.5 border border-black bg-white hover:bg-black hover:text-white disabled:opacity-50 text-black font-bold transition-colors"
+                className="w-full sm:w-auto px-6 py-2.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] disabled:opacity-50 text-zinc-100 font-bold transition-colors"
               >
                 {dispatching ? '[DISPATCHING WIRE PROTOCOL...]' : `[TRANSMIT ${cmdType.toUpperCase()} COMMAND →]`}
               </button>
@@ -317,18 +317,18 @@ function MaintenanceContent() {
 
         {/* Right Column: Execution History Log (1 col) */}
         <div>
-          <div className="p-5 border border-black bg-white space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-black">
-              <span className="text-xs font-bold text-black uppercase tracking-wider">
+          <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-[#262626]">
+              <span className="text-xs font-bold text-zinc-100 uppercase tracking-wider">
                 Event Log ({commands.length})
               </span>
-              <span className="text-[11px] text-zinc-600 font-sans">
+              <span className="text-[11px] text-zinc-400 font-sans">
                 Click to inspect payload
               </span>
             </div>
 
             {commands.length === 0 ? (
-              <div className="py-8 text-center text-xs text-black border border-black">
+              <div className="py-8 text-center text-xs text-zinc-100 border border-[#262626]">
                 [NO RECENT COMMANDS RECORDED FOR THIS NODE]
               </div>
             ) : (
@@ -340,20 +340,20 @@ function MaintenanceContent() {
                       setSelectedCommandForDetail(cmd);
                       setEventDetailModalOpen(true);
                     }}
-                    className="p-3 border border-black bg-white hover:bg-zinc-50 cursor-pointer text-xs space-y-1 transition-colors"
+                    className="p-3 border border-[#262626] bg-[#171717] hover:bg-[#141414] cursor-pointer text-xs space-y-1 transition-colors"
                     title="Click to inspect response and parameters"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-black">{cmd.commandType}</span>
-                      <span className="font-bold text-black">#{cmd.numericCommandId}</span>
+                      <span className="font-bold text-zinc-100">{cmd.commandType}</span>
+                      <span className="font-bold text-zinc-100">#{cmd.numericCommandId}</span>
                     </div>
-                    <div className="flex items-center justify-between text-[11px] text-zinc-700">
+                    <div className="flex items-center justify-between text-[11px] text-zinc-300">
                       <span className="font-bold">[{cmd.status?.toUpperCase()}]</span>
                       <span>{formatTimestamp(cmd.submittedAt)}</span>
                     </div>
-                    <div className="text-[10px] text-zinc-600 truncate flex items-center justify-between">
+                    <div className="text-[10px] text-zinc-400 truncate flex items-center justify-between">
                       <span>Corr: {formatHash(cmd.correlationId, 8)}</span>
-                      <span className="text-black font-bold">[INSPECT]</span>
+                      <span className="text-zinc-100 font-bold">Inspect</span>
                     </div>
                   </div>
                 ))}
@@ -380,7 +380,7 @@ export default function MaintenancePage() {
   return (
     <Suspense
       fallback={
-        <div className="p-8 text-center text-sm font-bold text-black font-mono">
+        <div className="p-8 text-center text-sm font-bold text-zinc-100 font-mono">
           [LOADING MAINTENANCE CONSOLE...]
         </div>
       }

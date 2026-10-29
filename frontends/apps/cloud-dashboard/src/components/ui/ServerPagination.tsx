@@ -58,13 +58,13 @@ export function ServerPagination({
 
   return (
     <div
-      className={`flex flex-wrap items-center justify-between gap-4 py-3 px-4 bg-white border border-black font-mono text-xs ${className}`}
+      className={`flex flex-wrap items-center justify-between gap-4 py-3 px-4 bg-[#171717] border border-[#262626] rounded-xl font-sans text-xs text-zinc-400 ${className}`}
     >
       <div className="flex items-center gap-4">
         <span>
-          Showing <strong className="font-bold text-black">{startItem}</strong> -{' '}
-          <strong className="font-bold text-black">{endItem}</strong> of{' '}
-          <strong className="font-bold text-black">{totalCount}</strong> items
+          Showing <strong className="font-medium text-zinc-100 font-mono">{startItem}</strong> –{' '}
+          <strong className="font-medium text-zinc-100 font-mono">{endItem}</strong> of{' '}
+          <strong className="font-medium text-zinc-100 font-mono">{totalCount}</strong> items
         </span>
 
         {onPageSizeChange && (
@@ -74,7 +74,7 @@ export function ServerPagination({
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
               aria-label="Select items per page"
-              className="bg-white text-black border border-black px-2 py-1 font-mono font-bold focus:outline-none"
+              className="bg-[#222222] text-zinc-200 border border-[#2e2e2e] rounded-md px-2 py-1 font-mono text-xs focus:outline-none focus:border-[#3ECF8E]"
             >
               {pageSizeOptions.map((opt) => (
                 <option key={opt} value={opt}>
@@ -90,9 +90,9 @@ export function ServerPagination({
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
-          className="px-3 py-1 bg-white text-black border border-black font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black hover:text-white transition-colors"
+          className="px-2.5 py-1 bg-[#222222] text-zinc-300 border border-[#2e2e2e] rounded-md font-medium disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#2a2a2a] hover:text-white transition-colors"
         >
-          PREV
+          Prev
         </button>
 
         {getPageNumbers().map((p, idx) =>
@@ -100,17 +100,17 @@ export function ServerPagination({
             <button
               key={idx}
               onClick={() => onPageChange(p)}
-              className={`px-3 py-1 border font-bold transition-colors ${
+              className={`w-7 h-7 flex items-center justify-center rounded-md font-mono text-xs transition-colors ${
                 p === page
-                  ? 'bg-black text-white border-black'
-                  : 'bg-white text-black border-black hover:bg-zinc-200'
+                  ? 'bg-[#3ECF8E] text-[#0f0f0f] font-semibold'
+                  : 'bg-[#222222] text-zinc-300 border border-[#2e2e2e] hover:bg-[#2a2a2a] hover:text-white'
               }`}
             >
               {p}
             </button>
           ) : (
-            <span key={idx} className="px-2 py-1 text-black font-bold select-none">
-              ...
+            <span key={idx} className="px-1 text-zinc-500 font-mono">
+              {p}
             </span>
           )
         )}
@@ -118,9 +118,9 @@ export function ServerPagination({
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={page >= safeTotalPages}
-          className="px-3 py-1 bg-white text-black border border-black font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black hover:text-white transition-colors"
+          className="px-2.5 py-1 bg-[#222222] text-zinc-300 border border-[#2e2e2e] rounded-md font-medium disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#2a2a2a] hover:text-white transition-colors"
         >
-          NEXT
+          Next
         </button>
       </div>
     </div>

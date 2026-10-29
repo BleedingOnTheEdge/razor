@@ -267,12 +267,12 @@ export default function AdminPage() {
 
   if (!isAuthenticated || !user) {
     return (
-      <div className="max-w-md mx-auto py-16 text-center space-y-4 border border-black p-8 bg-white">
-        <div className="w-12 h-12 bg-white border border-black text-black flex items-center justify-center mx-auto">
+      <div className="max-w-md mx-auto py-16 text-center space-y-4 border border-[#262626] p-8 bg-[#171717]">
+        <div className="w-12 h-12 bg-[#171717] border border-[#262626] text-zinc-100 flex items-center justify-center mx-auto">
           <Lock className="w-6 h-6" />
         </div>
-        <h1 className="text-sm font-mono font-bold uppercase tracking-wider text-black">Authentication Required</h1>
-        <p className="text-xs text-black font-mono">Sign in with administrative credentials to access governance.</p>
+        <h1 className="text-sm font-mono font-bold uppercase tracking-wider text-zinc-100">Authentication Required</h1>
+        <p className="text-xs text-zinc-100 font-mono">Sign in with administrative credentials to access governance.</p>
         <Link
           href="/auth/login"
           className="inline-block px-5 py-2 bg-black text-white font-mono text-xs font-bold uppercase hover:bg-zinc-800 transition-colors"
@@ -286,23 +286,23 @@ export default function AdminPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-black">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#262626]">
         <div>
-          <div className="flex items-center gap-2 text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
-            <ShieldAlert className="w-3.5 h-3.5 text-black" />
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-zinc-100 uppercase tracking-wider mb-1">
+            <ShieldAlert className="w-3.5 h-3.5 text-zinc-100" />
             <span>ROOT GOVERNANCE & ACCESS CONTROL</span>
           </div>
-          <h1 className="text-2xl font-mono font-bold tracking-tight text-black uppercase">
+          <h1 className="text-2xl font-mono font-bold tracking-tight text-zinc-100 uppercase">
             Cluster Administration
           </h1>
         </div>
 
         {/* Tab Toggle */}
-        <div className="flex items-center border border-black bg-white font-mono text-xs">
+        <div className="flex items-center border border-[#262626] bg-[#171717] font-mono text-xs">
           <button
             onClick={() => setActiveTab('users')}
             className={`flex items-center gap-2 px-4 py-2 uppercase font-bold transition-all ${
-              activeTab === 'users' ? 'bg-black text-white' : 'text-black hover:bg-zinc-100'
+              activeTab === 'users' ? 'bg-black text-white' : 'text-zinc-100 hover:bg-[#1f1f1f]'
             }`}
           >
             <Users className="w-3.5 h-3.5" />
@@ -310,8 +310,8 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab('settings')}
-            className={`flex items-center gap-2 px-4 py-2 uppercase font-bold border-l border-black transition-all ${
-              activeTab === 'settings' ? 'bg-black text-white' : 'text-black hover:bg-zinc-100'
+            className={`flex items-center gap-2 px-4 py-2 uppercase font-bold border-l border-[#262626] transition-all ${
+              activeTab === 'settings' ? 'bg-black text-white' : 'text-zinc-100 hover:bg-[#1f1f1f]'
             }`}
           >
             <Sliders className="w-3.5 h-3.5" />
@@ -321,8 +321,8 @@ export default function AdminPage() {
       </div>
 
       {/* Institutional Alert Protocol */}
-      <div className="p-4 border border-black bg-white flex items-start gap-3 text-xs text-black font-mono">
-        <Info className="w-4 h-4 text-black shrink-0 mt-0.5" />
+      <div className="p-4 border border-[#262626] bg-[#171717] flex items-start gap-3 text-xs text-zinc-100 font-mono">
+        <Info className="w-4 h-4 text-zinc-100 shrink-0 mt-0.5" />
         <div>
           <span className="font-bold uppercase">Governance Protocol:</span> SuperAdmin accounts have unrestricted authority to manage subscriptions, reset credentials, impersonate users with full execution privileges, or suspend accounts. Operators have restricted impersonation (manage engines & flows, live trading restricted).
         </div>
@@ -333,20 +333,20 @@ export default function AdminPage() {
           {/* Filter Bar */}
           <div className="flex flex-col sm:flex-row items-center gap-3">
             <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 text-black absolute left-3 top-2.5" />
+              <Search className="w-4 h-4 text-zinc-100 absolute left-3 top-2.5" />
               <input
                 type="text"
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && loadUsers()}
                 placeholder="SEARCH USERNAME, EMAIL..."
-                className="w-full pl-9 pr-3 py-2 bg-white border border-black text-xs font-mono text-black placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+                className="w-full pl-9 pr-3 py-2 bg-[#171717] border border-[#262626] text-xs font-mono text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
               />
             </div>
             <select
               value={userFilterRole}
               onChange={(e) => setUserFilterRole(e.target.value)}
-              className="px-3 py-2 bg-white border border-black text-xs font-mono font-bold uppercase text-black focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              className="px-3 py-2 bg-[#171717] border border-[#262626] text-xs font-mono font-bold uppercase text-zinc-100 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
             >
               <option value="">All Roles</option>
               <option value="SuperAdmin">SuperAdmin</option>
@@ -356,51 +356,51 @@ export default function AdminPage() {
             </select>
             <button
               onClick={loadUsers}
-              className="px-4 py-2 border border-black bg-black text-white hover:bg-zinc-800 font-mono text-xs font-bold uppercase rounded-none transition-colors"
+              className="px-4 py-2 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium font-mono text-xs font-bold uppercase rounded-none transition-colors"
             >
               Apply Filter
             </button>
           </div>
 
           {/* User Table */}
-          <div className="border border-black bg-white overflow-hidden">
+          <div className="border border-[#262626] bg-[#171717] overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono border-collapse">
-                <thead className="bg-zinc-100 text-black border-b border-black">
+                <thead className="bg-[#1f1f1f] text-zinc-200 border-b border-[#262626]">
                   <tr>
-                    <th className="px-4 py-3 font-bold uppercase text-[11px] border-r border-black">User Account</th>
-                    <th className="px-4 py-3 font-bold uppercase text-[11px] border-r border-black">Role</th>
-                    <th className="px-4 py-3 font-bold uppercase text-[11px] border-r border-black">Subscription Tier</th>
-                    <th className="px-4 py-3 font-bold uppercase text-[11px] border-r border-black">Status</th>
+                    <th className="px-4 py-3 font-bold uppercase text-[11px] border-r border-[#262626]">User Account</th>
+                    <th className="px-4 py-3 font-bold uppercase text-[11px] border-r border-[#262626]">Role</th>
+                    <th className="px-4 py-3 font-bold uppercase text-[11px] border-r border-[#262626]">Subscription Tier</th>
+                    <th className="px-4 py-3 font-bold uppercase text-[11px] border-r border-[#262626]">Status</th>
                     <th className="px-4 py-3 font-bold uppercase text-[11px] text-right">Administrative Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-black">
+                <tbody className="divide-y divide-[#262626]">
                   {loadingUsers ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-black font-mono">
+                      <td colSpan={5} className="px-4 py-8 text-center text-zinc-100 font-mono">
                         Loading users...
                       </td>
                     </tr>
                   ) : users.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-black font-mono">
+                      <td colSpan={5} className="px-4 py-8 text-center text-zinc-100 font-mono">
                         No users found matching query.
                       </td>
                     </tr>
                   ) : (
                     users.map((u) => (
-                      <tr key={u.userId} className="hover:bg-zinc-50 transition-colors">
-                        <td className="px-4 py-3 border-r border-black">
-                          <div className="font-bold text-black uppercase">@{u.userName}</div>
-                          <div className="text-[11px] text-black">{u.displayName || u.email || '—'}</div>
+                      <tr key={u.userId} className="hover:bg-[#141414] transition-colors">
+                        <td className="px-4 py-3 border-r border-[#262626]">
+                          <div className="font-bold text-zinc-100 uppercase">@{u.userName}</div>
+                          <div className="text-[11px] text-zinc-100">{u.displayName || u.email || '—'}</div>
                         </td>
-                        <td className="px-4 py-3 border-r border-black">
+                        <td className="px-4 py-3 border-r border-[#262626]">
                           <select
                             value={u.role === 'Developer' ? 'Trader' : u.role}
                             disabled={actionUserId === u.userId}
                             onChange={(e) => handleRoleChange(u.userId, e.target.value)}
-                            className="px-2 py-1 bg-white border border-black text-[11px] font-mono font-bold uppercase text-black focus:outline-none rounded-none"
+                            className="px-2 py-1 bg-[#171717] border border-[#262626] text-[11px] font-mono font-bold uppercase text-zinc-100 focus:outline-none focus:border-[#3ECF8E] rounded-none"
                           >
                             <option value="SuperAdmin">SuperAdmin</option>
                             <option value="Admin">Admin</option>
@@ -408,31 +408,31 @@ export default function AdminPage() {
                             <option value="Trader">Trader</option>
                           </select>
                         </td>
-                        <td className="px-4 py-3 border-r border-black">
+                        <td className="px-4 py-3 border-r border-[#262626]">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold uppercase text-black">
+                            <span className="font-bold uppercase text-zinc-100">
                               {u.subscriptionTier}
                             </span>
-                            <span className="text-[10px] text-black">({u.maxInstances} inst)</span>
+                            <span className="text-[10px] text-zinc-100">({u.maxInstances} inst)</span>
                             <button
                               onClick={() => {
                                 setSubscriptionModalUser(u);
                                 setSelectedTier(u.subscriptionTier);
                               }}
-                              className="px-2 py-0.5 border border-black bg-white hover:bg-black hover:text-white text-[10px] font-bold uppercase transition-colors"
+                              className="px-2 py-0.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] text-[10px] font-bold uppercase transition-colors"
                               title="Modify Subscription"
                             >
                               Edit
                             </button>
                           </div>
                         </td>
-                        <td className="px-4 py-3 border-r border-black">
+                        <td className="px-4 py-3 border-r border-[#262626]">
                           <button
                             onClick={() => handleStatusToggle(u.userId, u.isActive ?? true)}
                             disabled={actionUserId === u.userId}
-                            className={`px-2.5 py-1 text-[10px] font-mono font-bold uppercase border border-black transition-colors ${
+                            className={`px-2.5 py-1 text-[10px] font-mono font-bold uppercase border border-[#262626] transition-colors ${
                               u.isActive !== false
-                                ? 'bg-white text-black hover:bg-zinc-100'
+                                ? 'bg-[#171717] text-zinc-100 rounded-xl hover:bg-[#1f1f1f]'
                                 : 'bg-red-600 text-white hover:bg-red-700'
                             }`}
                           >
@@ -445,7 +445,7 @@ export default function AdminPage() {
                             <button
                               onClick={() => handleImpersonate(u)}
                               disabled={actionUserId === u.userId || u.userId === user.userId}
-                              className="flex items-center gap-1 px-2.5 py-1 border border-black bg-white hover:bg-black hover:text-white text-black text-[11px] font-bold uppercase transition-colors disabled:opacity-30"
+                              className="flex items-center gap-1 px-2.5 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] text-[11px] font-bold uppercase transition-colors disabled:opacity-30"
                               title={isAdmin ? 'Full Administrator Impersonation' : 'Operator Restricted Impersonation'}
                             >
                               <UserCheck className="w-3 h-3" />
@@ -458,7 +458,7 @@ export default function AdminPage() {
                                 setPasswordModalUser(u);
                                 setNewPassword('');
                               }}
-                              className="flex items-center gap-1 px-2.5 py-1 border border-black bg-white hover:bg-black hover:text-white text-black text-[11px] font-bold uppercase transition-colors"
+                              className="flex items-center gap-1 px-2.5 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] text-[11px] font-bold uppercase transition-colors"
                               title="Reset Password"
                             >
                               <Key className="w-3 h-3" />
@@ -470,7 +470,7 @@ export default function AdminPage() {
                               onClick={() => handleDeleteUser(u.userId, u.userName)}
                               disabled={actionUserId === u.userId || u.userName === 'superadmin' || u.userId === user.userId}
                               title="Delete User"
-                              className="p-1 border border-black bg-white hover:bg-red-600 hover:text-white text-black transition-colors disabled:opacity-30"
+                              className="p-1 border border-[#262626] bg-[#171717] hover:bg-red-600 hover:text-white text-zinc-100 transition-colors disabled:opacity-30"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -497,15 +497,15 @@ export default function AdminPage() {
       {/* Subscription Tier Management Modal */}
       {subscriptionModalUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md border border-black bg-white p-6 space-y-4 font-mono">
-            <div className="flex items-center justify-between border-b border-black pb-2">
-              <h3 className="text-sm font-bold uppercase text-black flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-black" />
+          <div className="w-full max-w-md border border-[#262626] bg-[#171717] p-6 space-y-4 font-mono">
+            <div className="flex items-center justify-between border-b border-[#262626] pb-2">
+              <h3 className="text-sm font-bold uppercase text-zinc-100 flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-zinc-100" />
                 <span>Manage Subscription: @{subscriptionModalUser.userName}</span>
               </h3>
               <button
                 onClick={() => setSubscriptionModalUser(null)}
-                className="text-black hover:bg-zinc-100 p-1 border border-black"
+                className="text-zinc-100 hover:bg-[#1f1f1f] p-1 border border-[#262626]"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -513,15 +513,15 @@ export default function AdminPage() {
 
             <form onSubmit={handleSaveSubscription} className="space-y-4">
               <div>
-                <label className="text-xs font-bold uppercase text-black block mb-2">
+                <label className="text-xs font-bold uppercase text-zinc-100 block mb-2">
                   Assign Subscription Tier
                 </label>
                 <div className="space-y-2 text-xs">
                   {(['Free', 'Pro', 'Enterprise'] as const).map((tier) => (
                     <label
                       key={tier}
-                      className={`flex items-center justify-between p-3 border border-black cursor-pointer transition-colors ${
-                        selectedTier === tier ? 'bg-black text-white font-bold' : 'bg-white text-black hover:bg-zinc-50'
+                      className={`flex items-center justify-between p-3 border border-[#262626] cursor-pointer transition-colors ${
+                        selectedTier === tier ? 'bg-black text-white font-bold' : 'bg-[#171717] text-zinc-100 rounded-xl hover:bg-[#141414]'
                       }`}
                     >
                       <div className="flex items-center gap-2">
@@ -543,18 +543,18 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-black">
+              <div className="flex justify-end gap-2 pt-2 border-t border-[#262626]">
                 <button
                   type="button"
                   onClick={() => setSubscriptionModalUser(null)}
-                  className="px-4 py-2 border border-black bg-white hover:bg-zinc-100 text-black font-mono text-xs font-bold uppercase"
+                  className="px-4 py-2 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-mono text-xs font-bold uppercase"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={savingSubscription}
-                  className="px-5 py-2 border border-black bg-black text-white hover:bg-zinc-800 font-mono text-xs font-bold uppercase disabled:opacity-50"
+                  className="px-5 py-2 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium font-mono text-xs font-bold uppercase disabled:opacity-50"
                 >
                   {savingSubscription ? 'Saving...' : 'Update Tier'}
                 </button>
@@ -567,15 +567,15 @@ export default function AdminPage() {
       {/* Password Reset Modal */}
       {passwordModalUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md border border-black bg-white p-6 space-y-4 font-mono">
-            <div className="flex items-center justify-between border-b border-black pb-2">
-              <h3 className="text-sm font-bold uppercase text-black flex items-center gap-2">
-                <Key className="w-4 h-4 text-black" />
+          <div className="w-full max-w-md border border-[#262626] bg-[#171717] p-6 space-y-4 font-mono">
+            <div className="flex items-center justify-between border-b border-[#262626] pb-2">
+              <h3 className="text-sm font-bold uppercase text-zinc-100 flex items-center gap-2">
+                <Key className="w-4 h-4 text-zinc-100" />
                 <span>Reset Password: @{passwordModalUser.userName}</span>
               </h3>
               <button
                 onClick={() => setPasswordModalUser(null)}
-                className="text-black hover:bg-zinc-100 p-1 border border-black"
+                className="text-zinc-100 hover:bg-[#1f1f1f] p-1 border border-[#262626]"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -583,7 +583,7 @@ export default function AdminPage() {
 
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div>
-                <label className="text-xs font-bold uppercase text-black block mb-1">
+                <label className="text-xs font-bold uppercase text-zinc-100 block mb-1">
                   New Account Password
                 </label>
                 <input
@@ -592,22 +592,22 @@ export default function AdminPage() {
                   placeholder="Enter secure new password..."
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-black text-xs font-mono text-black focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-xs font-mono text-zinc-100 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-black">
+              <div className="flex justify-end gap-2 pt-2 border-t border-[#262626]">
                 <button
                   type="button"
                   onClick={() => setPasswordModalUser(null)}
-                  className="px-4 py-2 border border-black bg-white hover:bg-zinc-100 text-black font-mono text-xs font-bold uppercase"
+                  className="px-4 py-2 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-mono text-xs font-bold uppercase"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={savingPassword}
-                  className="px-5 py-2 border border-black bg-black text-white hover:bg-zinc-800 font-mono text-xs font-bold uppercase disabled:opacity-50"
+                  className="px-5 py-2 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium font-mono text-xs font-bold uppercase disabled:opacity-50"
                 >
                   {savingPassword ? 'Resetting...' : 'Set Password'}
                 </button>

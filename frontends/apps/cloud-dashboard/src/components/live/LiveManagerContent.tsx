@@ -317,15 +317,15 @@ export function LiveManagerContent() {
 
         {/* Engine Instance Selector & Status */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-white px-2">
-            <span className="font-bold text-xs text-black uppercase tracking-wider">Engine:</span>
+          <div className="flex items-center gap-2 bg-[#171717] px-2">
+            <span className="font-bold text-xs text-zinc-100 uppercase tracking-wider">Engine:</span>
             <select
               value={selectedInstanceId}
               onChange={(e) => setSelectedInstanceId(e.target.value)}
-              className="bg-transparent text-sm font-bold text-black focus:outline-none cursor-pointer pr-2 py-2 border-b border-black font-mono"
+              className="bg-transparent text-sm font-bold text-zinc-100 focus:outline-none focus:border-[#3ECF8E] cursor-pointer pr-2 py-2 border-b border-[#262626] font-mono"
             >
               {instances.map((inst) => (
-                <option key={inst.instanceId} value={inst.instanceId} className="bg-white text-black font-mono">
+                <option key={inst.instanceId} value={inst.instanceId} className="bg-[#171717] text-zinc-100 rounded-xl font-mono">
                   {inst.name || inst.engineId} ({inst.isConnected ? 'Connected' : 'Offline'})
                 </option>
               ))}
@@ -335,7 +335,7 @@ export function LiveManagerContent() {
           {currentInstance && (
             <Link
               href={`/panel/instances/${currentInstance.instanceId}`}
-              className="px-3.5 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-bold text-xs transition-colors whitespace-nowrap text-nowrap select-none"
+              className="px-3.5 py-2 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold text-xs transition-colors whitespace-nowrap text-nowrap select-none"
               title="Open Engine Details"
             >
               [INSPECT ENGINE]
@@ -345,7 +345,7 @@ export function LiveManagerContent() {
           <button
             type="button"
             onClick={loadInstances}
-            className="p-2 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors"
+            className="p-2 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] transition-colors"
             title="Refresh Fleet State"
           >
             <RefreshCw className="w-4 h-4" />
@@ -354,15 +354,15 @@ export function LiveManagerContent() {
       </div>
 
       {/* Emergency & Quick Operational Controls Bar */}
-      <div className="p-4 bg-white border border-black flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
+      <div className="p-4 bg-[#171717] border border-[#262626] flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
         <div className="flex flex-wrap items-center gap-3">
           {/* EMERGENCY STOP BUTTON */}
           <button
             type="button"
             onClick={() => setEmergencyModalOpen(true)}
-            className="px-4 py-2 border border-black bg-red-600 hover:bg-red-700 text-white font-bold transition-colors flex items-center gap-2 select-none whitespace-nowrap"
+            className="px-4 py-2 border border-[#262626] bg-red-600 hover:bg-red-700 text-white font-bold transition-colors flex items-center gap-2 select-none whitespace-nowrap"
           >
-            <AlertOctagon className="w-4 h-4 fill-white text-red-600" />
+            <AlertOctagon className="w-4 h-4 fill-white text-rose-400" />
             <span className="hidden">EMERGENCY STOP (2001)</span>
             <span>EMERGENCY STOP</span>
           </button>
@@ -372,7 +372,7 @@ export function LiveManagerContent() {
             type="button"
             onClick={handleToggleTradingPause}
             disabled={dispatchingCommand}
-            className="px-3.5 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors select-none whitespace-nowrap"
+            className="px-3.5 py-2 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors select-none whitespace-nowrap"
           >
             {isTradingPaused ? '[RESUME TRADING]' : '[PAUSE TRADING]'}
           </button>
@@ -382,7 +382,7 @@ export function LiveManagerContent() {
             type="button"
             onClick={handlePositionSync}
             disabled={dispatchingCommand}
-            className="px-3.5 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors select-none whitespace-nowrap"
+            className="px-3.5 py-2 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors select-none whitespace-nowrap"
           >
             [SYNC POSITIONS]
           </button>
@@ -391,7 +391,7 @@ export function LiveManagerContent() {
           <button
             type="button"
             onClick={() => setRiskModalOpen(true)}
-            className="px-3.5 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors select-none whitespace-nowrap"
+            className="px-3.5 py-2 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors select-none whitespace-nowrap"
           >
             <span className="hidden">Risk Controls (1107)</span>
             <span>Risk Controls</span>

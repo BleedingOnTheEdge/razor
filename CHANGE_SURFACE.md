@@ -79,7 +79,17 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `frontends/packages/ui-kit/src/components/ModalSheet.tsx`: Apple Design backdrop-blur modal sheet dialog.
 - `frontends/packages/ui-kit/src/components/SegmentedControl.tsx`: Apple Design iOS/macOS-style pill segmented control.
 - `frontends/packages/ui-kit/src/components/StatCard.tsx`: Apple Design financial statistic card with tabular numeric typography.
-- `frontends/packages/ui-kit/src/components/ThemeToggle.tsx`: Apple Design light/dark mode theme toggle with smooth CSS variable transitions.
+-`frontends/packages/ui-kit/src/components/ThemeToggle.tsx`: Supabase-style light/dark mode theme toggle with smooth CSS variable transitions.
+- `frontends/packages/ui-kit/src/lib/utils.ts`: Utility for merging Tailwind and clsx classes.
+- `frontends/packages/ui-kit/src/components/Dialog.tsx`: Supabase-style Radix UI Dialog primitives with dark mode near-black surface.
+- `frontends/packages/ui-kit/src/components/DropdownMenu.tsx`: Supabase-style Radix UI DropdownMenu primitives.
+- `frontends/packages/ui-kit/src/components/Tabs.tsx`: Supabase-style Radix UI Tabs primitives.
+- `frontends/packages/ui-kit/src/components/Input.tsx`: Supabase-style dark-mode-native Input with emerald focus ring.
+- `frontends/packages/ui-kit/src/components/Textarea.tsx`: Supabase-style dark-mode-native Textarea with emerald focus ring.
+- `frontends/packages/ui-kit/src/components/Label.tsx`: Supabase-style accessible form Label component.
+- `frontends/packages/ui-kit/src/components/Switch.tsx`: Supabase-style Radix UI Switch with emerald active track.
+- `frontends/packages/ui-kit/src/components/Tooltip.tsx`: Supabase-style Radix UI Tooltip primitives.
+- `frontends/packages/ui-kit/src/components/Separator.tsx`: Supabase-style Radix UI Separator hairline divider.
 - `frontends/apps/cloud-dashboard/src/app/admin/page.tsx`: Rich Admin panel page for operator elevation/demotion, user status management, and audit inspection.
 - `frontends/apps/cloud-dashboard/src/app/profile/page.tsx`: User profile view and update page with subscription and preferences.
 - `frontends/apps/cloud-dashboard/src/app/settings/page.tsx`: Cluster administrative settings page for fleet, security, and marketplace configurations.

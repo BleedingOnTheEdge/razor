@@ -299,23 +299,23 @@ function BundleEditorContent() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto font-mono text-xs text-black">
+    <div className="space-y-6 max-w-7xl mx-auto font-sans text-xs text-zinc-100">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-black">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#262626]">
         <div className="flex items-center gap-3">
           <Link
             href="/panel/bundles"
-            className="p-2 border border-black hover:bg-zinc-100 transition-colors"
+            className="p-2 border border-[#262626] hover:bg-[#1f1f1f] transition-colors"
             title="Back to Bundles Catalogue"
           >
-            <ArrowLeft className="w-4 h-4 text-black" />
+            <ArrowLeft className="w-4 h-4 text-zinc-100" />
           </Link>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-black flex items-center gap-2 uppercase">
-              <Package className="w-5 h-5 text-black" />
+            <h1 className="text-xl font-bold tracking-tight text-zinc-100 flex items-center gap-2 uppercase">
+              <Package className="w-5 h-5 text-zinc-100" />
               <span>{editId ? `Edit Bundle [${bundleId}]` : 'Create Trading Bundle'}</span>
             </h1>
-            <p className="text-xs text-black font-normal mt-0.5 font-sans">
+            <p className="text-xs text-zinc-100 font-normal mt-0.5 font-sans">
               Assemble strategy slots, adapter gateways, hook interceptors, and default parameter genes.
             </p>
           </div>
@@ -325,7 +325,7 @@ function BundleEditorContent() {
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="px-5 py-2.5 border border-black bg-black text-white hover:bg-zinc-800 disabled:opacity-50 text-xs font-bold uppercase flex items-center gap-2 transition-colors self-start sm:self-auto"
+          className="px-5 py-2.5 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium disabled:opacity-50 text-xs font-bold uppercase flex items-center gap-2 transition-colors self-start sm:self-auto"
         >
           <Save className="w-4 h-4" />
           <span>{saving ? 'SAVING BUNDLE...' : 'SAVE BUNDLE'}</span>
@@ -334,9 +334,9 @@ function BundleEditorContent() {
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* SECTION 1: Package Identity & Metadata */}
-        <div className="p-5 border border-black bg-white space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider border-b border-black pb-2 flex items-center gap-2">
-            <Package className="w-4 h-4 text-black" />
+        <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+          <h2 className="text-sm font-bold uppercase tracking-wider border-b border-[#262626] pb-2 flex items-center gap-2">
+            <Package className="w-4 h-4 text-zinc-100" />
             <span>1. Package Identity & Pricing</span>
           </h2>
 
@@ -344,11 +344,11 @@ function BundleEditorContent() {
             {/* Alphanumeric Unique ID */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-black font-bold uppercase">Bundle ID (8-12 Chars)</label>
+                <label className="block text-zinc-100 font-bold uppercase">Bundle ID (8-12 Chars)</label>
                 <button
                   type="button"
                   onClick={handleRegenerateId}
-                  className="text-[10px] text-zinc-600 hover:text-black font-bold flex items-center gap-1"
+                  className="text-[10px] text-zinc-400 hover:text-zinc-100 font-bold flex items-center gap-1"
                 >
                   <Dice5 className="w-3 h-3" />
                   <span>Randomize</span>
@@ -362,20 +362,20 @@ function BundleEditorContent() {
                 maxLength={12}
                 minLength={8}
                 placeholder="BND-8X2K4M"
-                className="w-full px-3 py-2 bg-zinc-50 border border-black text-black font-mono font-bold focus:outline-none focus:bg-white"
+                className="w-full px-3 py-2 bg-[#141414] border border-[#262626] text-zinc-100 font-mono font-bold focus:outline-none focus:border-[#3ECF8E] focus:bg-[#171717]"
               />
             </div>
 
             {/* Bundle Name */}
             <div className="md:col-span-2">
-              <label className="block text-black font-bold uppercase mb-1">Package Name</label>
+              <label className="block text-zinc-100 font-bold uppercase mb-1">Package Name</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
                 placeholder="e.g. Trend Scalper Elite Bundle"
-                className="w-full px-3 py-2 bg-white border border-black text-black font-bold focus:outline-none"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-bold focus:outline-none focus:border-[#3ECF8E]"
               />
             </div>
           </div>
@@ -383,14 +383,14 @@ function BundleEditorContent() {
           {/* Pricing & Currencies: Drop IRR; Support IRT, USDT, USD, Free */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
             <div>
-              <label className="block text-black font-bold uppercase mb-1 flex items-center gap-1">
-                <DollarSign className="w-3.5 h-3.5 text-black" />
+              <label className="block text-zinc-100 font-bold uppercase mb-1 flex items-center gap-1">
+                <DollarSign className="w-3.5 h-3.5 text-zinc-100" />
                 <span>Currency Model</span>
               </label>
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value as any)}
-                className="w-full px-3 py-2 bg-white border border-black text-black font-bold focus:outline-none"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-bold focus:outline-none focus:border-[#3ECF8E]"
               >
                 <option value="Free">Free (Community / Open)</option>
                 <option value="IRT">IRT (Toman - Direct Gateway)</option>
@@ -401,7 +401,7 @@ function BundleEditorContent() {
 
             {currency !== 'Free' && (
               <div>
-                <label className="block text-black font-bold uppercase mb-1">Price ({currency})</label>
+                <label className="block text-zinc-100 font-bold uppercase mb-1">Price ({currency})</label>
                 <input
                   type="number"
                   min="0"
@@ -409,7 +409,7 @@ function BundleEditorContent() {
                   value={price}
                   onChange={(e) => setPrice(Number(e.target.value))}
                   required
-                  className="w-full px-3 py-2 bg-white border border-black text-black font-bold focus:outline-none"
+                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-bold focus:outline-none focus:border-[#3ECF8E]"
                 />
               </div>
             )}
@@ -444,27 +444,27 @@ function BundleEditorContent() {
 
           {/* Description Input (Increased Height) */}
           <div className="pt-2">
-            <label className="block text-black font-bold uppercase mb-1">Description</label>
+            <label className="block text-zinc-100 font-bold uppercase mb-1">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
               placeholder="Detailed description of strategy behavior, market regime prerequisites, and performance expectations..."
-              className="w-full p-3 bg-white border border-black text-black font-sans text-xs focus:outline-none min-h-[110px]"
+              className="w-full p-3 bg-[#171717] border border-[#262626] text-zinc-100 font-sans text-xs focus:outline-none focus:border-[#3ECF8E] min-h-[110px]"
             />
           </div>
 
           {/* Package Documentation (Taller height, removed "(Markdown)" from title) */}
           <div className="pt-2 space-y-1">
             <div className="flex items-center justify-between">
-              <label className="block text-black font-bold uppercase flex items-center gap-1">
-                <FileText className="w-3.5 h-3.5 text-black" />
+              <label className="block text-zinc-100 font-bold uppercase flex items-center gap-1">
+                <FileText className="w-3.5 h-3.5 text-zinc-100" />
                 <span>Package Documentation</span>
               </label>
               <button
                 type="button"
                 onClick={() => setPreviewDoc(!previewDoc)}
-                className="text-[11px] font-bold text-black flex items-center gap-1 hover:underline"
+                className="text-[11px] font-bold text-zinc-100 flex items-center gap-1 hover:underline"
               >
                 <Eye className="w-3.5 h-3.5" />
                 <span>{previewDoc ? 'EDIT SOURCE' : 'PREVIEW'}</span>
@@ -472,7 +472,7 @@ function BundleEditorContent() {
             </div>
 
             {previewDoc ? (
-              <div className="w-full p-4 bg-zinc-50 border border-black font-sans text-xs text-black min-h-[260px] whitespace-pre-wrap leading-relaxed">
+              <div className="w-full p-4 bg-[#141414] border border-[#262626] font-sans text-xs text-zinc-100 min-h-[260px] whitespace-pre-wrap leading-relaxed">
                 {documentationMarkdown || '*No documentation written.*'}
               </div>
             ) : (
@@ -481,7 +481,7 @@ function BundleEditorContent() {
                 onChange={(e) => setDocumentationMarkdown(e.target.value)}
                 rows={10}
                 placeholder="Write full deployment guidelines, parameter sensitivities, and setup instructions..."
-                className="w-full p-3 bg-white border border-black text-black font-mono text-xs focus:outline-none min-h-[260px]"
+                className="w-full p-3 bg-[#171717] border border-[#262626] text-zinc-100 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] min-h-[260px]"
               />
             )}
           </div>
@@ -489,12 +489,12 @@ function BundleEditorContent() {
 
         {/* SECTION 2: Initial Component Slots & Hook Interceptors (Interactive Grids) */}
         <div className="space-y-4">
-          <div className="p-5 border border-black bg-white space-y-4">
-            <h2 className="text-sm font-bold uppercase tracking-wider border-b border-black pb-2 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-black" />
+          <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+            <h2 className="text-sm font-bold uppercase tracking-wider border-b border-[#262626] pb-2 flex items-center gap-2">
+              <Layers className="w-4 h-4 text-zinc-100" />
               <span>2. Component Slots & Hook Interceptors</span>
             </h2>
-            <p className="text-xs text-zinc-600 font-sans">
+            <p className="text-xs text-zinc-400 font-sans">
               Select verified strategies, venue execution adapters, and safety interceptors. Click to select or deselect components.
             </p>
 
@@ -548,11 +548,11 @@ function BundleEditorContent() {
         />
 
         {/* Action Button */}
-        <div className="flex justify-end pt-4 border-t border-black">
+        <div className="flex justify-end pt-4 border-t border-[#262626]">
           <button
             type="submit"
             disabled={saving}
-            className="px-6 py-3 border border-black bg-black text-white hover:bg-zinc-800 font-bold text-xs uppercase flex items-center gap-2 transition-colors"
+            className="px-6 py-3 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium font-bold text-xs uppercase flex items-center gap-2 transition-colors"
           >
             <Save className="w-4 h-4" />
             <span>{saving ? 'SAVING BUNDLE...' : 'PERSIST BUNDLE CONFIGURATION'}</span>

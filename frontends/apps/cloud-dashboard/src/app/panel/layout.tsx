@@ -17,10 +17,10 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
 
   if (isLoading) {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center bg-white text-black font-mono">
-        <div className="p-8 border border-black text-center font-bold flex items-center gap-3">
-          <Loader2 className="w-4 h-4 animate-spin text-black" />
-          <span>[AUTHENTICATING OPERATOR SESSION...]</span>
+      <div className="min-h-[50vh] flex items-center justify-center bg-[#0f0f0f] text-zinc-100 font-sans">
+        <div className="p-6 rounded-xl border border-[#262626] bg-[#171717] text-center flex items-center gap-3 shadow-xl">
+          <Loader2 className="w-5 h-5 animate-spin text-[#3ECF8E]" />
+          <span className="text-xs font-mono font-medium text-zinc-300">Authenticating operator session…</span>
         </div>
       </div>
     );

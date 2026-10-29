@@ -82,9 +82,9 @@ export default function WalkForwardWindowsPage() {
   });
 
   return (
-    <div className="space-y-6 max-w-7xl font-mono text-xs text-black">
+    <div className="space-y-6 max-w-7xl font-sans text-xs text-zinc-100">
       {/* Navigation Breadcrumb */}
-      <div className="flex items-center gap-2 pb-2 border-b border-black">
+      <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
         <Link href="/panel/reports" className="hover:underline font-bold">
           REPORTS
         </Link>
@@ -99,18 +99,18 @@ export default function WalkForwardWindowsPage() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold uppercase text-black flex items-center gap-2">
-            <Layers className="w-5 h-5 text-black" />
+          <h1 className="text-xl font-bold uppercase text-zinc-100 flex items-center gap-2">
+            <Layers className="w-5 h-5 text-zinc-100" />
             <span>Walk-Forward Window Partitioning & Out-of-Sample Analytics</span>
           </h1>
-          <p className="text-zinc-600 font-sans mt-1">
+          <p className="text-zinc-400 font-sans mt-1">
             Deterministic analysis of sliding in-sample training vs. out-of-sample forward test windows for Run {formatHash(runId, 8)}.
           </p>
         </div>
 
         <Link
           href={`/panel/reports/${runId}`}
-          className="px-3.5 py-1.5 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors inline-flex items-center gap-1.5 select-none"
+          className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors inline-flex items-center gap-1.5 select-none"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>RETURN TO REPORT</span>
@@ -118,41 +118,41 @@ export default function WalkForwardWindowsPage() {
       </div>
 
       {loading ? (
-        <div className="py-16 text-center text-black font-bold border border-black">
+        <div className="py-16 text-center text-zinc-100 font-bold border border-[#262626]">
           COMPILING WALK-FORWARD WINDOW TELEMETRY FROM CLOUD API...
         </div>
       ) : error ? (
-        <div className="p-4 border border-black text-red-600 font-bold">
+        <div className="p-4 border border-[#262626] text-rose-400 font-bold">
           ERROR: {error}
         </div>
       ) : (
         <div className="space-y-6">
           {/* Summary Stat Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div className="p-3 border border-black bg-zinc-50">
-              <span className="text-[11px] font-bold text-black uppercase tracking-wider block">Total Splits</span>
+            <div className="p-3 border border-[#262626] bg-[#141414]">
+              <span className="text-[11px] font-bold text-zinc-100 uppercase tracking-wider block">Total Splits</span>
               <span className="text-lg font-bold mt-1 block font-mono">{totalWindows} Windows</span>
               <span className="text-[10px] text-zinc-500 font-sans mt-0.5 block">{inSamplePct}% IS / {outOfSamplePct}% OOS</span>
             </div>
 
-            <div className="p-3 border border-black bg-zinc-50">
-              <span className="text-[11px] font-bold text-black uppercase tracking-wider block">Avg WFE Ratio</span>
-              <span className="text-lg font-bold mt-1 block font-mono text-green-600">
+            <div className="p-3 border border-[#262626] bg-[#141414]">
+              <span className="text-[11px] font-bold text-zinc-100 uppercase tracking-wider block">Avg WFE Ratio</span>
+              <span className="text-lg font-bold mt-1 block font-mono text-[#3ECF8E]">
                 {(windows.reduce((acc, w) => acc + w.wfeRatio, 0) / windows.length).toFixed(2)}
               </span>
               <span className="text-[10px] text-zinc-500 font-sans mt-0.5 block">Walk-Forward Efficiency</span>
             </div>
 
-            <div className="p-3 border border-black bg-zinc-50">
-              <span className="text-[11px] font-bold text-black uppercase tracking-wider block">Robustness Certification</span>
-              <span className="text-lg font-bold mt-1 block font-mono text-green-600">
+            <div className="p-3 border border-[#262626] bg-[#141414]">
+              <span className="text-[11px] font-bold text-zinc-100 uppercase tracking-wider block">Robustness Certification</span>
+              <span className="text-lg font-bold mt-1 block font-mono text-[#3ECF8E]">
                 [VERIFIED]
               </span>
               <span className="text-[10px] text-zinc-500 font-sans mt-0.5 block">Passes OOS Degradation Bounds</span>
             </div>
 
-            <div className="p-3 border border-black bg-zinc-50">
-              <span className="text-[11px] font-bold text-black uppercase tracking-wider block">Execution Engine</span>
+            <div className="p-3 border border-[#262626] bg-[#141414]">
+              <span className="text-[11px] font-bold text-zinc-100 uppercase tracking-wider block">Execution Engine</span>
               <span className="text-lg font-bold mt-1 block font-mono">
                 {report?.engineInstanceId ? formatHash(report.engineInstanceId, 6) : 'Local'}
               </span>
@@ -161,10 +161,10 @@ export default function WalkForwardWindowsPage() {
           </div>
 
           {/* Windows Table */}
-          <div className="border border-black overflow-x-auto bg-white">
+          <div className="border border-[#262626] overflow-x-auto bg-[#171717]">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-black bg-zinc-100 font-bold uppercase text-[11px]">
+                <tr className="border-b border-[#262626] bg-[#1f1f1f] font-bold uppercase text-[11px]">
                   <th className="py-2.5 px-3">Window #</th>
                   <th className="py-2.5 px-3">In-Sample Period</th>
                   <th className="py-2.5 px-3 text-right">IS Return</th>
@@ -177,25 +177,25 @@ export default function WalkForwardWindowsPage() {
                   <th className="py-2.5 px-3 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-200">
+              <tbody className="divide-y divide-[#262626]">
                 {windows.map((w) => (
-                  <tr key={w.windowIndex} className="hover:bg-zinc-50 transition-colors">
-                    <td className="py-3 px-3 font-bold text-black">
+                  <tr key={w.windowIndex} className="hover:bg-[#141414] transition-colors">
+                    <td className="py-3 px-3 font-bold text-zinc-100">
                       Window #{w.windowIndex}
                     </td>
-                    <td className="py-3 px-3 text-zinc-700 font-sans">
+                    <td className="py-3 px-3 text-zinc-300 font-sans">
                       {w.inSampleRange} ({w.inSampleTrades} fills)
                     </td>
-                    <td className="py-3 px-3 text-right font-bold text-green-600">
+                    <td className="py-3 px-3 text-right font-bold text-[#3ECF8E]">
                       +{w.inSampleReturnPct}%
                     </td>
                     <td className="py-3 px-3 text-right font-bold">
                       {w.inSampleSharpe}
                     </td>
-                    <td className="py-3 px-3 text-zinc-700 font-sans">
+                    <td className="py-3 px-3 text-zinc-300 font-sans">
                       {w.outOfSampleRange} ({w.outOfSampleTrades} fills)
                     </td>
-                    <td className="py-3 px-3 text-right font-bold text-green-600">
+                    <td className="py-3 px-3 text-right font-bold text-[#3ECF8E]">
                       +{w.outOfSampleReturnPct}%
                     </td>
                     <td className="py-3 px-3 text-right font-bold">
@@ -210,7 +210,7 @@ export default function WalkForwardWindowsPage() {
                           ? 'border-green-600 bg-green-50 text-green-700'
                           : w.robustnessStatus === 'Moderate'
                           ? 'border-amber-600 bg-amber-50 text-amber-700'
-                          : 'border-red-600 bg-red-50 text-red-700'
+                          : 'border-rose-500/30 bg-red-50 text-red-700'
                       }`}>
                         [{w.robustnessStatus.toUpperCase()}]
                       </span>
@@ -218,7 +218,7 @@ export default function WalkForwardWindowsPage() {
                     <td className="py-3 px-3 text-right">
                       <Link
                         href={`/panel/reports/${runId}/windows/${w.windowIndex}`}
-                        className="px-2.5 py-1 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors inline-block"
+                        className="px-2.5 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors inline-block"
                       >
                         INSPECT WINDOW →
                       </Link>

@@ -61,7 +61,7 @@ export default function PopulationIndividualDetailPage() {
   return (
     <div className="space-y-6 max-w-7xl font-mono text-xs">
       {/* Navigation Breadcrumb */}
-      <div className="flex items-center gap-2 pb-2 border-b border-black">
+      <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
         <Link href="/panel/reports" className="hover:underline font-bold">
           REPORTS
         </Link>
@@ -84,10 +84,10 @@ export default function PopulationIndividualDetailPage() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold uppercase text-black">
+          <h1 className="text-xl font-bold uppercase text-zinc-100">
             Population Candidate Simulation Report
           </h1>
-          <p className="text-black font-normal mt-1">
+          <p className="text-zinc-100 font-normal mt-1">
             Deterministic chromosome evaluation for Candidate #{popId} in Generation {genId} of Flow Run {formatHash(runId, 8)}.
           </p>
         </div>
@@ -96,13 +96,13 @@ export default function PopulationIndividualDetailPage() {
           <button
             type="button"
             onClick={handleCopyDna}
-            className="px-3 py-2 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors"
+            className="px-3 py-2 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors"
           >
             [COPY CHROMOSOME DNA]
           </button>
           <Link
             href="/panel/runs"
-            className="px-3 py-2 border border-black bg-black text-white hover:bg-white hover:text-black font-bold transition-colors"
+            className="px-3 py-2 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium font-bold transition-colors"
           >
             [RUN AS BACKTEST]
           </Link>
@@ -110,55 +110,55 @@ export default function PopulationIndividualDetailPage() {
       </div>
 
       {loading ? (
-        <div className="py-16 text-center text-black font-bold border border-black">
+        <div className="py-16 text-center text-zinc-100 font-bold border border-[#262626]">
           [COMPILING CANDIDATE SIMULATION DATA FROM CLOUD API...]
         </div>
       ) : error ? (
-        <div className="p-4 border border-black text-red-600 font-bold">
+        <div className="p-4 border border-[#262626] text-rose-400 font-bold">
           ERROR: {error}
         </div>
       ) : !individual ? (
-        <div className="py-16 text-center border border-black p-8 font-bold">
+        <div className="py-16 text-center border border-[#262626] p-8 font-bold">
           [CANDIDATE #{popId} NOT FOUND]
         </div>
       ) : (
         <div className="space-y-6">
           {/* Candidate Metrics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 border border-black bg-white">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 border border-[#262626] bg-[#171717]">
             <div>
-              <span className="text-black font-bold block">Objective Fitness</span>
-              <span className="text-xl font-bold text-green-600 mt-1 block">
+              <span className="text-zinc-100 font-bold block">Objective Fitness</span>
+              <span className="text-xl font-bold text-[#3ECF8E] mt-1 block">
                 {individual.fitness?.toFixed(4) ?? '—'}
               </span>
             </div>
             <div>
-              <span className="text-black font-bold block">Genome Hash</span>
-              <span className="text-sm font-bold text-black mt-1 block">
+              <span className="text-zinc-100 font-bold block">Genome Hash</span>
+              <span className="text-sm font-bold text-zinc-100 mt-1 block">
                 {individual.genomeHash ? formatHash(individual.genomeHash, 12) : '—'}
               </span>
             </div>
             <div>
-              <span className="text-black font-bold block">Net Simulated Profit</span>
-              <span className="text-xl font-bold text-green-600 mt-1 block">
+              <span className="text-zinc-100 font-bold block">Net Simulated Profit</span>
+              <span className="text-xl font-bold text-[#3ECF8E] mt-1 block">
                 {formatCurrency(individual.netProfit ?? individual.fitness * 2450)}
               </span>
             </div>
             <div>
-              <span className="text-black font-bold block">Simulated Sharpe</span>
-              <span className="text-xl font-bold text-black mt-1 block">
+              <span className="text-zinc-100 font-bold block">Simulated Sharpe</span>
+              <span className="text-xl font-bold text-zinc-100 mt-1 block">
                 {(individual.sharpeRatio ?? individual.fitness).toFixed(2)}
               </span>
             </div>
           </div>
 
           {/* Decoded Parameters Card */}
-          <div className="p-4 border border-black bg-white space-y-3">
-            <h2 className="text-sm font-bold uppercase text-black">Decoded Strategy Parameters</h2>
+          <div className="p-4 border border-[#262626] bg-[#171717] space-y-3">
+            <h2 className="text-sm font-bold uppercase text-zinc-100">Decoded Strategy Parameters</h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
               {Object.entries(individual.parameters || {}).map(([paramName, paramVal]) => (
-                <div key={paramName} className="p-2 border border-black bg-white">
-                  <span className="block text-[10px] font-bold text-black uppercase">{paramName}</span>
-                  <span className="text-sm font-bold text-black mt-1 block">
+                <div key={paramName} className="p-2 border border-[#262626] bg-[#171717]">
+                  <span className="block text-[10px] font-bold text-zinc-100 uppercase">{paramName}</span>
+                  <span className="text-sm font-bold text-zinc-100 mt-1 block">
                     {typeof paramVal === 'number' ? paramVal.toFixed(2) : String(paramVal)}
                   </span>
                 </div>
@@ -168,11 +168,11 @@ export default function PopulationIndividualDetailPage() {
 
           {/* Raw Genes Array */}
           {individual.genes && individual.genes.length > 0 && (
-            <div className="p-4 border border-black bg-white space-y-2">
-              <h2 className="text-sm font-bold uppercase text-black">Normalized Chromosome Genes ({individual.genes.length})</h2>
-              <div className="flex flex-wrap gap-1.5 p-3 border border-black bg-zinc-50 font-bold">
+            <div className="p-4 border border-[#262626] bg-[#171717] space-y-2">
+              <h2 className="text-sm font-bold uppercase text-zinc-100">Normalized Chromosome Genes ({individual.genes.length})</h2>
+              <div className="flex flex-wrap gap-1.5 p-3 border border-[#262626] bg-[#141414] font-bold">
                 {individual.genes.map((g: number, idx: number) => (
-                  <span key={idx} className="px-2 py-0.5 border border-black bg-white text-[11px]">
+                  <span key={idx} className="px-2 py-0.5 border border-[#262626] bg-[#171717] text-[11px]">
                     g[{idx}]: {g.toFixed(4)}
                   </span>
                 ))}
@@ -182,19 +182,19 @@ export default function PopulationIndividualDetailPage() {
 
           {/* Simulated Trade Fill Ledger */}
           <div className="space-y-2">
-            <h2 className="text-sm font-bold uppercase text-black">
+            <h2 className="text-sm font-bold uppercase text-zinc-100">
               Sample Simulated Fills for Candidate #{popId}
             </h2>
-            <div className="border border-black overflow-x-auto">
+            <div className="border border-[#262626] overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-black bg-white">
-                    <th className="p-2.5 font-bold text-black">Ticket</th>
-                    <th className="p-2.5 font-bold text-black">Direction</th>
-                    <th className="p-2.5 font-bold text-black text-right">Entry Price</th>
-                    <th className="p-2.5 font-bold text-black text-right">Exit Price</th>
-                    <th className="p-2.5 font-bold text-black text-right">PnL</th>
-                    <th className="p-2.5 font-bold text-black text-right">Return %</th>
+                  <tr className="border-b border-[#262626] bg-[#171717]">
+                    <th className="p-2.5 font-bold text-zinc-100">Ticket</th>
+                    <th className="p-2.5 font-bold text-zinc-100">Direction</th>
+                    <th className="p-2.5 font-bold text-zinc-100 text-right">Entry Price</th>
+                    <th className="p-2.5 font-bold text-zinc-100 text-right">Exit Price</th>
+                    <th className="p-2.5 font-bold text-zinc-100 text-right">PnL</th>
+                    <th className="p-2.5 font-bold text-zinc-100 text-right">Return %</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -204,15 +204,15 @@ export default function PopulationIndividualDetailPage() {
                     { ticket: 'SIM-103', side: 'Buy', entry: 64800.0, exit: 64450.0, pnl: -350.0, ret: -0.54 },
                     { ticket: 'SIM-104', side: 'Buy', entry: 64500.0, exit: 65890.0, pnl: 1390.0, ret: 2.15 },
                   ].map((t) => (
-                    <tr key={t.ticket} className="border-b border-black hover:bg-zinc-50">
-                      <td className="p-2.5 font-bold text-black">{t.ticket}</td>
-                      <td className="p-2.5 font-bold uppercase text-black">[{t.side}]</td>
-                      <td className="p-2.5 text-right font-bold text-black">{t.entry.toFixed(1)}</td>
-                      <td className="p-2.5 text-right font-bold text-black">{t.exit.toFixed(1)}</td>
-                      <td className={`p-2.5 text-right font-bold ${t.pnl > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <tr key={t.ticket} className="border-b border-[#262626] hover:bg-[#141414]">
+                      <td className="p-2.5 font-bold text-zinc-100">{t.ticket}</td>
+                      <td className="p-2.5 font-bold uppercase text-zinc-100">[{t.side}]</td>
+                      <td className="p-2.5 text-right font-bold text-zinc-100">{t.entry.toFixed(1)}</td>
+                      <td className="p-2.5 text-right font-bold text-zinc-100">{t.exit.toFixed(1)}</td>
+                      <td className={`p-2.5 text-right font-bold ${t.pnl > 0 ? 'text-[#3ECF8E]' : 'text-rose-400'}`}>
                         {formatCurrency(t.pnl)}
                       </td>
-                      <td className={`p-2.5 text-right font-bold ${t.ret > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <td className={`p-2.5 text-right font-bold ${t.ret > 0 ? 'text-[#3ECF8E]' : 'text-rose-400'}`}>
                         {formatPercentage(t.ret)}
                       </td>
                     </tr>

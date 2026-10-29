@@ -6,8 +6,8 @@ import { getApiBaseUrl, getAuthHeaders, downloadRunXlsx } from '@/lib/api-client
 import { useToast } from '@/components/ui/toast';
 import { ServerPagination } from '@/components/ui/ServerPagination';
 import { ActionDropdown } from '@/components/ui/ActionDropdown';
-import { formatHash } from '@razor/ui-kit';
-import { Play, RefreshCw, RotateCcw, FileText, Download, GitBranch } from 'lucide-react';
+import { formatHash, Button, Card, Badge, Input } from '@razor/ui-kit';
+import { Play, RotateCw, FileText, Search, ArrowRight, Activity, TrendingUp, AlertTriangle } from 'lucide-react';
 
 export default function PanelRunsPage() {
   const toast = useToast();
@@ -100,7 +100,7 @@ export default function PanelRunsPage() {
 
   async function handleExportXlsx(runId: string) {
     try {
-      toast.info('Generating XLSX', 'Building comprehensive formulated workbook...');
+      toast.info('Generating XLSX', 'Building comprehensive formulated workbook…');
       await downloadRunXlsx(runId);
       toast.success('XLSX Ready', `Downloaded formulated workbook for ${formatHash(runId, 6)}`);
     } catch (err) {
@@ -146,135 +146,150 @@ export default function PanelRunsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto font-mono text-xs text-black">
+    <div className="space-y-6 max-w-7xl mx-auto font-sans text-xs text-zinc-100">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-black">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#262626]">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-black flex items-center gap-2 uppercase">
-            <Play className="w-5 h-5 text-black" />
+          <div className="flex items-center gap-2 mb-1">
+            <Badge variant="emerald" dot>
+              Execution Pipeline
+            </Badge>
+          </div>
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-100 flex items-center gap-2">
+            <Activity className="w-5 h-5 text-[#3ECF8E]" />
             <span>Deterministic Flow Runs</span>
           </h1>
-          <p className="text-xs text-black font-normal mt-1 font-sans">
+          <p className="text-xs text-zinc-400 font-normal mt-1">
             Continuous genetic optimization, walk-forward windows, backtests, and live executions.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
+        <div className="flex items-center gap-2.5">
+          <Button
             type="button"
+            variant="outline"
+            pill
+            size="sm"
             onClick={() => loadRuns(false)}
             disabled={loading}
-            className="px-3 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors flex items-center gap-1.5 select-none"
+            className="gap-1.5"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>[REFRESH]</span>
-          </button>
+            <RotateCw className={`w-3.5 h-3.5 text-zinc-400 ${loading ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </Button>
 
           {/* Dedicated New Run Page link */}
-          <Link
-            href="/panel/runs/new"
-            className="px-4 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors flex items-center gap-2 select-none"
-          >
-            <Play className="w-3.5 h-3.5" />
-            <span>[LAUNCH RUN →]</span>
+          <Link href="/panel/runs/new">
+            <Button variant="primary" pill size="sm" className="gap-1.5 shadow-sm shadow-[#3ECF8E]/20">
+              <Play className="w-3.5 h-3.5" />
+              <span>Launch Run →</span>
+            </Button>
           </Link>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 p-4 border border-black bg-white">
-        <div>
-          <label className="block font-bold text-black uppercase mb-1">Search Run</label>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search run ID, kind or engine..."
-            className="w-full px-3 py-1.5 border border-black bg-white text-black font-mono focus:outline-none"
-          />
-        </div>
+      <Card className="p-4 bg-[#171717] border-[#262626]">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <div>
+            <label className="block font-medium text-zinc-300 mb-1.5">Search Run</label>
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-2.5" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search run ID, kind or engine…"
+                className="w-full pl-9 pr-3 py-1.5 border border-[#262626] rounded-lg bg-[#141414] text-zinc-100 placeholder:text-zinc-500 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] transition-colors"
+              />
+            </div>
+          </div>
 
-        <div>
-          <label className="block font-bold text-black uppercase mb-1">Execution Mode</label>
-          <select
-            value={kindFilter}
-            onChange={(e) => {
-              setKindFilter(e.target.value);
-              setPage(1);
-            }}
-            className="w-full px-3 py-1.5 border border-black bg-white text-black font-mono font-bold focus:outline-none"
-          >
-            <option value="ALL">All Modes</option>
-            <option value="Backtest">Backtest</option>
-            <option value="Optimization">Optimization</option>
-            <option value="WalkForward">WalkForward</option>
-            <option value="Live">Live</option>
-          </select>
-        </div>
+          <div>
+            <label className="block font-medium text-zinc-300 mb-1.5">Execution Mode</label>
+            <select
+              value={kindFilter}
+              onChange={(e) => {
+                setKindFilter(e.target.value);
+                setPage(1);
+              }}
+              className="w-full px-3 py-1.5 border border-[#262626] rounded-lg bg-[#141414] text-zinc-200 font-mono text-xs focus:outline-none focus:border-[#3ECF8E]"
+            >
+              <option value="ALL">All Modes</option>
+              <option value="Backtest">Backtest</option>
+              <option value="Optimization">Optimization</option>
+              <option value="WalkForward">WalkForward</option>
+              <option value="Live">Live</option>
+            </select>
+          </div>
 
-        <div>
-          <label className="block font-bold text-black uppercase mb-1">Status Filter</label>
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setPage(1);
-            }}
-            className="w-full px-3 py-1.5 border border-black bg-white text-black font-mono font-bold focus:outline-none"
-          >
-            <option value="ALL">All Statuses</option>
-            <option value="Completed">Completed</option>
-            <option value="Running">Running</option>
-            <option value="Failed">Failed</option>
-            <option value="Paused">Paused</option>
-          </select>
-        </div>
+          <div>
+            <label className="block font-medium text-zinc-300 mb-1.5">Status Filter</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              className="w-full px-3 py-1.5 border border-[#262626] rounded-lg bg-[#141414] text-zinc-200 font-mono text-xs focus:outline-none focus:border-[#3ECF8E]"
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="Completed">Completed</option>
+              <option value="Running">Running</option>
+              <option value="Failed">Failed</option>
+              <option value="Paused">Paused</option>
+            </select>
+          </div>
 
-        <div className="flex items-end">
-          <button
-            type="button"
-            onClick={() => {
-              setSearchQuery('');
-              setKindFilter('ALL');
-              setStatusFilter('ALL');
-              setPage(1);
-            }}
-            className="w-full px-3 py-1.5 border border-black bg-white hover:bg-zinc-100 text-black font-bold transition-colors select-none"
-          >
-            RESET FILTERS
-          </button>
+          <div className="flex items-end">
+            <Button
+              type="button"
+              variant="secondary"
+              pill
+              size="sm"
+              onClick={() => {
+                setSearchQuery('');
+                setKindFilter('ALL');
+                setStatusFilter('ALL');
+                setPage(1);
+              }}
+              className="w-full justify-center"
+            >
+              Reset Filters
+            </Button>
+          </div>
         </div>
-      </div>
+      </Card>
 
       {/* Runs Table */}
       {loading ? (
-        <div className="py-16 text-center text-black font-bold border border-black">
-          FETCHING RUNS FROM CLOUD REGISTRY...
-        </div>
+        <Card className="py-16 text-center text-zinc-400 font-mono">
+          Fetching runs from cloud registry…
+        </Card>
       ) : error ? (
-        <div className="p-4 border border-black text-red-600 font-bold">
-          ERROR: {error}
-        </div>
+        <Card className="p-4 border-rose-500/30 bg-rose-500/10 text-rose-400 font-medium">
+          Error: {error}
+        </Card>
       ) : filtered.length === 0 ? (
-        <div className="py-16 text-center border border-black p-8">
-          <p className="font-bold text-black uppercase">NO FLOW RUNS FOUND</p>
-          <p className="mt-2 text-black font-normal font-sans">Adjust filters or launch a new backtest or optimization run.</p>
+        <Card className="py-16 text-center p-8">
+          <Activity className="w-8 h-8 text-zinc-600 mx-auto mb-2" />
+          <p className="font-semibold text-zinc-200 text-sm">No Flow Runs Found</p>
+          <p className="mt-1 text-zinc-500 text-xs">Adjust filters or launch a new backtest or optimization run.</p>
           <div className="mt-4">
-            <Link
-              href="/panel/runs/new"
-              className="px-4 py-2 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors inline-flex items-center gap-2"
-            >
-              <Play className="w-4 h-4" />
-              <span>LAUNCH FIRST RUN</span>
+            <Link href="/panel/runs/new">
+              <Button variant="primary" pill size="sm" className="gap-2">
+                <Play className="w-3.5 h-3.5" />
+                <span>Launch First Run</span>
+              </Button>
             </Link>
           </div>
-        </div>
+        </Card>
       ) : (
         <div className="space-y-4">
-          <div className="border border-black overflow-x-auto">
+          <div className="rounded-xl border border-[#262626] bg-[#171717] overflow-hidden shadow-sm">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-black bg-zinc-50 font-bold text-black uppercase tracking-wider">
+                <tr className="border-b border-[#262626] bg-[#141414] font-semibold text-zinc-400 uppercase tracking-wider text-[11px]">
                   <th className="py-2.5 px-3">Run ID</th>
                   <th className="py-2.5 px-3">Mode</th>
                   <th className="py-2.5 px-3">Status</th>
@@ -284,7 +299,7 @@ export default function PanelRunsPage() {
                   <th className="py-2.5 px-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-black">
+              <tbody className="divide-y divide-[#262626]">
                 {filtered.map((r) => {
                   const engineName = r.engineInstanceName || instanceMap[r.engineInstanceId] || (r.engineInstanceId ? `Engine ${formatHash(r.engineInstanceId, 6)}` : '—');
                   const returnPct = r.totalReturn ?? r.metrics?.totalReturn ?? (r.netProfit ? (r.netProfit / 1000) : 0);
@@ -293,39 +308,35 @@ export default function PanelRunsPage() {
                   const isDdHit = maxDd >= 10.0;
 
                   return (
-                    <tr key={r.id} className="hover:bg-zinc-50 transition-colors">
+                    <tr key={r.id} className="hover:bg-[#1f1f1f] transition-colors">
                       <td className="py-3 px-3">
                         <Link
                           href={`/panel/reports/${r.id}`}
-                          className="font-bold text-black hover:underline block font-mono"
+                          className="font-medium text-zinc-100 hover:text-[#3ECF8E] transition-colors block font-mono"
                         >
                           {formatHash(r.id, 8)}
                         </Link>
-                        <span className="block md:hidden text-[10px] text-zinc-600 mt-0.5">
+                        <span className="block md:hidden text-[10px] text-zinc-500 mt-0.5 font-mono">
                           {formatUserLocalTime(r.createdAt)}
                         </span>
                       </td>
-                      <td className="py-3 px-3 font-bold text-black uppercase">
-                        [{r.kind}]
+                      <td className="py-3 px-3">
+                        <span className="font-mono text-zinc-300 text-xs">{r.kind}</span>
                       </td>
                       <td className="py-3 px-3">
-                        <span
-                          className={`font-bold uppercase ${
-                            r.status === 'Completed'
-                              ? 'text-green-600'
-                              : r.status === 'Running'
-                              ? 'text-black animate-pulse'
-                              : 'text-red-600'
-                          }`}
-                        >
-                          [{r.status}]
-                        </span>
+                        {r.status === 'Completed' ? (
+                          <Badge variant="emerald" dot>Completed</Badge>
+                        ) : r.status === 'Running' ? (
+                          <Badge variant="info" dot className="animate-pulse">Running</Badge>
+                        ) : (
+                          <Badge variant="danger">{r.status}</Badge>
+                        )}
                       </td>
-                      <td className="py-3 px-3 hidden sm:table-cell font-bold text-black">
+                      <td className="py-3 px-3 hidden sm:table-cell font-medium text-zinc-300">
                         {r.engineInstanceId ? (
                           <Link
                             href={`/panel/instances/${r.engineInstanceId}`}
-                            className="hover:underline"
+                            className="hover:text-[#3ECF8E] transition-colors"
                             title={`Instance ID: ${r.engineInstanceId}`}
                           >
                             {engineName}
@@ -334,41 +345,40 @@ export default function PanelRunsPage() {
                           '—'
                         )}
                       </td>
-                      <td className="py-3 px-3 text-right font-mono font-bold">
-                        <span className={isPositive ? 'text-green-600' : 'text-red-600'}>
+                      <td className="py-3 px-3 text-right font-mono font-medium">
+                        <span className={isPositive ? 'text-[#3ECF8E]' : 'text-rose-400'}>
                           {returnPct > 0 ? `+${returnPct.toFixed(2)}%` : `${returnPct.toFixed(2)}%`}
                         </span>
                         {isDdHit && (
-                          <span className="ml-2 px-1.5 py-0.2 border border-red-600 bg-red-50 text-red-600 text-[10px] uppercase font-bold inline-block">
-                            [DD REACHED]
+                          <span className="ml-2 px-1.5 py-0.2 rounded border border-rose-500/30 bg-rose-500/10 text-rose-400 text-[10px] font-mono inline-block">
+                            DD Reached
                           </span>
                         )}
                       </td>
-                      <td className="py-3 px-3 text-zinc-700 hidden md:table-cell">
+                      <td className="py-3 px-3 text-zinc-400 font-mono text-[11px] hidden md:table-cell">
                         {formatUserLocalTime(r.createdAt)}
                       </td>
                       <td className="py-3 px-3 text-right">
                         <div className="flex items-center justify-end gap-1.5">
-                          <Link
-                            href={`/panel/reports/${r.id}`}
-                            className="px-2.5 py-1 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors inline-flex items-center gap-1 select-none"
-                          >
-                            <FileText className="w-3.5 h-3.5" />
-                            <span>REPORT</span>
+                          <Link href={`/panel/reports/${r.id}`}>
+                            <Button variant="outline" size="sm" pill className="text-xs h-7 px-2.5 gap-1">
+                              <FileText className="w-3.5 h-3.5 text-[#3ECF8E]" />
+                              <span>Report</span>
+                            </Button>
                           </Link>
                           <ActionDropdown
-                            label="MORE ▾"
+                            label="⋯"
                             items={[
                               {
-                                label: 'VIEW LINEAGE DAG',
+                                label: 'View Lineage DAG',
                                 href: `/panel/runs/${r.id}/lineage`,
                               },
                               {
-                                label: 'RE-RUN WITH EXACT DNA',
+                                label: 'Re-run With Exact DNA',
                                 href: `/panel/runs/new?cloneFrom=${r.id}`,
                               },
                               {
-                                label: 'EXPORT FORMULATED XLSX',
+                                label: 'Export Formulated XLSX',
                                 onClick: () => handleExportXlsx(r.id),
                               },
                             ]}

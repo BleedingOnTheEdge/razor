@@ -109,25 +109,25 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
   const visibleLinks = allLinks.filter((l) => l.visible);
 
   const sidebarContent = (
-    <div className="flex flex-col justify-between h-full bg-white border-r border-black font-mono">
+    <div className="flex flex-col justify-between h-full bg-[#171717] border-r border-[#262626] font-sans">
       <div>
         {/* Brand */}
-        <div className="h-16 px-6 flex items-center justify-between border-b border-black">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-black text-white flex items-center justify-center font-bold text-base">
+        <div className="h-14 px-5 flex items-center justify-between border-b border-[#262626]">
+          <Link href="/panel" className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-[#3ECF8E] text-[#0f0f0f] flex items-center justify-center font-bold text-sm shadow-sm shadow-[#3ECF8E]/20">
               R
             </div>
             <div>
-              <span className="font-bold tracking-tight text-black block text-sm">RAZOR CLOUD</span>
-              <span className="text-[10px] text-black uppercase tracking-widest font-bold">Control Plane</span>
+              <span className="font-semibold tracking-tight text-zinc-100 block text-xs">RAZOR CLOUD</span>
+              <span className="text-[10px] text-zinc-500 font-mono block">Control Plane</span>
             </div>
-          </div>
+          </Link>
           {onClose && (
             <button
               type="button"
               onClick={onClose}
               aria-label="Close menu"
-              className="md:hidden p-1.5 text-black hover:bg-black hover:text-white transition-colors"
+              className="md:hidden p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-[#222222] transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -135,7 +135,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
         </div>
 
         {/* Nav Items */}
-        <nav className="p-4 space-y-1">
+        <nav className="p-3 space-y-1">
           {visibleLinks.map((link) => {
             const Icon = link.icon;
             return (
@@ -144,14 +144,14 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
                 href={link.href}
                 onClick={onClose}
                 className={clsx(
-                  'flex items-center gap-3 px-3 py-2 text-sm font-bold border transition-colors',
+                  'flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors',
                   link.active
-                    ? 'bg-black text-white border-black'
-                    : 'bg-white text-black border-transparent hover:border-black hover:bg-zinc-100'
+                    ? 'bg-[#222222] text-[#3ECF8E] font-semibold border border-[#333333]'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1f1f1f] border border-transparent'
                 )}
               >
-                <Icon className={clsx('w-4 h-4', link.active ? 'text-white' : 'text-black')} />
-                <span>{link.label}</span>
+                <Icon className={clsx('w-4 h-4 shrink-0', link.active ? 'text-[#3ECF8E]' : 'text-zinc-400')} />
+                <span className="truncate">{link.label}</span>
               </Link>
             );
           })}
@@ -160,38 +160,40 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
             href="/marketplace"
             onClick={onClose}
             className={clsx(
-              'flex items-center justify-between px-3 py-2 text-sm font-bold border transition-colors',
+              'flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg transition-colors border border-transparent',
               pathname.startsWith('/marketplace')
-                ? 'bg-black text-white border-black'
-                : 'bg-white text-black border-transparent hover:border-black hover:bg-zinc-100'
+                ? 'bg-[#222222] text-[#3ECF8E] font-semibold border-[#333333]'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1f1f1f]'
             )}
           >
-            <div className="flex items-center gap-3">
-              <ShoppingBag className={clsx('w-4 h-4', pathname.startsWith('/marketplace') ? 'text-white' : 'text-black')} />
+            <div className="flex items-center gap-2.5">
+              <ShoppingBag className={clsx('w-4 h-4 shrink-0', pathname.startsWith('/marketplace') ? 'text-[#3ECF8E]' : 'text-zinc-400')} />
               <span>Marketplace</span>
             </div>
-            <span className={clsx('text-[10px] px-1.5 py-0.5 border font-bold', pathname.startsWith('/marketplace') ? 'border-white text-white' : 'border-black text-black')}>HUB</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-medium bg-[#262626] text-[#3ECF8E]">
+              HUB
+            </span>
           </a>
         </nav>
       </div>
 
       {/* Mini Profile Footer */}
-      <div className="p-3 border-t border-black bg-white">
+      <div className="p-3 border-t border-[#262626] bg-[#141414]">
         {user ? (
           <Link
             href="/panel/profile"
             onClick={onClose}
-            className="flex items-center gap-3 p-1.5 border border-transparent hover:border-black hover:bg-zinc-50 transition-colors group"
+            className="flex items-center gap-2.5 p-1.5 rounded-lg border border-transparent hover:border-[#2e2e2e] hover:bg-[#1a1a1a] transition-colors group"
             title="View User Profile"
           >
-            <div className="w-8 h-8 rounded-full border border-black bg-zinc-100 flex items-center justify-center font-bold text-black text-xs shrink-0">
+            <div className="w-7 h-7 rounded-full border border-[#2e2e2e] bg-[#222222] flex items-center justify-center font-medium text-zinc-200 text-xs shrink-0 font-mono">
               {user.displayName ? user.displayName.slice(0, 2).toUpperCase() : user.userName.slice(0, 2).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-xs font-bold text-black truncate group-hover:underline">
+              <div className="text-xs font-medium text-zinc-200 truncate group-hover:text-white">
                 {user.displayName || user.userName}
               </div>
-              <div className="text-[10px] text-zinc-600 font-bold uppercase truncate">
+              <div className="text-[10px] text-zinc-500 font-mono truncate">
                 {user.role} • {user.subscriptionTier || 'Free'}
               </div>
             </div>
@@ -200,7 +202,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
           <Link
             href="/auth/login"
             onClick={onClose}
-            className="flex items-center justify-center gap-2 p-2 border border-black bg-black text-white text-xs font-bold hover:bg-zinc-800 transition-colors"
+            className="flex items-center justify-center gap-2 p-2 rounded-lg bg-[#222222] hover:bg-[#2a2a2a] text-zinc-200 text-xs font-medium border border-[#2e2e2e] transition-colors"
           >
             Sign In
           </Link>
@@ -213,7 +215,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
     <>
       {/* Desktop Sidebar */}
       <aside
-        className="hidden md:flex w-64 border-r border-zinc-200 bg-white/90 backdrop-blur-md flex-col justify-between shrink-0"
+        className="hidden md:flex w-60 border-r border-[#262626] bg-[#171717] flex-col justify-between shrink-0"
         aria-label="Sidebar Navigation"
       >
         {sidebarContent}
@@ -224,12 +226,12 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
         <div className="fixed inset-0 z-50 md:hidden flex" role="dialog" aria-modal="true" aria-label="Mobile Navigation Drawer">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity"
             onClick={onClose}
             aria-hidden="true"
           />
           {/* Slide-over panel */}
-          <aside className="relative w-72 max-w-[85vw] h-full shadow-2xl flex flex-col justify-between z-10 animate-in slide-in-from-left duration-200">
+          <aside className="relative w-64 max-w-[85vw] h-full shadow-2xl flex flex-col justify-between z-10 animate-in slide-in-from-left duration-200">
             {sidebarContent}
           </aside>
         </div>

@@ -243,7 +243,7 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
   return (
     <div className="space-y-6 max-w-6xl font-mono">
       {/* Back Link */}
-      <div className="flex items-center gap-2 text-xs text-black">
+      <div className="flex items-center gap-2 text-xs text-zinc-100">
         <Link href="/panel/instances" className="hover:underline flex items-center gap-1 font-bold">
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>[BACK TO FLEET]</span>
@@ -253,28 +253,28 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
       </div>
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-4 border-b border-black">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-4 border-b border-[#262626]">
         <div>
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight text-black flex items-center gap-2">
-              <Server className="w-6 h-6 text-black shrink-0" />
+            <h1 className="text-2xl font-bold tracking-tight text-zinc-100 flex items-center gap-2">
+              <Server className="w-6 h-6 text-zinc-100 shrink-0" />
               <span>{instance?.name || instance?.engineId || 'Engine Instance'}</span>
             </h1>
             {badge && (
-              <span className="px-2.5 py-1 text-xs font-bold border border-black bg-zinc-50 text-black">
+              <span className="px-2.5 py-1 text-xs font-bold border border-[#262626] bg-[#141414] text-zinc-200">
                 [{badge.label?.toUpperCase()}]
               </span>
             )}
-            <span className="px-2.5 py-1 text-xs font-bold border border-black bg-zinc-50 text-black flex items-center gap-1.5">
+            <span className="px-2.5 py-1 text-xs font-bold border border-[#262626] bg-[#141414] text-zinc-200 flex items-center gap-1.5">
               <span
                 className={`w-2 h-2 ${
-                  instance?.isConnected ? 'bg-green-600' : 'bg-black'
+                  instance?.isConnected ? 'bg-[#3ECF8E] text-[#0f0f0f]' : 'bg-black'
                 }`}
               />
-              {instance?.isConnected ? '[CONNECTED]' : '[OFFLINE]'}
+              {instance?.isConnected ? 'Connected' : 'Offline'}
             </span>
           </div>
-          <p className="text-xs text-black mt-1">Instance ID: {instanceId}</p>
+          <p className="text-xs text-zinc-100 mt-1">Instance ID: {instanceId}</p>
         </div>
 
         {/* Action Toolbar: Live Manager, Refresh, and Hamburger Dropdown */}
@@ -283,7 +283,7 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
           <Link
             href={`/panel/live?instanceId=${instanceId}`}
             title="Open Dedicated Live Trading Manager"
-            className="px-3.5 py-1.5 border border-black bg-green-600 hover:bg-green-700 text-white font-bold text-xs transition-colors flex items-center gap-1.5"
+            className="px-3.5 py-1.5 border border-[#262626] bg-[#3ECF8E] hover:bg-[#34b27b] text-[#0f0f0f] rounded-full font-bold text-xs transition-colors flex items-center gap-1.5"
           >
             <Radio className="w-3.5 h-3.5" />
             <span>[LIVE MANAGER]</span>
@@ -292,10 +292,10 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
           {/* Refresh: Always visible outside */}
           <button
             onClick={loadDetails}
-            className="px-3 py-1.5 border border-black bg-white hover:bg-black hover:text-white text-black text-xs font-bold transition-colors flex items-center gap-1.5"
+            className="px-3 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] text-xs font-bold transition-colors flex items-center gap-1.5"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            <span>[REFRESH]</span>
+            <span>Refresh</span>
           </button>
 
           {/* Grouped Actions Hamburger Dropdown */}
@@ -308,47 +308,47 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
       </div>
 
       {/* Quick Section Anchor Jump Navigation Bar */}
-      <div className="sticky top-0 z-20 bg-white py-2 border-b border-black flex items-center gap-2 overflow-x-auto text-xs font-bold">
+      <div className="sticky top-0 z-20 bg-[#171717] py-2 border-b border-[#262626] flex items-center gap-2 overflow-x-auto text-xs font-bold">
         <a
           href="#overview"
-          className="px-3 py-1 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors"
+          className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] transition-colors"
         >
           # OVERVIEW
         </a>
         <a
           href="#telemetry"
-          className="px-3 py-1 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors"
+          className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] transition-colors"
         >
           # TELEMETRY
         </a>
         <a
           href="#extensions"
-          className="px-3 py-1 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors"
+          className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] transition-colors"
         >
           # EXTENSIONS ({instance?.manifest?.length || 0})
         </a>
         <a
           href="#commands"
-          className="px-3 py-1 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors"
+          className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] transition-colors"
         >
           # COMMANDS ({commands.length})
         </a>
         <a
           href="#livestreams"
-          className="px-3 py-1 border border-black bg-white hover:bg-black hover:text-white text-black transition-colors"
+          className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] transition-colors"
         >
           # LIVE STREAM
         </a>
       </div>
 
       {loading && (
-        <div className="py-12 text-center text-sm font-bold text-black border border-black">
+        <div className="py-12 text-center text-sm font-bold text-zinc-100 border border-[#262626]">
           [LOADING ENGINE CONFIGURATION & TELEMETRY STATE...]
         </div>
       )}
 
       {error && (
-        <div className="p-4 border border-black text-red-600 text-sm font-bold">
+        <div className="p-4 border border-[#262626] text-rose-400 text-sm font-bold">
           [ERROR]: {error}
         </div>
       )}
@@ -357,9 +357,9 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
         <div className="space-y-8">
           {/* SECTION 1: OVERVIEW */}
           <section id="overview" className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-black">
-              <h2 className="text-base font-bold text-black uppercase tracking-wider flex items-center gap-2">
-                <Server className="w-4 h-4 text-black" />
+            <div className="flex items-center justify-between pb-2 border-b border-[#262626]">
+              <h2 className="text-base font-bold text-zinc-100 uppercase tracking-wider flex items-center gap-2">
+                <Server className="w-4 h-4 text-zinc-100" />
                 <span>Section 1: Engine Overview & Operational Status</span>
               </h2>
             </div>
@@ -381,9 +381,9 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
 
           {/* SECTION 2: TELEMETRY & RESOURCES */}
           <section id="telemetry" className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-black">
-              <h2 className="text-base font-bold text-black uppercase tracking-wider flex items-center gap-2">
-                <Cpu className="w-4 h-4 text-black" />
+            <div className="flex items-center justify-between pb-2 border-b border-[#262626]">
+              <h2 className="text-base font-bold text-zinc-100 uppercase tracking-wider flex items-center gap-2">
+                <Cpu className="w-4 h-4 text-zinc-100" />
                 <span>Section 2: Computational Resources & Telemetry</span>
               </h2>
             </div>
@@ -392,9 +392,9 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
 
           {/* SECTION 3: EXTENSIONS & SLOTS */}
           <section id="extensions" className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-black">
-              <h2 className="text-base font-bold text-black uppercase tracking-wider flex items-center gap-2">
-                <SlidersHorizontal className="w-4 h-4 text-black" />
+            <div className="flex items-center justify-between pb-2 border-b border-[#262626]">
+              <h2 className="text-base font-bold text-zinc-100 uppercase tracking-wider flex items-center gap-2">
+                <SlidersHorizontal className="w-4 h-4 text-zinc-100" />
                 <span>Section 3: Extension Manifest & Active Slot Profiles</span>
               </h2>
             </div>
@@ -409,9 +409,9 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
 
           {/* SECTION 4: COMMANDS & EVENT RESPONSES */}
           <section id="commands" className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-black">
-              <h2 className="text-base font-bold text-black uppercase tracking-wider flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-black" />
+            <div className="flex items-center justify-between pb-2 border-b border-[#262626]">
+              <h2 className="text-base font-bold text-zinc-100 uppercase tracking-wider flex items-center gap-2">
+                <Terminal className="w-4 h-4 text-zinc-100" />
                 <span>Section 4: Wire Command Dispatcher & Response Inspector</span>
               </h2>
             </div>
@@ -432,9 +432,9 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
 
           {/* SECTION 5: LIVE STREAMS */}
           <section id="livestreams" className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-black">
-              <h2 className="text-base font-bold text-black uppercase tracking-wider flex items-center gap-2">
-                <Radio className="w-4 h-4 text-black" />
+            <div className="flex items-center justify-between pb-2 border-b border-[#262626]">
+              <h2 className="text-base font-bold text-zinc-100 uppercase tracking-wider flex items-center gap-2">
+                <Radio className="w-4 h-4 text-zinc-100" />
                 <span>Section 5: Real-Time Tick & Event Stream Channel</span>
               </h2>
             </div>

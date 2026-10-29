@@ -77,7 +77,7 @@ export function PopulationBacktestModal({
       onClick={onClose}
     >
       <div
-        className="bg-white border border-slate-200 rounded-2xl shadow-xl max-w-4xl w-full p-6 space-y-5 max-h-[92vh] overflow-y-auto text-slate-900 animate-in fade-in-0 zoom-in-95 duration-150"
+        className="bg-[#171717] border border-slate-200 rounded-2xl shadow-xl max-w-4xl w-full p-6 space-y-5 max-h-[92vh] overflow-y-auto text-slate-900 animate-in fade-in-0 zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -162,7 +162,7 @@ export function PopulationBacktestModal({
         </div>
 
         {/* Strategy Parameters & Chromosome Genes */}
-        <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-3">
+        <div className="p-4 bg-[#171717] border border-slate-200 rounded-xl space-y-3">
           <div className="flex items-center justify-between text-xs font-semibold text-slate-700 uppercase tracking-wider">
             <span>Decoded Gene Parameters</span>
             <span className="text-slate-500 font-mono">
@@ -208,7 +208,7 @@ export function PopulationBacktestModal({
               )}
             </div>
 
-            <div className="relative w-full overflow-hidden rounded-lg bg-white border border-slate-200 p-2">
+            <div className="relative w-full overflow-hidden rounded-lg bg-[#171717] border border-slate-200 p-2">
               <svg
                 viewBox={`0 0 ${svgWidth} ${svgHeight}`}
                 className="w-full h-auto select-none"
@@ -274,7 +274,7 @@ export function PopulationBacktestModal({
                   setTradePage(1);
                 }}
                 placeholder="Search fills..."
-                className="pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="pl-8 pr-3 py-1.5 bg-[#171717] border border-slate-300 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-indigo-500"
               />
             </div>
           </div>
@@ -293,7 +293,7 @@ export function PopulationBacktestModal({
                   <th className="py-2.5 px-3">Exit Trigger</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
+              <tbody className="divide-y divide-slate-100 bg-[#171717]">
                 {currentTrades.map((t) => (
                   <tr
                     key={t.ticket}
@@ -340,7 +340,7 @@ export function PopulationBacktestModal({
                   type="button"
                   disabled={tradePage === 1}
                   onClick={() => setTradePage((p) => Math.max(1, p - 1))}
-                  className="px-2.5 py-1 border border-slate-300 rounded-md bg-white hover:bg-slate-50 text-slate-700 font-medium disabled:opacity-40"
+                  className="px-2.5 py-1 border border-slate-300 rounded-md bg-[#171717] hover:bg-slate-50 text-slate-700 font-medium disabled:opacity-40"
                 >
                   Prev
                 </button>
@@ -348,7 +348,7 @@ export function PopulationBacktestModal({
                   type="button"
                   disabled={tradePage >= totalPages}
                   onClick={() => setTradePage((p) => Math.min(totalPages, p + 1))}
-                  className="px-2.5 py-1 border border-slate-300 rounded-md bg-white hover:bg-slate-50 text-slate-700 font-medium disabled:opacity-40"
+                  className="px-2.5 py-1 border border-slate-300 rounded-md bg-[#171717] hover:bg-slate-50 text-slate-700 font-medium disabled:opacity-40"
                 >
                   Next
                 </button>
@@ -362,7 +362,7 @@ export function PopulationBacktestModal({
           {runId && individual?.id ? (
             <Link
               href={'/panel/reports/' + runId + '/generations/' + generationNumber + '/populations/' + individual.id}
-              className="px-3.5 py-1.5 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors inline-flex items-center gap-1.5 text-xs font-mono"
+              className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors inline-flex items-center gap-1.5 text-xs font-mono"
             >
               <span>OPEN FULL CANDIDATE PAGE →</span>
             </Link>
@@ -370,7 +370,7 @@ export function PopulationBacktestModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 text-slate-700 font-medium text-sm transition-colors"
+            className="px-4 py-2 border border-slate-300 rounded-lg bg-[#171717] hover:bg-slate-50 text-slate-700 font-medium text-sm transition-colors"
           >
             Close Report
           </button>

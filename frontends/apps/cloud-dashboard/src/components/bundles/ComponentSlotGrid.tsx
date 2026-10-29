@@ -59,12 +59,12 @@ export function ComponentSlotGrid({
   };
 
   return (
-    <div className="border border-black bg-white p-4 font-mono space-y-3">
+    <div className="border border-[#262626] bg-[#171717] p-4 font-mono space-y-3">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-black">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-[#262626]">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-sm text-black uppercase tracking-wider">{title}</span>
-          <span className="text-[10px] px-1.5 py-0.5 border border-black bg-zinc-100 font-bold">
+          <span className="font-bold text-sm text-zinc-100 uppercase tracking-wider">{title}</span>
+          <span className="text-[10px] px-1.5 py-0.5 border border-[#262626] bg-[#1f1f1f] font-bold">
             {selectedIds.length} SELECTED
           </span>
           {isMultiSelect && <span className="text-[10px] text-zinc-500 font-sans">(Multi-Select)</span>}
@@ -74,7 +74,7 @@ export function ComponentSlotGrid({
           <button
             type="button"
             onClick={onClear}
-            className="text-[11px] font-bold text-red-600 hover:text-red-800 flex items-center gap-1 border border-red-300 hover:border-red-600 px-2 py-0.5 bg-red-50 transition-colors self-start sm:self-auto"
+            className="text-[11px] font-bold text-rose-400 hover:text-red-800 flex items-center gap-1 border border-red-300 hover:border-rose-500/30 px-2 py-0.5 bg-red-50 transition-colors self-start sm:self-auto"
             title="Remove selection and clear slot"
           >
             <X className="w-3 h-3" />
@@ -95,7 +95,7 @@ export function ComponentSlotGrid({
               setPage(1);
             }}
             placeholder={`Search ${kind.toLowerCase()}s...`}
-            className="w-full pl-8 pr-3 py-1.5 border border-black bg-zinc-50 text-xs text-black placeholder-zinc-400 focus:outline-none focus:bg-white"
+            className="w-full pl-8 pr-3 py-1.5 border border-[#262626] bg-[#141414] text-xs text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-[#3ECF8E] focus:bg-[#171717]"
           />
         </div>
 
@@ -107,7 +107,7 @@ export function ComponentSlotGrid({
               setOwnershipFilter(e.target.value as any);
               setPage(1);
             }}
-            className="px-2 py-1.5 border border-black bg-white text-xs font-mono text-black focus:outline-none"
+            className="px-2 py-1.5 border border-[#262626] bg-[#171717] text-xs font-mono text-zinc-100 focus:outline-none focus:border-[#3ECF8E]"
           >
             <option value="all">All Components</option>
             <option value="owned">Owned Only</option>
@@ -130,8 +130,8 @@ export function ComponentSlotGrid({
                 onClick={() => handleToggle(item.id)}
                 className={`p-3 border text-left cursor-pointer transition-all flex flex-col justify-between select-none ${
                   isSelected
-                    ? 'border-black bg-black text-white shadow-sm'
-                    : 'border-zinc-300 bg-white hover:border-black text-black'
+                    ? 'border-[#262626] bg-black text-white shadow-sm'
+                    : 'border-zinc-300 bg-white hover:border-[#262626] text-zinc-100'
                 }`}
                 role="button"
                 tabIndex={0}
@@ -155,7 +155,7 @@ export function ComponentSlotGrid({
                   </div>
                   <p
                     className={`text-[11px] line-clamp-2 font-sans ${
-                      isSelected ? 'text-zinc-200' : 'text-zinc-600'
+                      isSelected ? 'text-zinc-200' : 'text-zinc-400'
                     }`}
                   >
                     {item.description || 'No description provided.'}
@@ -189,7 +189,7 @@ export function ComponentSlotGrid({
       {/* Pagination Footer */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-2 border-t border-zinc-200 text-xs">
-          <span className="text-[11px] text-zinc-600">
+          <span className="text-[11px] text-zinc-400">
             Page {currentPage} of {totalPages} ({filteredItems.length} items)
           </span>
           <div className="flex items-center gap-1">
@@ -197,7 +197,7 @@ export function ComponentSlotGrid({
               type="button"
               disabled={currentPage <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="p-1 border border-black bg-white hover:bg-zinc-100 disabled:opacity-40"
+              className="p-1 border border-[#262626] bg-[#171717] hover:bg-[#1f1f1f] disabled:opacity-40"
               aria-label="Previous page"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
@@ -206,7 +206,7 @@ export function ComponentSlotGrid({
               type="button"
               disabled={currentPage >= totalPages}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="p-1 border border-black bg-white hover:bg-zinc-100 disabled:opacity-40"
+              className="p-1 border border-[#262626] bg-[#171717] hover:bg-[#1f1f1f] disabled:opacity-40"
               aria-label="Next page"
             >
               <ChevronRight className="w-3.5 h-3.5" />

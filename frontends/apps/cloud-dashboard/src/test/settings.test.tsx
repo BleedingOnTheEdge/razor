@@ -34,8 +34,13 @@ describe('SettingsPage Role Permissions & Apple Design Mode', () => {
       token: 'token-123',
       isAuthenticated: true,
       isLoading: false,
+      isImpersonating: false,
+      impersonatedBy: null,
       login: vi.fn(),
+      register: vi.fn(),
       logout: vi.fn(),
+      startImpersonation: vi.fn(),
+      exitImpersonation: vi.fn(),
       quickDemoLogin: vi.fn(),
     });
 
@@ -69,8 +74,13 @@ describe('SettingsPage Role Permissions & Apple Design Mode', () => {
       token: 'token-op',
       isAuthenticated: true,
       isLoading: false,
+      isImpersonating: false,
+      impersonatedBy: null,
       login: vi.fn(),
+      register: vi.fn(),
       logout: vi.fn(),
+      startImpersonation: vi.fn(),
+      exitImpersonation: vi.fn(),
       quickDemoLogin: vi.fn(),
     });
 
@@ -108,8 +118,13 @@ describe('SettingsPage Role Permissions & Apple Design Mode', () => {
       token: 'token-admin',
       isAuthenticated: true,
       isLoading: false,
+      isImpersonating: false,
+      impersonatedBy: null,
       login: vi.fn(),
+      register: vi.fn(),
       logout: vi.fn(),
+      startImpersonation: vi.fn(),
+      exitImpersonation: vi.fn(),
       quickDemoLogin: vi.fn(),
     });
 
