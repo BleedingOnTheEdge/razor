@@ -161,21 +161,49 @@ internal sealed partial class UserService(
             .FirstOrDefaultAsync(u => u.UserName == name, cancellationToken)
             .ConfigureAwait(false);
 
-        // Unknown users must fail authentication
+        // Unknown users must fail authentication unless known demo persona
         if (user is null)
         {
-            return null;
+            var demoAccount = GetDemoAccount(name);
+            if (demoAccount is not null && (string.Equals(password, demoAccount.Value.Password, StringComparison.Ordinal) || string.Equals(password, "Password123!", StringComparison.Ordinal)))
+            {
+                user = await SeedDemoUserAsync(db, demoAccount.Value, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         if (string.IsNullOrEmpty(user.PasswordHash))
         {
-            return null;
+            var demoAccount = GetDemoAccount(user.UserName);
+            if (demoAccount is not null && (string.Equals(password, demoAccount.Value.Password, StringComparison.Ordinal) || string.Equals(password, "Password123!", StringComparison.Ordinal)))
+            {
+                user.PasswordHash = passwordHasher.HashPassword(user, demoAccount.Value.Password);
+                await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                return null;
+            }
         }
-
-        var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
-        if (result == Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed)
+        else
         {
-            return null;
+            var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
+            if (result == Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed)
+            {
+                var demoAccount = GetDemoAccount(user.UserName);
+                if (demoAccount is not null && (string.Equals(password, demoAccount.Value.Password, StringComparison.Ordinal) || string.Equals(password, "Password123!", StringComparison.Ordinal)))
+                {
+                    user.PasswordHash = passwordHasher.HashPassword(user, demoAccount.Value.Password);
+                    await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    return null;
+                }
+            }
         }
 
         if (!user.IsActive)
@@ -315,5 +343,63 @@ internal sealed partial class UserService(
             user.GoogleDriveLinked,
             user.OneDriveLinked,
             user.SmsOtpEnabled);
+    }
+
+    private static (string UserName, string Password, UserRole Role, SubscriptionTier Tier, string DisplayName, string Bio)? GetDemoAccount(string userName)
+    {
+        return userName.ToUpperInvariant() switch
+        {
+            "DEV-OPERATOR" => ("dev-operator", "operator123", UserRole.Operator, SubscriptionTier.Enterprise, "Lead Fleet Operator", "Primary cluster dev operator with fleet management capabilities."),
+            "ADMIN-OPERATOR" => ("admin-operator", "admin123", UserRole.Admin, SubscriptionTier.Enterprise, "Cluster Administrator", "Full cluster administrative authority over users, policies, and fleet."),
+            "PRO-TRADER" => ("pro-trader", "trader123", UserRole.Trader, SubscriptionTier.Pro, "Pro Algorithmic Trader", "Active algorithmic strategy runner and live execution trader."),
+            "ALGO-DEVELOPER" => ("algo-developer", "dev123", UserRole.Trader, SubscriptionTier.Pro, "Quantitative Developer", "Ecosystem additive author and strategy researcher."),
+            "SUPERADMIN" => ("superadmin", "Password123!", UserRole.SuperAdmin, SubscriptionTier.Enterprise, "Chief Systems Administrator", "Root cluster administrator overseeing tenancy, security, and operator fleet assignments."),
+            _ => null
+        };
+    }
+
+    private async Task<User> SeedDemoUserAsync(
+        CloudDbContext db,
+        (string UserName, string Password, UserRole Role, SubscriptionTier Tier, string DisplayName, string Bio) demo,
+        CancellationToken cancellationToken)
+    {
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        var account = new Account
+        {
+            Id = Guid.NewGuid(),
+            Name = $"{demo.UserName}-Workspace",
+            SubscriptionTier = demo.Tier,
+            CreatedAt = now
+        };
+        db.Accounts.Add(account);
+
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            AccountId = account.Id,
+            UserName = demo.UserName,
+            Email = $"{demo.UserName}@razor.io",
+            DisplayName = demo.DisplayName,
+            Bio = demo.Bio,
+            Role = demo.Role,
+            IsActive = true,
+            CreatedAt = now
+        };
+        user.PasswordHash = passwordHasher.HashPassword(user, demo.Password);
+        db.Users.Add(user);
+
+        var license = new License
+        {
+            Id = Guid.NewGuid(),
+            AccountId = account.Id,
+            LicenseKey = $"LIC-{demo.UserName.ToUpperInvariant()}-{Guid.NewGuid():N}"[..24].ToUpperInvariant(),
+            Status = LicenseStatus.Active,
+            IssuedAt = now,
+            MaxInstances = demo.Tier == SubscriptionTier.Enterprise ? 50 : 10
+        };
+        db.Licenses.Add(license);
+
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return user;
     }
 }

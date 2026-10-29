@@ -65,6 +65,61 @@ internal static class DatabaseSeeder
             });
         }
 
+        // 1b. Seed Standard Demo Personas
+        var demoPersonas = new (string UserName, string Password, UserRole Role, SubscriptionTier Tier, string DisplayName, string Bio)[]
+        {
+            ("dev-operator", "operator123", UserRole.Operator, SubscriptionTier.Enterprise, "Lead Fleet Operator", "Primary cluster dev operator with fleet management capabilities."),
+            ("admin-operator", "admin123", UserRole.Admin, SubscriptionTier.Enterprise, "Cluster Administrator", "Full cluster administrative authority over users, policies, and fleet."),
+            ("pro-trader", "trader123", UserRole.Trader, SubscriptionTier.Pro, "Pro Algorithmic Trader", "Active algorithmic strategy runner and live execution trader."),
+            ("algo-developer", "dev123", UserRole.Trader, SubscriptionTier.Pro, "Quantitative Developer", "Ecosystem additive author and strategy researcher.")
+        };
+
+        foreach (var (uName, pass, role, tier, disp, bio) in demoPersonas)
+        {
+            User? existingUser = await db.Users.FirstOrDefaultAsync(u => u.UserName == uName).ConfigureAwait(false);
+            if (existingUser is null)
+            {
+                var account = new Account
+                {
+                    Id = Guid.NewGuid(),
+                    Name = $"{uName}-Workspace",
+                    SubscriptionTier = tier,
+                    CreatedAt = now
+                };
+                db.Accounts.Add(account);
+
+                var demoUser = new User
+                {
+                    Id = Guid.NewGuid(),
+                    AccountId = account.Id,
+                    UserName = uName,
+                    Email = $"{uName}@razor.io",
+                    DisplayName = disp,
+                    Bio = bio,
+                    Role = role,
+                    IsActive = true,
+                    CreatedAt = now
+                };
+                demoUser.PasswordHash = passwordHasher.HashPassword(demoUser, pass);
+                db.Users.Add(demoUser);
+
+                db.Licenses.Add(new License
+                {
+                    Id = Guid.NewGuid(),
+                    AccountId = account.Id,
+                    LicenseKey = $"LIC-{uName.ToUpperInvariant()}-{Guid.NewGuid():N}"[..24].ToUpperInvariant(),
+                    Status = LicenseStatus.Active,
+                    IssuedAt = now,
+                    MaxInstances = tier == SubscriptionTier.Enterprise ? 50 : 10
+                });
+            }
+            else
+            {
+                existingUser.PasswordHash = passwordHasher.HashPassword(existingUser, pass);
+                existingUser.IsActive = true;
+            }
+        }
+
         // 2. Seed 3 Operators
         string[] operatorNames = ["operator-alpha", "operator-beta", "operator-gamma"];
         string[] operatorTitles = ["Alpha Operations Lead", "Beta Telemetry Engineer", "Gamma Reliability Specialist"];

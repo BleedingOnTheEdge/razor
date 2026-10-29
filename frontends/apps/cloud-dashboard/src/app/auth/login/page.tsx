@@ -42,6 +42,13 @@ export default function AuthLoginPage() {
   };
 
   const handleQuickDemo = async (preset: 'admin' | 'operator' | 'trader') => {
+    const creds = {
+      admin: { name: 'admin-operator', pass: 'admin123' },
+      operator: { name: 'dev-operator', pass: 'operator123' },
+      trader: { name: 'pro-trader', pass: 'trader123' },
+    }[preset];
+    setUserName(creds.name);
+    setPassword(creds.pass);
     setError(null);
     setIsSubmitting(true);
     try {
@@ -215,7 +222,10 @@ export default function AuthLoginPage() {
                   <Shield className="w-3.5 h-3.5" />
                   <span>Admin</span>
                 </div>
-                <div className="text-[10px] mt-0.5">Cluster Overseer</div>
+                <div className="text-[10px] mt-0.5 opacity-80">Cluster Overseer</div>
+                <div className="text-[9px] mt-1 font-bold text-zinc-500 group-hover:text-zinc-300">
+                  admin-operator / admin123
+                </div>
               </button>
 
               <button
@@ -228,7 +238,10 @@ export default function AuthLoginPage() {
                   <Terminal className="w-3.5 h-3.5" />
                   <span>Operator</span>
                 </div>
-                <div className="text-[10px] mt-0.5">Instance Manager</div>
+                <div className="text-[10px] mt-0.5 opacity-80">Instance Manager</div>
+                <div className="text-[9px] mt-1 font-bold text-zinc-500 group-hover:text-zinc-300">
+                  dev-operator / operator123
+                </div>
               </button>
 
               <button
@@ -241,7 +254,10 @@ export default function AuthLoginPage() {
                   <ArrowRight className="w-3.5 h-3.5" />
                   <span>Pro Trader</span>
                 </div>
-                <div className="text-[10px] mt-0.5">Live Execution</div>
+                <div className="text-[10px] mt-0.5 opacity-80">Live Execution</div>
+                <div className="text-[9px] mt-1 font-bold text-zinc-500 group-hover:text-zinc-300">
+                  pro-trader / trader123
+                </div>
               </button>
             </div>
           </div>

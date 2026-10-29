@@ -72,7 +72,7 @@ public sealed class CloudGovernanceBranchTests
 
         // 7. ListAllUsersAsync filtered by role and tier
         IReadOnlyList<UserProfileView> traders = await users.ListAllUsersAsync(role: UserRole.Trader).ConfigureAwait(true);
-        Assert.Equal(40, traders.Count);
+        Assert.Equal(42, traders.Count);
 
         IReadOnlyList<UserProfileView> enterprises = await users.ListAllUsersAsync(tier: SubscriptionTier.Enterprise).ConfigureAwait(true);
         Assert.NotEmpty(enterprises);
