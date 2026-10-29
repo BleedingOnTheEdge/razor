@@ -2,11 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getApiBaseUrl, getAuthHeaders } from '@/lib/api-client';
+import { getApiBaseUrl, getAuthHeaders, getApiClient } from '@/lib/api-client';
 import { useToast } from '@/components/ui/toast';
 import { useAuth } from '@/context/auth-context';
 import { ServerPagination } from '@/components/ui/ServerPagination';
 import { ShareEngineModal } from '@/components/instances/ShareEngineModal';
+import { RegisterEngineModal } from '@/components/instances/RegisterEngineModal';
+import { CreatedCredentialsDialog } from '@/components/instances/CreatedCredentialsDialog';
+import { RunnerGuideModal } from '@/components/instances/RunnerGuideModal';
 import { ActionDropdown } from '@/components/ui/ActionDropdown';
 import {
   formatTimestamp,
@@ -16,7 +19,7 @@ import {
   Badge,
   Input,
 } from '@razor/ui-kit';
-import { Server, Radio, RotateCw, Search, ArrowRight, ShieldCheck, Share2, Layers } from 'lucide-react';
+import { Server, Radio, RotateCw, Search, ArrowRight, ShieldCheck, Share2, Layers, Plus, Terminal } from 'lucide-react';
 
 interface EngineInstanceItem {
   instanceId: string;
@@ -54,6 +57,66 @@ export default function PanelInstancesPage() {
   // Share modal state
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedInstanceForShare, setSelectedInstanceForShare] = useState<{ id: string; name: string } | null>(null);
+
+  // Register Engine modal state
+  const [registerModalOpen, setRegisterModalOpen] = useState(false);
+  const [regAccountId, setRegAccountId] = useState('');
+  const [regLicenseId, setRegLicenseId] = useState('');
+  const [regEngineId, setRegEngineId] = useState('engine-worker-01');
+  const [regName, setRegName] = useState('Primary Execution Engine');
+  const [registering, setRegistering] = useState(false);
+
+  // Runner guide modal state
+  const [runnerGuideOpen, setRunnerGuideOpen] = useState(false);
+
+  // Credentials dialog
+  const [createdCredentials, setCreatedCredentials] = useState<{
+    instanceId: string;
+    engineId: string;
+    apiKey: string;
+  } | null>(null);
+
+  async function handleRegisterSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setRegistering(true);
+    try {
+      const client = getApiClient();
+      const accountId = (regAccountId || user?.accountId || '').trim();
+      const licenseId = regLicenseId.trim();
+
+      const bodyPayload = {
+        accountId,
+        licenseId,
+        engineId: regEngineId.trim() || undefined,
+        name: regName.trim() || undefined,
+      };
+
+      const { data, error: err } = await client.POST('/api/engines', {
+        body: bodyPayload,
+      });
+
+      if (err) {
+        const errorDetail = typeof err === 'object' && err !== null ? JSON.stringify(err) : String(err);
+        toast.error('Registration Failed', errorDetail || 'Backend rejected engine registration.');
+      } else if (data) {
+        if (typeof window !== 'undefined' && data.instanceId && data.apiKey) {
+          try {
+            localStorage.setItem(`engine_key_${data.instanceId}`, data.apiKey);
+          } catch {
+            // Ignore localStorage errors
+          }
+        }
+        setCreatedCredentials(data);
+        setRegisterModalOpen(false);
+        toast.success('Engine Registered', `Instance ${formatHash(data.instanceId, 6)} provisioned.`);
+        await loadInstances();
+      }
+    } catch (e) {
+      toast.error('Registration Error', e instanceof Error ? e.message : 'Network communication error.');
+    } finally {
+      setRegistering(false);
+    }
+  }
 
   async function loadInstances() {
     setLoading(true);
@@ -125,7 +188,29 @@ export default function PanelInstancesPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button
+            type="button"
+            variant="primary"
+            pill
+            size="sm"
+            onClick={() => setRegisterModalOpen(true)}
+            className="gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Register Engine</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            pill
+            size="sm"
+            onClick={() => setRunnerGuideOpen(true)}
+            className="gap-1.5"
+          >
+            <Terminal className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Runner Guide</span>
+          </Button>
           <Link href="/panel/live">
             <Button variant="secondary" pill size="sm" className="gap-1.5">
               <Radio className="w-3.5 h-3.5 text-[#3ECF8E]" />
@@ -233,10 +318,38 @@ export default function PanelInstancesPage() {
           Error: {error}
         </Card>
       ) : filtered.length === 0 ? (
-        <Card className="py-16 text-center p-8">
+        <Card className="py-16 text-center p-8 bg-[#171717] border-[#262626]">
           <Server className="w-8 h-8 text-zinc-600 mx-auto mb-2" />
           <p className="font-semibold text-zinc-200 text-sm">No Engines Found</p>
-          <p className="mt-1 text-zinc-500 text-xs">Connect an Engine runner using the command line daemon or check your filters.</p>
+          <p className="mt-1 text-zinc-500 text-xs">
+            {searchQuery || statusFilter !== 'ALL'
+              ? 'Try adjusting your search criteria or connectivity filter.'
+              : 'Register an engine instance to begin connecting algorithmic workers.'}
+          </p>
+          <div className="mt-4 flex items-center justify-center gap-3">
+            <Button
+              type="button"
+              variant="primary"
+              pill
+              size="sm"
+              onClick={() => setRegisterModalOpen(true)}
+              className="gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Register New Engine</span>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              pill
+              size="sm"
+              onClick={() => setRunnerGuideOpen(true)}
+              className="gap-1.5"
+            >
+              <Terminal className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Runner Guide</span>
+            </Button>
+          </div>
         </Card>
       ) : (
         <div className="space-y-4">
@@ -310,6 +423,20 @@ export default function PanelInstancesPage() {
                               label: 'Live Manager',
                               href: `/panel/instances/${inst.instanceId}/live`,
                             },
+                            {
+                              label: 'Launch Command',
+                              onClick: () => {
+                                const savedKey =
+                                  typeof window !== 'undefined'
+                                    ? localStorage.getItem(`engine_key_${inst.instanceId}`)
+                                    : null;
+                                setCreatedCredentials({
+                                  instanceId: inst.instanceId,
+                                  engineId: inst.engineId,
+                                  apiKey: savedKey || '<YOUR_GENERATED_API_KEY>',
+                                });
+                              },
+                            },
                             ...(!inst.isShared
                               ? [
                                   {
@@ -357,6 +484,35 @@ export default function PanelInstancesPage() {
           instanceName={selectedInstanceForShare.name}
         />
       )}
+
+      {/* Register Engine Modal */}
+      <RegisterEngineModal
+        isOpen={registerModalOpen}
+        onClose={() => setRegisterModalOpen(false)}
+        regAccountId={regAccountId}
+        setRegAccountId={setRegAccountId}
+        regLicenseId={regLicenseId}
+        setRegLicenseId={setRegLicenseId}
+        regEngineId={regEngineId}
+        setRegEngineId={setRegEngineId}
+        regName={regName}
+        setRegName={setRegName}
+        registering={registering}
+        onSubmit={handleRegisterSubmit}
+      />
+
+      {/* Newly Created / Re-Opened Credentials */}
+      <CreatedCredentialsDialog
+        credentials={createdCredentials}
+        onClose={() => setCreatedCredentials(null)}
+        userName={user?.userName}
+      />
+
+      {/* Local Engine Runner Guide Modal */}
+      <RunnerGuideModal
+        isOpen={runnerGuideOpen}
+        onClose={() => setRunnerGuideOpen(false)}
+      />
     </div>
   );
 }
