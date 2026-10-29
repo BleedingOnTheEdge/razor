@@ -86,7 +86,7 @@ describe('Instances Page', () => {
     expect(screen.getByText('Register Engine Instance')).toBeInTheDocument();
     expect(screen.getByLabelText(/Human-Readable Name/i)).toBeInTheDocument();
 
-    const cancelBtn = screen.getByText('✕ Cancel');
+    const cancelBtn = screen.getByRole('button', { name: /^cancel$/i });
     fireEvent.click(cancelBtn);
 
     expect(screen.queryByText('Register Engine Instance')).not.toBeInTheDocument();
@@ -132,7 +132,7 @@ describe('Panel Instances Page (Engine Fleet & Node Management)', () => {
     expect(screen.getByText('Register Engine Instance')).toBeInTheDocument();
     expect(screen.getByLabelText(/Human-Readable Name/i)).toBeInTheDocument();
 
-    const cancelBtn = screen.getByText('✕ Cancel');
+    const cancelBtn = screen.getByRole('button', { name: /^cancel$/i });
     fireEvent.click(cancelBtn);
 
     expect(screen.queryByText('Register Engine Instance')).not.toBeInTheDocument();

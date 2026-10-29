@@ -29,17 +29,17 @@ export const StatCard: React.FC<StatCardProps> = ({
   return (
     <div
       className={cn(
-        'rounded-xl bg-[#171717] border border-[#262626] p-4 shadow-sm shadow-black/40 flex flex-col justify-between transition-colors hover:border-[#333333]',
+        'rounded-xl bg-white border border-zinc-200 p-4 shadow-sm shadow-slate-100 flex flex-col justify-between transition-colors hover:border-zinc-300',
         className
       )}
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-medium text-zinc-400 font-sans tracking-normal">{label}</span>
-        {icon && <div className="text-zinc-400">{icon}</div>}
+        <span className="text-xs font-medium text-zinc-500 font-sans tracking-normal">{label}</span>
+        {icon && <div className="text-zinc-500">{icon}</div>}
       </div>
 
       <div className="flex items-baseline justify-between gap-3">
-        <div className="text-2xl font-semibold tracking-tight text-zinc-100 font-mono tabular-nums">
+        <div className="text-2xl font-semibold tracking-tight text-zinc-900 font-mono tabular-nums">
           {value}
         </div>
         {trend && (
@@ -47,7 +47,7 @@ export const StatCard: React.FC<StatCardProps> = ({
             className={cn(
               'inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full font-mono tabular-nums border',
               trend.neutral
-                ? 'bg-[#222222] text-zinc-400 border-[#2e2e2e]'
+                ? 'bg-[#222222] text-zinc-500 border-[#2e2e2e]'
                 : trend.positive
                 ? 'bg-[#3ECF8E]/10 text-[#3ECF8E] border-[#3ECF8E]/25'
                 : 'bg-rose-500/10 text-rose-400 border-rose-500/25'

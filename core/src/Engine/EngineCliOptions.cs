@@ -75,6 +75,17 @@ internal sealed class EngineCliOptions
                     options.Endpoint = args[++i];
                 }
             }
+            else if (arg.StartsWith("--cloud=", StringComparison.OrdinalIgnoreCase))
+            {
+                options.Endpoint = arg["--cloud=".Length..];
+            }
+            else if (arg.Equals("--cloud", StringComparison.OrdinalIgnoreCase) || arg.Equals("-c", StringComparison.OrdinalIgnoreCase))
+            {
+                if (i + 1 < args.Length)
+                {
+                    options.Endpoint = args[++i];
+                }
+            }
             else if (arg.StartsWith("--key=", StringComparison.OrdinalIgnoreCase))
             {
                 options.ApiKey = arg["--key=".Length..];
@@ -134,6 +145,13 @@ internal sealed class EngineCliOptions
             {
                 options.EngineId = arg["--engine-id=".Length..];
             }
+            else if (arg.Equals("--engine-id", StringComparison.OrdinalIgnoreCase) || arg.Equals("-id", StringComparison.OrdinalIgnoreCase))
+            {
+                if (i + 1 < args.Length)
+                {
+                    options.EngineId = args[++i];
+                }
+            }
             else if (arg.StartsWith("--auth=", StringComparison.OrdinalIgnoreCase))
             {
                 string authValue = arg["--auth=".Length..];
@@ -154,6 +172,29 @@ internal sealed class EngineCliOptions
 
         // Apply credentials
         Credentials.SetPartialCredentials(options.UserName, options.Password, options.ApiKey);
+
+        // Apply endpoint
+        if (!string.IsNullOrWhiteSpace(options.Endpoint))
+        {
+            string ep = options.Endpoint.Trim();
+            if (ep.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                ep = "wss://" + ep["https://".Length..];
+            }
+            else if (ep.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+            {
+                ep = "ws://" + ep["http://".Length..];
+            }
+
+            if (!ep.EndsWith("/engine", StringComparison.OrdinalIgnoreCase))
+            {
+                ep = ep.TrimEnd('/') + "/engine";
+            }
+
+            options.Endpoint = ep;
+            AppConstants.SetPrimaryEndpoint(ep);
+            AppConstants.SetFallbackEndpoint(ep);
+        }
 
         if (options.IsService && !Credentials.IsAvailable)
         {
