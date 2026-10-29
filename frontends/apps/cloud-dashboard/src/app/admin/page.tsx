@@ -177,8 +177,8 @@ export default function AdminPage() {
       } else {
         toastError('Impersonation Failed', 'Control plane rejected impersonation request.');
       }
-    } catch (e: any) {
-      toastError('Impersonation Error', e?.message || 'Failed to initiate impersonation session.');
+    } catch (e: unknown) {
+      toastError('Impersonation Error', (e as Error)?.message || 'Failed to initiate impersonation session.');
     } finally {
       setActionUserId(null);
     }

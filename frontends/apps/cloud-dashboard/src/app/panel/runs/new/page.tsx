@@ -18,6 +18,9 @@ import {
   Zap,
 } from 'lucide-react';
 import { formatHash } from '@razor/ui-kit';
+import { NewRunWalkForwardSection } from './NewRunWalkForwardSection';
+import { NewRunRiskSection } from './NewRunRiskSection';
+
 import { getApiBaseUrl, getAuthHeaders, getApiClient, type EngineInstancePayload, type WinningDnaPayload } from '@/lib/api-client';
 import { useToast } from '@/components/ui/toast';
 
@@ -737,111 +740,24 @@ function NewRunForm() {
         )}
 
         {runKind === 'WalkForward' && (
-          <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
-            <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b border-[#262626] pb-2">
-              <Layers className="w-4 h-4 text-zinc-100" />
-              <span>5. Walk-Forward Window Partitioning</span>
-            </h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-zinc-100 font-bold uppercase mb-1">In-Sample Training %</label>
-                <input
-                  type="number"
-                  value={inSamplePct}
-                  onChange={(e) => {
-                    const val = Number(e.target.value);
-                    setInSamplePct(val);
-                    if (val >= 1 && val <= 99) {
-                      setOutOfSamplePct(100 - val);
-                    }
-                  }}
-                  min={1}
-                  max={99}
-                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-zinc-100 font-bold uppercase mb-1">Out-of-Sample Test %</label>
-                <input
-                  type="number"
-                  value={outOfSamplePct}
-                  onChange={(e) => {
-                    const val = Number(e.target.value);
-                    setOutOfSamplePct(val);
-                    if (val >= 1 && val <= 99) {
-                      setInSamplePct(100 - val);
-                    }
-                  }}
-                  min={1}
-                  max={99}
-                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-zinc-100 font-bold uppercase mb-1">Number of Splits</label>
-                <input
-                  type="number"
-                  value={windowSplits}
-                  onChange={(e) => setWindowSplits(Number(e.target.value))}
-                  min={2}
-                  max={20}
-                  className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
-                />
-              </div>
-            </div>
-          </div>
+          <NewRunWalkForwardSection
+            inSamplePct={inSamplePct}
+            setInSamplePct={setInSamplePct}
+            outOfSamplePct={outOfSamplePct}
+            setOutOfSamplePct={setOutOfSamplePct}
+            windowSplits={windowSplits}
+            setWindowSplits={setWindowSplits}
+          />
         )}
 
-        {/* SECTION 6: Safety Guardrails */}
-        <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 border-b border-[#262626] pb-2">
-            <Shield className="w-4 h-4 text-zinc-100" />
-            <span>6. Risk Guardrails & Circuit Breakers</span>
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-zinc-100 font-bold uppercase mb-1">Max Drawdown Breach %</label>
-              <input
-                type="number"
-                step="0.5"
-                value={maxDrawdownPct}
-                onChange={(e) => setMaxDrawdownPct(Number(e.target.value))}
-                min={1}
-                max={50}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-zinc-100 font-bold uppercase mb-1">Max Position Size %</label>
-              <input
-                type="number"
-                step="1"
-                value={maxPositionPct}
-                onChange={(e) => setMaxPositionPct(Number(e.target.value))}
-                min={1}
-                max={100}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-zinc-100 font-bold uppercase mb-1">Order Rate Limit / Min</label>
-              <input
-                type="number"
-                value={orderRateLimit}
-                onChange={(e) => setOrderRateLimit(Number(e.target.value))}
-                min={1}
-                max={1000}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 font-mono focus:outline-none focus:border-[#3ECF8E]"
-              />
-            </div>
-          </div>
-        </div>
+        <NewRunRiskSection
+          maxDrawdownPct={maxDrawdownPct}
+          setMaxDrawdownPct={setMaxDrawdownPct}
+          maxPositionPct={maxPositionPct}
+          setMaxPositionPct={setMaxPositionPct}
+          orderRateLimit={orderRateLimit}
+          setOrderRateLimit={setOrderRateLimit}
+        />
 
         {/* Submit Button */}
         <div className="pt-2">

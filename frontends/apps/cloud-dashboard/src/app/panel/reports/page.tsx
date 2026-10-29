@@ -32,7 +32,7 @@ interface ReportListItem {
     tradeCount: number;
     bestFitness: number;
   };
-  winningDna?: any;
+  winningDna?: Record<string, unknown>;
 }
 
 export default function ReportsListingPage() {

@@ -90,6 +90,11 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `frontends/packages/ui-kit/src/components/Switch.tsx`: Supabase-style Radix UI Switch with emerald active track.
 - `frontends/packages/ui-kit/src/components/Tooltip.tsx`: Supabase-style Radix UI Tooltip primitives.
 - `frontends/packages/ui-kit/src/components/Separator.tsx`: Supabase-style Radix UI Separator hairline divider.
+- `frontends/apps/cloud-dashboard/src/app/panel/runs/new/NewRunRiskSection.tsx`: Extracted safety guardrails section to comply with 800-line limit.
+- `frontends/apps/cloud-dashboard/src/app/panel/runs/new/NewRunWalkForwardSection.tsx`: Extracted walk-forward window partitioning section to comply with 800-line limit.
+- `frontends/apps/cloud-dashboard/src/components/reports/ExecutionGapsCard.tsx`: Modularized execution gaps card component to adhere to 800-line limit.
+- `frontends/apps/cloud-dashboard/src/components/reports/ReportModals.tsx`: Modularized report modals group component to adhere to 800-line limit.
+- `frontends/apps/cloud-dashboard/src/components/reports/ReportHeaderActions.tsx`: Modularized report header actions component to adhere to 800-line limit.
 - `frontends/apps/cloud-dashboard/src/app/admin/page.tsx`: Rich Admin panel page for operator elevation/demotion, user status management, and audit inspection.
 - `frontends/apps/cloud-dashboard/src/app/profile/page.tsx`: User profile view and update page with subscription and preferences.
 - `frontends/apps/cloud-dashboard/src/app/settings/page.tsx`: Cluster administrative settings page for fleet, security, and marketplace configurations.

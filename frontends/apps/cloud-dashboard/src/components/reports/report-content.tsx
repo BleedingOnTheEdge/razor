@@ -38,11 +38,10 @@ import {
   TrendingUp,
   Play,
 } from 'lucide-react';
-import { CompleteRunModal } from './CompleteRunModal';
-import { LaunchRunModal } from '@/components/runs/LaunchRunModal';
-import { GranularTradeDetailModal } from '@/components/trades/GranularTradeDetailModal';
-import { GenerationDetailModal } from '@/components/optimization/GenerationDetailModal';
-import { PopulationBacktestModal } from '@/components/optimization/PopulationBacktestModal';
+import { ExecutionGapsCard } from './ExecutionGapsCard';
+import { ReportModals } from './ReportModals';
+import { ReportHeaderActions } from './ReportHeaderActions';
+
 import { WinningDnaCard } from './WinningDnaCard';
 import { EquityCurveChart } from './EquityCurveChart';
 import { DetailedMetricsGrid } from './DetailedMetricsGrid';
@@ -428,130 +427,21 @@ export function RunReportContent({ runId }: { runId: string }) {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Re-Run (Instant 1-Click Replay) */}
-          <button
-            type="button"
-            onClick={handleInstantReRun}
-            className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors flex items-center gap-1.5 select-none"
-            title="Execute identical rerun immediately"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>RE-RUN</span>
-          </button>
-
-          {/* Re-Run With... (Clones to /panel/runs/new?cloneFrom=...) */}
-          <Link
-            href={`/panel/runs/new?cloneFrom=${runId}`}
-            className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors flex items-center gap-1.5 select-none"
-            title="Clone settings and modify parameters before running"
-          >
-            <Play className="w-3.5 h-3.5" />
-            <span>RE-RUN WITH...</span>
-          </Link>
-
-          {/* Dedicated Generations Convergence Page (Dev View) */}
-          {(report?.kind === 'Optimization' || report?.kind === 'WalkForward' || (report?.generationProgress && report.generationProgress.length > 0)) && (
-            <Link
-              href={`/panel/reports/${runId}/generations`}
-              className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors flex items-center gap-1.5 select-none"
-              title="Open generational convergence progression grid (Developer View)"
-            >
-              <TrendingUp className="w-3.5 h-3.5" />
-              <span>GENERATIONS (DEV)</span>
-            </Link>
-          )}
-
-          {/* Dedicated Walk-Forward Window Splits Page */}
-          {report?.kind === 'WalkForward' && (
-            <Link
-              href={`/panel/reports/${runId}/windows`}
-              className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors flex items-center gap-1.5 select-none"
-              title="Open walk-forward window splits and degradation analysis"
-            >
-              <Layers className="w-3.5 h-3.5" />
-              <span>WINDOWS (SPLITS)</span>
-            </Link>
-          )}
-
-          {report && (
-            <>
-              {report.status === 'Running' && (
-                <button
-                  type="button"
-                  onClick={handlePauseRun}
-                  disabled={pausing}
-                  className="px-3 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors flex items-center gap-1.5 select-none"
-                >
-                  <Pause className="w-3.5 h-3.5" />
-                  <span>{pausing ? 'PAUSING...' : 'PAUSE RUN'}</span>
-                </button>
-              )}
-
-              {(report.status === 'Running' || report.status === 'Paused') && (
-                <button
-                  type="button"
-                  onClick={handleCancelRun}
-                  disabled={cancelling}
-                  className="px-3 py-1.5 border border-[#262626] bg-[#171717] hover:bg-rose-600 hover:text-white text-zinc-100 font-bold transition-colors flex items-center gap-1.5 select-none"
-                  title="Cancel active run execution"
-                >
-                  <AlertTriangle className="w-3.5 h-3.5" />
-                  <span>{cancelling ? 'CANCELLING...' : 'CANCEL RUN'}</span>
-                </button>
-              )}
-
-              {report.status !== 'Completed' && (
-                <button
-                  type="button"
-                  onClick={() => setCompleteModalOpen(true)}
-                  className="px-3 py-1.5 border border-[#262626] bg-[#3ECF8E] hover:bg-[#34b27b] text-[#0f0f0f] rounded-full font-bold transition-colors flex items-center gap-1.5 select-none"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Complete Run</span>
-                </button>
-              )}
-            </>
-          )}
-
-          <button
-            type="button"
-            onClick={handleExportXlsx}
-            disabled={exportingXlsx}
-            className="px-3 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors flex items-center gap-1.5 select-none"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>{exportingXlsx ? 'EXPORTING...' : 'EXPORT XLSX'}</span>
-          </button>
-
-          <ActionDropdown
-            label="MORE ▾"
-            items={[
-              {
-                label: 'View Lineage DAG',
-                href: `/panel/runs/${runId}/lineage`,
-              },
-              {
-                label: 'Export Formulated XLSX',
-                onClick: handleExportXlsx,
-              },
-              {
-                label: 'Copy Winning DNA',
-                onClick: handleCopyDna,
-              },
-            ]}
-          />
-
-          <button
-            type="button"
-            onClick={handleManualRefresh}
-            disabled={refreshingManual}
-            className="p-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] transition-colors"
-            title="Refresh Report Data"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${refreshingManual ? 'animate-spin' : ''}`} />
-          </button>
-        </div>
+        <ReportHeaderActions
+          runId={runId}
+          report={report}
+          handleInstantReRun={handleInstantReRun}
+          handlePauseRun={handlePauseRun}
+          pausing={pausing}
+          handleCancelRun={handleCancelRun}
+          cancelling={cancelling}
+          setCompleteModalOpen={setCompleteModalOpen}
+          handleExportXlsx={handleExportXlsx}
+          exportingXlsx={exportingXlsx}
+          handleCopyDna={handleCopyDna}
+          handleManualRefresh={handleManualRefresh}
+          refreshingManual={refreshingManual}
+        />
       </div>
 
       {/* Real-time In-Progress Banner */}
@@ -800,44 +690,32 @@ export function RunReportContent({ runId }: { runId: string }) {
             )}
           </div>
 
-          {/* Recorded Execution Gaps */}
-          <div className="p-6 rounded-xl bg-[#171717] border border-slate-200 shadow-sm space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm uppercase tracking-wider font-mono text-slate-700 font-semibold flex items-center gap-2">
-                <span>Recorded Execution Gaps</span>
-                <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">
-                  {report.gaps?.length || 0}
-                </span>
-              </h3>
-            </div>
-
-            {!report.gaps || report.gaps.length === 0 ? (
-              <div className="py-6 text-center text-sm font-sans text-slate-500">
-                No execution gaps detected. Run executed in full contiguity.
-              </div>
-            ) : (
-              <div className="divide-y divide-slate-100">
-                {report.gaps.map((gap, idx) => (
-                  <div key={gap.id || `gap-${idx}-${gap.startStep}`} className="py-3 flex items-center justify-between text-sm font-sans">
-                    <div className="flex items-center gap-3">
-                      <span className="px-2.5 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 text-xs font-mono font-bold">
-                        Steps {gap.startStep} – {gap.endStep}
-                      </span>
-                      <span className="text-slate-700">{gap.reason}</span>
-                    </div>
-                    <span className="text-slate-400 text-xs font-mono">{formatTimestamp(gap.recordedAt || '')}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          /* Recorded Execution Gaps */
+          <ExecutionGapsCard gaps={report.gaps} />
         </div>
       )}
 
-      {/* Complete Run Modal */}
-      <CompleteRunModal
-        isOpen={completeModalOpen}
-        onClose={() => setCompleteModalOpen(false)}
+            {/* Modals */}
+      <ReportModals
+        runId={runId}
+        report={report}
+        instances={instances}
+        completeModalOpen={completeModalOpen}
+        setCompleteModalOpen={setCompleteModalOpen}
+        launchModalOpen={launchModalOpen}
+        setLaunchModalOpen={setLaunchModalOpen}
+        launchInstanceId={launchInstanceId}
+        setLaunchInstanceId={setLaunchInstanceId}
+        launchKind={launchKind}
+        setLaunchKind={setLaunchKind}
+        injectedDna={injectedDna}
+        setInjectedDna={setInjectedDna}
+        selectedGeneration={selectedGeneration}
+        setSelectedGeneration={setSelectedGeneration}
+        selectedPopulation={selectedPopulation}
+        setSelectedPopulation={setSelectedPopulation}
+        selectedTrade={selectedTrade}
+        setSelectedTrade={setSelectedTrade}
         netProfit={netProfit}
         setNetProfit={setNetProfit}
         totalReturn={totalReturn}
@@ -851,70 +729,7 @@ export function RunReportContent({ runId }: { runId: string }) {
         bestFitness={bestFitness}
         setBestFitness={setBestFitness}
         submittingComplete={submittingComplete}
-        onSubmit={handleCompleteSubmit}
-      />
-
-      {/* Launch Run Modal (with winning DNA injection) */}
-      <LaunchRunModal
-        isOpen={launchModalOpen}
-        onClose={() => {
-          setLaunchModalOpen(false);
-          setInjectedDna(null);
-        }}
-        instances={instances}
-        launchInstanceId={launchInstanceId}
-        setLaunchInstanceId={setLaunchInstanceId}
-        launchKind={launchKind}
-        setLaunchKind={setLaunchKind}
-        initialDna={injectedDna || report?.winningDna || undefined}
-        onRunLaunched={(newRun) => {
-          if (typeof window !== 'undefined') {
-            window.location.assign(`/panel/runs/${newRun.id}`);
-          }
-        }}
-      />
-
-      {/* Generation Detail Modal */}
-      <GenerationDetailModal
-        isOpen={!!selectedGeneration}
-        onClose={() => setSelectedGeneration(null)}
-        generation={selectedGeneration}
-        runId={runId}
-        onSelectIndividual={(individual) => {
-          setSelectedPopulation(individual);
-        }}
-      />
-
-      {/* Population Backtest Detail Modal */}
-      <PopulationBacktestModal
-        isOpen={!!selectedPopulation}
-        onClose={() => setSelectedPopulation(null)}
-        individual={selectedPopulation}
-        generationNumber={selectedGeneration?.generation ?? 1}
-        runId={runId}
-        onSelectTrade={(trade) => {
-          setSelectedTrade(trade);
-        }}
-        onRunAsBacktest={(individual) => {
-          const constructedDna: WinningDnaPayload = individual.dna || {
-            genes: individual.genes || [],
-            parameters: individual.parameters || {},
-            fitness: individual.fitness || 0,
-            slots: report?.winningDna?.slots || null,
-            execution: report?.winningDna?.execution || null,
-          };
-          setInjectedDna(constructedDna);
-          setLaunchKind('Backtest');
-          setLaunchModalOpen(true);
-        }}
-      />
-
-      {/* Granular Trade Telemetry & Execution Ladder Modal */}
-      <GranularTradeDetailModal
-        isOpen={!!selectedTrade}
-        onClose={() => setSelectedTrade(null)}
-        trade={selectedTrade}
-        runId={runId}
+        handleCompleteSubmit={handleCompleteSubmit}
       />
     </div>
   );

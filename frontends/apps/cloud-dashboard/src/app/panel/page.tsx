@@ -26,7 +26,7 @@ export default function PanelOverviewPage() {
         const json = await resInst.json();
         const items = Array.isArray(json) ? json : json.items || [];
         setTotalCount(items.length);
-        setActiveCount(items.filter((i: any) => i.isConnected || i.status === 'Active').length);
+        setActiveCount(items.filter((i: { isConnected?: boolean; status?: string }) => i.isConnected || i.status === 'Active').length);
       }
 
       if (resRuns.ok) {
