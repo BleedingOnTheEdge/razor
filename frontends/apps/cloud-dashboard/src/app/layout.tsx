@@ -15,8 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className="min-h-screen bg-[#0f0f0f] text-[#ededed] font-sans antialiased selection:bg-[#3ECF8E]/30 selection:text-[#3ECF8E]">
+    <html lang="en" className="light">
+      <body className="min-h-screen bg-[#f8fafc] text-zinc-900 font-sans antialiased selection:bg-[#3ECF8E]/30 selection:text-emerald-900">
         <AuthProvider>
           <ToastProvider>
             <DashboardShell>{children}</DashboardShell>

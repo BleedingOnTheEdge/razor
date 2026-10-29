@@ -38,7 +38,7 @@ export const DropdownMenuSubContent = React.forwardRef<
   <DropdownMenuPrimitive.SubContent
     ref={ref}
     className={cn(
-      'z-50 min-w-[8rem] overflow-hidden rounded-lg border border-[#262626] bg-[#171717] p-1 text-zinc-200 shadow-xl shadow-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+      'z-50 min-w-[8rem] overflow-hidden rounded-lg border border-zinc-200 bg-white p-1 text-zinc-800 shadow-xl shadow-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
       className
     )}
     {...props}
@@ -55,7 +55,7 @@ export const DropdownMenuContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        'z-50 min-w-[8rem] overflow-hidden rounded-lg border border-[#262626] bg-[#171717] p-1 text-zinc-200 shadow-xl shadow-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+        'z-50 min-w-[8rem] overflow-hidden rounded-lg border border-zinc-200 bg-white p-1 text-zinc-800 shadow-xl shadow-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
         className
       )}
       {...props}
@@ -73,7 +73,7 @@ export const DropdownMenuItem = React.forwardRef<
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      'relative flex cursor-pointer select-none items-center rounded-md px-2 py-1.5 text-xs text-zinc-300 outline-none transition-colors hover:bg-[#222222] hover:text-white focus:bg-[#222222] focus:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      'relative flex cursor-pointer select-none items-center rounded-md px-2 py-1.5 text-xs text-zinc-700 outline-none transition-colors hover:bg-zinc-100 hover:text-white focus:bg-[#222222] focus:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       inset && 'pl-8',
       className
     )}
@@ -89,7 +89,7 @@ export const DropdownMenuCheckboxItem = React.forwardRef<
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(
-      'relative flex cursor-pointer select-none items-center rounded-md py-1.5 pl-8 pr-2 text-xs outline-none transition-colors hover:bg-[#222222] focus:bg-[#222222] focus:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      'relative flex cursor-pointer select-none items-center rounded-md py-1.5 pl-8 pr-2 text-xs outline-none transition-colors hover:bg-zinc-100 focus:bg-[#222222] focus:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       className
     )}
     checked={checked}
@@ -112,7 +112,7 @@ export const DropdownMenuRadioItem = React.forwardRef<
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
     className={cn(
-      'relative flex cursor-pointer select-none items-center rounded-md py-1.5 pl-8 pr-2 text-xs outline-none transition-colors hover:bg-[#222222] focus:bg-[#222222] focus:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      'relative flex cursor-pointer select-none items-center rounded-md py-1.5 pl-8 pr-2 text-xs outline-none transition-colors hover:bg-zinc-100 focus:bg-[#222222] focus:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       className
     )}
     {...props}
@@ -135,7 +135,7 @@ export const DropdownMenuLabel = React.forwardRef<
 >(({ className = '', inset, ...props }, ref) => (
   <DropdownMenuPrimitive.Label
     ref={ref}
-    className={cn('px-2 py-1.5 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider', inset && 'pl-8', className)}
+    className={cn('px-2 py-1.5 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider', inset && 'pl-8', className)}
     {...props}
   />
 ));

@@ -173,17 +173,17 @@ export default function PanelInstancesPage() {
   return (
     <div className="space-y-6 max-w-7xl font-sans text-xs">
       {/* Top Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#262626]">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-zinc-200">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Badge variant="emerald" dot>
               Fleet Registry
             </Badge>
           </div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-100">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
             Engine Fleet & Node Management
           </h1>
-          <p className="text-xs text-zinc-400 mt-1">
+          <p className="text-xs text-zinc-500 mt-1">
             Registered execution instances, WebSocket cluster telemetry, and temporary sharing delegations.
           </p>
         </div>
@@ -208,7 +208,7 @@ export default function PanelInstancesPage() {
             onClick={() => setRunnerGuideOpen(true)}
             className="gap-1.5"
           >
-            <Terminal className="w-3.5 h-3.5 text-zinc-400" />
+            <Terminal className="w-3.5 h-3.5 text-zinc-500" />
             <span>Runner Guide</span>
           </Button>
           <Link href="/panel/live">
@@ -225,7 +225,7 @@ export default function PanelInstancesPage() {
             onClick={loadInstances}
             className="gap-1.5"
           >
-            <RotateCw className="w-3.5 h-3.5 text-zinc-400" />
+            <RotateCw className="w-3.5 h-3.5 text-zinc-500" />
             <span>Refresh</span>
           </Button>
         </div>
@@ -233,26 +233,26 @@ export default function PanelInstancesPage() {
 
       {/* Fleet Telemetry Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <Card className="p-4 bg-[#171717] border-[#262626]">
-          <span className="text-xs font-medium text-zinc-400 block">Online Active Nodes</span>
+        <Card className="p-4 bg-white border-zinc-200">
+          <span className="text-xs font-medium text-zinc-500 block">Online Active Nodes</span>
           <span className="text-2xl font-semibold text-[#3ECF8E] font-mono mt-1 block tabular-nums">
             {onlineCount} <span className="text-sm font-normal text-zinc-500">/ {instances.length}</span>
           </span>
         </Card>
-        <Card className="p-4 bg-[#171717] border-[#262626]">
-          <span className="text-xs font-medium text-zinc-400 block">Total Registered Engines</span>
-          <span className="text-2xl font-semibold text-zinc-100 font-mono mt-1 block tabular-nums">
+        <Card className="p-4 bg-white border-zinc-200">
+          <span className="text-xs font-medium text-zinc-500 block">Total Registered Engines</span>
+          <span className="text-2xl font-semibold text-zinc-900 font-mono mt-1 block tabular-nums">
             {totalCount || instances.length}
           </span>
         </Card>
-        <Card className="p-4 bg-[#171717] border-[#262626]">
-          <span className="text-xs font-medium text-zinc-400 block">Account License Quota</span>
-          <span className="text-2xl font-semibold text-zinc-100 font-mono mt-1 block tabular-nums">
+        <Card className="p-4 bg-white border-zinc-200">
+          <span className="text-xs font-medium text-zinc-500 block">Account License Quota</span>
+          <span className="text-2xl font-semibold text-zinc-900 font-mono mt-1 block tabular-nums">
             {user?.maxInstances || 10} <span className="text-xs font-normal text-zinc-500">Cap</span>
           </span>
         </Card>
-        <Card className="p-4 bg-[#171717] border-[#262626]">
-          <span className="text-xs font-medium text-zinc-400 block">Engine Sharing Grants</span>
+        <Card className="p-4 bg-white border-zinc-200">
+          <span className="text-xs font-medium text-zinc-500 block">Engine Sharing Grants</span>
           <span className="text-2xl font-semibold text-[#3ECF8E] font-mono mt-1 block tabular-nums">
             {instances.filter((i) => i.isShared).length} <span className="text-xs font-normal text-zinc-500">Shared</span>
           </span>
@@ -260,10 +260,10 @@ export default function PanelInstancesPage() {
       </div>
 
       {/* Filter and Search Bar */}
-      <Card className="p-4 bg-[#171717] border-[#262626]">
+      <Card className="p-4 bg-white border-zinc-200">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block font-medium text-zinc-300 mb-1.5">Search Engine</label>
+            <label className="block font-medium text-zinc-700 mb-1.5">Search Engine</label>
             <div className="relative">
               <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-2.5" />
               <input
@@ -271,17 +271,17 @@ export default function PanelInstancesPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search name, ID or engine slug…"
-                className="w-full pl-9 pr-3 py-1.5 border border-[#262626] rounded-lg bg-[#141414] text-zinc-100 placeholder:text-zinc-500 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] transition-colors"
+                className="w-full pl-9 pr-3 py-1.5 border border-zinc-200 rounded-lg bg-zinc-50 text-zinc-900 placeholder:text-zinc-500 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] transition-colors"
               />
             </div>
           </div>
 
           <div>
-            <label className="block font-medium text-zinc-300 mb-1.5">Connectivity Filter</label>
+            <label className="block font-medium text-zinc-700 mb-1.5">Connectivity Filter</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-1.5 border border-[#262626] rounded-lg bg-[#141414] text-zinc-200 font-mono text-xs focus:outline-none focus:border-[#3ECF8E]"
+              className="w-full px-3 py-1.5 border border-zinc-200 rounded-lg bg-zinc-50 text-zinc-800 font-mono text-xs focus:outline-none focus:border-[#3ECF8E]"
             >
               <option value="ALL">All Engines</option>
               <option value="ONLINE">Online Only</option>
@@ -310,7 +310,7 @@ export default function PanelInstancesPage() {
 
       {/* Table */}
       {loading ? (
-        <Card className="py-16 text-center text-zinc-400 font-mono">
+        <Card className="py-16 text-center text-zinc-500 font-mono">
           Connecting to cloud fleet registry…
         </Card>
       ) : error ? (
@@ -318,9 +318,9 @@ export default function PanelInstancesPage() {
           Error: {error}
         </Card>
       ) : filtered.length === 0 ? (
-        <Card className="py-16 text-center p-8 bg-[#171717] border-[#262626]">
+        <Card className="py-16 text-center p-8 bg-white border-zinc-200">
           <Server className="w-8 h-8 text-zinc-600 mx-auto mb-2" />
-          <p className="font-semibold text-zinc-200 text-sm">No Engines Found</p>
+          <p className="font-semibold text-zinc-800 text-sm">No Engines Found</p>
           <p className="mt-1 text-zinc-500 text-xs">
             {searchQuery || statusFilter !== 'ALL'
               ? 'Try adjusting your search criteria or connectivity filter.'
@@ -346,17 +346,17 @@ export default function PanelInstancesPage() {
               onClick={() => setRunnerGuideOpen(true)}
               className="gap-1.5"
             >
-              <Terminal className="w-3.5 h-3.5 text-zinc-400" />
+              <Terminal className="w-3.5 h-3.5 text-zinc-500" />
               <span>Runner Guide</span>
             </Button>
           </div>
         </Card>
       ) : (
         <div className="space-y-4">
-          <div className="rounded-xl border border-[#262626] bg-[#171717] overflow-hidden shadow-sm">
+          <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden shadow-sm">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-[#262626] bg-[#141414] text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                <tr className="border-b border-zinc-200 bg-zinc-50 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
                   <th className="p-3">Engine Instance</th>
                   <th className="p-3">Status</th>
                   <th className="p-3 hidden sm:table-cell">Slug / EngineId</th>
@@ -368,11 +368,11 @@ export default function PanelInstancesPage() {
               </thead>
               <tbody className="divide-y divide-[#262626] text-xs">
                 {filtered.map((inst) => (
-                  <tr key={inst.instanceId} className="hover:bg-[#1f1f1f] transition-colors">
+                  <tr key={inst.instanceId} className="hover:bg-zinc-50 transition-colors">
                     <td className="p-3">
                       <Link
                         href={`/panel/instances/${inst.instanceId}`}
-                        className="font-medium text-zinc-100 hover:text-[#3ECF8E] transition-colors block"
+                        className="font-medium text-zinc-900 hover:text-[#3ECF8E] transition-colors block"
                       >
                         {inst.name || 'Unnamed Engine'}
                       </Link>
@@ -391,11 +391,11 @@ export default function PanelInstancesPage() {
                         </Badge>
                       )}
                     </td>
-                    <td className="p-3 font-mono text-zinc-300 hidden sm:table-cell">{inst.engineId}</td>
-                    <td className="p-3 text-zinc-300 hidden md:table-cell">
+                    <td className="p-3 font-mono text-zinc-700 hidden sm:table-cell">{inst.engineId}</td>
+                    <td className="p-3 text-zinc-700 hidden md:table-cell">
                       <span className="font-mono tabular-nums">{inst.manifestExtensionCount}</span> active
                     </td>
-                    <td className="p-3 text-zinc-400 font-mono text-[11px] hidden lg:table-cell">
+                    <td className="p-3 text-zinc-500 font-mono text-[11px] hidden lg:table-cell">
                       {formatTimestamp(inst.createdAt)}
                     </td>
                     <td className="p-3 hidden sm:table-cell">

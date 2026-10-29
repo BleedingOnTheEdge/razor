@@ -109,16 +109,16 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
   const visibleLinks = allLinks.filter((l) => l.visible);
 
   const sidebarContent = (
-    <div className="flex flex-col justify-between h-full bg-[#171717] border-r border-[#262626] font-sans">
+    <div className="flex flex-col justify-between h-full bg-white border-r border-zinc-200 font-sans">
       <div>
         {/* Brand */}
-        <div className="h-14 px-5 flex items-center justify-between border-b border-[#262626]">
+        <div className="h-14 px-5 flex items-center justify-between border-b border-zinc-200">
           <Link href="/panel" className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-[#3ECF8E] text-[#0f0f0f] flex items-center justify-center font-bold text-sm shadow-sm shadow-[#3ECF8E]/20">
               R
             </div>
             <div>
-              <span className="font-semibold tracking-tight text-zinc-100 block text-xs">RAZOR CLOUD</span>
+              <span className="font-semibold tracking-tight text-zinc-900 block text-xs">RAZOR CLOUD</span>
               <span className="text-[10px] text-zinc-500 font-mono block">Control Plane</span>
             </div>
           </Link>
@@ -127,7 +127,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
               type="button"
               onClick={onClose}
               aria-label="Close menu"
-              className="md:hidden p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-[#222222] transition-colors"
+              className="md:hidden p-1.5 rounded-md text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -146,8 +146,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
                 className={clsx(
                   'flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors',
                   link.active
-                    ? 'bg-[#222222] text-[#3ECF8E] font-semibold border border-[#333333]'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1f1f1f] border border-transparent'
+                    ? 'bg-emerald-50 text-emerald-800 font-semibold border border-emerald-200/80 shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 border border-transparent'
                 )}
               >
                 <Icon className={clsx('w-4 h-4 shrink-0', link.active ? 'text-[#3ECF8E]' : 'text-zinc-400')} />
@@ -162,15 +162,15 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
             className={clsx(
               'flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg transition-colors border border-transparent',
               pathname.startsWith('/marketplace')
-                ? 'bg-[#222222] text-[#3ECF8E] font-semibold border-[#333333]'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1f1f1f]'
+                ? 'bg-emerald-50 text-emerald-800 font-semibold border-emerald-200/80 shadow-xs'
+                : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50'
             )}
           >
             <div className="flex items-center gap-2.5">
               <ShoppingBag className={clsx('w-4 h-4 shrink-0', pathname.startsWith('/marketplace') ? 'text-[#3ECF8E]' : 'text-zinc-400')} />
               <span>Marketplace</span>
             </div>
-            <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-medium bg-[#262626] text-[#3ECF8E]">
+            <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-medium bg-emerald-100 text-emerald-800">
               HUB
             </span>
           </a>
@@ -178,19 +178,19 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
       </div>
 
       {/* Mini Profile Footer */}
-      <div className="p-3 border-t border-[#262626] bg-[#141414]">
+      <div className="p-3 border-t border-zinc-200 bg-zinc-50">
         {user ? (
           <Link
             href="/panel/profile"
             onClick={onClose}
-            className="flex items-center gap-2.5 p-1.5 rounded-lg border border-transparent hover:border-[#2e2e2e] hover:bg-[#1a1a1a] transition-colors group"
+            className="flex items-center gap-2.5 p-1.5 rounded-lg border border-transparent hover:border-zinc-200 hover:bg-white transition-colors group"
             title="View User Profile"
           >
-            <div className="w-7 h-7 rounded-full border border-[#2e2e2e] bg-[#222222] flex items-center justify-center font-medium text-zinc-200 text-xs shrink-0 font-mono">
+            <div className="w-7 h-7 rounded-full border border-zinc-200 bg-white flex items-center justify-center font-medium text-zinc-700 text-xs shrink-0 font-mono">
               {user.displayName ? user.displayName.slice(0, 2).toUpperCase() : user.userName.slice(0, 2).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-xs font-medium text-zinc-200 truncate group-hover:text-white">
+              <div className="text-xs font-medium text-zinc-700 truncate group-hover:text-zinc-900">
                 {user.displayName || user.userName}
               </div>
               <div className="text-[10px] text-zinc-500 font-mono truncate">
@@ -202,7 +202,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
           <Link
             href="/auth/login"
             onClick={onClose}
-            className="flex items-center justify-center gap-2 p-2 rounded-lg bg-[#222222] hover:bg-[#2a2a2a] text-zinc-200 text-xs font-medium border border-[#2e2e2e] transition-colors"
+            className="flex items-center justify-center gap-2 p-2 rounded-lg bg-[#222222] hover:bg-[#2a2a2a] text-zinc-700 text-xs font-medium border border-[#2e2e2e] transition-colors"
           >
             Sign In
           </Link>
@@ -215,7 +215,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps = {}) {
     <>
       {/* Desktop Sidebar */}
       <aside
-        className="hidden md:flex w-60 border-r border-[#262626] bg-[#171717] flex-col justify-between shrink-0"
+        className="hidden md:flex w-60 border-r border-zinc-200 bg-white flex-col justify-between shrink-0"
         aria-label="Sidebar Navigation"
       >
         {sidebarContent}

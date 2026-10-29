@@ -124,6 +124,7 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `core/tests/Cloud.UnitTests/EngineCrudAndProfileEndpointsTests.cs`: Functional test suite for engine CRUD and profile endpoints.
 - `core/tests/Cloud.UnitTests/EngineManagementEdgeCaseTests.cs`: Edge case test suite for engine lifecycle management.
 - `core/tests/Engine.UnitTests/Management/Commands/CommandDispatcherEdgeCaseTests.cs`: Edge case test suite for Engine command dispatcher.
+- `core/tests/Engine.UnitTests/Core/EngineCliOptionsTests.cs`: Unit test suite verifying Engine CLI option parsing, custom endpoints, and credentials mapping.
 - `core/src/Cloud/Data/DatabaseSchemaCompatibility.cs`: Self-healing schema synchronization utility executing idempotent DDL statements before seeding on PostgreSQL databases.
 - `core/src/Cloud/Migrations/20261015060000_AddEnterpriseFeatures.cs`: EF Core migration for enterprise schema expansion.
 - `core/src/Cloud/Migrations/20261015060000_AddEnterpriseFeatures.Designer.cs`: EF Core migration metadata designer file.

@@ -61,7 +61,7 @@ export function Navbar() {
 
   return (
     <>
-      <header className="border-b border-[#262626] bg-[#171717]/90 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-zinc-200 bg-white/95 shadow-xs backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between font-sans">
           <div className="flex items-center gap-8">
             <Link href="/" className="flex items-center gap-2.5">
@@ -69,7 +69,7 @@ export function Navbar() {
                 <ShoppingBag className="w-4 h-4 text-[#0f0f0f]" />
               </div>
               <div>
-                <span className="font-semibold tracking-tight text-zinc-100 block text-xs">RAZOR MARKETPLACE</span>
+                <span className="font-semibold tracking-tight text-zinc-900 block text-xs">RAZOR MARKETPLACE</span>
                 <span className="text-[9px] text-zinc-500 font-mono tracking-widest block">CURATED EXTENSIONS</span>
               </div>
             </Link>
@@ -80,8 +80,8 @@ export function Navbar() {
                 className={clsx(
                   'flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors font-medium',
                   pathname === '/'
-                    ? 'bg-[#222222] text-[#3ECF8E] border border-[#333333]'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1f1f1f]'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
                 )}
               >
                 <Compass className="w-3.5 h-3.5" />
@@ -93,8 +93,8 @@ export function Navbar() {
                 className={clsx(
                   'flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors font-medium',
                   pathname?.startsWith('/community')
-                    ? 'bg-[#222222] text-[#3ECF8E] border border-[#333333]'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1f1f1f]'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
                 )}
               >
                 <MessageSquare className="w-3.5 h-3.5" />
@@ -106,8 +106,8 @@ export function Navbar() {
                 className={clsx(
                   'flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors font-medium',
                   pathname === '/tickets'
-                    ? 'bg-[#222222] text-[#3ECF8E] border border-[#333333]'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1f1f1f]'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
                 )}
               >
                 <LifeBuoy className="w-3.5 h-3.5" />
@@ -119,8 +119,8 @@ export function Navbar() {
                 className={clsx(
                   'flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors font-medium',
                   pathname === '/my-licenses'
-                    ? 'bg-[#222222] text-[#3ECF8E] border border-[#333333]'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1f1f1f]'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
                 )}
               >
                 <KeyRound className="w-3.5 h-3.5" />
@@ -132,8 +132,8 @@ export function Navbar() {
                 className={clsx(
                   'flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors font-medium',
                   pathname === '/publish'
-                    ? 'bg-[#222222] text-[#3ECF8E] border border-[#333333]'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1f1f1f]'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
                 )}
               >
                 <UploadCloud className="w-3.5 h-3.5" />
@@ -145,8 +145,8 @@ export function Navbar() {
                 className={clsx(
                   'flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors font-medium',
                   pathname === '/payments'
-                    ? 'bg-[#222222] text-[#3ECF8E] border border-[#333333]'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1f1f1f]'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
                 )}
               >
                 <CreditCard className="w-3.5 h-3.5" />
@@ -161,7 +161,7 @@ export function Navbar() {
                 {/* Subscription Tier Pill */}
                 <button
                   onClick={() => setIsUpgradeOpen(true)}
-                  className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono bg-[#1f1f1f] hover:bg-[#262626] border border-[#2e2e2e] text-zinc-300 transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono bg-[#1f1f1f] hover:bg-[#262626] border border-[#2e2e2e] text-zinc-700 transition-all cursor-pointer"
                 >
                   <Zap className="w-3 h-3 text-[#3ECF8E]" />
                   <span>{user.subscriptionTier} Plan</span>
@@ -173,12 +173,12 @@ export function Navbar() {
                 {/* User Identity Pill */}
                 <Link
                   href="/profile"
-                  className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono bg-[#1f1f1f] hover:bg-[#262626] border border-[#2e2e2e] text-zinc-300 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono bg-[#1f1f1f] hover:bg-[#262626] border border-[#2e2e2e] text-zinc-700 transition-colors"
                   title="View Profile"
                 >
                   <User className="w-3 h-3 text-[#3ECF8E]" />
                   <span>{user.userName}</span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#2a2a2a] text-zinc-400 font-semibold uppercase">
+                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#2a2a2a] text-zinc-500 font-semibold uppercase">
                     {user.role}
                   </span>
                 </Link>
@@ -187,7 +187,7 @@ export function Navbar() {
                 <button
                   onClick={logout}
                   title="Sign Out"
-                  className="p-1.5 rounded-full bg-[#1f1f1f] hover:bg-rose-500/10 hover:border-rose-500/30 border border-[#2e2e2e] text-zinc-400 hover:text-rose-400 transition-all"
+                  className="p-1.5 rounded-full bg-[#1f1f1f] hover:bg-rose-500/10 hover:border-rose-500/30 border border-[#2e2e2e] text-zinc-500 hover:text-rose-400 transition-all"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                 </button>
@@ -196,9 +196,9 @@ export function Navbar() {
               <div className="flex items-center gap-2">
                 <Link
                   href="/login"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-zinc-300 hover:text-white hover:bg-[#1f1f1f] transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-zinc-700 hover:text-white hover:bg-zinc-100 transition-colors"
                 >
-                  <LogIn className="w-3.5 h-3.5 text-zinc-400" />
+                  <LogIn className="w-3.5 h-3.5 text-zinc-500" />
                   <span>Sign In</span>
                 </Link>
 
@@ -214,7 +214,7 @@ export function Navbar() {
 
             <a
               href={process.env.NEXT_PUBLIC_DASHBOARD_URL || '/panel'}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1f1f1f] hover:bg-[#262626] border border-[#2e2e2e] text-zinc-300 text-xs font-medium transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1f1f1f] hover:bg-[#262626] border border-[#2e2e2e] text-zinc-700 text-xs font-medium transition-colors"
             >
               <span>Operator Dashboard</span>
               <ArrowUpRight className="w-3.5 h-3.5 text-[#3ECF8E]" />
@@ -226,20 +226,20 @@ export function Navbar() {
       {/* Subscription Upgrade Modal */}
       {isUpgradeOpen && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#171717] border border-[#262626] rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-[#262626] pb-4">
+          <div className="bg-white border border-zinc-200 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-6">
+            <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
               <div>
-                <h2 className="text-lg font-semibold text-zinc-100 flex items-center gap-2 font-sans">
+                <h2 className="text-lg font-semibold text-zinc-900 flex items-center gap-2 font-sans">
                   <Zap className="w-5 h-5 text-[#3ECF8E]" />
                   <span>Account Subscription & Resource Entitlements</span>
                 </h2>
-                <p className="text-xs text-zinc-400 mt-1 font-sans">
-                  Current tier: <strong className="text-zinc-200 font-mono">{user?.subscriptionTier} Tier</strong> ({user?.userName})
+                <p className="text-xs text-zinc-500 mt-1 font-sans">
+                  Current tier: <strong className="text-zinc-800 font-mono">{user?.subscriptionTier} Tier</strong> ({user?.userName})
                 </p>
               </div>
               <button
                 onClick={() => setIsUpgradeOpen(false)}
-                className="text-zinc-400 hover:text-white rounded-full p-1.5 hover:bg-[#222222] transition-colors"
+                className="text-zinc-500 hover:text-white rounded-full p-1.5 hover:bg-zinc-100 transition-colors"
               >
                 <X className="w-4 h-4" />
                 <span className="sr-only">Close</span>
@@ -248,16 +248,16 @@ export function Navbar() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Free Tier Card */}
-              <div className={`p-5 rounded-xl border space-y-4 ${user?.subscriptionTier === 'Free' ? 'bg-[#1f1f1f] border-[#3ECF8E]/40' : 'bg-[#141414] border-[#262626]'}`}>
+              <div className={`p-5 rounded-xl border space-y-4 ${user?.subscriptionTier === 'Free' ? 'bg-[#1f1f1f] border-[#3ECF8E]/40' : 'bg-zinc-50 border-zinc-200'}`}>
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-semibold text-zinc-100 text-base font-sans">Developer Free Tier</h3>
-                    <p className="text-xs text-zinc-400 mt-0.5 font-sans">Zero cost, ideal for algorithmic research</p>
+                    <h3 className="font-semibold text-zinc-900 text-base font-sans">Developer Free Tier</h3>
+                    <p className="text-xs text-zinc-500 mt-0.5 font-sans">Zero cost, ideal for algorithmic research</p>
                   </div>
                   <span className="text-xs font-mono text-[#3ECF8E] font-semibold">$0/mo</span>
                 </div>
 
-                <ul className="text-xs space-y-2 text-zinc-300 font-sans">
+                <ul className="text-xs space-y-2 text-zinc-700 font-sans">
                   <li className="flex items-center gap-2">
                     <Check className="w-3.5 h-3.5 text-[#3ECF8E] shrink-0" />
                     <span>1 Local / Remote Engine Instance</span>
@@ -284,16 +284,16 @@ export function Navbar() {
               </div>
 
               {/* Pro Tier Card */}
-              <div className={`p-5 rounded-xl border space-y-4 ${user?.subscriptionTier === 'Pro' ? 'bg-[#1f1f1f] border-[#3ECF8E]/40' : 'bg-[#141414] border-[#262626]'}`}>
+              <div className={`p-5 rounded-xl border space-y-4 ${user?.subscriptionTier === 'Pro' ? 'bg-[#1f1f1f] border-[#3ECF8E]/40' : 'bg-zinc-50 border-zinc-200'}`}>
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-semibold text-zinc-100 text-base font-sans">Pro Trader Tier</h3>
-                    <p className="text-xs text-zinc-400 mt-0.5 font-sans">High-frequency capital deployment</p>
+                    <h3 className="font-semibold text-zinc-900 text-base font-sans">Pro Trader Tier</h3>
+                    <p className="text-xs text-zinc-500 mt-0.5 font-sans">High-frequency capital deployment</p>
                   </div>
                   <span className="text-xs font-mono text-[#3ECF8E] font-semibold">$199/mo</span>
                 </div>
 
-                <ul className="text-xs space-y-2 text-zinc-300 font-sans">
+                <ul className="text-xs space-y-2 text-zinc-700 font-sans">
                   <li className="flex items-center gap-2">
                     <Check className="w-3.5 h-3.5 text-[#3ECF8E] shrink-0" />
                     <span>5 Engine Instances (Live execution)</span>
