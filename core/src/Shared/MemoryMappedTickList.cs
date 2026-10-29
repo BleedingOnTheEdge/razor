@@ -154,10 +154,9 @@ public sealed class MemoryMappedTickList : IReadOnlyList<Tick>, IDisposable
 
         _disposed = true;
 
-        _accessor?.SafeMemoryMappedViewHandle.ReleasePointer();
-
         if (disposing)
         {
+            _accessor?.SafeMemoryMappedViewHandle.ReleasePointer();
             _accessor?.Dispose();
             _mmf?.Dispose();
         }

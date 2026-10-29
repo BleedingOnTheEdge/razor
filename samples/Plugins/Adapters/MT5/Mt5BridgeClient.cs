@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Sockets;
-using Abstractions.Adapters;
-using Abstractions.Shared;
+using Sdk.Shared;
+using Sdk.Slots.Adapter;
 
 namespace Samples.Plugins.Adapters.MT5;
 
@@ -123,7 +123,7 @@ internal sealed class Mt5BridgeClient : IDisposable, IAsyncDisposable
             if (msg?.Payload is not null)
             {
                 var dto = msg.Payload.Tick;
-                long netTicks = TimeHelpers.FromUnixSeconds(dto.Time);   // <-- fix here
+                long netTicks = DateTimeOffset.FromUnixTimeSeconds(dto.Time).UtcTicks;
                 var tick = new Tick(netTicks, dto.Bid, dto.Ask, dto.Volume, dto.IsSynthetic);
                 OnTick?.Invoke(msg.Payload.Symbol, tick);
             }

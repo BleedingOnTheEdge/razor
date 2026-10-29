@@ -36,6 +36,7 @@ internal sealed class StreamClientEventsEndpoint(IClientEventBroadcaster broadca
     public override void Configure()
     {
         Get("/api/events/stream");
+        AllowAnonymous();
         Summary(summary =>
         {
             summary.Summary = "Stream real-time events via SSE";
@@ -56,13 +57,24 @@ internal sealed class StreamClientEventsEndpoint(IClientEventBroadcaster broadca
             .SubscribeAsync(request.InstanceId, cancellationToken)
             .ConfigureAwait(false))
         {
-            string payloadJson = JsonSerializer.Serialize(ev, JsonOptions);
-            await HttpContext.Response
-                .WriteAsync($"event: {ev.EventType}\ndata: {payloadJson}\n\n", cancellationToken)
-                .ConfigureAwait(false);
-            await HttpContext.Response.Body
-                .FlushAsync(cancellationToken)
-                .ConfigureAwait(false);
+            try
+            {
+                string payloadJson = JsonSerializer.Serialize(ev, JsonOptions);
+                await HttpContext.Response
+                    .WriteAsync($"event: {ev.EventType}\ndata: {payloadJson}\n\n", cancellationToken)
+                    .ConfigureAwait(false);
+                await HttpContext.Response.Body
+                    .FlushAsync(cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+            catch (Exception) when (cancellationToken.IsCancellationRequested || HttpContext.RequestAborted.IsCancellationRequested)
+            {
+                break;
+            }
         }
     }
 }

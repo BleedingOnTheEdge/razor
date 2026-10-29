@@ -1,9 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <RootNamespace>Samples.Plugins.Adapters.Nobitex</RootNamespace>
     </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\core\src\Sdk\Sdk.csproj" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9" />
+    </ItemGroup>
 
 </Project>

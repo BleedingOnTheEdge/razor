@@ -37,6 +37,14 @@ export default function MarketplaceLoginPage() {
   };
 
   const handleQuickDemo = async (preset: 'admin' | 'operator' | 'developer' | 'trader') => {
+    const creds = {
+      admin: { name: 'admin-operator', pass: 'admin123' },
+      operator: { name: 'dev-operator', pass: 'operator123' },
+      developer: { name: 'algo-developer', pass: 'dev123' },
+      trader: { name: 'pro-trader', pass: 'trader123' },
+    }[preset];
+    setUserName(creds.name);
+    setPassword(creds.pass);
     setError(null);
     setIsSubmitting(true);
     try {
@@ -199,6 +207,7 @@ export default function MarketplaceLoginPage() {
                   <span>Developer</span>
                 </div>
                 <div className="text-[10px] text-zinc-400 mt-0.5">Author Additives</div>
+                <div className="text-[9px] font-mono text-zinc-500 mt-1">algo-developer / dev123</div>
               </button>
 
               <button
@@ -212,6 +221,7 @@ export default function MarketplaceLoginPage() {
                   <span>Pro Trader</span>
                 </div>
                 <div className="text-[10px] text-zinc-400 mt-0.5">Live Algorithms</div>
+                <div className="text-[9px] font-mono text-zinc-500 mt-1">pro-trader / trader123</div>
               </button>
 
               <button
@@ -225,6 +235,7 @@ export default function MarketplaceLoginPage() {
                   <span>Operator</span>
                 </div>
                 <div className="text-[10px] text-zinc-400 mt-0.5">Triage & Support</div>
+                <div className="text-[9px] font-mono text-zinc-500 mt-1">dev-operator / operator123</div>
               </button>
 
               <button
@@ -238,6 +249,7 @@ export default function MarketplaceLoginPage() {
                   <span>Admin</span>
                 </div>
                 <div className="text-[10px] text-zinc-400 mt-0.5">Cluster Overseer</div>
+                <div className="text-[9px] font-mono text-zinc-500 mt-1">admin-operator / admin123</div>
               </button>
             </div>
           </div>

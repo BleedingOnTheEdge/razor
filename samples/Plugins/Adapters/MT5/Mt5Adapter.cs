@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using Abstractions.Adapters;
-using Abstractions.Shared;
+using Sdk.Shared;
+using Sdk.Slots.Adapter;
 using Microsoft.Extensions.Logging;
 
 #pragma warning disable CA1848 // LoggerMessage delegates are not required for samples.
@@ -16,7 +16,7 @@ namespace Samples.Plugins.Adapters.MT5;
 [AdapterName("MT5")]
 [SuppressMessage("Design", "CA1812:Avoid uninstantiated internal classes",
     Justification = "Instantiated by the Chronos plugin loader via attribute discovery.")]
-internal sealed class Mt5Adapter : IAdapter, IDisposable
+internal sealed class Mt5Adapter : IAdapterCapability, IDisposable
 {
     private readonly ILogger<Mt5Adapter> _logger;
     private readonly Mt5AdapterConfiguration _config;
@@ -39,7 +39,19 @@ internal sealed class Mt5Adapter : IAdapter, IDisposable
     // =======================================================
 
     /// <inheritdoc/>
-    public string AdapterName => "MT5";
+    public string Name => "MT5";
+
+    /// <summary>Adapter name.</summary>
+    public string AdapterName => Name;
+
+    /// <inheritdoc/>
+    public bool SupportsHistoricalData => true;
+
+    /// <inheritdoc/>
+    public bool SupportsLiveData => true;
+
+    /// <inheritdoc/>
+    public bool SupportsExecution => true;
 
     /// <inheritdoc/>
     public IMarketCalculator Calculator => _calculator;
@@ -156,7 +168,6 @@ internal sealed class Mt5Adapter : IAdapter, IDisposable
 
         _bridge = new Mt5BridgeClient(_config);
         _bridge.OnTick += (symbol, tick) => OnTickReceived?.Invoke(symbol, tick);
-        // TODO: hook OnExecutionUpdate when the EA supports it
         _bridge.OnExecutionUpdate += report => OnExecutionUpdate?.Invoke(report);
 
         int attempts = 0;

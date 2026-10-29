@@ -20,6 +20,8 @@ using System.Collections.Concurrent;
 internal sealed class CommandDispatcher : ICommandDispatcher
 {
     private readonly ConcurrentDictionary<int, ICommandHandler> _handlers = new();
+    private readonly ConcurrentDictionary<string, byte> _activeCorrelations = new();
+    private readonly ConcurrentDictionary<string, DateTimeOffset> _completedCorrelations = new();
     private readonly ILogger<CommandDispatcher> _logger;
     private readonly ICloudConnector _cloudConnector;
     private readonly ITaskManager _taskManager;
@@ -46,6 +48,9 @@ internal sealed class CommandDispatcher : ICommandDispatcher
 
     private static readonly Action<ILogger, Exception?> _logSendResponseError =
         LoggerMessage.Define(LogLevel.Error, 4, "Error sending command response.");
+
+    private static readonly Action<ILogger, int, string, Exception?> _logDuplicateInFlightCommand =
+        LoggerMessage.Define<int, string>(LogLevel.Warning, 5, "Command {CommandId} with correlation {CorrelationId} is already in-flight. Dropping duplicate dispatch.");
 
     /// <summary>Initialises a new instance of the <see cref="CommandDispatcher"/> class.</summary>
     public CommandDispatcher(
@@ -76,6 +81,8 @@ internal sealed class CommandDispatcher : ICommandDispatcher
     private void RegisterDefaultHandlers()
     {
         // System Management (1000-1099)
+        this.RegisterHandler(PingHandler.Id, new PingHandler(_cloudConnector, this, _loggerFactory.CreateLogger<PingHandler>()));
+        this.RegisterHandler(SoftReloadHandler.Id, new SoftReloadHandler(_cloudConnector, this, _extensionManager, _loggerFactory.CreateLogger<SoftReloadHandler>()));
         this.RegisterHandler(CommandIds.GetStatus, new GetStatusHandler(_cloudConnector, this, _loggerFactory.CreateLogger<GetStatusHandler>(), _taskManager));
         this.RegisterHandler(CommandIds.PauseEngine, new PauseEngineHandler(_cloudConnector, this, _taskManager, _loggerFactory.CreateLogger<PauseEngineHandler>()));
         this.RegisterHandler(CommandIds.ResumeEngine, new ResumeEngineHandler(_cloudConnector, this, _taskManager, _loggerFactory.CreateLogger<ResumeEngineHandler>()));
@@ -103,7 +110,7 @@ internal sealed class CommandDispatcher : ICommandDispatcher
         this.RegisterHandler(CommandIds.ListBacktests, new ListBacktestsHandler(_cloudConnector, this, _taskManager, _loggerFactory.CreateLogger<ListBacktestsHandler>()));
 
         // Optimisation (1300-1399)
-        this.RegisterHandler(CommandIds.StartOptimization, new StartOptimizationHandler(_cloudConnector, this, _taskManager, _loggerFactory.CreateLogger<StartOptimizationHandler>()));
+        this.RegisterHandler(CommandIds.StartOptimization, new StartOptimizationHandler(_cloudConnector, this, _taskManager, _loggerFactory.CreateLogger<StartOptimizationHandler>(), _extensionManager));
         this.RegisterHandler(CommandIds.CancelOptimization, new CancelOptimizationHandler(_cloudConnector, this, _taskManager, _loggerFactory.CreateLogger<CancelOptimizationHandler>()));
         this.RegisterHandler(CommandIds.PauseOptimization, new PauseOptimizationHandler(_cloudConnector, this, _taskManager, _loggerFactory.CreateLogger<PauseOptimizationHandler>()));
         this.RegisterHandler(CommandIds.ResumeOptimization, new ResumeOptimizationHandler(_cloudConnector, this, _taskManager, _loggerFactory.CreateLogger<ResumeOptimizationHandler>()));
@@ -177,14 +184,75 @@ internal sealed class CommandDispatcher : ICommandDispatcher
         _logRegisterHandler(_logger, commandId, null);
     }
 
+    private ICommandHandler? ResolveHandler(int commandId, string? commandType)
+    {
+        if (!string.IsNullOrWhiteSpace(commandType))
+        {
+            int? mappedId = commandType.ToUpperInvariant() switch
+            {
+                "PING" => PingHandler.Id,
+                "SOFTRELOAD" => SoftReloadHandler.Id,
+                "GETSTATUS" or "STATUS" => CommandIds.GetStatus,
+                "PAUSEENGINE" => CommandIds.PauseEngine,
+                "RESUMEENGINE" => CommandIds.ResumeEngine,
+                "SHUTDOWN" => CommandIds.Shutdown,
+                "RESTART" => CommandIds.Restart,
+                "PAUSETRADING" or "PAUSELIVE" => CommandIds.PauseLive,
+                "RESUMETRADING" or "RESUMELIVE" => CommandIds.ResumeLive,
+                "STARTLIVE" => CommandIds.StartLive,
+                "STOPLIVE" => CommandIds.StopLive,
+                "GETLIVESTATE" => CommandIds.GetLiveState,
+                "SYNCPOSITIONS" or "SYNCLIVE" => CommandIds.SyncLive,
+                "CONFIGURERISKCONTROLS" or "SETLIVECONFIG" => CommandIds.SetLiveConfig,
+                "INJECTGENES" => CommandIds.InjectGenes,
+                "GETLIVEMETRICS" or "GETMETRICS" or "METRICS" => CommandIds.GetLiveMetrics,
+                "RELOADEXTENSIONS" => CommandIds.ReloadExtensions,
+                "LISTEXTENSIONS" => CommandIds.ListExtensions,
+                "DRAIN" or "EMERGENCYSTOP" => CommandIds.EmergencyStop,
+                _ => null
+            };
+
+            if (mappedId.HasValue && _handlers.TryGetValue(mappedId.Value, out var mappedHandler))
+            {
+                return mappedHandler;
+            }
+        }
+
+        if (_handlers.TryGetValue(commandId, out var handler))
+        {
+            return handler;
+        }
+
+        return null;
+    }
+
     public override async Task DispatchAsync(CloudCommand command, CancellationToken cancellationToken)
     {
-        if (!_handlers.TryGetValue(command.CommandId, out var handler))
+        var handler = ResolveHandler(command.CommandId, command.CommandType);
+        if (handler is null)
         {
             _logNoHandler(_logger, command.CommandId, null);
             await this.SendResponseAsync(command.CommandId, command.CorrelationId ?? string.Empty, null,
-                $"Command {command.CommandId} not supported.", cancellationToken).ConfigureAwait(false);
+                $"Command {command.CommandId} ({command.CommandType}) not supported.", cancellationToken).ConfigureAwait(false);
             return;
+        }
+
+        string? correlationId = command.CorrelationId;
+        if (!string.IsNullOrWhiteSpace(correlationId))
+        {
+            if (!_activeCorrelations.TryAdd(correlationId, 0))
+            {
+                _logDuplicateInFlightCommand(_logger, command.CommandId, correlationId, null);
+                return;
+            }
+
+            if (_completedCorrelations.TryGetValue(correlationId, out var finishedAt) &&
+                DateTimeOffset.UtcNow - finishedAt < TimeSpan.FromMinutes(2))
+            {
+                _logDuplicateInFlightCommand(_logger, command.CommandId, correlationId, null);
+                _activeCorrelations.TryRemove(correlationId, out _);
+                return;
+            }
         }
 
         try
@@ -196,6 +264,14 @@ internal sealed class CommandDispatcher : ICommandDispatcher
             _logCommandError(_logger, command.CommandId, ex);
             await this.SendResponseAsync(command.CommandId, command.CorrelationId ?? string.Empty, null,
                 ex.Message, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            if (!string.IsNullOrWhiteSpace(correlationId))
+            {
+                _activeCorrelations.TryRemove(correlationId, out _);
+                _completedCorrelations[correlationId] = DateTimeOffset.UtcNow;
+            }
         }
     }
 
@@ -225,6 +301,32 @@ internal sealed class CommandDispatcher : ICommandDispatcher
         try
         {
             await _cloudConnector.SendAsync(response, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logSendResponseError(_logger, ex);
+        }
+    }
+
+    public override async Task SendProgressAsync(int commandId, string correlationId, object? progress,
+        CancellationToken cancellationToken = default)
+    {
+        if (!_cloudConnector.IsConnected)
+        {
+            return;
+        }
+
+        var message = new CloudMessage
+        {
+            MessageType = "CommandProgress",
+            Encrypted = true,
+            CorrelationId = correlationId,
+            Payload = progress ?? new { CommandId = commandId, Timestamp = DateTime.UtcNow }
+        };
+
+        try
+        {
+            await _cloudConnector.SendAsync(message, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

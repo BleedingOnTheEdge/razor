@@ -219,7 +219,7 @@ public static class GeneInjector
         }
 
         int steps = (int)Math.Round((max - min) / step);
-        return steps < 0 ? min : min + (rng.Next(steps + 1) * step);
+        return min + (rng.Next(steps + 1) * step);
     }
 
     /// <summary>Builds the complete chromosome schema (properties + optional neural weights).</summary>

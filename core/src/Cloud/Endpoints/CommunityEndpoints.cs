@@ -60,6 +60,7 @@ internal sealed class GetCommunityThreadsEndpoint(CommunityService community)
     public override void Configure()
     {
         Get("/api/community/threads");
+        AllowAnonymous();
         Summary(s =>
         {
             s.Summary = "List community discussion threads";
@@ -84,6 +85,7 @@ internal sealed class GetCommunityThreadEndpoint(CommunityService community)
     public override void Configure()
     {
         Get("/api/community/threads/{threadId}");
+        AllowAnonymous();
         Summary(s =>
         {
             s.Summary = "Get community discussion thread";
@@ -125,6 +127,13 @@ internal sealed class CreateCommunityThreadEndpoint(CommunityService community)
     /// <inheritdoc/>
     public override async Task HandleAsync(CreateCommunityThreadRequest req, CancellationToken ct)
     {
+        if (string.IsNullOrWhiteSpace(req.Title) || string.IsNullOrWhiteSpace(req.Content))
+        {
+            AddError("Title and Content cannot be empty.");
+            await Send.ErrorsAsync(StatusCodes.Status400BadRequest, ct).ConfigureAwait(false);
+            return;
+        }
+
         CommunityThread thread = await community.CreateThreadAsync(
             req.Title,
             req.Category,
@@ -156,6 +165,13 @@ internal sealed class AddCommunityReplyEndpoint(CommunityService community)
     /// <inheritdoc/>
     public override async Task HandleAsync(AddCommunityReplyRequest req, CancellationToken ct)
     {
+        if (string.IsNullOrWhiteSpace(req.Content))
+        {
+            AddError("Reply content cannot be empty.");
+            await Send.ErrorsAsync(StatusCodes.Status400BadRequest, ct).ConfigureAwait(false);
+            return;
+        }
+
         Guid threadId = Route<Guid>("threadId");
         CommunityReply? reply = await community.AddReplyAsync(
             threadId,

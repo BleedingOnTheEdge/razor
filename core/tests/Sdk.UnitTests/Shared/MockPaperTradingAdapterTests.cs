@@ -208,4 +208,79 @@ public sealed class MockPaperTradingAdapterTests
         await adapter.DeleteHistoryFileAsync(histResp.BinaryFilePath);
         await adapter.DeleteHistoryFileAsync("nonexistent_path_file.bin");
     }
+
+    [Fact]
+    public async Task Adapter_EdgeCases_CoverAllBranches()
+    {
+        var adapter = new MockPaperTradingAdapter();
+        await adapter.ConnectAsync(CancellationToken.None);
+
+        // 1. Symbol properties: null, whitespace, normalized match, new symbol
+        Assert.Null(await adapter.GetSymbolPropertiesAsync(null!));
+        Assert.Null(await adapter.GetSymbolPropertiesAsync("   "));
+        SymbolProperties? normProps = await adapter.GetSymbolPropertiesAsync("btc_usd");
+        Assert.NotNull(normProps);
+        SymbolProperties? newProps = await adapter.GetSymbolPropertiesAsync("NEW_ASSET");
+        Assert.NotNull(newProps);
+
+        // 2. Execute with normalized symbol key (not in direct dict, but normalized match)
+        ExecutionReport? execReport = null;
+        adapter.OnExecutionUpdate += r => execReport = r;
+
+        var buyLimitReq = new AdapterOrderRequest
+        {
+            Symbol = "eth_usd",
+            Type = OrderType.BuyLimit,
+            Volume = 0.5
+        };
+        AdapterOrderResponse buyLimitResp = await adapter.ExecuteOrderAsync(buyLimitReq);
+        Assert.True(buyLimitResp.Success);
+        Assert.NotNull(execReport);
+        Assert.Equal(buyLimitResp.Ticket, execReport.Ticket);
+
+        var buyStopReq = new AdapterOrderRequest
+        {
+            Symbol = "BTC-USD",
+            Type = OrderType.BuyStop,
+            Volume = 0.2
+        };
+        AdapterOrderResponse buyStopResp = await adapter.ExecuteOrderAsync(buyStopReq);
+        Assert.True(buyStopResp.Success);
+
+        // 3. Modify with both null (no change to sl/tp)
+        AdapterOrderResponse modBothNull = await adapter.ModifyOrderAsync(buyLimitResp.Ticket, null, null);
+        Assert.True(modBothNull.Success);
+
+        // 4. Close with execution update listener
+        ExecutionReport? closeReport = null;
+        adapter.OnExecutionUpdate += r => closeReport = r;
+        AdapterOrderResponse closeResp = await adapter.ClosePositionAsync(buyLimitResp.Ticket);
+        Assert.True(closeResp.Success);
+        Assert.NotNull(closeReport);
+
+        // 5. Test pending order cancellation via reflection
+        var pendingDictField = typeof(MockPaperTradingAdapter)
+            .GetField("_pendingOrders", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        Assert.NotNull(pendingDictField);
+        var pendingDict = pendingDictField.GetValue(adapter) as System.Collections.Concurrent.ConcurrentDictionary<long, Order>;
+        Assert.NotNull(pendingDict);
+
+        long pendingTicket = 777777;
+        pendingDict[pendingTicket] = new Order
+        {
+            Ticket = pendingTicket,
+            Symbol = "BTC-USD",
+            Type = OrderType.BuyLimit,
+            Volume = 1.0,
+            Price = 60000.0
+        };
+
+        IReadOnlyList<Order> pendingList = await adapter.GetPendingOrdersAsync();
+        Assert.Contains(pendingList, o => o.Ticket == pendingTicket);
+
+        AdapterOrderResponse cancelPendingResp = await adapter.CancelAsync(pendingTicket);
+        Assert.True(cancelPendingResp.Success);
+        Assert.Equal(1.0, cancelPendingResp.ExecutedVolume);
+    }
+
 }

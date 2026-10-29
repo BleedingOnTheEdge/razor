@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------------
 
-export * from './types.js';
-export * from './paths.js';
+export * from './types';
+export * from './paths';
 
-export type EngineInstancePayload = import('./paths.js').RazorPaths['/api/instances']['get']['responses'][200]['content']['application/json'][number];
+export type EngineInstancePayload = import('./paths').RazorPaths['/api/instances']['get']['responses'][200]['content']['application/json'][number];

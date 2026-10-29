@@ -32,7 +32,7 @@ internal sealed class CloudTestDatabase : IDbContextFactory<CloudDbContext>, IDi
     /// <summary>Initialises a new instance of the <see cref="CloudTestDatabase"/> class.</summary>
     internal CloudTestDatabase()
     {
-        _connection = new SqliteConnection("DataSource=:memory:");
+        _connection = new SqliteConnection($"Data Source=file:memdb_{Guid.NewGuid():N}?mode=memory&cache=shared");
         _connection.Open();
         _options = new DbContextOptionsBuilder<CloudDbContext>().UseSqlite(_connection).Options;
 

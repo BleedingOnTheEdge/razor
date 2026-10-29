@@ -29,6 +29,10 @@ internal abstract class ICommandDispatcher
     public abstract Task SendResponseAsync(int commandId, string correlationId, object? result, string? error = null,
         CancellationToken cancellationToken = default);
 
+    /// <summary>Sends a command progress report.</summary>
+    public virtual Task SendProgressAsync(int commandId, string correlationId, object? progress,
+        CancellationToken cancellationToken = default) => Task.CompletedTask;
+
     /// <summary>Stops all user tasks (live, backtest, optimization).</summary>
     public abstract Task StopUserTasksAsync(CancellationToken cancellationToken);
 }

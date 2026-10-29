@@ -20,5 +20,19 @@ node_modules/
 dist/
 coverage/
 *.tsbuildinfo
+/bin/
+/obj/
+/artifacts/
+/publish/
+wwwroot/
+*.db
+*.sqlite
+*.sqlite*
+data/
 
 .env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class

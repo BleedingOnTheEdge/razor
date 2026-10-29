@@ -69,7 +69,7 @@ export function formatHash(hash: string | null | undefined, length = 8): string 
   return `${hash.slice(0, length)}…${hash.slice(-length)}`;
 }
 
-/** Badge styling classes for an engine instance status. */
+/** Badge styling classes for an engine instance status with Supabase emerald accents. */
 export function getInstanceStatusBadge(status: EngineInstanceStatus | string): {
   label: string;
   className: string;
@@ -78,7 +78,7 @@ export function getInstanceStatusBadge(status: EngineInstanceStatus | string): {
     case 'Active':
       return {
         label: 'Active',
-        className: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
+        className: 'bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/25',
       };
     case 'Draining':
       return {
@@ -98,7 +98,7 @@ export function getInstanceStatusBadge(status: EngineInstanceStatus | string): {
   }
 }
 
-/** Badge styling classes for a flow run status. */
+/** Badge styling classes for a flow run status with Supabase emerald accents. */
 export function getRunStatusBadge(status: RunStatus | string): {
   label: string;
   className: string;
@@ -107,12 +107,12 @@ export function getRunStatusBadge(status: RunStatus | string): {
     case 'Running':
       return {
         label: 'Running',
-        className: 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 animate-pulse',
+        className: 'bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/25 animate-pulse',
       };
     case 'Completed':
       return {
         label: 'Completed',
-        className: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
+        className: 'bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/25',
       };
     case 'Paused':
       return {
@@ -120,8 +120,9 @@ export function getRunStatusBadge(status: RunStatus | string): {
         className: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
       };
     case 'Failed':
+    case 'Faulted':
       return {
-        label: 'Failed',
+        label: 'Faulted',
         className: 'bg-rose-500/10 text-rose-400 border border-rose-500/20',
       };
     case 'Cancelled':
@@ -175,7 +176,7 @@ export function getCommandStatusBadge(status: CommandStatus | string): {
     case 'Completed':
       return {
         label: 'Completed',
-        className: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
+        className: 'bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/25',
       };
     case 'Dispatched':
     case 'Delivered':
@@ -211,7 +212,7 @@ export function getExtensionKindBadge(kind: ExtensionKind | string): {
     case 'Strategy':
       return {
         label: 'Strategy',
-        className: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
+        className: 'bg-[#3ECF8E]/10 text-[#3ECF8E] border border-[#3ECF8E]/25',
       };
     case 'Indicator':
       return {
@@ -235,3 +236,62 @@ export function getExtensionKindBadge(kind: ExtensionKind | string): {
       };
   }
 }
+
+// -----------------------------------------------------------------------------
+// Supabase-Style Custom Design System Components (shadcn on Radix UI Primitives)
+// -----------------------------------------------------------------------------
+export { cn } from './lib/utils';
+export { Button, type ButtonProps, type ButtonVariant, type ButtonSize } from './components/Button';
+export {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+  type CardProps,
+} from './components/Card';
+export { StatCard, type StatCardProps } from './components/StatCard';
+export { Badge, type BadgeProps, type BadgeVariant } from './components/Badge';
+export {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+  DialogOverlay,
+  DialogPortal,
+} from './components/Dialog';
+export { ModalSheet, type ModalSheetProps } from './components/ModalSheet';
+export {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuCheckboxItem,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuGroup,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuRadioGroup,
+} from './components/DropdownMenu';
+export { Tabs, TabsList, TabsTrigger, TabsContent } from './components/Tabs';
+export {
+  SegmentedControl,
+  type SegmentedControlProps,
+  type SegmentedControlOption,
+  type SegmentedControlOption as SegmentedOption,
+} from './components/SegmentedControl';
+export { ThemeToggle, type ThemeToggleProps, type Theme } from './components/ThemeToggle';
+export { Input, type InputProps } from './components/Input';
+export { Textarea, type TextareaProps } from './components/Textarea';
+export { Label, type LabelProps } from './components/Label';
+export { Switch } from './components/Switch';
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './components/Tooltip';
+export { Separator } from './components/Separator';

@@ -16,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen bg-zinc-950 text-zinc-100 font-sans antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+      <body className="min-h-screen bg-[#0f0f0f] text-[#ededed] font-sans antialiased selection:bg-[#3ECF8E]/30 selection:text-[#3ECF8E]">
         <AuthProvider>
           <ToastProvider>
             <DashboardShell>{children}</DashboardShell>

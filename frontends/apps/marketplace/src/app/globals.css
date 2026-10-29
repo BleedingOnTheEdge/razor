@@ -1,13 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Source+Code+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
+:root,
+.dark {
   color-scheme: dark;
+  --background: 0 0% 5.9%; /* #0f0f0f */
+  --foreground: 0 0% 93%; /* #ededed */
+  --card: 0 0% 9%; /* #171717 */
+  --card-foreground: 0 0% 93%;
+  --popover: 0 0% 9%; /* #171717 */
+  --popover-foreground: 0 0% 93%;
+  --primary: 154 59% 53%; /* #3ECF8E */
+  --primary-foreground: 0 0% 5.9%; /* #0f0f0f */
+  --secondary: 0 0% 13.3%; /* #222222 */
+  --secondary-foreground: 0 0% 93%;
+  --muted: 0 0% 14.9%; /* #262626 */
+  --muted-foreground: 240 5% 65%; /* #a1a1aa */
+  --accent: 0 0% 14.9%; /* #262626 */
+  --accent-foreground: 154 59% 53%; /* #3ECF8E */
+  --destructive: 356 75% 53%; /* #ef4444 */
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 14.9%; /* #262626 */
+  --input: 0 0% 14.9%; /* #262626 */
+  --ring: 154 59% 53%; /* #3ECF8E */
+  --radius: 0.5rem;
 }
 
+.light {
+  color-scheme: light;
+  --background: 0 0% 98%;
+  --foreground: 0 0% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 10%;
+  --primary: 154 59% 45%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 94%;
+  --secondary-foreground: 0 0% 10%;
+  --muted: 0 0% 92%;
+  --muted-foreground: 0 0% 40%;
+  --accent: 0 0% 92%;
+  --accent-foreground: 154 59% 45%;
+  --destructive: 356 75% 53%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 88%;
+  --input: 0 0% 88%;
+  --ring: 154 59% 45%;
+}
+
+html,
 body {
-  background-color: #09090b;
-  color: #f4f4f5;
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: #0f0f0f;
+  color: #ededed;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.011em;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Supabase near-black dark surfaces */
+main,
+section,
+.content-area,
+.bg-page {
+  background-color: #0f0f0f;
+}
+
+/* Dark-mode native Form controls */
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  background-color: #171717;
+  color: #ededed;
+  border: 1px solid #262626;
+  border-radius: 8px;
+  font-size: 13px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #3ECF8E;
+  box-shadow: 0 0 0 1px #3ECF8E;
+}
+
+/* Supabase-style dense, clean financial tables */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #a1a1aa;
+  background-color: #171717;
+  padding: 8px 12px;
+  border-bottom: 1px solid #262626;
+}
+
+td {
+  font-size: 13px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #1f1f1f;
+}
+
+tbody tr:hover {
+  background-color: #171717;
+}
+
+/* Headings with Inter font */
+h1 {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ededed;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #ededed;
+  letter-spacing: -0.015em;
+}
+
+h3 {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ededed;
+  letter-spacing: -0.01em;
+}
+
+/* Source Code Pro for code, hashes, coordinates, telemetry numbers */
+.font-mono,
+code,
+pre,
+kbd,
+.tabular-nums {
+  font-family: 'Source Code Pro', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-feature-settings: "tnum" on, "lnum" on;
+}
+
+/* Supabase emerald #3ECF8E for positive metrics and returns */
+.text-profit,
+.text-emerald-400,
+.text-emerald-500 {
+  color: #3ECF8E !important;
+  font-weight: 600 !important;
+}
+
+/* Loss and error accents */
+.text-loss,
+.text-rose-400,
+.text-rose-500 {
+  color: #f87171 !important;
+  font-weight: 600 !important;
+}
+
+/* Smooth transitions */
+button,
+a {
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, opacity 150ms ease;
+}
+
+/* Global button text wrapping rule */
+button,
+a.button,
+[role="button"],
+.btn {
+  text-wrap: nowrap !important;
+  white-space: nowrap !important;
+}
+
+/* Clean dark scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f0f0f;
+}
+::-webkit-scrollbar-thumb {
+  background: #262626;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #383838;
 }

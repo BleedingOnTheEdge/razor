@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# -----------------------------------------------------------------------------
+# Razor Engine native CLI launcher
+# -----------------------------------------------------------------------------
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+BIN_PATH="$REPO_ROOT/bin/Engine"
+
+if [[ ! -x "$BIN_PATH" ]]; then
+  echo "[engine] Binary not found. Building host executable..."
+  node "$REPO_ROOT/scripts/build-engine.mjs"
+fi
+
+exec "$BIN_PATH" "$@"

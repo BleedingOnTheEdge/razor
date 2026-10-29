@@ -844,6 +844,7 @@ public sealed class TaskManagerTests : IDisposable
         public Task RemoveExtensionAsync(string name, CancellationToken cancellationToken) => Task.CompletedTask;
         public Task<object> GetManifestAsync(CancellationToken cancellationToken) => Task.FromResult<object>(new object());
         public IStrategyCapability? CreateTransientStrategy(string strategyName) => null;
+        public IAdapterCapability? CreateTransientAdapter(string adapterName) => null;
         public void EnableBehaviorLoggingOnStrategy(string sessionId, int snapshotIntervalSeconds = 10)
         {
         }

@@ -45,7 +45,10 @@ internal enum RunKind
     Optimization,
 
     /// <summary>A walk-forward analysis flow.</summary>
-    WalkForward
+    WalkForward,
+
+    /// <summary>A live trading execution flow.</summary>
+    Live
 }
 
 /// <summary>

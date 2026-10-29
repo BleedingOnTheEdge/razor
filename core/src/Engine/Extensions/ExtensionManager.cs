@@ -134,7 +134,7 @@ internal sealed class ExtensionManager : IExtensionManager, IDisposable
         _logActivatingExtensions(_logger, adapterName, strategyName, nnModelName ?? "none", string.Join(",", hookPluginNames), null);
 
         // 1. Instantiate adapter
-        if (!_catalog.AdapterNames.Contains(adapterName))
+        if (!_catalog.ContainsAdapter(adapterName) && !_catalog.AdapterNames.Contains(adapterName))
         {
             throw new InvalidOperationException($"Adapter '{adapterName}' not found.");
         }
@@ -142,7 +142,7 @@ internal sealed class ExtensionManager : IExtensionManager, IDisposable
         _logExtensionActivated(_logger, $"Adapter: {adapterName}", null);
 
         // 2. Instantiate strategy
-        if (!_catalog.StrategyNames.Contains(strategyName))
+        if (!_catalog.ContainsStrategy(strategyName) && !_catalog.StrategyNames.Contains(strategyName))
         {
             throw new InvalidOperationException($"Strategy '{strategyName}' not found.");
         }
@@ -255,11 +255,17 @@ internal sealed class ExtensionManager : IExtensionManager, IDisposable
             throw new ArgumentException("Invalid extension name or binary data.");
         }
 
-        _logDeployingExtension(_logger, name, binaryData.Length, null);
+        string safeName = Path.GetFileName(name);
+        if (string.IsNullOrWhiteSpace(safeName))
+        {
+            throw new ArgumentException("Invalid extension name.");
+        }
+
+        _logDeployingExtension(_logger, safeName, binaryData.Length, null);
 
         await Task.Run(() =>
         {
-            var extensionPath = Path.Combine(_basePath, "Plugins", $"{name}.dll");
+            var extensionPath = Path.Combine(_basePath, "Plugins", $"{safeName}.dll");
             var directory = Path.GetDirectoryName(extensionPath);
             if (directory != null)
             {
@@ -269,16 +275,27 @@ internal sealed class ExtensionManager : IExtensionManager, IDisposable
             File.WriteAllBytes(extensionPath, binaryData);
         }, cancellationToken).ConfigureAwait(false);
 
-        _logExtensionDeployed(_logger, name, null);
+        _logExtensionDeployed(_logger, safeName, null);
     }
 
     /// <inheritdoc/>
     public async Task RemoveExtensionAsync(string name, CancellationToken cancellationToken)
     {
-        _logRemovingExtension(_logger, name, null);
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Invalid extension name.");
+        }
+
+        string safeName = Path.GetFileName(name);
+        if (string.IsNullOrWhiteSpace(safeName))
+        {
+            throw new ArgumentException("Invalid extension name.");
+        }
+
+        _logRemovingExtension(_logger, safeName, null);
         await Task.Run(() =>
         {
-            var extensionPath = Path.Combine(_basePath, "Plugins", $"{name}.dll");
+            var extensionPath = Path.Combine(_basePath, "Plugins", $"{safeName}.dll");
             if (File.Exists(extensionPath))
             {
                 File.Delete(extensionPath);
@@ -311,17 +328,33 @@ internal sealed class ExtensionManager : IExtensionManager, IDisposable
     {
         if (_catalog == null)
         {
-            throw new InvalidOperationException("Catalog not initialized.");
+            throw new InvalidOperationException("Catalog not initialized. Discovery must run first.");
         }
 
-        if (!_catalog.StrategyNames.Contains(strategyName))
+        if (!_catalog.ContainsStrategy(strategyName) && !_catalog.StrategyNames.Contains(strategyName))
         {
             _logExtensionNotFound(_logger, strategyName, null);
             return null;
         }
 
-        var strategy = _catalog.CreateStrategy(strategyName);
-        return strategy;
+        return _catalog.CreateStrategy(strategyName);
+    }
+
+    /// <inheritdoc/>
+    public IAdapterCapability? CreateTransientAdapter(string adapterName)
+    {
+        if (_catalog == null)
+        {
+            throw new InvalidOperationException("Catalog not initialized. Discovery must run first.");
+        }
+
+        if (!_catalog.ContainsAdapter(adapterName) && !_catalog.AdapterNames.Contains(adapterName))
+        {
+            _logExtensionNotFound(_logger, adapterName, null);
+            return null;
+        }
+
+        return _catalog.CreateAdapter(adapterName);
     }
 
     // ─── Behavior logging support (via internal hook) ──────────

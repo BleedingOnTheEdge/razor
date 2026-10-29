@@ -251,11 +251,16 @@ public sealed class CommunityAndTicketingTests
         CommunityService communityService = factory.Services.GetRequiredService<CommunityService>();
         TicketService ticketService = factory.Services.GetRequiredService<TicketService>();
 
-        // 1. UserService.AuthenticateAsync role fallbacks:
+        // 1. UserService.AuthenticateAsync requires registered users (no backdoor auto-provisioning):
+        AuthSessionResponse? unknownUser = await userService.AuthenticateAsync("unknown-user", "pw").ConfigureAwait(true);
+        Assert.Null(unknownUser);
+
+        await userService.RegisterUserAsync("trader-jane", "pw", null, UserRole.Trader, SubscriptionTier.Free).ConfigureAwait(true);
         AuthSessionResponse? trader = await userService.AuthenticateAsync("trader-jane", "pw").ConfigureAwait(true);
         Assert.NotNull(trader);
         Assert.Equal(UserRole.Trader, trader.User.Role);
 
+        await userService.RegisterUserAsync("plain-user", "pw", null, UserRole.Operator, SubscriptionTier.Free).ConfigureAwait(true);
         AuthSessionResponse? operatorUser = await userService.AuthenticateAsync("plain-user", "pw").ConfigureAwait(true);
         Assert.NotNull(operatorUser);
         Assert.Equal(UserRole.Operator, operatorUser.User.Role);

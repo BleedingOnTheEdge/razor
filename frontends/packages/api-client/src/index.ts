@@ -5,13 +5,14 @@
 // -----------------------------------------------------------------------------
 
 import createClient from 'openapi-fetch';
-import type { RazorPaths } from './schema/paths.js';
+import type { RazorPaths } from './schema/paths';
 
-export * from './schema/index.js';
+export * from './schema';
 
 export interface RazorClientConfig {
   baseUrl: string;
   apiKey?: string;
+  headers?: Record<string, string>;
   fetch?: typeof fetch;
 }
 
@@ -19,7 +20,7 @@ export interface RazorClientConfig {
  * Creates a type-safe client for the Razor Cloud REST API.
  */
 export function createRazorClient(config: RazorClientConfig) {
-  const headers: Record<string, string> = {};
+  const headers: Record<string, string> = { ...config.headers };
   if (config.apiKey) {
     headers['X-Cloud-Management-Key'] = config.apiKey;
   }

@@ -34,7 +34,7 @@ public sealed class FitnessEvaluationContext : IFitnessEvaluationContext
     {
         Chromosome = chromosome ?? throw new ArgumentNullException(nameof(chromosome));
         HookName = hookName;
-        UtcNow = clock?.GetUtcNow() ?? DateTime.UtcNow;
+        UtcNow = clock?.GetUtcNow() ?? DateTime.UnixEpoch;
         CancellationToken = cancellationToken;
     }
 }

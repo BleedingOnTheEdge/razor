@@ -35,6 +35,12 @@ internal sealed class CompleteRunRequest
 
     /// <summary>Gets or sets the best fitness score.</summary>
     public double? BestFitness { get; set; }
+
+    /// <summary>Gets or sets the winning DNA configuration JSON, if present.</summary>
+    public string? WinningDnaJson { get; set; }
+
+    /// <summary>Gets or sets the execution result payload JSON (e.g. trades, equity curve), if present.</summary>
+    public string? ResultPayloadJson { get; set; }
 }
 
 /// <summary>
@@ -68,7 +74,12 @@ internal sealed class CompleteRunEndpoint(FlowOrchestrator orchestrator)
         try
         {
             FlowRun run = await orchestrator
-                .CompleteRunAsync(request.RunId, metrics, cancellationToken)
+                .CompleteRunAsync(
+                    request.RunId,
+                    metrics,
+                    request.WinningDnaJson,
+                    request.ResultPayloadJson,
+                    cancellationToken)
                 .ConfigureAwait(false);
 
             await Send.OkAsync(FlowRunView.FromEntity(run), cancellationToken).ConfigureAwait(false);

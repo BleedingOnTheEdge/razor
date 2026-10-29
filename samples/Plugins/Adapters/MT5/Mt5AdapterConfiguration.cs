@@ -1,4 +1,4 @@
-using Abstractions.Shared;
+using Sdk.Shared;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Samples.Plugins.Adapters.MT5;

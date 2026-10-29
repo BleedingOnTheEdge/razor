@@ -48,4 +48,78 @@ internal abstract class CommandHandlerBase : ICommandHandler
     {
         await SendResponseAsync(correlationId, null, error, cancellationToken).ConfigureAwait(false);
     }
+
+    /// <summary>Sends a progress report for the current command.</summary>
+    /// <param name="correlationId">Correlation identifier.</param>
+    /// <param name="progress">Progress payload.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    protected async Task SendProgressAsync(string correlationId, object? progress, CancellationToken cancellationToken = default)
+    {
+        await Dispatcher.SendProgressAsync(CommandId, correlationId, progress, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Safely extracts a string parameter from dictionary, JsonElement, or JSON string.</summary>
+    protected static string? TryGetParameterString(object? parameters, string key)
+    {
+        if (parameters is null)
+        {
+            return null;
+        }
+
+        if (parameters is Dictionary<string, object> dict)
+        {
+            if (dict.TryGetValue(key, out var val) && val is not null)
+            {
+                return val.ToString();
+            }
+
+            string altKey = char.ToLowerInvariant(key[0]) + key[1..];
+            if (dict.TryGetValue(altKey, out val) && val is not null)
+            {
+                return val.ToString();
+            }
+        }
+        else if (parameters is System.Text.Json.JsonElement je && je.ValueKind == System.Text.Json.JsonValueKind.Object)
+        {
+            if (je.TryGetProperty(key, out var prop) && prop.ValueKind != System.Text.Json.JsonValueKind.Null)
+            {
+                return prop.ToString();
+            }
+
+            string altKey = char.ToLowerInvariant(key[0]) + key[1..];
+            if (je.TryGetProperty(altKey, out prop) && prop.ValueKind != System.Text.Json.JsonValueKind.Null)
+            {
+                return prop.ToString();
+            }
+        }
+        else if (parameters is string s && !string.IsNullOrWhiteSpace(s))
+        {
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(s);
+                if (doc.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object)
+                {
+                    if (doc.RootElement.TryGetProperty(key, out var prop) && prop.ValueKind != System.Text.Json.JsonValueKind.Null)
+                    {
+                        return prop.ToString();
+                    }
+
+                    string altKey = char.ToLowerInvariant(key[0]) + key[1..];
+                    if (doc.RootElement.TryGetProperty(altKey, out prop) && prop.ValueKind != System.Text.Json.JsonValueKind.Null)
+                    {
+                        return prop.ToString();
+                    }
+                }
+            }
+            catch
+            {
+                if (key.Equals("TaskId", StringComparison.OrdinalIgnoreCase) && !s.TrimStart().StartsWith('{'))
+                {
+                    return s.Trim();
+                }
+            }
+        }
+
+        return null;
+    }
 }

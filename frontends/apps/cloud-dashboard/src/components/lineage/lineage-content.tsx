@@ -4,13 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getApiClient, type LineageNodePayload } from '@/lib/api-client';
 import { useToast } from '@/components/ui/toast';
-import {
-  getRunStatusBadge,
-  getRunRelationBadge,
-  formatCurrency,
-  formatTimestamp,
-  formatHash,
-} from '@razor/ui-kit';
+import { formatHash } from '@razor/ui-kit';
 import {
   GitBranch,
   ArrowLeft,
@@ -18,10 +12,11 @@ import {
   FileText,
   Play,
   Layers,
-  ChevronRight,
-  ShieldAlert,
   GitCommit,
 } from 'lucide-react';
+import { LineageBranchModal } from './LineageBranchModal';
+import { LineageResumeModal } from './LineageResumeModal';
+import { LineageTreeNodeView } from './LineageTreeNodeView';
 
 export function LineageContent({ runId }: { runId: string }) {
   const toast = useToast();
@@ -152,38 +147,42 @@ export function LineageContent({ runId }: { runId: string }) {
     setResumeModalOpen(true);
   }
 
+  const rootRunId = rootNode?.run?.id || rootNode?.runId || (rootNode as any)?.id || runId;
+  const rootRunKind = rootNode?.run?.kind || rootNode?.kind || 'Backtest';
+
   return (
     <div className="space-y-6 max-w-6xl">
       {/* Back Link */}
-      <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
-        <Link href="/runs" className="hover:text-zinc-200 flex items-center gap-1">
+      <div className="flex items-center gap-2 text-xs font-mono text-zinc-500">
+        <Link href="/runs" className="hover:text-zinc-900 flex items-center gap-1">
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Runs</span>
         </Link>
         <span>/</span>
-        <span className="text-zinc-300">Run {formatHash(runId, 6)}</span>
+        <span className="text-zinc-700">Run {formatHash(runId, 6)}</span>
         <span>/</span>
-        <span className="text-cyan-400">Lineage Explorer</span>
+        <span className="text-cyan-700 font-semibold">Lineage Explorer</span>
       </div>
 
       {/* Header */}
-      <div className="flex items-start justify-between pb-6 border-b border-zinc-800">
+      <div className="flex items-start justify-between pb-6 border-b border-zinc-200">
         <div>
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-              <GitBranch className="w-6 h-6 text-purple-400" />
+            <h2 className="text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
+              <GitBranch className="w-6 h-6 text-purple-600" />
               <span>Execution Lineage & Reproduction</span>
             </h2>
           </div>
-          <p className="text-sm text-zinc-400 mt-1 font-sans">
+          <p className="text-sm text-zinc-600 mt-1 font-sans">
             Hierarchical DAG visualization of parent-child execution lineages, checkpoints, and append-only intervention forks.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={loadLineage}
-            className="px-3 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-mono text-zinc-300 transition-colors flex items-center gap-2"
+            className="px-3 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-xs font-mono text-zinc-700 transition-colors flex items-center gap-2 font-medium"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Refresh</span>
@@ -192,61 +191,63 @@ export function LineageContent({ runId }: { runId: string }) {
       </div>
 
       {loading && (
-        <div className="py-16 text-center text-sm font-mono text-zinc-400">
+        <div className="py-16 text-center text-sm font-mono text-zinc-500">
           Tracing lineage DAG from Cloud API...
         </div>
       )}
 
       {error && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm font-mono">
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-mono">
           {error}
         </div>
       )}
 
       {!loading && !error && !rootNode && (
-        <div className="py-16 text-center rounded-xl border border-dashed border-zinc-800 bg-zinc-900/20">
-          <Layers className="w-10 h-10 text-zinc-500 mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-zinc-200 font-mono">No Lineage Recorded</h3>
-          <p className="text-xs text-zinc-400 mt-1">This run is either missing or has not yet registered lineage relations.</p>
+        <div className="py-16 text-center rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50">
+          <Layers className="w-10 h-10 text-zinc-400 mx-auto mb-3" />
+          <h3 className="text-base font-semibold text-zinc-800 font-mono">No Lineage Recorded</h3>
+          <p className="text-xs text-zinc-500 mt-1">This run is either missing or has not yet registered lineage relations.</p>
         </div>
       )}
 
       {!loading && rootNode && (
         <div className="space-y-6">
           {/* Top telemetry card */}
-          <div className="p-5 rounded-xl bg-zinc-900/60 border border-zinc-800/80 flex flex-wrap items-center justify-between gap-4">
+          <div className="p-5 rounded-xl bg-white border border-zinc-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="p-2.5 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">
+              <div className="p-2.5 rounded-lg bg-purple-50 text-purple-700 border border-purple-200">
                 <GitCommit className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-xs font-mono text-zinc-400 block">Root Origin</span>
-                <span className="text-sm font-bold text-white font-mono mt-0.5 block">
-                  {formatHash(rootNode.run.id, 8)} ({rootNode.run.kind})
+                <span className="text-xs font-mono text-zinc-500 block">Root Origin</span>
+                <span className="text-sm font-bold text-zinc-900 font-mono mt-0.5 block">
+                  {formatHash(rootRunId, 8)} ({rootRunKind})
                 </span>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
               <button
-                onClick={() => openBranchModal(rootNode.run.id)}
-                className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-mono font-semibold transition-colors flex items-center gap-1.5"
+                type="button"
+                onClick={() => openBranchModal(rootRunId)}
+                className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-mono font-semibold transition-colors flex items-center gap-1.5 shadow-sm"
               >
                 <GitBranch className="w-3.5 h-3.5" />
                 <span>Branch at Checkpoint</span>
               </button>
 
               <button
-                onClick={() => openResumeModal(rootNode.run.id)}
-                className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs font-mono font-semibold transition-colors flex items-center gap-1.5"
+                type="button"
+                onClick={() => openResumeModal(rootRunId)}
+                className="px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-lg text-xs font-mono font-semibold transition-colors flex items-center gap-1.5"
               >
                 <Play className="w-3.5 h-3.5" />
                 <span>Resume / Splice</span>
               </button>
 
               <Link
-                href={`/reports/${rootNode.run.id}`}
-                className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-cyan-400 rounded-lg text-xs font-mono font-semibold transition-colors flex items-center gap-1.5"
+                href={`/reports/${rootRunId}`}
+                className="px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-cyan-800 rounded-lg text-xs font-mono font-semibold transition-colors flex items-center gap-1.5"
               >
                 <FileText className="w-3.5 h-3.5" />
                 <span>View Full Report</span>
@@ -255,10 +256,10 @@ export function LineageContent({ runId }: { runId: string }) {
           </div>
 
           {/* Lineage Tree Hierarchy */}
-          <div className="p-6 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-4">
-            <h3 className="text-xs uppercase tracking-wider font-mono text-zinc-400 font-semibold flex items-center gap-2">
+          <div className="p-6 rounded-xl bg-white border border-zinc-200 shadow-sm space-y-4">
+            <h3 className="text-xs uppercase tracking-wider font-mono text-zinc-600 font-semibold flex items-center gap-2">
               <span>Lineage Hierarchy</span>
-              <span className="text-zinc-600">•</span>
+              <span className="text-zinc-300">•</span>
               <span className="text-zinc-500">Parent-to-Child Execution Tree</span>
             </h3>
 
@@ -276,380 +277,42 @@ export function LineageContent({ runId }: { runId: string }) {
       )}
 
       {/* Modal: Branch at Checkpoint */}
-      {branchModalOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="branch-modal-title"
-          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
-        >
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <h3 id="branch-modal-title" className="text-base font-bold text-white font-mono flex items-center gap-2">
-                <GitBranch className="w-4 h-4 text-purple-400" />
-                <span>Branch Run at Checkpoint</span>
-              </h3>
-              <button
-                onClick={() => setBranchModalOpen(false)}
-                className="text-zinc-400 hover:text-zinc-200 text-xs font-mono"
-              >
-                ✕ Cancel
-              </button>
-            </div>
-
-            <form onSubmit={handleBranchSubmit} className="space-y-4 text-xs font-mono">
-              <div>
-                <label className="block text-zinc-400 mb-1">Target Parent Run ID</label>
-                <input
-                  type="text"
-                  readOnly
-                  value={targetBranchRunId}
-                  className="w-full px-3 py-2 bg-zinc-950/80 border border-zinc-800 rounded-lg text-zinc-400 cursor-not-allowed"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-zinc-300 mb-1 font-semibold">Fork Point Step Index</label>
-                  <input
-                    type="number"
-                    value={stepIndex}
-                    onChange={(e) => setStepIndex(Number(e.target.value))}
-                    required
-                    className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-zinc-300 mb-1 font-semibold">Child Seed</label>
-                  <input
-                    type="number"
-                    value={childSeed}
-                    onChange={(e) => setChildSeed(Number(e.target.value))}
-                    required
-                    className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-zinc-300 mb-1 font-semibold">Operator / Actor</label>
-                <input
-                  type="text"
-                  value={actor}
-                  onChange={(e) => setActor(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-zinc-300 mb-1 font-semibold">Intervention Reason</label>
-                <input
-                  type="text"
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-zinc-300 mb-1 font-semibold">Modifications Summary</label>
-                <textarea
-                  value={modSummary}
-                  onChange={(e) => setModSummary(e.target.value)}
-                  rows={2}
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-zinc-400 mb-1">Previous Fingerprint</label>
-                  <input
-                    type="text"
-                    value={prevFingerprint}
-                    onChange={(e) => setPrevFingerprint(e.target.value)}
-                    required
-                    className="w-full px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-[11px] text-zinc-300 focus:outline-none focus:border-purple-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-zinc-400 mb-1">New Fingerprint</label>
-                  <input
-                    type="text"
-                    value={newFingerprint}
-                    onChange={(e) => setNewFingerprint(e.target.value)}
-                    required
-                    className="w-full px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-[11px] text-zinc-300 focus:outline-none focus:border-purple-500"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setBranchModalOpen(false)}
-                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submittingBranch}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold rounded-lg transition-colors flex items-center gap-2"
-                >
-                  <GitBranch className="w-3.5 h-3.5" />
-                  <span>{submittingBranch ? 'Spawning Branch...' : 'Create Branched Run'}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <LineageBranchModal
+        isOpen={branchModalOpen}
+        onClose={() => setBranchModalOpen(false)}
+        targetBranchRunId={targetBranchRunId}
+        stepIndex={stepIndex}
+        setStepIndex={setStepIndex}
+        childSeed={childSeed}
+        setChildSeed={setChildSeed}
+        actor={actor}
+        setActor={setActor}
+        reason={reason}
+        setReason={setReason}
+        modSummary={modSummary}
+        setModSummary={setModSummary}
+        prevFingerprint={prevFingerprint}
+        setPrevFingerprint={setPrevFingerprint}
+        newFingerprint={newFingerprint}
+        setNewFingerprint={setNewFingerprint}
+        submittingBranch={submittingBranch}
+        onSubmit={handleBranchSubmit}
+      />
 
       {/* Modal: Resume Run */}
-      {resumeModalOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="resume-modal-title"
-          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
-        >
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <h3 id="resume-modal-title" className="text-base font-bold text-white font-mono flex items-center gap-2">
-                <Play className="w-4 h-4 text-emerald-400" />
-                <span>Resume / Spliced Run</span>
-              </h3>
-              <button
-                onClick={() => setResumeModalOpen(false)}
-                className="text-zinc-400 hover:text-zinc-200 text-xs font-mono"
-              >
-                ✕ Cancel
-              </button>
-            </div>
-
-            <form onSubmit={handleResumeSubmit} className="space-y-4 text-xs font-mono">
-              <div>
-                <label className="block text-zinc-400 mb-1">Target Run ID</label>
-                <input
-                  type="text"
-                  readOnly
-                  value={targetResumeRunId}
-                  className="w-full px-3 py-2 bg-zinc-950/80 border border-zinc-800 rounded-lg text-zinc-400 cursor-not-allowed"
-                />
-              </div>
-
-              <div>
-                <label className="block text-zinc-300 mb-1 font-semibold">Resume Step Index</label>
-                <input
-                  type="number"
-                  value={stepIndex}
-                  onChange={(e) => setStepIndex(Number(e.target.value))}
-                  required
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-zinc-300 mb-1 font-semibold">Actor</label>
-                <input
-                  type="text"
-                  value={actor}
-                  onChange={(e) => setActor(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-zinc-300 mb-1 font-semibold">Reason</label>
-                <input
-                  type="text"
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setResumeModalOpen(false)}
-                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submittingResume}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold rounded-lg transition-colors flex items-center gap-2"
-                >
-                  <Play className="w-3.5 h-3.5" />
-                  <span>{submittingResume ? 'Resuming...' : 'Confirm Resume / Splice'}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-interface LineageTreeNodeViewProps {
-  node: LineageNodePayload;
-  activeRunId: string;
-  depth: number;
-  onBranch: (id: string) => void;
-  onResume: (id: string) => void;
-}
-
-function LineageTreeNodeView({
-  node,
-  activeRunId,
-  depth,
-  onBranch,
-  onResume,
-}: LineageTreeNodeViewProps) {
-  const { run, children } = node;
-  const isCurrent = run.id === activeRunId;
-  const statusBadge = getRunStatusBadge(run.status);
-  const relBadge = getRunRelationBadge(run.relation);
-
-  return (
-    <div className="relative font-mono">
-      {/* Node Card */}
-      <div
-        className={`p-4 rounded-xl border transition-all ${
-          isCurrent
-            ? 'bg-zinc-900 border-cyan-500/50 shadow-lg shadow-cyan-950/20 ring-1 ring-cyan-500/30'
-            : 'bg-zinc-950/70 border-zinc-800/70 hover:border-zinc-700'
-        }`}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div
-              className={`p-1.5 rounded-md ${
-                run.relation === 'Branched'
-                  ? 'bg-purple-500/10 text-purple-400'
-                  : run.relation === 'Spliced'
-                  ? 'bg-amber-500/10 text-amber-400'
-                  : 'bg-cyan-500/10 text-cyan-400'
-              }`}
-            >
-              <GitCommit className="w-4 h-4" />
-            </div>
-
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-white text-sm">{formatHash(run.id, 8)}</span>
-                {isCurrent && (
-                  <span className="px-1.5 py-0.5 rounded text-[10px] bg-cyan-500/20 text-cyan-300 font-bold">
-                    VIEWING
-                  </span>
-                )}
-                <span className={`px-2 py-0.5 rounded text-[10px] ${statusBadge.className}`}>
-                  {statusBadge.label}
-                </span>
-                <span className={`px-2 py-0.5 rounded text-[10px] ${relBadge.className}`}>
-                  {relBadge.label}
-                </span>
-              </div>
-              <p className="text-xs text-zinc-400 mt-0.5">
-                Kind: <span className="text-zinc-200">{run.kind}</span> • Engine:{' '}
-                <span className="text-zinc-300">{formatHash(run.engineInstanceId, 6)}</span> •{' '}
-                {formatTimestamp(run.createdAt)}
-              </p>
-            </div>
-          </div>
-
-          {/* Quick Metrics & Actions */}
-          <div className="flex items-center gap-3 text-xs">
-            <div className="text-right">
-              <span className="text-zinc-400 text-[11px] block">Net Profit</span>
-              <span className="text-zinc-200 font-bold block">{formatCurrency(run.metrics?.netProfit)}</span>
-            </div>
-
-            <div className="text-right">
-              <span className="text-zinc-400 text-[11px] block">Sharpe</span>
-              <span className="text-zinc-200 font-bold block">
-                {run.metrics?.sharpeRatio != null ? run.metrics.sharpeRatio.toFixed(2) : '—'}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-1.5 border-l border-zinc-800 pl-3">
-              <button
-                onClick={() => onBranch(run.id)}
-                title="Branch at checkpoint"
-                className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-purple-400 text-xs transition-colors flex items-center gap-1"
-              >
-                <GitBranch className="w-3.5 h-3.5" />
-                <span>Branch</span>
-              </button>
-
-              <button
-                onClick={() => onResume(run.id)}
-                title="Resume execution"
-                className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-emerald-400 text-xs transition-colors flex items-center gap-1"
-              >
-                <Play className="w-3.5 h-3.5" />
-                <span>Resume</span>
-              </button>
-
-              <Link
-                href={`/reports/${run.id}`}
-                title="View full report"
-                className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-cyan-400 text-xs transition-colors flex items-center gap-1"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>Report</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Checkpoint & Intervention info if branched or spliced */}
-        {(run.forkPointStep != null || run.interventionsCount > 0) && (
-          <div className="mt-3 pt-3 border-t border-zinc-800/60 flex items-center gap-4 text-xs text-zinc-400">
-            {run.forkPointStep != null && (
-              <span className="flex items-center gap-1 text-purple-300">
-                <ChevronRight className="w-3.5 h-3.5" />
-                Forked at Step #{run.forkPointStep}
-              </span>
-            )}
-            {run.interventionsCount > 0 && (
-              <span className="flex items-center gap-1 text-amber-300">
-                <ShieldAlert className="w-3.5 h-3.5" />
-                {run.interventionsCount} Interventions Logged
-              </span>
-            )}
-            {run.continuity === 'Gapped' && (
-              <span className="px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-400 text-[10px]">
-                Gapped Continuity
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Recursive Children */}
-      {children && children.length > 0 && (
-        <div className="ml-6 pl-4 border-l border-zinc-800 space-y-3 mt-3">
-          {children.map((childNode) => (
-            <LineageTreeNodeView
-              key={childNode.run.id}
-              node={childNode}
-              activeRunId={activeRunId}
-              depth={depth + 1}
-              onBranch={onBranch}
-              onResume={onResume}
-            />
-          ))}
-        </div>
-      )}
+      <LineageResumeModal
+        isOpen={resumeModalOpen}
+        onClose={() => setResumeModalOpen(false)}
+        targetResumeRunId={targetResumeRunId}
+        stepIndex={stepIndex}
+        setStepIndex={setStepIndex}
+        actor={actor}
+        setActor={setActor}
+        reason={reason}
+        setReason={setReason}
+        submittingResume={submittingResume}
+        onSubmit={handleResumeSubmit}
+      />
     </div>
   );
 }

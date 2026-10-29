@@ -36,11 +36,11 @@ public sealed class MockPaperTradingAdapter : IAdapterCapability
     {
         Calculator = new PaperTradingCalculator();
 
-        // Seed standard instruments
-        RegisterSymbol("BTC-USD", 65000.0, 65001.0, 1.0, 0.001);
-        RegisterSymbol("ETH-USD", 3450.0, 3450.5, 1.0, 0.01);
-        RegisterSymbol("EUR-USD", 1.08500, 1.08510, 100000.0, 0.01);
-        RegisterSymbol("SPX-USD", 5750.0, 5750.5, 1.0, 0.1);
+        // Seed standard instruments with variations
+        RegisterSymbolGroup(65000.0, 65001.0, 1.0, 0.001, "BTC-USD", "BTC/USD", "BTCUSD", "BTC/USDT", "BTC-USDT", "BTCUSDT");
+        RegisterSymbolGroup(3450.0, 3450.5, 1.0, 0.01, "ETH-USD", "ETH/USD", "ETHUSD", "ETH/USDT", "ETH-USDT", "ETHUSDT");
+        RegisterSymbolGroup(1.08500, 1.08510, 100000.0, 0.01, "EUR-USD", "EUR/USD", "EURUSD", "EUR/USDT", "EUR-USDT", "EURUSDT");
+        RegisterSymbolGroup(5750.0, 5750.5, 1.0, 0.1, "SPX-USD", "SPX/USD", "SPXUSD", "SPX/USDT", "SPX-USDT", "SPXUSDT");
     }
 
     /// <inheritdoc/>
@@ -112,9 +112,20 @@ public sealed class MockPaperTradingAdapter : IAdapterCapability
     [SuppressMessage("Security", "CA5394:Do not use insecure randomness", Justification = "Synthetic market tick generation in paper trading simulation")]
     public void EmitTick(string symbol)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
         if (!_currentPrices.TryGetValue(symbol, out (double Bid, double Ask) prices))
         {
-            return;
+            string norm = NormalizeSymbolKey(symbol);
+            var match = _currentPrices.FirstOrDefault(kvp => NormalizeSymbolKey(kvp.Key) == norm);
+            if (match.Value.Bid > 0)
+            {
+                prices = match.Value;
+                _currentPrices[symbol] = prices;
+            }
+            else
+            {
+                return;
+            }
         }
 
         double spread = Math.Max(0.0001, prices.Ask - prices.Bid);
@@ -144,13 +155,22 @@ public sealed class MockPaperTradingAdapter : IAdapterCapability
 
         if (!_currentPrices.TryGetValue(request.Symbol, out (double Bid, double Ask) prices))
         {
-            return Task.FromResult(new AdapterOrderResponse
+            string norm = NormalizeSymbolKey(request.Symbol);
+            var match = _currentPrices.FirstOrDefault(kvp => NormalizeSymbolKey(kvp.Key) == norm);
+            if (match.Value.Bid > 0)
             {
-                Success = false,
-                ErrorMessage = $"Unknown symbol {request.Symbol}."
-            });
+                prices = match.Value;
+                _currentPrices[request.Symbol] = prices;
+            }
+            else
+            {
+                return Task.FromResult(new AdapterOrderResponse
+                {
+                    Success = false,
+                    ErrorMessage = $"Unknown symbol {request.Symbol}."
+                });
+            }
         }
-
         double execPrice = request.Type is OrderType.Buy or OrderType.BuyLimit or OrderType.BuyStop
             ? prices.Ask
             : prices.Bid;
@@ -331,8 +351,28 @@ public sealed class MockPaperTradingAdapter : IAdapterCapability
     /// <inheritdoc/>
     public Task<SymbolProperties?> GetSymbolPropertiesAsync(string symbol, CancellationToken cancellationToken = default)
     {
-        _symbolProperties.TryGetValue(symbol, out SymbolProperties? props);
-        return Task.FromResult(props);
+        if (string.IsNullOrWhiteSpace(symbol))
+        {
+            return Task.FromResult<SymbolProperties?>(null);
+        }
+
+        if (_symbolProperties.TryGetValue(symbol, out SymbolProperties? props))
+        {
+            return Task.FromResult<SymbolProperties?>(props);
+        }
+
+        string norm = NormalizeSymbolKey(symbol);
+        foreach (var kvp in _symbolProperties)
+        {
+            if (NormalizeSymbolKey(kvp.Key) == norm)
+            {
+                _symbolProperties[symbol] = kvp.Value;
+                return Task.FromResult<SymbolProperties?>(kvp.Value);
+            }
+        }
+
+        RegisterSymbol(symbol, 100.0, 100.05, 1.0, 0.01);
+        return Task.FromResult<SymbolProperties?>(_symbolProperties[symbol]);
     }
 
     /// <inheritdoc/>
@@ -359,6 +399,9 @@ public sealed class MockPaperTradingAdapter : IAdapterCapability
         using (FileStream fs = new(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
         using (BinaryWriter writer = new(fs))
         {
+            writer.Write(0x53524843u);
+            writer.Write(1);
+
             double currentBid = basePrice;
             for (int i = 0; i < recordCount; i++)
             {
@@ -403,6 +446,22 @@ public sealed class MockPaperTradingAdapter : IAdapterCapability
 
     /// <inheritdoc/>
     public Task NotifyFileSafeToDeleteAsync(string filePath) => DeleteHistoryFileAsync(filePath);
+
+    private static string NormalizeSymbolKey(string symbol) =>
+        symbol.Replace("/", string.Empty, StringComparison.Ordinal)
+              .Replace("-", string.Empty, StringComparison.Ordinal)
+              .Replace("_", string.Empty, StringComparison.Ordinal)
+              .Trim()
+              .ToUpperInvariant();
+
+    private void RegisterSymbolGroup(double bid, double ask, double contractSize, double minVolume, params string[] symbols)
+    {
+        foreach (string sym in symbols)
+        {
+            RegisterSymbol(sym, bid, ask, contractSize, minVolume);
+        }
+    }
+
 
     private void RegisterSymbol(string symbol, double bid, double ask, double contractSize, double minVolume)
     {

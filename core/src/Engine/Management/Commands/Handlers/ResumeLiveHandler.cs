@@ -33,15 +33,14 @@ internal sealed class ResumeLiveHandler : CommandHandlerBase
 
     public override async Task HandleAsync(CloudCommand command, CancellationToken cancellationToken)
     {
-        if (command.Parameters is not Dictionary<string, object> dict ||
-            !dict.TryGetValue("TaskId", out object? idObj))
+        string? taskId = TryGetParameterString(command.Parameters, "TaskId");
+        if (string.IsNullOrWhiteSpace(taskId))
         {
             await SendErrorAsync(command.CorrelationId ?? string.Empty, "Missing TaskId.", cancellationToken)
                 .ConfigureAwait(false);
             return;
         }
 
-        string taskId = idObj?.ToString()!;
         _logResumingLive(Logger, taskId, null);
 
         await _taskManager.ResumeTaskAsync(taskId, cancellationToken).ConfigureAwait(false);

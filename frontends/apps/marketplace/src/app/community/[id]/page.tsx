@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getApiClient } from '@/lib/api-client';
 import type { CommunityThreadPayload } from '@razor/api-client';
@@ -12,8 +13,9 @@ interface PageProps {
 }
 
 export default function ThreadDetailPage({ params }: PageProps) {
-  const resolvedParams = use(params);
-  const threadId = resolvedParams.id;
+  const routeParams = useParams();
+  const resolved = params ? use(params) : null;
+  const threadId = (routeParams?.id as string) || resolved?.id || '';
 
   const [thread, setThread] = useState<CommunityThreadPayload | null>(null);
   const [loading, setLoading] = useState(true);

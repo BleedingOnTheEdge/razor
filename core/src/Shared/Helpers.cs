@@ -59,5 +59,10 @@ public static class TimeHelpers
 
     /// <summary>Converts a DateTime to a Unix timestamp.</summary>
     public static long DateTimeToUnix(DateTime dateTime)
-        => new DateTimeOffset(dateTime).ToUnixTimeSeconds();
+    {
+        DateTime utc = dateTime.Kind == DateTimeKind.Unspecified
+            ? DateTime.SpecifyKind(dateTime, DateTimeKind.Utc)
+            : dateTime.ToUniversalTime();
+        return new DateTimeOffset(utc).ToUnixTimeSeconds();
+    }
 }

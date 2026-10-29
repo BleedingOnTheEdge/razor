@@ -160,13 +160,40 @@ internal sealed class MarketplaceService(
             return null;
         }
 
-        bool accountExists = await db.Accounts
-            .AnyAsync(a => a.Id == accountId, cancellationToken)
-            .ConfigureAwait(false);
-
-        if (!accountExists)
+        Account? account;
+        if (accountId != Guid.Empty)
         {
-            return null;
+            account = await db.Accounts
+                .FirstOrDefaultAsync(a => a.Id == accountId, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (account is null)
+            {
+                return null;
+            }
+        }
+        else
+        {
+            account = await db.Accounts.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+            if (account is null)
+            {
+                account = new Account
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Default Trader Workspace",
+                    SubscriptionTier = SubscriptionTier.Free,
+                    CreatedAt = timeProvider.GetUtcNow()
+                };
+                db.Accounts.Add(account);
+                await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            accountId = account.Id;
+        }
+
+        if (targetInstanceId.HasValue && !await db.EngineInstances.AnyAsync(i => i.Id == targetInstanceId.Value, cancellationToken).ConfigureAwait(false))
+        {
+            targetInstanceId = null;
         }
 
         // Check if already acquired
@@ -189,6 +216,9 @@ internal sealed class MarketplaceService(
             AccountId = accountId,
             EngineInstanceId = targetInstanceId,
             LicenseKey = $"MKPL-{Guid.NewGuid():N}"[..24].ToUpperInvariant(),
+            AcquiredVersion = item.Version,
+            LicenseType = item.Price == 0 ? "Evaluation" : "Perpetual",
+            RightsJson = "{\"canRunLive\":true,\"canRunBacktest\":true,\"maxNodes\":5}",
             AcquiredAt = now
         };
 

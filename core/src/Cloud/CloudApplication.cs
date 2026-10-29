@@ -69,31 +69,14 @@ internal static class CloudApplication
             await using (db.ConfigureAwait(false))
             {
                 await db.Database.EnsureCreatedAsync().ConfigureAwait(false);
+                await DatabaseSchemaCompatibility.EnsureSchemaAsync(db).ConfigureAwait(false);
 
-                DateTimeOffset now = DateTimeOffset.UtcNow;
-                var accounts = await db.Accounts
-                    .Include(a => a.Licenses)
-                    .ToListAsync()
-                    .ConfigureAwait(false);
-
-                foreach (Account account in accounts)
+                CloudOptions cloudOptions = scope.ServiceProvider.GetRequiredService<CloudOptions>();
+                if (!string.Equals(cloudOptions.ConnectionString, "Host=unused;Database=unused", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!account.Licenses.Any(l => l.Status == LicenseStatus.Active))
-                    {
-                        var lic = new License
-                        {
-                            Id = Guid.NewGuid(),
-                            AccountId = account.Id,
-                            LicenseKey = $"LIC-{Guid.NewGuid():N}",
-                            Status = LicenseStatus.Active,
-                            IssuedAt = now,
-                            MaxInstances = 10
-                        };
-                        db.Licenses.Add(lic);
-                    }
+                    IPasswordHasher<User> passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
+                    await DatabaseSeeder.SeedAsync(db, passwordHasher).ConfigureAwait(false);
                 }
-
-                await db.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
@@ -112,7 +95,19 @@ internal static class CloudApplication
 
         // A factory rather than a scoped context: an Engine session is long lived and would otherwise hold a
         // context for the whole connection, while each protocol message needs its own short lived unit of work.
-        services.AddDbContextFactory<CloudDbContext>(contextOptions => contextOptions.UseNpgsql(options.ConnectionString));
+        services.AddDbContextFactory<CloudDbContext>(contextOptions =>
+        {
+            if (options.ConnectionString?.StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase) == true ||
+                options.ConnectionString?.EndsWith(".db", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                contextOptions.UseSqlite(options.ConnectionString);
+            }
+            else
+            {
+                contextOptions.UseNpgsql(options.ConnectionString, npgsqlOptions =>
+                    npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            }
+        });
 
         services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
         services.AddSingleton<EngineRegistrationService>();
@@ -131,6 +126,8 @@ internal static class CloudApplication
         services.AddSingleton<TicketService>();
         services.AddSingleton<CommunityService>();
         services.AddSingleton<UserService>();
+        services.AddSingleton<AdminSettingsService>();
+        services.AddSingleton<BundleService>();
 
         services.AddCors();
 
@@ -140,7 +137,11 @@ internal static class CloudApplication
         // with and no policy is added, so this stack can never admit a caller: the management API key filter
         // is still the only thing that authorises a request, and the Engine still authenticates through the
         // protocol handshake. Without these registrations every API request fails with a 500.
-        services.AddAuthentication();
+        services.AddAuthentication(authOptions =>
+        {
+            authOptions.DefaultAuthenticateScheme = "ApiKey";
+            authOptions.DefaultChallengeScheme = "ApiKey";
+        }).AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>("ApiKey", _ => { });
         services.AddAuthorization();
 
         services.AddFastEndpoints();
@@ -173,6 +174,9 @@ internal static class CloudApplication
             .AllowAnyHeader()
             .AllowAnyMethod());
 
+        app.UseDefaultFiles();
+        app.UseStaticFiles();
+
         app.UseSwaggerGen();
         app.UseManagementApiKey(options);
 
@@ -191,15 +195,26 @@ internal static class CloudApplication
             // Enums travel as their names so that a stored status or extension kind is as readable on the API
             // as it is in the database.
             config.Serializer.Options.Converters.Add(new JsonStringEnumConverter());
-
-            // Every endpoint is marked allow-anonymous, and that is deliberate rather than a weakening.
-            // FastEndpoints gives each route an authorization requirement, and with no authentication scheme
-            // registered that requirement can only fail — the authorisation middleware would challenge and
-            // throw "no authenticationScheme was specified". Cloud has no ASP.NET Core identity to carry a
-            // policy: the shared management key in ManagementApiKeyMiddleware is the authorisation model for
-            // the whole /api surface, and the Engine authenticates with the protocol handshake. Marking the
-            // routes anonymous states that plainly instead of leaving a requirement that nothing can satisfy.
-            config.Endpoints.Configurator = definition => definition.AllowAnonymous();
         });
+
+        app.MapFallbackToFile("index.html");
+    }
+
+    private sealed class ApiKeyAuthenticationHandler(
+        Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions> options,
+        Microsoft.Extensions.Logging.ILoggerFactory logger,
+        System.Text.Encodings.Web.UrlEncoder encoder)
+        : Microsoft.AspNetCore.Authentication.AuthenticationHandler<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions>(options, logger, encoder)
+    {
+        protected override Task<Microsoft.AspNetCore.Authentication.AuthenticateResult> HandleAuthenticateAsync()
+        {
+            if (Context.User.Identity?.IsAuthenticated == true)
+            {
+                return Task.FromResult(Microsoft.AspNetCore.Authentication.AuthenticateResult.Success(
+                    new Microsoft.AspNetCore.Authentication.AuthenticationTicket(Context.User, Scheme.Name)));
+            }
+
+            return Task.FromResult(Microsoft.AspNetCore.Authentication.AuthenticateResult.NoResult());
+        }
     }
 }
