@@ -7,26 +7,26 @@ import { AlertTriangle, ShieldCheck, Scale, FileText } from 'lucide-react';
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-white text-black font-mono text-xs selection:bg-black selection:text-white flex flex-col justify-between">
+    <div className="min-h-screen bg-[#171717] text-zinc-100 rounded-xl font-mono text-xs selection:bg-black selection:text-white flex flex-col justify-between">
       <PublicNav />
 
       <main className="max-w-5xl mx-auto px-6 md:px-12 py-16 space-y-12 flex-1">
         {/* Header */}
         <section className="space-y-4">
-          <div className="inline-block px-3 py-1 border border-black bg-white font-bold text-black uppercase">
+          <div className="inline-block px-3 py-1 border border-[#262626] bg-[#171717] font-bold text-zinc-100 uppercase">
             LEGAL, RISK & GOVERNANCE
           </div>
-          <h1 className="text-3xl md:text-5xl font-bold uppercase tracking-tight text-black leading-none">
+          <h1 className="text-3xl md:text-5xl font-bold uppercase tracking-tight text-zinc-100 leading-none">
             Terms of Service & Risk Disclosure
           </h1>
-          <p className="text-sm text-black leading-relaxed font-normal">
+          <p className="text-sm text-zinc-100 leading-relaxed font-normal">
             Last Updated: October 2026 • Governing Institutional Software Licensing, Automated Execution, and Liability Boundaries.
           </p>
         </section>
 
         {/* Warning Callout */}
-        <div id="risk" className="p-6 border-2 border-red-600 bg-red-50 text-red-950 space-y-2">
-          <div className="flex items-center gap-2 font-bold text-sm text-red-600 uppercase">
+        <div id="risk" className="p-6 border-2 border-rose-500/30 bg-red-50 text-red-950 space-y-2">
+          <div className="flex items-center gap-2 font-bold text-sm text-rose-400 uppercase">
             <AlertTriangle className="w-5 h-5 shrink-0" />
             <span>High-Risk Algorithmic Trading Disclosure</span>
           </div>
@@ -37,7 +37,7 @@ export default function TermsPage() {
 
         {/* Sections */}
         <div className="space-y-8">
-          <section className="p-6 border border-black bg-white space-y-3">
+          <section className="p-6 border border-[#262626] bg-[#171717] space-y-3">
             <h2 className="text-sm font-bold uppercase flex items-center gap-2">
               <Scale className="w-4 h-4" />
               <span>1. Software Licensing & Non-Custodial Operation</span>
@@ -47,7 +47,7 @@ export default function TermsPage() {
             </p>
           </section>
 
-          <section className="p-6 border border-black bg-white space-y-3">
+          <section className="p-6 border border-[#262626] bg-[#171717] space-y-3">
             <h2 className="text-sm font-bold uppercase flex items-center gap-2">
               <ShieldCheck className="w-4 h-4" />
               <span>2. Security & Credential Isolation</span>
@@ -57,7 +57,7 @@ export default function TermsPage() {
             </p>
           </section>
 
-          <section className="p-6 border border-black bg-white space-y-3">
+          <section className="p-6 border border-[#262626] bg-[#171717] space-y-3">
             <h2 className="text-sm font-bold uppercase flex items-center gap-2">
               <FileText className="w-4 h-4" />
               <span>3. Marketplace Intellectual Property</span>
@@ -67,7 +67,7 @@ export default function TermsPage() {
             </p>
           </section>
 
-          <section className="p-6 border border-black bg-white space-y-3">
+          <section className="p-6 border border-[#262626] bg-[#171717] space-y-3">
             <h2 className="text-sm font-bold uppercase flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" />
               <span>4. Limitation of Liability</span>
@@ -78,8 +78,8 @@ export default function TermsPage() {
           </section>
         </div>
 
-        <div className="pt-4 border-t border-black text-center">
-          <Link href="/auth/login" className="px-6 py-3 bg-black text-white font-bold text-xs border border-black uppercase hover:bg-zinc-800 transition-colors">
+        <div className="pt-4 border-t border-[#262626] text-center">
+          <Link href="/auth/login" className="px-6 py-3 bg-black text-white font-bold text-xs border border-[#262626] uppercase hover:bg-zinc-800 transition-colors">
             Accept & Continue to Terminal
           </Link>
         </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '../lib/utils';
 
 export interface StatCardProps {
   label: string;
@@ -14,8 +15,8 @@ export interface StatCardProps {
 }
 
 /**
- * High-density financial metric display card with tabular numeral alignment,
- * optical hierarchy, and clean typography.
+ * Supabase-style dense financial and telemetry metric card with tabular numeral alignment,
+ * near-black surface (#171717), hairline border (#262626), and emerald #3ECF8E accents.
  */
 export const StatCard: React.FC<StatCardProps> = ({
   label,
@@ -27,11 +28,14 @@ export const StatCard: React.FC<StatCardProps> = ({
 }) => {
   return (
     <div
-      className={`rounded-2xl bg-zinc-900/70 backdrop-blur-md border border-zinc-800/80 p-5 shadow-lg shadow-black/10 flex flex-col justify-between ${className}`}
+      className={cn(
+        'rounded-xl bg-[#171717] border border-[#262626] p-4 shadow-sm shadow-black/40 flex flex-col justify-between transition-colors hover:border-[#333333]',
+        className
+      )}
     >
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-medium text-zinc-400 tracking-normal">{label}</span>
-        {icon && <div className="text-zinc-500">{icon}</div>}
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-medium text-zinc-400 font-sans tracking-normal">{label}</span>
+        {icon && <div className="text-zinc-400">{icon}</div>}
       </div>
 
       <div className="flex items-baseline justify-between gap-3">
@@ -40,20 +44,21 @@ export const StatCard: React.FC<StatCardProps> = ({
         </div>
         {trend && (
           <span
-            className={`inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full font-mono tabular-nums ${
+            className={cn(
+              'inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full font-mono tabular-nums border',
               trend.neutral
-                ? 'bg-zinc-800 text-zinc-400'
+                ? 'bg-[#222222] text-zinc-400 border-[#2e2e2e]'
                 : trend.positive
-                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-            }`}
+                ? 'bg-[#3ECF8E]/10 text-[#3ECF8E] border-[#3ECF8E]/25'
+                : 'bg-rose-500/10 text-rose-400 border-rose-500/25'
+            )}
           >
             {trend.value}
           </span>
         )}
       </div>
 
-      {subtitle && <p className="mt-2 text-xs text-zinc-500">{subtitle}</p>}
+      {subtitle && <p className="mt-2 text-xs text-zinc-500 font-sans leading-relaxed">{subtitle}</p>}
     </div>
   );
 };

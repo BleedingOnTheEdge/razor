@@ -23,7 +23,7 @@ export interface ActionDropdownProps {
 }
 
 export function ActionDropdown({
-  label = '[ACTIONS ▾]',
+  label = 'Actions ▾',
   trigger,
   items,
   align = 'right',
@@ -120,14 +120,14 @@ export function ActionDropdown({
           left: `${menuPos.left}px`,
           zIndex: 9999,
         }}
-        className="w-48 bg-white border border-black divide-y divide-black animate-in fade-in zoom-in-95 duration-100 shadow-md font-mono text-xs select-none"
+        className="w-48 bg-[#171717] border border-[#262626] divide-y divide-[#262626] rounded-lg animate-in fade-in zoom-in-95 duration-100 shadow-2xl shadow-black/80 font-sans text-xs select-none overflow-hidden"
       >
         {visibleItems.map((item, idx) => {
           const Icon = item.icon;
           const content = (
             <span className="flex items-center gap-2">
               {Icon && <Icon className="w-3.5 h-3.5 shrink-0" />}
-              <span className={item.danger ? 'text-red-600 font-bold' : 'font-bold'}>
+              <span className={item.danger ? 'text-rose-400 font-medium' : 'font-medium'}>
                 {item.label}
               </span>
             </span>
@@ -141,7 +141,7 @@ export function ActionDropdown({
                 onClick={closeDropdown}
                 role="menuitem"
                 title={item.title}
-                className="block px-3 py-2 text-left bg-white text-black hover:bg-black hover:text-white transition-colors"
+                className="block px-3 py-2 text-left text-zinc-300 hover:bg-[#222222] hover:text-white transition-colors"
               >
                 {content}
               </Link>
@@ -160,7 +160,7 @@ export function ActionDropdown({
               }}
               role="menuitem"
               title={item.title}
-              className="w-full px-3 py-2 text-left bg-white text-black hover:bg-black hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="w-full px-3 py-2 text-left text-zinc-300 hover:bg-[#222222] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               {content}
             </button>
@@ -172,7 +172,7 @@ export function ActionDropdown({
   ) : null;
 
   return (
-    <div ref={triggerRef} className={`relative inline-block text-left font-mono text-xs ${className}`}>
+    <div ref={triggerRef} className={`relative inline-block text-left font-sans text-xs ${className}`}>
       {trigger ? (
         <div onClick={toggleDropdown} className="cursor-pointer">
           {trigger}
@@ -183,7 +183,7 @@ export function ActionDropdown({
           onClick={toggleDropdown}
           aria-haspopup="true"
           aria-expanded={isOpen}
-          className="px-2.5 py-1 border border-black bg-white hover:bg-black hover:text-white text-black font-bold transition-colors select-none flex items-center gap-1"
+          className="px-2.5 py-1 rounded-md border border-[#262626] bg-[#171717] hover:bg-[#222222] hover:border-[#383838] text-zinc-200 font-medium transition-colors select-none flex items-center gap-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#3ECF8E]"
         >
           <span>{label}</span>
         </button>

@@ -37,13 +37,13 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
   if (!trades || trades.length === 0) return null;
 
   return (
-    <div className="p-5 bg-white border border-black space-y-4 font-mono text-xs text-black">
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-black">
+    <div className="p-5 bg-[#171717] border border-[#262626] space-y-4 font-sans text-xs text-zinc-100">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-[#262626]">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
-            <Layers className="w-4 h-4 text-black" />
+            <Layers className="w-4 h-4 text-zinc-100" />
             <span>Granular Trade Fill History</span>
-            <span className="ml-2 px-2 py-0.5 border border-black bg-zinc-50 font-bold text-[11px]">
+            <span className="ml-2 px-2 py-0.5 border border-[#262626] bg-[#141414] font-bold text-[11px]">
               {filteredTrades.length} Fills
             </span>
           </h3>
@@ -51,7 +51,7 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
 
         {/* Search / Filter input */}
         <div className="relative min-w-[240px]">
-          <Search className="w-3.5 h-3.5 text-black absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-3.5 h-3.5 text-zinc-100 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={tradeSearch}
@@ -60,16 +60,16 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
               setTradePage(1);
             }}
             placeholder="Search ticket, symbol, side, reason..."
-            className="w-full pl-8 pr-3 py-1.5 bg-white border border-black text-black placeholder:text-zinc-500 font-mono text-xs focus:outline-none"
+            className="w-full pl-8 pr-3 py-1.5 bg-[#171717] border border-[#262626] text-zinc-100 placeholder:text-zinc-500 font-mono text-xs focus:outline-none focus:border-[#3ECF8E]"
           />
         </div>
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto border border-black bg-white">
+      <div className="overflow-x-auto border border-[#262626] bg-[#171717]">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
-            <tr className="bg-zinc-100 border-b border-black font-bold uppercase tracking-wider text-[11px]">
+            <tr className="bg-[#1f1f1f] border-b border-[#262626] font-bold uppercase tracking-wider text-[11px]">
               <th className="py-2.5 px-3">Ticket</th>
               <th className="py-2.5 px-3">Symbol</th>
               <th className="py-2.5 px-3">Side</th>
@@ -82,13 +82,13 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
               <th className="py-2.5 px-3 text-right">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-200">
+          <tbody className="divide-y divide-[#262626]">
             {currentTrades.map((t: TradeItemPayload) => (
               <tr
                 key={t.ticket}
-                className="hover:bg-zinc-50 transition-colors"
+                className="hover:bg-[#141414] transition-colors"
               >
-                <td className="py-2.5 px-3 font-bold text-black font-mono">
+                <td className="py-2.5 px-3 font-bold text-zinc-100 font-mono">
                   <button
                     type="button"
                     onClick={() => onSelectTrade(t)}
@@ -97,19 +97,19 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
                     #{t.ticket}
                   </button>
                 </td>
-                <td className="py-2.5 px-3 font-bold text-black">{t.symbol}</td>
+                <td className="py-2.5 px-3 font-bold text-zinc-100">{t.symbol}</td>
                 <td className="py-2.5 px-3">
                   <span
                     className={`px-1.5 py-0.5 border font-bold text-[10px] uppercase ${
                       t.side.toUpperCase() === 'BUY'
                         ? 'border-green-600 bg-green-50 text-green-700'
-                        : 'border-red-600 bg-red-50 text-red-700'
+                        : 'border-rose-500/30 bg-red-50 text-red-700'
                     }`}
                   >
                     {t.side.toUpperCase()}
                   </span>
                 </td>
-                <td className="py-2.5 px-3 text-right font-mono font-bold text-black">{t.volume != null ? t.volume.toFixed(2) : '—'}</td>
+                <td className="py-2.5 px-3 text-right font-mono font-bold text-zinc-100">{t.volume != null ? t.volume.toFixed(2) : '—'}</td>
                 <td className="py-2.5 px-3">
                   <div className="font-bold">${typeof t.openPrice === 'number' ? t.openPrice.toLocaleString() : (t.openPrice ?? '—')}</div>
                   <div className="text-[10px] text-zinc-500 font-sans">{t.openTime}</div>
@@ -118,14 +118,14 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
                   <div className="font-bold">${typeof t.closePrice === 'number' ? t.closePrice.toLocaleString() : (t.closePrice ?? '—')}</div>
                   <div className="text-[10px] text-zinc-500 font-sans">{t.closeTime}</div>
                 </td>
-                <td className={`py-2.5 px-3 text-right font-bold ${(t.profit ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <td className={`py-2.5 px-3 text-right font-bold ${(t.profit ?? 0) >= 0 ? 'text-[#3ECF8E]' : 'text-rose-400'}`}>
                   {t.profit != null ? (t.profit >= 0 ? `+${formatCurrency(t.profit)}` : formatCurrency(t.profit)) : '—'}
                 </td>
-                <td className={`py-2.5 px-3 text-right font-bold ${(t.returnPct ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <td className={`py-2.5 px-3 text-right font-bold ${(t.returnPct ?? 0) >= 0 ? 'text-[#3ECF8E]' : 'text-rose-400'}`}>
                   {t.returnPct != null ? (t.returnPct >= 0 ? `+${t.returnPct.toFixed(2)}%` : `${t.returnPct.toFixed(2)}%`) : '—'}
                 </td>
                 <td className="py-2.5 px-3 text-center">
-                  <span className="px-1.5 py-0.5 border border-black bg-zinc-50 font-bold text-[10px]">
+                  <span className="px-1.5 py-0.5 border border-[#262626] bg-[#141414] font-bold text-[10px]">
                     {t.exitReason || 'Signal'}
                   </span>
                 </td>
@@ -133,7 +133,7 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
                   <button
                     type="button"
                     onClick={() => onSelectTrade(t)}
-                    className="px-2 py-0.5 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors select-none text-[11px]"
+                    className="px-2 py-0.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors select-none text-[11px]"
                   >
                     INSPECT →
                   </button>
@@ -146,8 +146,8 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
 
       {/* Pagination Controls */}
       {totalTradePages > 1 && (
-        <div className="flex items-center justify-between pt-2 border-t border-black text-xs font-mono">
-          <span className="text-zinc-600">
+        <div className="flex items-center justify-between pt-2 border-t border-[#262626] text-xs font-mono">
+          <span className="text-zinc-400">
             Showing {((tradePage - 1) * tradesPerPage) + 1}–
             {Math.min(tradePage * tradesPerPage, filteredTrades.length)} of {filteredTrades.length} fills
           </span>
@@ -156,7 +156,7 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
               type="button"
               disabled={tradePage === 1}
               onClick={() => setTradePage((p) => Math.max(1, p - 1))}
-              className="px-2.5 py-1 border border-black bg-white hover:bg-zinc-100 font-bold disabled:opacity-40 transition-colors flex items-center gap-1 select-none"
+              className="px-2.5 py-1 border border-[#262626] bg-[#171717] hover:bg-[#1f1f1f] font-bold disabled:opacity-40 transition-colors flex items-center gap-1 select-none"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
               <span>PREV</span>
@@ -168,7 +168,7 @@ export function TradeHistoryTable({ trades, onSelectTrade }: TradeHistoryTablePr
               type="button"
               disabled={tradePage >= totalTradePages}
               onClick={() => setTradePage((p) => Math.min(totalTradePages, p + 1))}
-              className="px-2.5 py-1 border border-black bg-white hover:bg-zinc-100 font-bold disabled:opacity-40 transition-colors flex items-center gap-1 select-none"
+              className="px-2.5 py-1 border border-[#262626] bg-[#171717] hover:bg-[#1f1f1f] font-bold disabled:opacity-40 transition-colors flex items-center gap-1 select-none"
             >
               <span>NEXT</span>
               <ChevronRight className="w-3.5 h-3.5" />

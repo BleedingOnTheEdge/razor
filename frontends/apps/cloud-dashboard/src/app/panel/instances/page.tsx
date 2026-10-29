@@ -8,7 +8,15 @@ import { useAuth } from '@/context/auth-context';
 import { ServerPagination } from '@/components/ui/ServerPagination';
 import { ShareEngineModal } from '@/components/instances/ShareEngineModal';
 import { ActionDropdown } from '@/components/ui/ActionDropdown';
-import { formatTimestamp, formatHash } from '@razor/ui-kit';
+import {
+  formatTimestamp,
+  formatHash,
+  Button,
+  Card,
+  Badge,
+  Input,
+} from '@razor/ui-kit';
+import { Server, Radio, RotateCw, Search, ArrowRight, ShieldCheck, Share2, Layers } from 'lucide-react';
 
 interface EngineInstanceItem {
   instanceId: string;
@@ -100,124 +108,142 @@ export default function PanelInstancesPage() {
   const onlineCount = instances.filter((i) => i.isConnected).length;
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <div className="space-y-6 max-w-7xl font-sans text-xs">
       {/* Top Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-black">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#262626]">
         <div>
-          <h1 className="text-xl font-bold uppercase tracking-tight text-black">
+          <div className="flex items-center gap-2 mb-1">
+            <Badge variant="emerald" dot>
+              Fleet Registry
+            </Badge>
+          </div>
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-100">
             Engine Fleet & Node Management
           </h1>
-          <p className="text-sm text-zinc-600 mt-1">
+          <p className="text-xs text-zinc-400 mt-1">
             Registered execution instances, WebSocket cluster telemetry, and temporary sharing delegations.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Link
-            href="/panel/live"
-            className="px-3 py-2 border border-black bg-white hover:bg-black hover:text-white font-bold transition-colors"
-          >
-            [OPEN LIVE MANAGER]
+        <div className="flex items-center gap-2.5">
+          <Link href="/panel/live">
+            <Button variant="secondary" pill size="sm" className="gap-1.5">
+              <Radio className="w-3.5 h-3.5 text-[#3ECF8E]" />
+              <span>Open Live Manager</span>
+            </Button>
           </Link>
-          <button
+          <Button
             type="button"
+            variant="outline"
+            pill
+            size="sm"
             onClick={loadInstances}
-            className="px-3 py-2 border border-black bg-black text-white hover:bg-white hover:text-black font-bold transition-colors"
+            className="gap-1.5"
           >
-            [REFRESH]
-          </button>
+            <RotateCw className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Refresh</span>
+          </Button>
         </div>
       </div>
 
       {/* Fleet Telemetry Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 border border-black bg-white">
-        <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 block">Online Active Nodes</span>
-          <span className="text-2xl font-bold text-green-600 font-mono mt-1 block">
-            {onlineCount} / {instances.length}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <Card className="p-4 bg-[#171717] border-[#262626]">
+          <span className="text-xs font-medium text-zinc-400 block">Online Active Nodes</span>
+          <span className="text-2xl font-semibold text-[#3ECF8E] font-mono mt-1 block tabular-nums">
+            {onlineCount} <span className="text-sm font-normal text-zinc-500">/ {instances.length}</span>
           </span>
-        </div>
-        <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 block">Total Registered Engines</span>
-          <span className="text-2xl font-bold text-black font-mono mt-1 block">
+        </Card>
+        <Card className="p-4 bg-[#171717] border-[#262626]">
+          <span className="text-xs font-medium text-zinc-400 block">Total Registered Engines</span>
+          <span className="text-2xl font-semibold text-zinc-100 font-mono mt-1 block tabular-nums">
             {totalCount || instances.length}
           </span>
-        </div>
-        <div>
-          <span className="text-black font-bold block">Account License Quota</span>
-          <span className="text-2xl font-bold text-black mt-1 block">
-            {user?.maxInstances || 10} Cap
+        </Card>
+        <Card className="p-4 bg-[#171717] border-[#262626]">
+          <span className="text-xs font-medium text-zinc-400 block">Account License Quota</span>
+          <span className="text-2xl font-semibold text-zinc-100 font-mono mt-1 block tabular-nums">
+            {user?.maxInstances || 10} <span className="text-xs font-normal text-zinc-500">Cap</span>
           </span>
-        </div>
-        <div>
-          <span className="text-black font-bold block">Engine Sharing Grants</span>
-          <span className="text-2xl font-bold text-black mt-1 block">
-            {instances.filter((i) => i.isShared).length} Shared
+        </Card>
+        <Card className="p-4 bg-[#171717] border-[#262626]">
+          <span className="text-xs font-medium text-zinc-400 block">Engine Sharing Grants</span>
+          <span className="text-2xl font-semibold text-[#3ECF8E] font-mono mt-1 block tabular-nums">
+            {instances.filter((i) => i.isShared).length} <span className="text-xs font-normal text-zinc-500">Shared</span>
           </span>
-        </div>
+        </Card>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border border-black bg-white">
-        <div>
-          <label className="block font-bold text-black mb-1">Search Engine</label>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search name, ID or engine slug..."
-            className="w-full px-3 py-1.5 border border-black bg-white text-black font-mono focus:outline-none"
-          />
-        </div>
+      <Card className="p-4 bg-[#171717] border-[#262626]">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className="block font-medium text-zinc-300 mb-1.5">Search Engine</label>
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-2.5" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search name, ID or engine slug…"
+                className="w-full pl-9 pr-3 py-1.5 border border-[#262626] rounded-lg bg-[#141414] text-zinc-100 placeholder:text-zinc-500 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] transition-colors"
+              />
+            </div>
+          </div>
 
-        <div>
-          <label className="block font-bold text-black mb-1">Connectivity Filter</label>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full px-3 py-1.5 border border-black bg-white text-black font-mono font-bold focus:outline-none"
-          >
-            <option value="ALL">All Engines</option>
-            <option value="ONLINE">Online Only</option>
-            <option value="OFFLINE">Offline Only</option>
-            <option value="SHARED">Shared With Me</option>
-          </select>
-        </div>
+          <div>
+            <label className="block font-medium text-zinc-300 mb-1.5">Connectivity Filter</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-3 py-1.5 border border-[#262626] rounded-lg bg-[#141414] text-zinc-200 font-mono text-xs focus:outline-none focus:border-[#3ECF8E]"
+            >
+              <option value="ALL">All Engines</option>
+              <option value="ONLINE">Online Only</option>
+              <option value="OFFLINE">Offline Only</option>
+              <option value="SHARED">Shared With Me</option>
+            </select>
+          </div>
 
-        <div className="flex items-end">
-          <button
-            type="button"
-            onClick={() => {
-              setSearchQuery('');
-              setStatusFilter('ALL');
-            }}
-            className="w-full px-3 py-1.5 border border-black bg-white hover:bg-zinc-100 text-black font-bold transition-colors"
-          >
-            [RESET FILTERS]
-          </button>
+          <div className="flex items-end">
+            <Button
+              type="button"
+              variant="secondary"
+              pill
+              size="sm"
+              onClick={() => {
+                setSearchQuery('');
+                setStatusFilter('ALL');
+              }}
+              className="w-full justify-center"
+            >
+              Reset Filters
+            </Button>
+          </div>
         </div>
-      </div>
+      </Card>
 
       {/* Table */}
       {loading ? (
-        <div className="py-16 text-center text-black font-bold border border-black">
-          [CONNECTING TO CLOUD FLEET REGISTRY...]
-        </div>
+        <Card className="py-16 text-center text-zinc-400 font-mono">
+          Connecting to cloud fleet registry…
+        </Card>
       ) : error ? (
-        <div className="p-4 border border-black text-red-600 font-bold">
-          [ERROR]: {error}
-        </div>
+        <Card className="p-4 border-rose-500/30 bg-rose-500/10 text-rose-400 font-medium">
+          Error: {error}
+        </Card>
       ) : filtered.length === 0 ? (
-        <div className="py-16 text-center border border-black p-8">
-          <p className="font-bold text-black uppercase">[NO ENGINES FOUND]</p>
-          <p className="mt-2 text-black font-normal">Connect an Engine runner using the command line daemon or check your filters.</p>
-        </div>
+        <Card className="py-16 text-center p-8">
+          <Server className="w-8 h-8 text-zinc-600 mx-auto mb-2" />
+          <p className="font-semibold text-zinc-200 text-sm">No Engines Found</p>
+          <p className="mt-1 text-zinc-500 text-xs">Connect an Engine runner using the command line daemon or check your filters.</p>
+        </Card>
       ) : (
         <div className="space-y-4">
-          <div className="border border-black overflow-x-auto">
+          <div className="rounded-xl border border-[#262626] bg-[#171717] overflow-hidden shadow-sm">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-black bg-zinc-50 text-xs font-bold text-zinc-700 uppercase tracking-wider">
+                <tr className="border-b border-[#262626] bg-[#141414] text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                   <th className="p-3">Engine Instance</th>
                   <th className="p-3">Status</th>
                   <th className="p-3 hidden sm:table-cell">Slug / EngineId</th>
@@ -227,62 +253,67 @@ export default function PanelInstancesPage() {
                   <th className="p-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-200 text-sm">
+              <tbody className="divide-y divide-[#262626] text-xs">
                 {filtered.map((inst) => (
-                  <tr key={inst.instanceId} className="hover:bg-zinc-50 transition-colors">
+                  <tr key={inst.instanceId} className="hover:bg-[#1f1f1f] transition-colors">
                     <td className="p-3">
                       <Link
                         href={`/panel/instances/${inst.instanceId}`}
-                        className="font-bold text-black hover:underline block"
+                        className="font-medium text-zinc-100 hover:text-[#3ECF8E] transition-colors block"
                       >
                         {inst.name || 'Unnamed Engine'}
                       </Link>
-                      <span className="text-[10px] text-black">
+                      <span className="text-[11px] text-zinc-500 font-mono">
                         ID: {formatHash(inst.instanceId, 8)}
                       </span>
                     </td>
                     <td className="p-3">
                       {inst.isConnected ? (
-                        <span className="font-bold text-green-600">[ONLINE]</span>
+                        <Badge variant="emerald" dot>
+                          Online
+                        </Badge>
                       ) : (
-                        <span className="font-bold text-black">[OFFLINE]</span>
+                        <Badge variant="neutral">
+                          Offline
+                        </Badge>
                       )}
                     </td>
-                    <td className="p-3 font-bold text-black hidden sm:table-cell">{inst.engineId}</td>
-                    <td className="p-3 font-bold text-black hidden md:table-cell">
-                      {inst.manifestExtensionCount} active
+                    <td className="p-3 font-mono text-zinc-300 hidden sm:table-cell">{inst.engineId}</td>
+                    <td className="p-3 text-zinc-300 hidden md:table-cell">
+                      <span className="font-mono tabular-nums">{inst.manifestExtensionCount}</span> active
                     </td>
-                    <td className="p-3 text-black hidden lg:table-cell">
+                    <td className="p-3 text-zinc-400 font-mono text-[11px] hidden lg:table-cell">
                       {formatTimestamp(inst.createdAt)}
                     </td>
                     <td className="p-3 hidden sm:table-cell">
                       {inst.isShared ? (
-                        <span className="font-bold text-black" title={`Expires: ${inst.shareExpiresAt}`}>
-                          [SHARED]
-                        </span>
+                        <Badge variant="warning" title={`Expires: ${inst.shareExpiresAt}`}>
+                          Shared
+                        </Badge>
                       ) : (
-                        <span className="font-bold text-black">[OWNER]</span>
+                        <Badge variant="outline">
+                          Owner
+                        </Badge>
                       )}
                     </td>
                     <td className="p-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">
-                        <Link
-                          href={`/panel/instances/${inst.instanceId}`}
-                          className="px-2.5 py-1 border border-black bg-black text-white hover:bg-white hover:text-black font-bold transition-colors text-xs"
-                        >
-                          [INSPECT]
+                        <Link href={`/panel/instances/${inst.instanceId}`}>
+                          <Button variant="outline" size="sm" pill className="text-xs h-7 px-2.5">
+                            Inspect
+                          </Button>
                         </Link>
                         <ActionDropdown
-                          label="⋮"
+                          label="⋯"
                           items={[
                             {
-                              label: '[LIVE MANAGER]',
+                              label: 'Live Manager',
                               href: `/panel/instances/${inst.instanceId}/live`,
                             },
                             ...(!inst.isShared
                               ? [
                                   {
-                                    label: '[SHARE ENGINE]',
+                                    label: 'Share Engine',
                                     onClick: () => {
                                       setSelectedInstanceForShare({
                                         id: inst.instanceId,

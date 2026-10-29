@@ -136,14 +136,14 @@ export function DynamicParameterGenerator({
   };
 
   return (
-    <div className="border border-black bg-white p-5 font-mono space-y-4">
+    <div className="border border-[#262626] bg-[#171717] p-5 font-mono space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-black">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#262626]">
         <div>
-          <span className="font-bold text-sm text-black uppercase tracking-wider block">
+          <span className="font-bold text-sm text-zinc-100 uppercase tracking-wider block">
             Default Parameter Genes & Configurations
           </span>
-          <span className="text-xs text-zinc-600 font-sans mt-0.5 block">
+          <span className="text-xs text-zinc-400 font-sans mt-0.5 block">
             Configure baseline strategy genes, risk limits, and execution tolerances.
           </span>
         </div>
@@ -151,7 +151,7 @@ export function DynamicParameterGenerator({
         <button
           type="button"
           onClick={handleAddRow}
-          className="px-3 py-1.5 border border-black bg-black text-white hover:bg-zinc-800 text-xs font-bold uppercase flex items-center gap-1.5 transition-colors self-start sm:self-auto"
+          className="px-3 py-1.5 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium text-xs font-bold uppercase flex items-center gap-1.5 transition-colors self-start sm:self-auto"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Add Parameter</span>
@@ -160,8 +160,8 @@ export function DynamicParameterGenerator({
 
       {/* Presets Bar */}
       <div className="space-y-1.5">
-        <span className="text-[11px] font-bold text-zinc-700 uppercase flex items-center gap-1">
-          <Sparkles className="w-3 h-3 text-black" />
+        <span className="text-[11px] font-bold text-zinc-300 uppercase flex items-center gap-1">
+          <Sparkles className="w-3 h-3 text-zinc-100" />
           <span>Quick Gene Presets</span>
         </span>
         <div className="flex flex-wrap gap-1.5">
@@ -177,8 +177,8 @@ export function DynamicParameterGenerator({
                 onClick={() => handleApplyPreset(preset.key, preset.defaultValue)}
                 className={`text-[11px] px-2.5 py-1 border transition-colors ${
                   isAlreadyAdded
-                    ? 'border-zinc-300 bg-zinc-100 text-zinc-400 cursor-not-allowed'
-                    : 'border-black bg-white hover:bg-black hover:text-white text-black font-bold'
+                    ? 'border-zinc-300 bg-[#1f1f1f] text-zinc-400 cursor-not-allowed'
+                    : 'border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold'
                 }`}
               >
                 {preset.label}
@@ -199,7 +199,7 @@ export function DynamicParameterGenerator({
             <div key={entry.id} className="space-y-1">
               <div className="flex items-center gap-2">
                 {/* Index / drag pill */}
-                <div className="w-7 h-10 border border-black bg-zinc-100 flex items-center justify-center font-bold text-xs text-black shrink-0">
+                <div className="w-7 h-10 border border-[#262626] bg-[#1f1f1f] flex items-center justify-center font-bold text-xs text-zinc-100 shrink-0">
                   {index + 1}
                 </div>
 
@@ -210,7 +210,7 @@ export function DynamicParameterGenerator({
                     value={entry.key}
                     onChange={(e) => handleKeyChange(entry.id, e.target.value)}
                     placeholder="ParameterName (e.g. StopLossPct)"
-                    className="w-full px-3 py-2 border border-black bg-white text-xs font-bold text-black placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-black h-10"
+                    className="w-full px-3 py-2 border border-[#262626] bg-[#171717] text-xs font-bold text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black h-10"
                   />
                 </div>
 
@@ -224,16 +224,16 @@ export function DynamicParameterGenerator({
                     value={entry.value}
                     onChange={(e) => handleValueChange(entry.id, e.target.value)}
                     placeholder="Validated Value (e.g. 2.5, true, 50)"
-                    className={`w-full px-3 py-2 border text-xs font-mono text-black placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-black h-10 ${
+                    className={`w-full px-3 py-2 border text-xs font-mono text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black h-10 ${
                       entry.error
-                        ? 'border-red-600 bg-red-50 focus:border-red-600'
-                        : 'border-black bg-zinc-50 focus:bg-white'
+                        ? 'border-rose-500/30 bg-red-50 focus:border-rose-500/30'
+                        : 'border-[#262626] bg-[#141414] focus:bg-white'
                     }`}
                   />
                   {entry.error ? (
-                    <AlertCircle className="w-4 h-4 text-red-600 absolute right-2.5 top-3" />
+                    <AlertCircle className="w-4 h-4 text-rose-400 absolute right-2.5 top-3" />
                   ) : entry.value.trim() ? (
-                    <CheckCircle2 className="w-4 h-4 text-green-600 absolute right-2.5 top-3 opacity-60" />
+                    <CheckCircle2 className="w-4 h-4 text-[#3ECF8E] absolute right-2.5 top-3 opacity-60" />
                   ) : null}
                 </div>
 
@@ -241,7 +241,7 @@ export function DynamicParameterGenerator({
                 <button
                   type="button"
                   onClick={() => handleRemoveRow(entry.id)}
-                  className="w-10 h-10 border border-black bg-white hover:bg-red-50 hover:border-red-600 text-black hover:text-red-600 flex items-center justify-center shrink-0 transition-colors"
+                  className="w-10 h-10 border border-[#262626] bg-[#171717] hover:bg-red-50 hover:border-rose-500/30 text-zinc-100 hover:text-rose-400 flex items-center justify-center shrink-0 transition-colors"
                   title="Remove parameter"
                   aria-label="Remove parameter"
                 >
@@ -250,7 +250,7 @@ export function DynamicParameterGenerator({
               </div>
 
               {entry.error && (
-                <p className="text-[10px] text-red-600 font-sans pl-9 font-bold">
+                <p className="text-[10px] text-rose-400 font-sans pl-9 font-bold">
                   {entry.error}
                 </p>
               )}
