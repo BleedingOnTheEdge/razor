@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import InstancesPage from '@/app/instances/page';
+import PanelInstancesPage from '@/app/panel/instances/page';
 import { ToastProvider } from '@/components/ui/toast';
 
 const mockInstances = [
@@ -31,6 +32,8 @@ const mockInstances = [
 ];
 
 vi.mock('@/lib/api-client', () => ({
+  getApiBaseUrl: () => 'http://localhost:5000',
+  getAuthHeaders: () => ({ Authorization: 'Bearer test' }),
   getApiClient: () => ({
     GET: vi.fn().mockImplementation((path: string) => {
       if (path === '/api/instances') {
@@ -87,5 +90,83 @@ describe('Instances Page', () => {
     fireEvent.click(cancelBtn);
 
     expect(screen.queryByText('Register Engine Instance')).not.toBeInTheDocument();
+  });
+});
+
+describe('Panel Instances Page (Engine Fleet & Node Management)', () => {
+  beforeEach(() => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockInstances,
+    });
+  });
+
+  it('renders Engine Fleet header and action buttons', async () => {
+    render(
+      <ToastProvider>
+        <PanelInstancesPage />
+      </ToastProvider>
+    );
+
+    expect(screen.getByText('Engine Fleet & Node Management')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Register Engine/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Runner Guide/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Refresh/i })).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText('London Equities Alpha')).toBeInTheDocument();
+      expect(screen.getByText('Tokyo FX Beta')).toBeInTheDocument();
+    });
+  });
+
+  it('opens and closes registration modal from panel instances', async () => {
+    render(
+      <ToastProvider>
+        <PanelInstancesPage />
+      </ToastProvider>
+    );
+
+    const registerBtn = screen.getByRole('button', { name: /Register Engine/i });
+    fireEvent.click(registerBtn);
+
+    expect(screen.getByText('Register Engine Instance')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Human-Readable Name/i)).toBeInTheDocument();
+
+    const cancelBtn = screen.getByText('✕ Cancel');
+    fireEvent.click(cancelBtn);
+
+    expect(screen.queryByText('Register Engine Instance')).not.toBeInTheDocument();
+  });
+
+  it('opens runner guide modal from panel instances', async () => {
+    render(
+      <ToastProvider>
+        <PanelInstancesPage />
+      </ToastProvider>
+    );
+
+    const guideBtn = screen.getByRole('button', { name: /Runner Guide/i });
+    fireEvent.click(guideBtn);
+
+    expect(screen.getByText(/Local Engine Runner & Instancing Guide/i)).toBeInTheDocument();
+  });
+
+  it('renders registration and guide action buttons on empty state', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [],
+    });
+
+    render(
+      <ToastProvider>
+        <PanelInstancesPage />
+      </ToastProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('No Engines Found')).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole('button', { name: /Register New Engine/i })).toBeInTheDocument();
   });
 });

@@ -400,6 +400,7 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `frontends/apps/cloud-dashboard/src/hooks/use-sse-stream.ts`: Cloud dashboard operator console and sub-pages.
 - `frontends/apps/cloud-dashboard/src/lib/api-client.ts`: Cloud dashboard operator console and sub-pages.
 - `frontends/apps/cloud-dashboard/src/test/auth-login.test.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/test/instances.test.tsx`: Cloud dashboard operator console and sub-pages.
 - `frontends/apps/cloud-dashboard/src/test/lineage.test.tsx`: Cloud dashboard operator console and sub-pages.
 - `frontends/apps/cloud-dashboard/src/test/live.test.tsx`: Cloud dashboard operator console and sub-pages.
 - `frontends/apps/cloud-dashboard/src/test/report.test.tsx`: Cloud dashboard operator console and sub-pages.
