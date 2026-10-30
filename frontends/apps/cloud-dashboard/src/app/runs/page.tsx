@@ -126,10 +126,10 @@ export default function RunsPage() {
   return (
     <div className="space-y-6 max-w-7xl">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-zinc-200">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-[#262626]">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
-            <Activity className="w-6 h-6 text-cyan-600" />
+          <h2 className="text-2xl font-bold tracking-tight text-zinc-100 flex items-center gap-2">
+            <Activity className="w-6 h-6 text-[#3ECF8E]" />
             <span>Flow Runs & Lineage Control</span>
           </h2>
           <p className="text-sm text-zinc-500 mt-1">
@@ -148,7 +148,7 @@ export default function RunsPage() {
 
           <button
             onClick={loadRuns}
-            className="px-3 py-2 rounded-lg bg-white hover:bg-zinc-50 border border-zinc-200 text-xs font-mono text-zinc-700 transition-colors flex items-center gap-2 shadow-sm"
+            className="px-3 py-2 rounded-lg bg-[#171717] hover:bg-[#141414] border border-[#262626] text-xs font-mono text-zinc-300 transition-colors flex items-center gap-2 shadow-sm"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Refresh</span>
@@ -158,33 +158,33 @@ export default function RunsPage() {
 
       {/* Summary KPI Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-xl bg-white border border-zinc-200 font-mono shadow-sm">
+        <div className="p-4 rounded-xl bg-[#171717] border border-[#262626] font-mono shadow-sm">
           <span className="text-xs text-zinc-500 uppercase tracking-wider block">Total Executions</span>
-          <span className="text-2xl font-bold text-zinc-900 mt-1 block">{runs.length} runs</span>
+          <span className="text-2xl font-bold text-zinc-100 mt-1 block">{runs.length} runs</span>
         </div>
 
-        <div className="p-4 rounded-xl bg-white border border-zinc-200 font-mono shadow-sm">
+        <div className="p-4 rounded-xl bg-[#171717] border border-[#262626] font-mono shadow-sm">
           <span className="text-xs text-zinc-500 uppercase tracking-wider block">Actively Running</span>
-          <span className="text-2xl font-bold text-cyan-700 mt-1 block flex items-center gap-2">
+          <span className="text-2xl font-bold text-[#3ECF8E] mt-1 block flex items-center gap-2">
             <span>{runningCount} runs</span>
             {runningCount > 0 && <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />}
           </span>
         </div>
 
-        <div className="p-4 rounded-xl bg-white border border-zinc-200 font-mono shadow-sm">
+        <div className="p-4 rounded-xl bg-[#171717] border border-[#262626] font-mono shadow-sm">
           <span className="text-xs text-zinc-500 uppercase tracking-wider block">Completed Runs</span>
-          <span className="text-2xl font-bold text-emerald-700 mt-1 block">{completedCount} runs</span>
+          <span className="text-2xl font-bold text-[#3ECF8E] mt-1 block">{completedCount} runs</span>
         </div>
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-zinc-200 pb-3">
+      <div className="flex items-center gap-2 border-b border-[#262626] pb-3">
         <button
           onClick={() => setActiveTab('all')}
           className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-colors flex items-center gap-2 ${
             activeTab === 'all'
-              ? 'bg-zinc-200 text-zinc-900'
-              : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
+              ? 'bg-[#262626] text-zinc-100'
+              : 'text-zinc-400 hover:text-zinc-100 hover:bg-[#1f1f1f]'
           }`}
         >
           <ListOrdered className="w-3.5 h-3.5" />
@@ -195,8 +195,8 @@ export default function RunsPage() {
           onClick={() => setActiveTab('ranking')}
           className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-colors flex items-center gap-2 ${
             activeTab === 'ranking'
-              ? 'bg-zinc-200 text-zinc-900'
-              : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
+              ? 'bg-[#262626] text-zinc-100'
+              : 'text-zinc-400 hover:text-zinc-100 hover:bg-[#1f1f1f]'
           }`}
         >
           <Trophy className="w-3.5 h-3.5 text-amber-500" />
@@ -208,7 +208,7 @@ export default function RunsPage() {
       {activeTab === 'all' && (
         <div className="space-y-4">
           {/* Filters & Search */}
-          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-white border border-zinc-200 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-[#171717] border border-[#262626] shadow-sm">
             <div className="relative flex-1 min-w-[240px] max-w-md">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
               <input
@@ -216,7 +216,7 @@ export default function RunsPage() {
                 placeholder="Search by Run ID or Engine hash..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs font-mono text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-cyan-500 focus:bg-white"
+                className="w-full pl-9 pr-4 py-2 bg-[#141414] border border-[#262626] rounded-lg text-xs font-mono text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 focus:bg-[#171717]"
               />
             </div>
 
@@ -230,7 +230,7 @@ export default function RunsPage() {
                     className={`px-2 py-0.5 rounded text-[11px] ${
                       kindFilter === k
                         ? 'bg-zinc-900 text-white font-semibold'
-                        : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
+                        : 'text-zinc-400 hover:text-zinc-100 hover:bg-[#1f1f1f]'
                     }`}
                   >
                     {k}
@@ -238,7 +238,7 @@ export default function RunsPage() {
                 ))}
               </div>
 
-              <div className="flex items-center gap-1.5 border-l border-zinc-200 pl-3">
+              <div className="flex items-center gap-1.5 border-l border-[#262626] pl-3">
                 <span className="text-zinc-500">Status:</span>
                 {['ALL', 'RUNNING', 'COMPLETED', 'PAUSED', 'FAILED'].map((s) => (
                   <button
@@ -247,7 +247,7 @@ export default function RunsPage() {
                     className={`px-2 py-0.5 rounded text-[11px] ${
                       statusFilter === s
                         ? 'bg-zinc-900 text-white font-semibold'
-                        : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
+                        : 'text-zinc-400 hover:text-zinc-100 hover:bg-[#1f1f1f]'
                     }`}
                   >
                     {s}
@@ -270,17 +270,17 @@ export default function RunsPage() {
           )}
 
           {!loading && !error && filteredRuns.length === 0 && (
-            <div className="py-16 text-center rounded-xl border border-dashed border-zinc-300 bg-zinc-50">
+            <div className="py-16 text-center rounded-xl border border-dashed border-[#262626] bg-[#141414]">
               <Activity className="w-10 h-10 text-zinc-400 mx-auto mb-3" />
-              <h3 className="text-base font-semibold text-zinc-800 font-mono">No Flow Runs Recorded</h3>
+              <h3 className="text-base font-semibold text-zinc-200 font-mono">No Flow Runs Recorded</h3>
               <p className="text-xs text-zinc-500 mt-1">Initiate a backtest or optimization run to populate execution records.</p>
             </div>
           )}
 
           {!loading && filteredRuns.length > 0 && (
-            <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden shadow-sm">
+            <div className="rounded-xl border border-[#262626] bg-[#171717] overflow-hidden shadow-sm">
               <table className="w-full text-left text-xs font-mono">
-                <thead className="bg-zinc-50 text-zinc-600 uppercase tracking-wider border-b border-zinc-200">
+                <thead className="bg-[#141414] text-zinc-400 uppercase tracking-wider border-b border-[#262626]">
                   <tr>
                     <th className="px-5 py-3 font-semibold">Run ID</th>
                     <th className="px-5 py-3 font-semibold">Kind</th>
@@ -298,14 +298,14 @@ export default function RunsPage() {
                     const relBadge = getRunRelationBadge(run.relation);
                     const isRunning = run.status.toUpperCase() === 'RUNNING';
                     return (
-                      <tr key={run.id} className="hover:bg-zinc-50/80 transition-colors">
-                        <td className="px-5 py-3.5 font-bold text-zinc-900">
-                          <Link href={`/runs/${run.id}`} className="hover:text-cyan-700 transition-colors flex items-center gap-1.5">
+                      <tr key={run.id} className="hover:bg-[#141414]/80 transition-colors">
+                        <td className="px-5 py-3.5 font-bold text-zinc-100">
+                          <Link href={`/runs/${run.id}`} className="hover:text-[#3ECF8E] transition-colors flex items-center gap-1.5">
                             {isRunning && <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />}
                             <span>{formatHash(run.id, 8)}</span>
                           </Link>
                         </td>
-                        <td className="px-5 py-3.5 text-zinc-800 font-medium">{run.kind}</td>
+                        <td className="px-5 py-3.5 text-zinc-200 font-medium">{run.kind}</td>
                         <td className="px-5 py-3.5">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${statusBadge.className}`}>
                             {statusBadge.label}
@@ -316,7 +316,7 @@ export default function RunsPage() {
                             {relBadge.label}
                           </span>
                         </td>
-                        <td className="px-5 py-3.5 text-emerald-700 font-bold">
+                        <td className="px-5 py-3.5 text-[#3ECF8E] font-bold">
                           {formatCurrency(run.metrics?.netProfit ?? (run as any).netProfit)}
                         </td>
                         <td className="px-5 py-3.5 text-cyan-800 font-bold">
@@ -336,7 +336,7 @@ export default function RunsPage() {
 
                             <Link
                               href={`/runs/${run.id}/lineage`}
-                              className="px-2 py-1 rounded bg-zinc-100 hover:bg-zinc-200 text-purple-700 text-xs transition-colors flex items-center gap-1 font-sans"
+                              className="px-2 py-1 rounded bg-[#1f1f1f] hover:bg-[#262626] text-purple-700 text-xs transition-colors flex items-center gap-1 font-sans"
                               title="Lineage DAG"
                             >
                               <GitBranch className="w-3.5 h-3.5" />
@@ -345,7 +345,7 @@ export default function RunsPage() {
 
                             <Link
                               href={`/reports/${run.id}`}
-                              className="px-2 py-1 rounded bg-zinc-100 hover:bg-zinc-200 text-cyan-700 text-xs transition-colors flex items-center gap-1 font-sans"
+                              className="px-2 py-1 rounded bg-[#1f1f1f] hover:bg-[#262626] text-[#3ECF8E] text-xs transition-colors flex items-center gap-1 font-sans"
                               title="Performance Report"
                             >
                               <FileText className="w-3.5 h-3.5" />

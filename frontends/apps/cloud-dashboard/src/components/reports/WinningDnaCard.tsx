@@ -28,7 +28,7 @@ export function WinningDnaCard({
   });
 
   return (
-    <div className="p-5 bg-[#171717] border border-[#262626] space-y-4 font-sans text-xs text-zinc-100">
+    <div className="p-5 bg-[#171717] border border-[#262626] rounded-xl space-y-4 font-sans text-xs text-zinc-100">
       <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-[#262626]">
         <div>
           <div className="flex items-center gap-3">
@@ -36,7 +36,7 @@ export function WinningDnaCard({
               <Dna className="w-4 h-4 text-zinc-100" />
               <span>Winning Strategy DNA Specification</span>
             </h3>
-            <span className="px-2 py-0.5 border border-[#262626] bg-[#141414] font-bold text-xs">
+            <span className="px-2.5 py-0.5 rounded-full border border-[#262626] bg-[#141414] font-bold text-xs text-zinc-300">
               FITNESS: {winningDna.fitness != null ? winningDna.fitness.toFixed(4) : '—'}
             </span>
           </div>
@@ -50,7 +50,7 @@ export function WinningDnaCard({
           <button
             type="button"
             onClick={onCopyDna}
-            className="px-3 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors flex items-center gap-1.5 select-none"
+            className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-bold transition-colors flex items-center gap-1.5 select-none"
           >
             {copiedDna ? (
               <>
@@ -68,7 +68,7 @@ export function WinningDnaCard({
           <button
             type="button"
             onClick={() => onLaunchWithDna('Live')}
-            className="px-3 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors flex items-center gap-1.5 select-none"
+            className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-bold transition-colors flex items-center gap-1.5 select-none"
           >
             <Play className="w-3.5 h-3.5" />
             <span>DEPLOY TO LIVE</span>
@@ -95,19 +95,19 @@ export function WinningDnaCard({
         <div>
           <span className="font-bold uppercase text-zinc-100 block mb-1">Configured Slots</span>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="px-2.5 py-1 border border-[#262626] bg-[#141414] font-bold">
+            <span className="px-2.5 py-1 rounded-md border border-[#262626] bg-[#141414] font-bold text-xs">
               Strategy: {winningDna.slots?.strategy || 'TrendFollowing'}
             </span>
-            <span className="px-2.5 py-1 border border-[#262626] bg-[#141414] font-bold">
+            <span className="px-2.5 py-1 rounded-md border border-[#262626] bg-[#141414] font-bold text-xs">
               Broker: {winningDna.slots?.adapter || 'PaperBroker'}
             </span>
             {winningDna.execution?.symbols?.[0] && (
-              <span className="px-2.5 py-1 border border-[#262626] bg-[#141414] font-bold">
+              <span className="px-2.5 py-1 rounded-md border border-[#262626] bg-[#141414] font-bold text-xs">
                 Symbol: {winningDna.execution.symbols[0]}
               </span>
             )}
             {winningDna.execution?.timeframes?.[0] && (
-              <span className="px-2.5 py-1 border border-[#262626] bg-[#141414] font-bold">
+              <span className="px-2.5 py-1 rounded-md border border-[#262626] bg-[#141414] font-bold text-xs">
                 Timeframe: {winningDna.execution.timeframes[0]}
               </span>
             )}
@@ -121,7 +121,7 @@ export function WinningDnaCard({
           </span>
 
           {paramEntries.length === 0 ? (
-            <div className="p-4 border border-[#262626] bg-[#141414] text-center font-sans text-zinc-500">
+            <div className="p-4 border border-[#262626] bg-[#141414] rounded-lg text-center font-sans text-zinc-500">
               No decoded strategy parameters associated with this chromosome.
             </div>
           ) : (
@@ -129,7 +129,7 @@ export function WinningDnaCard({
               {chunkedParams.map((chunk, colIdx) => {
                 if (chunk.length === 0) return null;
                 return (
-                  <div key={colIdx} className="border border-[#262626] overflow-hidden bg-[#171717]">
+                  <div key={colIdx} className="border border-[#262626] rounded-lg overflow-hidden bg-[#171717]">
                     <table className="w-full text-left border-collapse">
                       <thead>
                         <tr className="border-b border-[#262626] bg-[#1f1f1f] font-bold uppercase text-[11px]">
@@ -165,9 +165,9 @@ export function WinningDnaCard({
             <span className="font-bold uppercase text-zinc-100 block mb-2">
               Normalized Genes Vector ({winningDna.genes.length})
             </span>
-            <div className="flex flex-wrap gap-1.5 p-3 border border-[#262626] bg-[#141414]">
+            <div className="flex flex-wrap gap-1.5 p-3 border border-[#262626] bg-[#141414] rounded-lg">
               {winningDna.genes.map((gene, idx) => (
-                <span key={idx} className="px-2 py-0.5 border border-[#262626] bg-[#171717] font-bold text-zinc-100">
+                <span key={idx} className="px-2 py-0.5 rounded-md border border-[#262626] bg-[#171717] font-mono text-[10px] font-bold text-zinc-200">
                   g{idx}: {typeof gene === 'number' ? gene.toFixed(4) : gene}
                 </span>
               ))}

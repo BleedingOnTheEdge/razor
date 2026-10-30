@@ -188,8 +188,39 @@ export default function PanelRunsPage() {
         </div>
       </div>
 
+      {/* Telemetry Metric Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Card className="p-3.5 bg-white border-zinc-200 shadow-xs">
+          <span className="text-[11px] font-medium text-zinc-500 block">Total Pipelines</span>
+          <span className="text-xl font-bold font-mono text-zinc-900 mt-1 block tabular-nums">
+            {totalCount || runs.length}
+          </span>
+        </Card>
+        <Card className="p-3.5 bg-white border-zinc-200 shadow-xs">
+          <span className="text-[11px] font-medium text-zinc-500 block">Active Running</span>
+          <span className="text-xl font-bold font-mono text-emerald-600 mt-1 block tabular-nums flex items-center gap-1.5">
+            <span>{runs.filter((r) => r.status === 'Running').length}</span>
+            {runs.some((r) => r.status === 'Running') && (
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+            )}
+          </span>
+        </Card>
+        <Card className="p-3.5 bg-white border-zinc-200 shadow-xs">
+          <span className="text-[11px] font-medium text-zinc-500 block">Completed Backtests</span>
+          <span className="text-xl font-bold font-mono text-zinc-900 mt-1 block tabular-nums">
+            {runs.filter((r) => r.kind === 'Backtest' && r.status === 'Completed').length}
+          </span>
+        </Card>
+        <Card className="p-3.5 bg-white border-zinc-200 shadow-xs">
+          <span className="text-[11px] font-medium text-zinc-500 block">Optimizations</span>
+          <span className="text-xl font-bold font-mono text-zinc-900 mt-1 block tabular-nums">
+            {runs.filter((r) => r.kind === 'Optimization' || r.kind === 'WalkForward').length}
+          </span>
+        </Card>
+      </div>
+
       {/* Filter and Search Bar */}
-      <Card className="p-4 bg-[#171717] border-[#262626]">
+      <Card className="p-4 bg-white border-zinc-200 shadow-xs">
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div>
             <label className="block font-medium text-zinc-300 mb-1.5">Search Run</label>

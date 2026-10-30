@@ -126,7 +126,7 @@ export default function WindowDetailPage() {
           COMPILING WINDOW #{windowIndex} TELEMETRY FROM CLOUD API...
         </div>
       ) : error ? (
-        <div className="p-4 border border-[#262626] text-rose-400 font-bold">
+        <div className="p-4 border border-rose-800/40 bg-rose-950/20 text-rose-300 font-bold rounded-xl">
           ERROR: {error}
         </div>
       ) : (
@@ -134,7 +134,7 @@ export default function WindowDetailPage() {
           {/* Comparative In-Sample vs Out-of-Sample Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* In-Sample Card */}
-            <div className="p-5 border border-[#262626] bg-[#141414] space-y-3">
+            <div className="p-5 border border-[#262626] bg-[#141414] rounded-xl space-y-3">
               <div className="flex justify-between items-center border-b border-[#262626] pb-2">
                 <span className="font-bold uppercase text-zinc-100 text-sm">In-Sample Training (IS)</span>
                 <span className="px-2 py-0.5 border border-[#262626] bg-[#171717] font-bold text-[10px]">Slice {idxNum}A</span>
@@ -160,7 +160,7 @@ export default function WindowDetailPage() {
             </div>
 
             {/* Out-of-Sample Card */}
-            <div className="p-5 border border-[#262626] bg-[#141414] space-y-3">
+            <div className="p-5 border border-[#262626] bg-[#141414] rounded-xl space-y-3">
               <div className="flex justify-between items-center border-b border-[#262626] pb-2">
                 <span className="font-bold uppercase text-zinc-100 text-sm">Out-of-Sample Test (OOS)</span>
                 <span className="px-2 py-0.5 border border-[#262626] bg-[#171717] font-bold text-[10px]">Slice {idxNum}B</span>
@@ -187,7 +187,7 @@ export default function WindowDetailPage() {
           </div>
 
           {/* Optimal Chromosome Decoded Parameters Table */}
-          <div className="p-5 border border-[#262626] bg-[#171717] space-y-3">
+          <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-3">
             <span className="font-bold uppercase text-zinc-100 block">
               Optimal Strategy Parameters for Window #{windowIndex}
             </span>

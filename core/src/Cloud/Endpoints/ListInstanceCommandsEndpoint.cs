@@ -73,7 +73,7 @@ internal sealed class ListInstanceCommandsEndpoint(CommandService commands)
     /// <inheritdoc/>
     public override void Configure()
     {
-        Get("/api/instances/{instanceId}/commands");
+        Get("/api/instances/{instanceId}/commands", "/api/engines/{instanceId}/commands");
         Summary(summary =>
         {
             summary.Summary = "List commands for an Engine instance";

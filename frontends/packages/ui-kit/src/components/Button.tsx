@@ -16,17 +16,17 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    'bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] active:bg-[#2ea36f] font-medium shadow-sm shadow-[#3ECF8E]/10 border border-transparent focus-visible:ring-[#3ECF8E]',
+    'bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] active:bg-[#2ea36f] font-semibold shadow-sm shadow-[#3ECF8E]/20 border border-transparent focus-visible:ring-[#3ECF8E]',
   secondary:
-    'bg-[#171717] text-zinc-100 hover:bg-[#222222] hover:text-white border border-[#262626] hover:border-[#383838] active:bg-[#1f1f1f] shadow-sm shadow-black/20 focus-visible:ring-zinc-400',
+    'bg-zinc-100 text-zinc-800 hover:bg-zinc-200 hover:text-zinc-900 border border-zinc-200 hover:border-zinc-300 active:bg-zinc-200 shadow-sm focus-visible:ring-zinc-400',
   destructive:
-    'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 hover:text-rose-300 border border-rose-500/30 active:bg-rose-500/15 focus-visible:ring-rose-500',
+    'bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 border border-rose-200 active:bg-rose-200 focus-visible:ring-rose-500',
   ghost:
-    'text-zinc-400 hover:text-zinc-100 hover:bg-[#171717] active:bg-[#1f1f1f] border border-transparent focus-visible:ring-zinc-400',
+    'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 active:bg-zinc-200 border border-transparent focus-visible:ring-zinc-400',
   outline:
-    'bg-transparent text-zinc-200 hover:bg-[#171717] hover:text-zinc-100 border border-[#262626] hover:border-[#383838] active:bg-[#171717] focus-visible:ring-zinc-400',
+    'bg-white text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900 border border-zinc-200 hover:border-zinc-300 active:bg-zinc-100 focus-visible:ring-zinc-400',
   link:
-    'text-[#3ECF8E] hover:text-[#34b27b] underline-offset-4 hover:underline border-transparent focus-visible:ring-[#3ECF8E] p-0 h-auto',
+    'text-[#059669] hover:text-[#047857] underline-offset-4 hover:underline border-transparent focus-visible:ring-[#10b981] p-0 h-auto',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -71,7 +71,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         aria-busy={isLoading}
         className={cn(
           'inline-flex items-center justify-center font-sans whitespace-nowrap select-none transition-all duration-150',
-          'active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f0f0f]',
+          'active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white',
           'disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100',
           radiusClass,
           variantStyles[variant],

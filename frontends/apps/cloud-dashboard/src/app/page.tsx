@@ -42,13 +42,13 @@ export default function TraderLandingPage() {
   const totalGainPct = ((currentEquity - 10000) / 10000) * 100;
 
   return (
-    <div className="min-h-screen bg-[#171717] text-zinc-100 rounded-xl font-mono text-xs selection:bg-black selection:text-white flex flex-col justify-between">
+    <div className="min-h-screen bg-[#0f0f0f] text-zinc-100 font-mono text-xs selection:bg-[#3ECF8E] selection:text-[#0f0f0f] flex flex-col justify-between">
       <PublicNav />
 
       <main className="space-y-16 flex-1">
         {/* Hero Section */}
         <header className="px-6 md:px-12 py-16 md:py-24 border-b border-[#262626] max-w-7xl mx-auto space-y-6">
-          <div className="inline-block px-3 py-1 border border-[#262626] bg-[#171717] font-bold text-zinc-100 uppercase">
+          <div className="inline-block px-3 py-1 rounded-full border border-[#262626] bg-[#141414] font-bold text-zinc-300 uppercase">
             AUTOMATED QUANTITATIVE STRATEGY FACTORY
           </div>
 
@@ -75,7 +75,7 @@ export default function TraderLandingPage() {
                 </Link>
                 <Link
                   href="/panel/instances"
-                  className="px-6 py-3 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold text-sm transition-colors"
+                  className="px-6 py-3 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium font-bold text-sm transition-colors"
                 >
                   [VIEW FLEET INSTANCES]
                 </Link>
@@ -91,7 +91,7 @@ export default function TraderLandingPage() {
                 </Link>
                 <Link
                   href="/auth/login"
-                  className="px-6 py-3 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold text-sm transition-colors"
+                  className="px-6 py-3 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium font-bold text-sm transition-colors"
                 >
                   [TRY INSTANT DEMO SESSION]
                 </Link>
@@ -112,37 +112,37 @@ export default function TraderLandingPage() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            <div className="p-3.5 border border-[#262626] bg-[#141414] space-y-1">
+            <div className="p-3.5 border border-[#262626] bg-[#141414] rounded-xl space-y-1">
               <span className="text-[10px] font-bold text-zinc-400 uppercase block">Sharpe Ratio</span>
               <span className="text-xl font-bold text-zinc-100 block">2.94</span>
-              <span className="text-[9px] text-green-700 font-bold block">&gt; 2.0 Institutional Elite</span>
+              <span className="text-[9px] text-[#3ECF8E] font-bold block">&gt; 2.0 Institutional Elite</span>
             </div>
 
-            <div className="p-3.5 border border-[#262626] bg-[#141414] space-y-1">
+            <div className="p-3.5 border border-[#262626] bg-[#141414] rounded-xl space-y-1">
               <span className="text-[10px] font-bold text-zinc-400 uppercase block">Sortino Ratio</span>
               <span className="text-xl font-bold text-zinc-100 block">4.12</span>
               <span className="text-[9px] text-zinc-400 block">Downside Volatility Adjusted</span>
             </div>
 
-            <div className="p-3.5 border border-[#262626] bg-[#141414] space-y-1">
+            <div className="p-3.5 border border-[#262626] bg-[#141414] rounded-xl space-y-1">
               <span className="text-[10px] font-bold text-zinc-400 uppercase block">Profit Factor</span>
               <span className="text-xl font-bold text-[#3ECF8E] block">2.48</span>
               <span className="text-[9px] text-zinc-400 block">Gross Profit / Gross Loss</span>
             </div>
 
-            <div className="p-3.5 border border-[#262626] bg-[#141414] space-y-1">
+            <div className="p-3.5 border border-[#262626] bg-[#141414] rounded-xl space-y-1">
               <span className="text-[10px] font-bold text-zinc-400 uppercase block">Max Drawdown</span>
               <span className="text-xl font-bold text-rose-400 block">-3.8%</span>
               <span className="text-[9px] text-zinc-400 block">Hard Circuit Breaker</span>
             </div>
 
-            <div className="p-3.5 border border-[#262626] bg-[#141414] space-y-1">
+            <div className="p-3.5 border border-[#262626] bg-[#141414] rounded-xl space-y-1">
               <span className="text-[10px] font-bold text-zinc-400 uppercase block">Win Rate</span>
               <span className="text-xl font-bold text-zinc-100 block">68.4%</span>
               <span className="text-[9px] text-zinc-400 block">30 Rolling OOS Windows</span>
             </div>
 
-            <div className="p-3.5 border border-[#262626] bg-[#141414] space-y-1">
+            <div className="p-3.5 border border-[#262626] bg-[#141414] rounded-xl space-y-1">
               <span className="text-[10px] font-bold text-zinc-400 uppercase block">Execution Latency</span>
               <span className="text-xl font-bold text-[#3ECF8E] block">8.4ms</span>
               <span className="text-[9px] text-zinc-400 block">Compiled .NET 10 LTS</span>
@@ -166,7 +166,7 @@ export default function TraderLandingPage() {
               <button
                 onClick={() => setActiveTab('equity')}
                 className={`px-3 py-1.5 border border-[#262626] font-bold transition-colors ${
-                  activeTab === 'equity' ? 'bg-black text-white' : 'bg-[#171717] text-zinc-100 rounded-xl hover:bg-[#1f1f1f]'
+                  activeTab === 'equity' ? 'border-[#3ECF8E] bg-[#3ECF8E]/10 text-[#3ECF8E]' : 'border-[#262626] bg-[#141414] text-zinc-300 hover:bg-[#1f1f1f]'
                 }`}
               >
                 [EQUITY CURVE]
@@ -174,7 +174,7 @@ export default function TraderLandingPage() {
               <button
                 onClick={() => setActiveTab('evolution')}
                 className={`px-3 py-1.5 border border-[#262626] font-bold transition-colors ${
-                  activeTab === 'evolution' ? 'bg-black text-white' : 'bg-[#171717] text-zinc-100 rounded-xl hover:bg-[#1f1f1f]'
+                  activeTab === 'evolution' ? 'border-[#3ECF8E] bg-[#3ECF8E]/10 text-[#3ECF8E]' : 'border-[#262626] bg-[#141414] text-zinc-300 hover:bg-[#1f1f1f]'
                 }`}
               >
                 [GENETIC CONVERGENCE]
@@ -182,7 +182,7 @@ export default function TraderLandingPage() {
               <button
                 onClick={() => setActiveTab('montecarlo')}
                 className={`px-3 py-1.5 border border-[#262626] font-bold transition-colors ${
-                  activeTab === 'montecarlo' ? 'bg-black text-white' : 'bg-[#171717] text-zinc-100 rounded-xl hover:bg-[#1f1f1f]'
+                  activeTab === 'montecarlo' ? 'border-[#3ECF8E] bg-[#3ECF8E]/10 text-[#3ECF8E]' : 'border-[#262626] bg-[#141414] text-zinc-300 hover:bg-[#1f1f1f]'
                 }`}
               >
                 [MONTE CARLO RISK]
@@ -190,7 +190,7 @@ export default function TraderLandingPage() {
               <button
                 onClick={() => setActiveTab('live')}
                 className={`px-3 py-1.5 border border-[#262626] font-bold transition-colors ${
-                  activeTab === 'live' ? 'bg-black text-white' : 'bg-[#171717] text-zinc-100 rounded-xl hover:bg-[#1f1f1f]'
+                  activeTab === 'live' ? 'border-[#3ECF8E] bg-[#3ECF8E]/10 text-[#3ECF8E]' : 'border-[#262626] bg-[#141414] text-zinc-300 hover:bg-[#1f1f1f]'
                 }`}
               >
                 [LIVE ORDER STREAM]
@@ -199,9 +199,9 @@ export default function TraderLandingPage() {
           </div>
 
           {/* Dynamic Display Canvas */}
-          <div className="p-6 border border-[#262626] bg-[#171717] space-y-6">
+          <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-6">
             {/* Quick Live Telemetry Header */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 border border-[#262626] bg-[#141414]">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 border border-[#262626] bg-[#141414] rounded-lg">
               <div>
                 <span className="font-bold text-zinc-100 uppercase block">Simulated Portfolio</span>
                 <span className="text-2xl font-bold text-[#3ECF8E] mt-1 block">
@@ -235,7 +235,7 @@ export default function TraderLandingPage() {
                   <span>SIMULATED OUT-OF-SAMPLE EQUITY PROGRESSION</span>
                   <span className="text-[#3ECF8E]">[30 ROLLING WINDOWS • ZERO CURVE FITTING]</span>
                 </div>
-                <div className="h-64 border border-[#262626] bg-[#171717] p-4 flex items-end">
+                <div className="h-64 border border-[#262626] bg-[#141414] rounded-xl p-4 flex items-end">
                   <svg className="w-full h-full overflow-visible" viewBox="0 0 600 200" preserveAspectRatio="none">
                     <line x1="0" y1="50" x2="600" y2="50" stroke="#000000" strokeWidth="0.5" strokeDasharray="4 4" />
                     <line x1="0" y1="100" x2="600" y2="100" stroke="#000000" strokeWidth="0.5" strokeDasharray="4 4" />
@@ -271,7 +271,7 @@ export default function TraderLandingPage() {
                     { gen: 15, best: 2.15, avg: 1.62, div: 0.74, genes: [0.03, 0.08, 14, 21] },
                     { gen: 30, best: 3.92, avg: 3.41, div: 0.52, genes: [0.015, 0.045, 14, 26] },
                   ].map((g) => (
-                    <div key={g.gen} className="p-4 border border-[#262626] bg-[#171717] space-y-2">
+                    <div key={g.gen} className="p-4 border border-[#262626] bg-[#171717] rounded-xl space-y-2">
                       <div className="flex items-center justify-between font-bold border-b border-[#262626] pb-1">
                         <span>GENERATION #{g.gen}</span>
                         <span className="text-[#3ECF8E]">Fitness: {g.best}</span>
@@ -296,7 +296,7 @@ export default function TraderLandingPage() {
                   <span>500-PATH RESAMPLED MONTE CARLO RISK CONE</span>
                   <span className="text-zinc-400">[99% CONFIDENCE VALUE AT RISK: $412]</span>
                 </div>
-                <div className="h-64 border border-[#262626] bg-[#171717] p-4 flex items-end">
+                <div className="h-64 border border-[#262626] bg-[#141414] rounded-xl p-4 flex items-end">
                   <svg className="w-full h-full overflow-visible" viewBox="0 0 600 200" preserveAspectRatio="none">
                     {/* Upper 95% Band */}
                     <path d="M 0 160 Q 300 80 600 20 L 600 120 Q 300 140 0 160 Z" fill="#bbf7d0" fillOpacity="0.4" />
@@ -371,7 +371,7 @@ export default function TraderLandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+            <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
               <div className="w-10 h-10 border border-[#262626] flex items-center justify-center font-bold text-lg bg-black text-white">
                 01
               </div>
@@ -382,7 +382,7 @@ export default function TraderLandingPage() {
               </p>
             </div>
 
-            <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+            <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
               <div className="w-10 h-10 border border-[#262626] flex items-center justify-center font-bold text-lg bg-black text-white">
                 02
               </div>
@@ -393,7 +393,7 @@ export default function TraderLandingPage() {
               </p>
             </div>
 
-            <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+            <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
               <div className="w-10 h-10 border border-[#262626] flex items-center justify-center font-bold text-lg bg-black text-white">
                 03
               </div>
@@ -423,29 +423,29 @@ export default function TraderLandingPage() {
                 <tr className="border-b border-[#262626] bg-[#141414]">
                   <th className="p-3 font-bold uppercase">Attribute</th>
                   <th className="p-3 font-bold uppercase text-red-700">Manual / Discretionary Trading</th>
-                  <th className="p-3 font-bold uppercase text-green-700">Razor Algorithmic Engine</th>
+                  <th className="p-3 font-bold uppercase text-[#3ECF8E]">Razor Algorithmic Engine</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#262626]">
                 <tr>
                   <td className="p-3 font-bold">Execution Speed</td>
                   <td className="p-3 text-rose-400">800ms - 3,000ms (Human hesitation)</td>
-                  <td className="p-3 text-green-700 font-bold">&lt; 10ms (Native .NET 10 LTS socket loop)</td>
+                  <td className="p-3 text-[#3ECF8E] font-bold">&lt; 10ms (Native .NET 10 LTS socket loop)</td>
                 </tr>
                 <tr>
                   <td className="p-3 font-bold">Emotional Discipline</td>
                   <td className="p-3 text-rose-400">Revenge trading, panic selling, moving stops</td>
-                  <td className="p-3 text-green-700 font-bold">Zero emotion, deterministic rule compliance</td>
+                  <td className="p-3 text-[#3ECF8E] font-bold">Zero emotion, deterministic rule compliance</td>
                 </tr>
                 <tr>
                   <td className="p-3 font-bold">Strategy Validation</td>
                   <td className="p-3 text-rose-400">Anecdotal chart patterns, curve-fitted tests</td>
-                  <td className="p-3 text-green-700 font-bold">Walk-forward out-of-sample window verification</td>
+                  <td className="p-3 text-[#3ECF8E] font-bold">Walk-forward out-of-sample window verification</td>
                 </tr>
                 <tr>
                   <td className="p-3 font-bold">Market Coverage</td>
                   <td className="p-3 text-rose-400">1-2 pairs max before cognitive fatigue</td>
-                  <td className="p-3 text-green-700 font-bold">Hundreds of assets evaluated simultaneously 24/7</td>
+                  <td className="p-3 text-[#3ECF8E] font-bold">Hundreds of assets evaluated simultaneously 24/7</td>
                 </tr>
               </tbody>
             </table>
@@ -479,7 +479,7 @@ export default function TraderLandingPage() {
             )}
             <Link
               href="/docs"
-              className="px-8 py-3.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold text-sm transition-colors"
+              className="px-8 py-3.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium font-bold text-sm transition-colors"
             >
               [READ DEVELOPER SPECS]
             </Link>

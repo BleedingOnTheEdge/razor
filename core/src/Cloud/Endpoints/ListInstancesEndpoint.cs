@@ -79,7 +79,7 @@ internal sealed class ListInstancesEndpoint(
     /// <inheritdoc/>
     public override void Configure()
     {
-        Get("/api/instances");
+        Get("/api/instances", "/api/engines");
         Summary(summary =>
         {
             summary.Summary = "List Engine instances";

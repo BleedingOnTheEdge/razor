@@ -153,7 +153,7 @@ function MaintenanceContent() {
               if (selectedInstanceId) loadCommands(selectedInstanceId);
             }}
             disabled={loadingInstances || loadingCommands}
-            className="px-3 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold transition-colors flex items-center gap-1.5"
+            className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-bold transition-colors flex items-center gap-1.5"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loadingInstances || loadingCommands ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
@@ -162,7 +162,7 @@ function MaintenanceContent() {
       </div>
 
       {/* Target Node Selector */}
-      <div className="p-4 border border-[#262626] bg-[#171717] space-y-3">
+      <div className="p-4 border border-[#262626] bg-[#171717] rounded-xl space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center gap-2">
             <Server className="w-4 h-4 text-zinc-100" />
@@ -174,7 +174,7 @@ function MaintenanceContent() {
             <div className="flex items-center gap-2">
               <span
                 className={`px-2 py-0.5 font-bold border border-[#262626] ${
-                  isSelectedOnline ? 'bg-green-50 text-green-700' : 'bg-[#1f1f1f] text-zinc-200'
+                  isSelectedOnline ? 'border-[#3ECF8E]/30 bg-emerald-950/20 text-[#3ECF8E] rounded-full' : 'border-[#262626] bg-[#141414] text-zinc-300 rounded-full'
                 }`}
               >
                 {isSelectedOnline ? '[ONLINE & ACTIVE]' : 'Offline'}
@@ -206,7 +206,7 @@ function MaintenanceContent() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Form & Presets (2 cols) */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+          <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <h2 className="text-sm font-bold text-zinc-100 uppercase tracking-wider flex items-center gap-2">
@@ -299,7 +299,7 @@ function MaintenanceContent() {
                   value={cmdParams}
                   onChange={(e) => setCmdParams(e.target.value)}
                   rows={4}
-                  className="w-full p-3 bg-[#171717] border border-[#262626] text-zinc-100 focus:outline-none focus:border-[#3ECF8E] text-xs font-mono"
+                  className="w-full p-3 rounded-md bg-[#171717] border border-[#262626] text-zinc-100 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 text-xs font-mono"
                   placeholder="{}"
                 />
               </div>
@@ -307,7 +307,7 @@ function MaintenanceContent() {
               <button
                 type="submit"
                 disabled={dispatching || !selectedInstanceId}
-                className="w-full sm:w-auto px-6 py-2.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] disabled:opacity-50 text-zinc-100 font-bold transition-colors"
+                className="w-full sm:w-auto px-6 py-2.5 border border-[#262626] bg-[#3ECF8E] hover:bg-[#34b27b] text-[#0f0f0f] rounded-full disabled:opacity-50 font-bold transition-colors"
               >
                 {dispatching ? '[DISPATCHING WIRE PROTOCOL...]' : `[TRANSMIT ${cmdType.toUpperCase()} COMMAND →]`}
               </button>
@@ -317,7 +317,7 @@ function MaintenanceContent() {
 
         {/* Right Column: Execution History Log (1 col) */}
         <div>
-          <div className="p-5 border border-[#262626] bg-[#171717] space-y-4">
+          <div className="p-5 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-[#262626]">
               <span className="text-xs font-bold text-zinc-100 uppercase tracking-wider">
                 Event Log ({commands.length})
@@ -340,7 +340,7 @@ function MaintenanceContent() {
                       setSelectedCommandForDetail(cmd);
                       setEventDetailModalOpen(true);
                     }}
-                    className="p-3 border border-[#262626] bg-[#171717] hover:bg-[#141414] cursor-pointer text-xs space-y-1 transition-colors"
+                    className="p-3 border border-[#262626] bg-[#171717] hover:bg-[#141414] rounded-lg cursor-pointer text-xs space-y-1 transition-colors"
                     title="Click to inspect response and parameters"
                   >
                     <div className="flex items-center justify-between">

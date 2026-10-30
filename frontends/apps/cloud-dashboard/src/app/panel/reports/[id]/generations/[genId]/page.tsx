@@ -110,17 +110,17 @@ export default function GenerationDetailPage() {
           COMPILING GENERATION {genId} FROM CLOUD API...
         </div>
       ) : error ? (
-        <div className="p-4 border border-[#262626] text-rose-400 font-bold">
+        <div className="p-4 border border-rose-800/40 bg-rose-950/20 text-rose-300 font-bold rounded-xl">
           ERROR: {error}
         </div>
       ) : !detail ? (
-        <div className="py-16 text-center border border-[#262626] p-8 font-bold">
+        <div className="py-16 text-center border border-[#262626] p-8 bg-[#141414] rounded-xl text-zinc-400 font-bold bg-[#141414] rounded-xl text-zinc-400">
           [GENERATION {genId} NOT FOUND]
         </div>
       ) : (
         <div className="space-y-6">
           {/* Metrics Summary Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 border border-[#262626] bg-[#171717]">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 border border-[#262626] bg-[#171717] rounded-xl">
             <div>
               <span className="text-zinc-100 font-bold block">Generation</span>
               <span className="text-lg font-bold text-zinc-100 mt-1 block">#{detail.generation}</span>

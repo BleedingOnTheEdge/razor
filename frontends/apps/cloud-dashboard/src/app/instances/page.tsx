@@ -168,7 +168,7 @@ export default function InstancesPage() {
 
           <button
             onClick={() => setRegisterModalOpen(true)}
-            className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white font-medium rounded-lg text-xs font-mono transition-colors flex items-center gap-2 shadow-sm"
+            className="px-4 py-2 bg-[#3ECF8E] hover:bg-[#34b27b] text-zinc-950 font-medium rounded-lg text-xs font-mono transition-colors flex items-center gap-2 shadow-sm"
           >
             <Plus className="w-4 h-4" />
             <span>Register New Engine</span>
@@ -186,20 +186,20 @@ export default function InstancesPage() {
 
       {/* Summary Metrics Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-xl bg-white border border-zinc-200/80 font-mono shadow-sm">
+        <div className="p-4 rounded-xl bg-white border border-zinc-200 font-mono shadow-sm">
           <span className="text-xs text-zinc-500 uppercase tracking-wider block font-sans font-medium">Total Fleet</span>
           <span className="text-2xl font-bold text-zinc-900 mt-1 block">{instances.length} engines</span>
         </div>
 
-        <div className="p-4 rounded-xl bg-white border border-zinc-200/80 font-mono shadow-sm">
+        <div className="p-4 rounded-xl bg-white border border-zinc-200 font-mono shadow-sm">
           <span className="text-xs text-zinc-500 uppercase tracking-wider block font-sans font-medium">Connected via TCP</span>
-          <span className="text-2xl font-bold text-emerald-600 mt-1 block flex items-center gap-2">
+          <span className="text-2xl font-bold text-[#3ECF8E] mt-1 block flex items-center gap-2">
             <span>{totalConnected} active</span>
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-[#3ECF8E] animate-pulse" />
           </span>
         </div>
 
-        <div className="p-4 rounded-xl bg-white border border-zinc-200/80 font-mono shadow-sm">
+        <div className="p-4 rounded-xl bg-white border border-zinc-200 font-mono shadow-sm">
           <span className="text-xs text-zinc-500 uppercase tracking-wider block font-sans font-medium">Manifest Extensions</span>
           <span className="text-2xl font-bold text-zinc-900 mt-1 block">
             {instances.reduce((acc, i) => acc + (i.manifestExtensionCount || 0), 0)} loaded
@@ -208,9 +208,9 @@ export default function InstancesPage() {
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-white border border-zinc-200/80 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-white border border-zinc-200 shadow-sm">
         <div className="relative flex-1 min-w-[240px] max-w-md">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
           <input
             type="text"
             placeholder="Search by engine name, ID, or instance hash..."
@@ -230,7 +230,7 @@ export default function InstancesPage() {
               className={`px-2.5 py-1 rounded-md text-[11px] transition-colors ${
                 statusFilter === st
                   ? 'bg-zinc-900 text-white font-medium shadow-sm'
-                  : 'text-zinc-600 hover:text-zinc-900 bg-zinc-100/70 border border-zinc-200/60'
+                  : 'text-zinc-500 hover:text-zinc-900 bg-zinc-100/70 border border-zinc-200/60'
               }`}
             >
               {st}
@@ -252,8 +252,8 @@ export default function InstancesPage() {
       )}
 
       {!loading && !error && filteredInstances.length === 0 && (
-        <div className="py-16 text-center rounded-xl border border-dashed border-zinc-300 bg-zinc-50/50">
-          <div className="w-12 h-12 mx-auto rounded-full bg-zinc-200/80 flex items-center justify-center text-zinc-500">
+        <div className="py-16 text-center rounded-xl border border-dashed border-zinc-200 bg-zinc-50">
+          <div className="w-12 h-12 mx-auto rounded-full bg-[#262626]/80 flex items-center justify-center text-zinc-500">
             <Server className="w-6 h-6" />
           </div>
           <h3 className="mt-4 text-base font-semibold text-zinc-900 font-mono">No Matching Engines Found</h3>
@@ -272,7 +272,7 @@ export default function InstancesPage() {
             return (
               <div
                 key={instance.instanceId}
-                className="rounded-xl bg-white border border-zinc-200/80 p-6 flex flex-col justify-between hover:border-zinc-300 hover:shadow-md transition-all shadow-sm"
+                className="rounded-xl bg-white border border-zinc-200 p-6 flex flex-col justify-between hover:border-zinc-200 hover:shadow-md transition-all shadow-sm"
               >
                 <div>
                   <div className="flex items-start justify-between gap-4">
@@ -291,31 +291,31 @@ export default function InstancesPage() {
                     </span>
                   </div>
 
-                  <div className="mt-5 space-y-2 text-xs font-mono text-zinc-600">
-                    <div className="flex items-center justify-between py-1 border-b border-zinc-100">
+                  <div className="mt-5 space-y-2 text-xs font-mono text-zinc-500">
+                    <div className="flex items-center justify-between py-1 border-b border-zinc-200">
                       <span className="text-zinc-500">Connection</span>
                       <span
                         className={`flex items-center gap-1.5 ${
-                          instance.isConnected ? 'text-emerald-600 font-medium' : 'text-zinc-400'
+                          instance.isConnected ? 'text-[#3ECF8E] font-medium' : 'text-zinc-500'
                         }`}
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${
-                            instance.isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'
+                            instance.isConnected ? 'bg-[#3ECF8E] animate-pulse' : 'bg-zinc-400'
                           }`}
                         />
                         {instance.isConnected ? 'Connected' : 'Offline'}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between py-1 border-b border-zinc-100">
+                    <div className="flex items-center justify-between py-1 border-b border-zinc-200">
                       <span className="text-zinc-500">Manifest Plugins</span>
                       <span className="text-zinc-900 font-semibold">
                         {instance.manifestExtensionCount} extensions
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between py-1 border-b border-zinc-100">
+                    <div className="flex items-center justify-between py-1 border-b border-zinc-200">
                       <span className="text-zinc-500">Registered</span>
                       <span className="text-zinc-700">{formatTimestamp(instance.createdAt)}</span>
                     </div>
@@ -327,7 +327,7 @@ export default function InstancesPage() {
                   </div>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center justify-between gap-2">
+                <div className="mt-6 pt-4 border-t border-zinc-200 flex items-center justify-between gap-2">
                   <button
                     type="button"
                     onClick={() => {

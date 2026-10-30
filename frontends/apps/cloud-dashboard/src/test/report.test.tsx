@@ -165,7 +165,7 @@ describe('Run Report & Audit View', () => {
     expect(screen.getByText('Submit Final Run Metrics')).toBeInTheDocument();
     expect(screen.getByText('Net Profit ($)')).toBeInTheDocument();
 
-    const cancelBtn = screen.getByText('✕ Cancel');
+    const cancelBtn = screen.getByRole('button', { name: /^cancel$/i });
     fireEvent.click(cancelBtn);
 
     expect(screen.queryByText('Submit Final Run Metrics')).not.toBeInTheDocument();

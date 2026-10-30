@@ -15,7 +15,7 @@ export interface ThemeToggleProps {
  * and persistent theme synchronization.
  */
 export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '', onThemeChange }) => {
-  const [theme, setTheme] = useState<Theme>('dark');
+  const [theme, setTheme] = useState<Theme>('light');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '', onThem
       const initialTheme: Theme =
         stored === 'light' || stored === 'dark'
           ? stored
-          : 'dark'; // Dark-mode native default
+          : 'light'; // Light-mode native default
       setTheme(initialTheme);
       applyTheme(initialTheme);
     }
@@ -63,9 +63,9 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '', onThem
       aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
       className={cn(
         'inline-flex items-center justify-center p-2 rounded-lg transition-colors border',
-        'bg-[#171717] hover:bg-[#222222] border-[#262626] hover:border-[#383838]',
+        'bg-white hover:bg-zinc-100 border-zinc-200 hover:border-zinc-300',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3ECF8E]',
-        theme === 'dark' ? 'text-amber-400' : 'text-zinc-300',
+        theme === 'dark' ? 'text-amber-500' : 'text-zinc-600',
         className
       )}
     >

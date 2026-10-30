@@ -124,6 +124,7 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `core/tests/Cloud.UnitTests/EngineCrudAndProfileEndpointsTests.cs`: Functional test suite for engine CRUD and profile endpoints.
 - `core/tests/Cloud.UnitTests/EngineManagementEdgeCaseTests.cs`: Edge case test suite for engine lifecycle management.
 - `core/tests/Engine.UnitTests/Management/Commands/CommandDispatcherEdgeCaseTests.cs`: Edge case test suite for Engine command dispatcher.
+- `core/tests/Engine.UnitTests/Core/EngineCliOptionsTests.cs`: Unit test suite verifying Engine CLI option parsing, custom endpoints, and credentials mapping.
 - `core/src/Cloud/Data/DatabaseSchemaCompatibility.cs`: Self-healing schema synchronization utility executing idempotent DDL statements before seeding on PostgreSQL databases.
 - `core/src/Cloud/Migrations/20261015060000_AddEnterpriseFeatures.cs`: EF Core migration for enterprise schema expansion.
 - `core/src/Cloud/Migrations/20261015060000_AddEnterpriseFeatures.Designer.cs`: EF Core migration metadata designer file.
@@ -269,6 +270,7 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `core/src/Engine/project.json`: Added publish target delegating to node scripts/build-engine.mjs.
 - `package.json`: Added helper scripts for dev orchestration, direct engine execution, and test running.
 - `core/src/Cloud/Endpoints/GetInstanceEndpoint.cs`: Injected EngineSessionRegistry to synchronize real-time socket connectivity and fresh heartbeats with IsConnected response state.
+- `core/src/Cloud/Endpoints/GetInstanceManifestEndpoint.cs`: FastEndpoints controller for querying engine instance extension manifests.
 - `core/src/Cloud/Endpoints/ListInstancesEndpoint.cs`: Factored recent heartbeat timestamp freshness into IsConnected status calculation.
 - `core/src/Cloud/Services/ProfileService.cs`: Added self-healing auto-provisioning of ExtensionManifestEntry for valid marketplace extensions on slot configuration.
 - `frontends/apps/cloud-dashboard/src/app/layout.tsx`: Pure light mode enforcement; removed dark class and styled background for zero dark flash.
@@ -291,6 +293,7 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `core/src/Kernel/Brokers/SimulatedBroker.Matching.cs`: Decomposed from 570 lines down to 395 lines via `SimulatedBroker.Accounting.cs`.
 - `frontends/apps/cloud-dashboard/src/app/instances/page.tsx`: Decomposed from 596 lines down to 369 lines via extracted modal components.
 - `frontends/apps/cloud-dashboard/src/app/runs/page.tsx`: Decomposed from 594 lines down to 424 lines via `LaunchRunModal.tsx` and `RankedRunsTable.tsx`.
+- `frontends/apps/cloud-dashboard/src/app/runs/[id]/page.tsx`: Flow run audit and performance detail view.
 - `frontends/apps/cloud-dashboard/src/components/instances/instance-detail-content.tsx`: Decomposed from 698 lines down to 443 lines via extracted modals.
 - `frontends/apps/cloud-dashboard/src/components/lineage/lineage-content.tsx`: Decomposed from 655 lines down to 312 lines via extracted modals and node views.
 - `frontends/apps/cloud-dashboard/src/components/reports/report-content.tsx`: Decomposed from 512 lines down to 414 lines via `CompleteRunModal.tsx`.
@@ -364,6 +367,7 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `core/tests/Cloud.UnitTests/CommunityAndTicketingTests.cs`: Unit and integration test suites.
 - `core/tests/Cloud.UnitTests/Lineage/FlowOrchestratorTests.cs`: Unit and integration test suites.
 - `core/tests/Cloud.UnitTests/ManifestAndCommandTests.cs`: Unit and integration test suites.
+- `core/tests/Cloud.UnitTests/EngineSharingEndpointsTests.cs`: Unit and integration test suites for engine sharing, access delegation, and branch coverage.
 - `core/tests/Cloud.UnitTests/TestSupport/CloudTestContext.cs`: Unit and integration test suites.
 - `core/tests/Engine.UnitTests/Management/Commands/CommandDispatcherTests.cs`: Unit and integration test suites.
 - `core/tests/Engine.UnitTests/Management/Tasks/OptimizationCheckpointTests.cs`: Unit and integration test suites.
@@ -399,6 +403,7 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `frontends/apps/cloud-dashboard/src/hooks/use-sse-stream.ts`: Cloud dashboard operator console and sub-pages.
 - `frontends/apps/cloud-dashboard/src/lib/api-client.ts`: Cloud dashboard operator console and sub-pages.
 - `frontends/apps/cloud-dashboard/src/test/auth-login.test.tsx`: Cloud dashboard operator console and sub-pages.
+- `frontends/apps/cloud-dashboard/src/test/instances.test.tsx`: Cloud dashboard operator console and sub-pages.
 - `frontends/apps/cloud-dashboard/src/test/lineage.test.tsx`: Cloud dashboard operator console and sub-pages.
 - `frontends/apps/cloud-dashboard/src/test/live.test.tsx`: Cloud dashboard operator console and sub-pages.
 - `frontends/apps/cloud-dashboard/src/test/report.test.tsx`: Cloud dashboard operator console and sub-pages.

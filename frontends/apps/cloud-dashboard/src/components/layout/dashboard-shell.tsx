@@ -49,10 +49,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   // Loading state while checking authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0f0f0f] text-zinc-100 font-sans flex items-center justify-center p-6 text-center">
-        <div className="p-8 rounded-2xl border border-[#262626] bg-[#171717] space-y-3 shadow-2xl">
+      <div className="min-h-screen bg-[#f8fafc] text-zinc-900 font-sans flex items-center justify-center p-6 text-center">
+        <div className="p-8 rounded-2xl border border-zinc-200 bg-white space-y-3 shadow-2xl">
           <Loader2 className="w-6 h-6 animate-spin mx-auto text-[#3ECF8E]" />
-          <div className="text-xs font-mono font-medium text-zinc-400 uppercase tracking-widest">
+          <div className="text-xs font-mono font-medium text-zinc-500 uppercase tracking-widest">
             Authenticating Operator Session…
           </div>
         </div>
@@ -63,12 +63,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   // Strictly block unauthenticated access to the panel
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#0f0f0f] text-zinc-100 font-sans flex flex-col items-center justify-center p-6 text-center space-y-4">
+      <div className="min-h-screen bg-[#f8fafc] text-zinc-900 font-sans flex flex-col items-center justify-center p-6 text-center space-y-4">
         <div className="w-12 h-12 rounded-full border border-rose-500/30 bg-rose-500/10 flex items-center justify-center font-bold text-rose-400 text-lg">
           <ShieldAlert className="w-6 h-6" />
         </div>
         <h1 className="text-lg font-semibold tracking-tight text-zinc-100">Restricted Operator Surface</h1>
-        <p className="text-xs text-zinc-400 max-w-sm leading-relaxed">
+        <p className="text-xs text-zinc-600 max-w-sm leading-relaxed">
           Access to this execution surface requires active operator authentication. Redirecting to sign in…
         </p>
         <Link href="/auth/login">
@@ -114,12 +114,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0f0f0f] text-zinc-100 font-sans">
+    <div className="flex h-screen overflow-hidden bg-[#f8fafc] text-zinc-900 font-sans">
       <Sidebar
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
       />
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#0f0f0f]">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#f8fafc]">
         {/* Top Persistent Impersonation Alert Banner */}
         {isImpersonating && (
           <div className="bg-amber-500/10 border-b border-amber-500/30 text-amber-300 px-4 py-2 text-xs font-mono font-medium flex items-center justify-between z-30 shadow-sm shrink-0">
@@ -140,12 +140,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
         <Header onToggleMobileMenu={() => setIsMobileMenuOpen(true)} />
 
-        <main className="flex-1 overflow-y-auto px-4 md:px-8 py-6 pb-20 md:pb-6 bg-[#0f0f0f] text-zinc-100 min-h-0">
+        <main className="flex-1 overflow-y-auto px-4 md:px-8 py-6 pb-20 md:pb-6 bg-[#f8fafc] text-zinc-900 min-h-0">
           {children}
         </main>
 
         {/* Global Footer Marketing Promotional Banner */}
-        <footer className="w-full bg-[#171717] border-t border-[#262626] py-2.5 px-4 text-center select-none shrink-0 font-sans">
+        <footer className="w-full bg-white border-t border-zinc-200 py-2.5 px-4 text-center select-none shrink-0 font-sans">
           {promoContent}
         </footer>
       </div>

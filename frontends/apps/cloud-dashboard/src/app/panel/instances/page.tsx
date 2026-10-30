@@ -2,11 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getApiBaseUrl, getAuthHeaders } from '@/lib/api-client';
+import { getApiBaseUrl, getAuthHeaders, getApiClient } from '@/lib/api-client';
 import { useToast } from '@/components/ui/toast';
 import { useAuth } from '@/context/auth-context';
 import { ServerPagination } from '@/components/ui/ServerPagination';
 import { ShareEngineModal } from '@/components/instances/ShareEngineModal';
+import { RegisterEngineModal } from '@/components/instances/RegisterEngineModal';
+import { CreatedCredentialsDialog } from '@/components/instances/CreatedCredentialsDialog';
+import { RunnerGuideModal } from '@/components/instances/RunnerGuideModal';
 import { ActionDropdown } from '@/components/ui/ActionDropdown';
 import {
   formatTimestamp,
@@ -16,7 +19,7 @@ import {
   Badge,
   Input,
 } from '@razor/ui-kit';
-import { Server, Radio, RotateCw, Search, ArrowRight, ShieldCheck, Share2, Layers } from 'lucide-react';
+import { Server, Radio, RotateCw, Search, ArrowRight, ShieldCheck, Share2, Layers, Plus, Terminal } from 'lucide-react';
 
 interface EngineInstanceItem {
   instanceId: string;
@@ -54,6 +57,66 @@ export default function PanelInstancesPage() {
   // Share modal state
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedInstanceForShare, setSelectedInstanceForShare] = useState<{ id: string; name: string } | null>(null);
+
+  // Register Engine modal state
+  const [registerModalOpen, setRegisterModalOpen] = useState(false);
+  const [regAccountId, setRegAccountId] = useState('');
+  const [regLicenseId, setRegLicenseId] = useState('');
+  const [regEngineId, setRegEngineId] = useState('engine-worker-01');
+  const [regName, setRegName] = useState('Primary Execution Engine');
+  const [registering, setRegistering] = useState(false);
+
+  // Runner guide modal state
+  const [runnerGuideOpen, setRunnerGuideOpen] = useState(false);
+
+  // Credentials dialog
+  const [createdCredentials, setCreatedCredentials] = useState<{
+    instanceId: string;
+    engineId: string;
+    apiKey: string;
+  } | null>(null);
+
+  async function handleRegisterSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setRegistering(true);
+    try {
+      const client = getApiClient();
+      const accountId = (regAccountId || user?.accountId || '').trim();
+      const licenseId = regLicenseId.trim();
+
+      const bodyPayload = {
+        accountId,
+        licenseId,
+        engineId: regEngineId.trim() || undefined,
+        name: regName.trim() || undefined,
+      };
+
+      const { data, error: err } = await client.POST('/api/engines', {
+        body: bodyPayload,
+      });
+
+      if (err) {
+        const errorDetail = typeof err === 'object' && err !== null ? JSON.stringify(err) : String(err);
+        toast.error('Registration Failed', errorDetail || 'Backend rejected engine registration.');
+      } else if (data) {
+        if (typeof window !== 'undefined' && data.instanceId && data.apiKey) {
+          try {
+            localStorage.setItem(`engine_key_${data.instanceId}`, data.apiKey);
+          } catch {
+            // Ignore localStorage errors
+          }
+        }
+        setCreatedCredentials(data);
+        setRegisterModalOpen(false);
+        toast.success('Engine Registered', `Instance ${formatHash(data.instanceId, 6)} provisioned.`);
+        await loadInstances();
+      }
+    } catch (e) {
+      toast.error('Registration Error', e instanceof Error ? e.message : 'Network communication error.');
+    } finally {
+      setRegistering(false);
+    }
+  }
 
   async function loadInstances() {
     setLoading(true);
@@ -110,22 +173,44 @@ export default function PanelInstancesPage() {
   return (
     <div className="space-y-6 max-w-7xl font-sans text-xs">
       {/* Top Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#262626]">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-zinc-200">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Badge variant="emerald" dot>
               Fleet Registry
             </Badge>
           </div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-100">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
             Engine Fleet & Node Management
           </h1>
-          <p className="text-xs text-zinc-400 mt-1">
+          <p className="text-xs text-zinc-500 mt-1">
             Registered execution instances, WebSocket cluster telemetry, and temporary sharing delegations.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button
+            type="button"
+            variant="primary"
+            pill
+            size="sm"
+            onClick={() => setRegisterModalOpen(true)}
+            className="gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Register Engine</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            pill
+            size="sm"
+            onClick={() => setRunnerGuideOpen(true)}
+            className="gap-1.5"
+          >
+            <Terminal className="w-3.5 h-3.5 text-zinc-500" />
+            <span>Runner Guide</span>
+          </Button>
           <Link href="/panel/live">
             <Button variant="secondary" pill size="sm" className="gap-1.5">
               <Radio className="w-3.5 h-3.5 text-[#3ECF8E]" />
@@ -140,7 +225,7 @@ export default function PanelInstancesPage() {
             onClick={loadInstances}
             className="gap-1.5"
           >
-            <RotateCw className="w-3.5 h-3.5 text-zinc-400" />
+            <RotateCw className="w-3.5 h-3.5 text-zinc-500" />
             <span>Refresh</span>
           </Button>
         </div>
@@ -148,26 +233,26 @@ export default function PanelInstancesPage() {
 
       {/* Fleet Telemetry Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <Card className="p-4 bg-[#171717] border-[#262626]">
-          <span className="text-xs font-medium text-zinc-400 block">Online Active Nodes</span>
+        <Card className="p-4 bg-white border-zinc-200">
+          <span className="text-xs font-medium text-zinc-500 block">Online Active Nodes</span>
           <span className="text-2xl font-semibold text-[#3ECF8E] font-mono mt-1 block tabular-nums">
             {onlineCount} <span className="text-sm font-normal text-zinc-500">/ {instances.length}</span>
           </span>
         </Card>
-        <Card className="p-4 bg-[#171717] border-[#262626]">
-          <span className="text-xs font-medium text-zinc-400 block">Total Registered Engines</span>
-          <span className="text-2xl font-semibold text-zinc-100 font-mono mt-1 block tabular-nums">
+        <Card className="p-4 bg-white border-zinc-200">
+          <span className="text-xs font-medium text-zinc-500 block">Total Registered Engines</span>
+          <span className="text-2xl font-semibold text-zinc-900 font-mono mt-1 block tabular-nums">
             {totalCount || instances.length}
           </span>
         </Card>
-        <Card className="p-4 bg-[#171717] border-[#262626]">
-          <span className="text-xs font-medium text-zinc-400 block">Account License Quota</span>
-          <span className="text-2xl font-semibold text-zinc-100 font-mono mt-1 block tabular-nums">
+        <Card className="p-4 bg-white border-zinc-200">
+          <span className="text-xs font-medium text-zinc-500 block">Account License Quota</span>
+          <span className="text-2xl font-semibold text-zinc-900 font-mono mt-1 block tabular-nums">
             {user?.maxInstances || 10} <span className="text-xs font-normal text-zinc-500">Cap</span>
           </span>
         </Card>
-        <Card className="p-4 bg-[#171717] border-[#262626]">
-          <span className="text-xs font-medium text-zinc-400 block">Engine Sharing Grants</span>
+        <Card className="p-4 bg-white border-zinc-200">
+          <span className="text-xs font-medium text-zinc-500 block">Engine Sharing Grants</span>
           <span className="text-2xl font-semibold text-[#3ECF8E] font-mono mt-1 block tabular-nums">
             {instances.filter((i) => i.isShared).length} <span className="text-xs font-normal text-zinc-500">Shared</span>
           </span>
@@ -175,10 +260,10 @@ export default function PanelInstancesPage() {
       </div>
 
       {/* Filter and Search Bar */}
-      <Card className="p-4 bg-[#171717] border-[#262626]">
+      <Card className="p-4 bg-white border-zinc-200">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block font-medium text-zinc-300 mb-1.5">Search Engine</label>
+            <label className="block font-medium text-zinc-700 mb-1.5">Search Engine</label>
             <div className="relative">
               <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-2.5" />
               <input
@@ -186,17 +271,17 @@ export default function PanelInstancesPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search name, ID or engine slug…"
-                className="w-full pl-9 pr-3 py-1.5 border border-[#262626] rounded-lg bg-[#141414] text-zinc-100 placeholder:text-zinc-500 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] transition-colors"
+                className="w-full pl-9 pr-3 py-1.5 border border-zinc-200 rounded-lg bg-zinc-50 text-zinc-900 placeholder:text-zinc-500 font-mono text-xs focus:outline-none focus:border-[#3ECF8E] transition-colors"
               />
             </div>
           </div>
 
           <div>
-            <label className="block font-medium text-zinc-300 mb-1.5">Connectivity Filter</label>
+            <label className="block font-medium text-zinc-700 mb-1.5">Connectivity Filter</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-1.5 border border-[#262626] rounded-lg bg-[#141414] text-zinc-200 font-mono text-xs focus:outline-none focus:border-[#3ECF8E]"
+              className="w-full px-3 py-1.5 border border-zinc-200 rounded-lg bg-zinc-50 text-zinc-800 font-mono text-xs focus:outline-none focus:border-[#3ECF8E]"
             >
               <option value="ALL">All Engines</option>
               <option value="ONLINE">Online Only</option>
@@ -225,7 +310,7 @@ export default function PanelInstancesPage() {
 
       {/* Table */}
       {loading ? (
-        <Card className="py-16 text-center text-zinc-400 font-mono">
+        <Card className="py-16 text-center text-zinc-500 font-mono">
           Connecting to cloud fleet registry…
         </Card>
       ) : error ? (
@@ -233,17 +318,45 @@ export default function PanelInstancesPage() {
           Error: {error}
         </Card>
       ) : filtered.length === 0 ? (
-        <Card className="py-16 text-center p-8">
+        <Card className="py-16 text-center p-8 bg-white border-zinc-200">
           <Server className="w-8 h-8 text-zinc-600 mx-auto mb-2" />
-          <p className="font-semibold text-zinc-200 text-sm">No Engines Found</p>
-          <p className="mt-1 text-zinc-500 text-xs">Connect an Engine runner using the command line daemon or check your filters.</p>
+          <p className="font-semibold text-zinc-800 text-sm">No Engines Found</p>
+          <p className="mt-1 text-zinc-500 text-xs">
+            {searchQuery || statusFilter !== 'ALL'
+              ? 'Try adjusting your search criteria or connectivity filter.'
+              : 'Register an engine instance to begin connecting algorithmic workers.'}
+          </p>
+          <div className="mt-4 flex items-center justify-center gap-3">
+            <Button
+              type="button"
+              variant="primary"
+              pill
+              size="sm"
+              onClick={() => setRegisterModalOpen(true)}
+              className="gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Register New Engine</span>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              pill
+              size="sm"
+              onClick={() => setRunnerGuideOpen(true)}
+              className="gap-1.5"
+            >
+              <Terminal className="w-3.5 h-3.5 text-zinc-500" />
+              <span>Runner Guide</span>
+            </Button>
+          </div>
         </Card>
       ) : (
         <div className="space-y-4">
-          <div className="rounded-xl border border-[#262626] bg-[#171717] overflow-hidden shadow-sm">
+          <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden shadow-sm">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-[#262626] bg-[#141414] text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                <tr className="border-b border-zinc-200 bg-zinc-50 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
                   <th className="p-3">Engine Instance</th>
                   <th className="p-3">Status</th>
                   <th className="p-3 hidden sm:table-cell">Slug / EngineId</th>
@@ -255,11 +368,11 @@ export default function PanelInstancesPage() {
               </thead>
               <tbody className="divide-y divide-[#262626] text-xs">
                 {filtered.map((inst) => (
-                  <tr key={inst.instanceId} className="hover:bg-[#1f1f1f] transition-colors">
+                  <tr key={inst.instanceId} className="hover:bg-zinc-50 transition-colors">
                     <td className="p-3">
                       <Link
                         href={`/panel/instances/${inst.instanceId}`}
-                        className="font-medium text-zinc-100 hover:text-[#3ECF8E] transition-colors block"
+                        className="font-medium text-zinc-900 hover:text-[#3ECF8E] transition-colors block"
                       >
                         {inst.name || 'Unnamed Engine'}
                       </Link>
@@ -278,11 +391,11 @@ export default function PanelInstancesPage() {
                         </Badge>
                       )}
                     </td>
-                    <td className="p-3 font-mono text-zinc-300 hidden sm:table-cell">{inst.engineId}</td>
-                    <td className="p-3 text-zinc-300 hidden md:table-cell">
+                    <td className="p-3 font-mono text-zinc-700 hidden sm:table-cell">{inst.engineId}</td>
+                    <td className="p-3 text-zinc-700 hidden md:table-cell">
                       <span className="font-mono tabular-nums">{inst.manifestExtensionCount}</span> active
                     </td>
-                    <td className="p-3 text-zinc-400 font-mono text-[11px] hidden lg:table-cell">
+                    <td className="p-3 text-zinc-500 font-mono text-[11px] hidden lg:table-cell">
                       {formatTimestamp(inst.createdAt)}
                     </td>
                     <td className="p-3 hidden sm:table-cell">
@@ -309,6 +422,20 @@ export default function PanelInstancesPage() {
                             {
                               label: 'Live Manager',
                               href: `/panel/instances/${inst.instanceId}/live`,
+                            },
+                            {
+                              label: 'Launch Command',
+                              onClick: () => {
+                                const savedKey =
+                                  typeof window !== 'undefined'
+                                    ? localStorage.getItem(`engine_key_${inst.instanceId}`)
+                                    : null;
+                                setCreatedCredentials({
+                                  instanceId: inst.instanceId,
+                                  engineId: inst.engineId,
+                                  apiKey: savedKey || '<YOUR_GENERATED_API_KEY>',
+                                });
+                              },
                             },
                             ...(!inst.isShared
                               ? [
@@ -357,6 +484,35 @@ export default function PanelInstancesPage() {
           instanceName={selectedInstanceForShare.name}
         />
       )}
+
+      {/* Register Engine Modal */}
+      <RegisterEngineModal
+        isOpen={registerModalOpen}
+        onClose={() => setRegisterModalOpen(false)}
+        regAccountId={regAccountId}
+        setRegAccountId={setRegAccountId}
+        regLicenseId={regLicenseId}
+        setRegLicenseId={setRegLicenseId}
+        regEngineId={regEngineId}
+        setRegEngineId={setRegEngineId}
+        regName={regName}
+        setRegName={setRegName}
+        registering={registering}
+        onSubmit={handleRegisterSubmit}
+      />
+
+      {/* Newly Created / Re-Opened Credentials */}
+      <CreatedCredentialsDialog
+        credentials={createdCredentials}
+        onClose={() => setCreatedCredentials(null)}
+        userName={user?.userName}
+      />
+
+      {/* Local Engine Runner Guide Modal */}
+      <RunnerGuideModal
+        isOpen={runnerGuideOpen}
+        onClose={() => setRunnerGuideOpen(false)}
+      />
     </div>
   );
 }

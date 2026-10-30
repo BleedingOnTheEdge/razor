@@ -37,21 +37,21 @@ export function BundleSnapshotPanel({
     switch (status) {
       case 'Backtested':
         return (
-          <span className="px-2 py-0.5 border border-green-600 bg-green-50 text-green-700 font-bold text-[10px] flex items-center gap-1">
+          <span className="px-2.5 py-0.5 rounded-full border border-[#3ECF8E]/30 bg-emerald-950/20 text-[#3ECF8E] font-bold text-[10px] flex items-center gap-1">
             <CheckCircle2 className="w-3 h-3 text-[#3ECF8E]" />
             <span>BACKTESTED</span>
           </span>
         );
       case 'Tested':
         return (
-          <span className="px-2 py-0.5 border border-blue-600 bg-blue-50 text-blue-700 font-bold text-[10px] flex items-center gap-1">
+          <span className="px-2.5 py-0.5 rounded-full border border-blue-500/30 bg-blue-950/20 text-blue-400 font-bold text-[10px] flex items-center gap-1">
             <ShieldCheck className="w-3 h-3 text-blue-600" />
             <span>TESTED</span>
           </span>
         );
       default:
         return (
-          <span className="px-2 py-0.5 border border-zinc-400 bg-[#1f1f1f] text-zinc-400 font-bold text-[10px] flex items-center gap-1">
+          <span className="px-2.5 py-0.5 rounded-full border border-[#262626] bg-[#141414] text-zinc-400 font-bold text-[10px] flex items-center gap-1">
             <AlertTriangle className="w-3 h-3 text-zinc-500" />
             <span>UNTESTED</span>
           </span>
@@ -60,7 +60,7 @@ export function BundleSnapshotPanel({
   };
 
   return (
-    <div className="border border-[#262626] bg-[#171717] p-5 font-mono space-y-4">
+    <div className="border border-[#262626] bg-[#171717] rounded-xl p-5 font-mono space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#262626]">
         <div className="flex items-center gap-2">
@@ -87,7 +87,7 @@ export function BundleSnapshotPanel({
 
       {/* Snapshot Creator Form */}
       {isCreating && (
-        <form onSubmit={handleCreate} className="p-4 border border-[#262626] bg-[#141414] space-y-3">
+        <form onSubmit={handleCreate} className="p-4 border border-[#262626] bg-[#141414] rounded-xl space-y-3">
           <span className="text-xs font-bold uppercase text-zinc-100 block">
             Record New Snapshot
           </span>
@@ -100,7 +100,7 @@ export function BundleSnapshotPanel({
                 onChange={(e) => setNewVersion(e.target.value)}
                 placeholder="v1.0.0"
                 required
-                className="w-full px-3 py-1.5 border border-[#262626] bg-[#171717] text-xs font-mono"
+                className="w-full px-3 py-1.5 rounded-md border border-[#262626] bg-[#171717] text-xs font-mono focus:outline-none focus:border-[#3ECF8E]"
               />
             </div>
             <div>
@@ -110,14 +110,14 @@ export function BundleSnapshotPanel({
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder="E.g. Pre-Deployment Baseline"
-                className="w-full px-3 py-1.5 border border-[#262626] bg-[#171717] text-xs font-mono"
+                className="w-full px-3 py-1.5 rounded-md border border-[#262626] bg-[#171717] text-xs font-mono focus:outline-none focus:border-[#3ECF8E]"
               />
             </div>
           </div>
           <div className="flex justify-end">
             <button
               type="submit"
-              className="px-4 py-1.5 border border-[#262626] bg-black text-white text-xs font-bold hover:bg-zinc-800"
+              className="px-4 py-1.5 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] rounded-full text-xs font-bold hover:bg-[#34b27b] transition-colors"
             >
               SAVE SNAPSHOT
             </button>
@@ -127,7 +127,7 @@ export function BundleSnapshotPanel({
 
       {/* Snapshot History Grid & Active Detail */}
       {snapshots.length === 0 ? (
-        <div className="py-6 text-center text-xs text-zinc-500 border border-dashed border-zinc-300">
+        <div className="py-6 text-center text-xs text-zinc-400 border border-dashed border-[#262626] bg-[#141414] rounded-xl">
           No snapshots recorded yet. Click &quot;Capture Snapshot&quot; to freeze the current configuration.
         </div>
       ) : (
@@ -139,10 +139,10 @@ export function BundleSnapshotPanel({
                 key={snap.id}
                 type="button"
                 onClick={() => setSelectedSnapshotId(snap.id)}
-                className={`px-3 py-1.5 border text-xs font-bold transition-colors flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-full border text-xs font-bold transition-colors flex items-center gap-1.5 ${
                   activeSnapshot?.id === snap.id
-                    ? 'border-[#262626] bg-black text-white'
-                    : 'border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626]'
+                    ? 'border-[#3ECF8E] bg-[#3ECF8E]/10 text-[#3ECF8E]'
+                    : 'border-[#262626] bg-[#141414] hover:bg-[#1f1f1f] text-zinc-300'
                 }`}
               >
                 <span>{snap.version}</span>
@@ -153,7 +153,7 @@ export function BundleSnapshotPanel({
 
           {/* Active Snapshot Inspection */}
           {activeSnapshot && (
-            <div className="border border-[#262626] p-4 space-y-3 bg-[#141414]">
+            <div className="border border-[#262626] rounded-xl p-4 space-y-3 bg-[#141414]">
               <div className="flex items-center justify-between pb-2 border-b border-[#262626]">
                 <div>
                   <span className="font-bold text-xs uppercase block">
@@ -163,7 +163,7 @@ export function BundleSnapshotPanel({
                     Captured on {new Date(activeSnapshot.createdAt).toLocaleString()}
                   </span>
                 </div>
-                <span className="text-[10px] px-2 py-0.5 border border-[#262626] bg-[#171717] font-bold">
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full border border-[#262626] bg-[#171717] font-bold text-zinc-300">
                   {activeSnapshot.dnas?.length || 0} ATTACHED DNAs
                 </span>
               </div>
@@ -176,7 +176,7 @@ export function BundleSnapshotPanel({
                 </span>
 
                 {!activeSnapshot.dnas || activeSnapshot.dnas.length === 0 ? (
-                  <div className="py-4 text-center text-xs text-zinc-500 border border-dashed border-zinc-300 bg-[#171717]">
+                  <div className="py-4 text-center text-xs text-zinc-400 border border-dashed border-[#262626] bg-[#171717] rounded-lg">
                     No parameter DNAs attached to this snapshot.
                   </div>
                 ) : (
@@ -184,7 +184,7 @@ export function BundleSnapshotPanel({
                     {activeSnapshot.dnas.map((dna) => (
                       <div
                         key={dna.id}
-                        className="p-3 border border-[#262626] bg-[#171717] space-y-1.5 text-xs"
+                        className="p-3 border border-[#262626] bg-[#171717] rounded-lg space-y-1.5 text-xs"
                       >
                         <div className="flex items-center justify-between">
                           <span className="font-bold text-zinc-100 truncate max-w-[150px]">
@@ -193,7 +193,7 @@ export function BundleSnapshotPanel({
                           {getStatusBadge(dna.backtestStatus)}
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-zinc-100">
+                        <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-[#262626]">
                           <div>
                             <span className="text-zinc-500 block text-[9px] uppercase">Fitness</span>
                             <span className="font-bold font-mono">
@@ -204,7 +204,7 @@ export function BundleSnapshotPanel({
                           </div>
                           <div>
                             <span className="text-zinc-500 block text-[9px] uppercase">Net Profit</span>
-                            <span className="font-bold font-mono text-green-700">
+                            <span className="font-bold font-mono text-[#3ECF8E]">
                               {dna.netProfit !== null && dna.netProfit !== undefined
                                 ? `$${dna.netProfit.toLocaleString()}`
                                 : 'N/A'}
@@ -213,7 +213,7 @@ export function BundleSnapshotPanel({
                         </div>
 
                         {dna.reportSummary && (
-                          <p className="text-[10px] text-zinc-400 font-sans border-t border-zinc-100 pt-1 line-clamp-2">
+                          <p className="text-[10px] text-zinc-400 font-sans border-t border-[#262626] pt-1 line-clamp-2">
                             {dna.reportSummary}
                           </p>
                         )}

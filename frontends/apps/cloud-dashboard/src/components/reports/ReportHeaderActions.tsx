@@ -112,7 +112,7 @@ export function ReportHeaderActions({
               type="button"
               onClick={handleCancelRun}
               disabled={cancelling}
-              className="px-3 py-1.5 border border-[#262626] bg-[#171717] hover:bg-rose-600 hover:text-white text-zinc-100 font-bold transition-colors flex items-center gap-1.5 select-none"
+              className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-rose-950/40 hover:text-rose-400 hover:border-rose-800/40 text-zinc-200 rounded-full font-bold transition-colors flex items-center gap-1.5 select-none"
               title="Cancel active run execution"
             >
               <AlertTriangle className="w-3.5 h-3.5" />

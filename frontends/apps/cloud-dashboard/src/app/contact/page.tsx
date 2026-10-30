@@ -15,7 +15,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#171717] text-zinc-100 rounded-xl font-mono text-xs selection:bg-black selection:text-white flex flex-col justify-between">
+    <div className="min-h-screen bg-[#0f0f0f] text-zinc-100 font-mono text-xs selection:bg-[#3ECF8E] selection:text-[#0f0f0f] flex flex-col justify-between">
       <PublicNav />
 
       <main className="max-w-7xl mx-auto px-6 md:px-12 py-16 space-y-12 flex-1">
@@ -34,7 +34,7 @@ export default function ContactPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Contact Details Card */}
-          <div className="p-8 border border-[#262626] bg-[#141414] space-y-6">
+          <div className="p-8 border border-[#262626] bg-[#141414] rounded-xl space-y-6">
             <h2 className="text-base font-bold uppercase border-b border-[#262626] pb-2">
               Communication Channels
             </h2>
@@ -83,13 +83,13 @@ export default function ContactPage() {
           </div>
 
           {/* Form Card */}
-          <div className="p-8 border border-[#262626] bg-[#171717] space-y-6">
+          <div className="p-8 border border-[#262626] bg-[#171717] rounded-xl space-y-6">
             <h2 className="text-base font-bold uppercase border-b border-[#262626] pb-2">
               Send Dispatch Request
             </h2>
 
             {submitted ? (
-              <div className="p-6 border border-[#262626] bg-[#141414] text-center space-y-4">
+              <div className="p-6 border border-[#262626] bg-[#141414] rounded-xl text-center space-y-4">
                 <CheckCircle2 className="w-8 h-8 text-[#3ECF8E] mx-auto" />
                 <h3 className="font-bold text-sm uppercase">Dispatch Received</h3>
                 <p className="text-xs text-zinc-100">
@@ -97,7 +97,7 @@ export default function ContactPage() {
                 </p>
                 <button
                   onClick={() => setSubmitted(false)}
-                  className="px-4 py-2 bg-black text-white text-xs font-bold border border-[#262626]"
+                  className="px-4 py-2 bg-[#3ECF8E] text-[#0f0f0f] rounded-full text-xs font-bold border border-[#262626] hover:bg-[#34b27b] transition-colors"
                 >
                   SEND ANOTHER MESSAGE
                 </button>

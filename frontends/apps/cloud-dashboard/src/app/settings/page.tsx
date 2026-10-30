@@ -179,7 +179,7 @@ export default function SettingsPage() {
   if (!isAuthenticated || !isAuthorized) {
     return (
       <div className="max-w-2xl mx-auto py-12">
-        <div className="p-8 border border-[#262626] bg-[#171717] text-center space-y-6">
+        <div className="p-8 border border-[#262626] bg-[#171717] text-center space-y-6 rounded-2xl">
           <div className="w-12 h-12 border border-[#262626] bg-[#171717] text-zinc-100 rounded-xl mx-auto flex items-center justify-center">
             <ShieldAlert className="w-6 h-6" />
           </div>
@@ -192,7 +192,7 @@ export default function SettingsPage() {
             </p>
           </div>
           {user && (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-[#262626] bg-[#171717] text-xs font-mono text-zinc-100">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-[#262626] bg-[#171717] text-xs font-mono text-zinc-100 rounded-full">
               <span>Your Assigned Role:</span>
               <span className="font-bold uppercase">{user.role}</span>
             </div>
@@ -240,7 +240,7 @@ export default function SettingsPage() {
           <div className="flex items-center gap-2">
             {isAdmin ? (
               <>
-                <span className="px-3 py-1 border border-[#262626] bg-black text-white text-xs font-bold uppercase">
+                <span className="px-3 py-1 border border-[#262626] bg-[#1f1f1f] text-zinc-100 text-xs font-bold uppercase rounded-full">
                   SuperAdmin Full Control
                 </span>
                 <span className="px-3 py-1 border border-[#262626] bg-[#171717] text-zinc-100 rounded-xl text-xs font-bold uppercase">
@@ -248,14 +248,14 @@ export default function SettingsPage() {
                 </span>
                 <Link
                   href="/panel/admin"
-                  className="px-3 py-1 border border-[#262626] bg-[#171717] text-zinc-100 rounded-xl text-xs font-bold uppercase hover:bg-black hover:text-white"
+                  className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full text-xs font-bold uppercase transition-colors"
                 >
                   Open Cluster Governance
                 </Link>
               </>
             ) : (
               <>
-                <span className="px-3 py-1 border border-[#262626] bg-black text-white text-xs font-bold uppercase">
+                <span className="px-3 py-1 border border-[#262626] bg-[#1f1f1f] text-zinc-100 text-xs font-bold uppercase rounded-full">
                   Operator Fleet View
                 </span>
                 <span className="px-3 py-1 border border-[#262626] bg-[#171717] text-zinc-100 rounded-xl text-xs font-bold uppercase">
@@ -269,7 +269,7 @@ export default function SettingsPage() {
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* 1. Operational Client Controls */}
-        <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
           <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
             <Radio className="w-4 h-4 text-zinc-100" />
             <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-100">
@@ -277,7 +277,7 @@ export default function SettingsPage() {
             </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-            <div className="flex items-center justify-between p-3 border border-[#262626] bg-[#171717]">
+            <div className="flex items-center justify-between p-3 border border-[#262626] bg-[#171717] rounded-lg">
               <div>
                 <p className="font-bold text-zinc-100 uppercase">Tactile Audio Chimes</p>
                 <p className="text-[11px] text-zinc-100">Play audio cues on disconnects or risk violations.</p>
@@ -286,11 +286,11 @@ export default function SettingsPage() {
                 type="checkbox"
                 checked={streamAudioAlerts}
                 onChange={(e) => setStreamAudioAlerts(e.target.checked)}
-                className="w-4 h-4 border border-[#262626] accent-black cursor-pointer"
+                className="w-4 h-4 border border-[#262626] rounded accent-[#3ECF8E] cursor-pointer"
               />
             </div>
 
-            <div className="flex items-center justify-between p-3 border border-[#262626] bg-[#171717]">
+            <div className="flex items-center justify-between p-3 border border-[#262626] bg-[#171717] rounded-lg">
               <div>
                 <p className="font-bold text-zinc-100 uppercase">Log Stream Auto-Scroll</p>
                 <p className="text-[11px] text-zinc-100">Automatically lock to tail on new incoming live stream events.</p>
@@ -299,14 +299,14 @@ export default function SettingsPage() {
                 type="checkbox"
                 checked={autoScrollLogs}
                 onChange={(e) => setAutoScrollLogs(e.target.checked)}
-                className="w-4 h-4 border border-[#262626] accent-black cursor-pointer"
+                className="w-4 h-4 border border-[#262626] rounded accent-[#3ECF8E] cursor-pointer"
               />
             </div>
           </div>
         </div>
 
         {/* 2. Fleet & Engine Execution Policies */}
-        <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
           <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
             <Server className="w-4 h-4 text-zinc-100" />
             <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-100">
@@ -321,7 +321,7 @@ export default function SettingsPage() {
                 disabled={!isAdmin}
                 value={settings.heartbeatIntervalSeconds}
                 onChange={(e) => setSettings({ ...settings, heartbeatIntervalSeconds: Number(e.target.value) })}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
               />
             </div>
             <div>
@@ -331,7 +331,7 @@ export default function SettingsPage() {
                 disabled={!isAdmin}
                 value={settings.heartbeatTimeoutSeconds}
                 onChange={(e) => setSettings({ ...settings, heartbeatTimeoutSeconds: Number(e.target.value) })}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
               />
             </div>
             <div>
@@ -341,7 +341,7 @@ export default function SettingsPage() {
                 disabled={!isAdmin}
                 value={settings.maxFleetSizePerAccount}
                 onChange={(e) => setSettings({ ...settings, maxFleetSizePerAccount: Number(e.target.value) })}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
               />
             </div>
             <div>
@@ -351,14 +351,14 @@ export default function SettingsPage() {
                 disabled={!isAdmin}
                 value={settings.commandQueueExpirySeconds}
                 onChange={(e) => setSettings({ ...settings, commandQueueExpirySeconds: Number(e.target.value) })}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
               />
             </div>
           </div>
         </div>
 
         {/* 3. Messengers & Notification Integrations */}
-        <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
           <div className="flex items-center justify-between pb-2 border-b border-[#262626]">
             <div className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-zinc-100" />
@@ -373,7 +373,7 @@ export default function SettingsPage() {
                 disabled={!isAdmin}
                 checked={settings.enableMessengerAlerts ?? true}
                 onChange={(e) => setSettings({ ...settings, enableMessengerAlerts: e.target.checked })}
-                className="w-4 h-4 border border-[#262626] accent-black cursor-pointer"
+                className="w-4 h-4 border border-[#262626] rounded accent-[#3ECF8E] cursor-pointer"
               />
               <label htmlFor="enableMessengerAlerts" className="text-zinc-100 font-bold uppercase text-[11px] cursor-pointer">
                 Active Alerts
@@ -389,7 +389,7 @@ export default function SettingsPage() {
                 placeholder="bot123456789:ABCdefGHIjkl..."
                 value={settings.telegramBotToken ?? ''}
                 onChange={(e) => setSettings({ ...settings, telegramBotToken: e.target.value })}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
               />
             </div>
             <div>
@@ -400,7 +400,7 @@ export default function SettingsPage() {
                 placeholder="@razor_desk_alerts or -100123456789"
                 value={settings.telegramDefaultChannel ?? ''}
                 onChange={(e) => setSettings({ ...settings, telegramDefaultChannel: e.target.value })}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
               />
             </div>
             <div>
@@ -411,7 +411,7 @@ export default function SettingsPage() {
                 placeholder="https://discord.com/api/webhooks/..."
                 value={settings.discordWebhookUrl ?? ''}
                 onChange={(e) => setSettings({ ...settings, discordWebhookUrl: e.target.value })}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
               />
             </div>
             <div>
@@ -422,14 +422,14 @@ export default function SettingsPage() {
                 placeholder="https://hooks.slack.com/services/..."
                 value={settings.slackWebhookUrl ?? ''}
                 onChange={(e) => setSettings({ ...settings, slackWebhookUrl: e.target.value })}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
               />
             </div>
           </div>
         </div>
 
         {/* 4. SMS Gateway Providers */}
-        <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
           <div className="flex items-center justify-between pb-2 border-b border-[#262626]">
             <div className="flex items-center gap-2">
               <PhoneCall className="w-4 h-4 text-zinc-100" />
@@ -444,7 +444,7 @@ export default function SettingsPage() {
                 disabled={!isAdmin}
                 checked={settings.enableSmsAlerts ?? false}
                 onChange={(e) => setSettings({ ...settings, enableSmsAlerts: e.target.checked })}
-                className="w-4 h-4 border border-[#262626] accent-black cursor-pointer"
+                className="w-4 h-4 border border-[#262626] rounded accent-[#3ECF8E] cursor-pointer"
               />
               <label htmlFor="enableSmsAlerts" className="text-zinc-100 font-bold uppercase text-[11px] cursor-pointer">
                 Enable SMS Delivery
@@ -458,7 +458,7 @@ export default function SettingsPage() {
                 disabled={!isAdmin}
                 value={settings.smsProvider ?? 'Twilio'}
                 onChange={(e) => setSettings({ ...settings, smsProvider: e.target.value })}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
               >
                 <option value="Twilio">Twilio</option>
                 <option value="AwsSns">AWS SNS</option>
@@ -475,7 +475,7 @@ export default function SettingsPage() {
                 placeholder="API Key..."
                 value={settings.smsApiKey ?? ''}
                 onChange={(e) => setSettings({ ...settings, smsApiKey: e.target.value })}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
               />
             </div>
             <div>
@@ -486,14 +486,14 @@ export default function SettingsPage() {
                 placeholder="+12025550192 or RAZOR"
                 value={settings.smsSenderNumber ?? ''}
                 onChange={(e) => setSettings({ ...settings, smsSenderNumber: e.target.value })}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
               />
             </div>
           </div>
         </div>
 
         {/* 5. Payment Gateways */}
-        <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
           <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
             <CreditCard className="w-4 h-4 text-zinc-100" />
             <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-100">
@@ -507,7 +507,7 @@ export default function SettingsPage() {
                 disabled={!isAdmin}
                 value={settings.paymentProvider ?? 'Stripe'}
                 onChange={(e) => setSettings({ ...settings, paymentProvider: e.target.value })}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
               >
                 <option value="Stripe">Stripe Connect</option>
                 <option value="LemonSqueezy">Lemon Squeezy</option>
@@ -521,7 +521,7 @@ export default function SettingsPage() {
                 disabled={!isAdmin}
                 value={settings.paymentCurrency ?? 'USD'}
                 onChange={(e) => setSettings({ ...settings, paymentCurrency: e.target.value })}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
               >
                 <option value="USD">USD ($)</option>
                 <option value="EUR">EUR (€)</option>
@@ -536,7 +536,7 @@ export default function SettingsPage() {
                 placeholder="pk_live_..."
                 value={settings.paymentPublicKey ?? ''}
                 onChange={(e) => setSettings({ ...settings, paymentPublicKey: e.target.value })}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
               />
             </div>
             <div>
@@ -547,7 +547,7 @@ export default function SettingsPage() {
                 placeholder="sk_live_..."
                 value={settings.paymentSecretKey ?? ''}
                 onChange={(e) => setSettings({ ...settings, paymentSecretKey: e.target.value })}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
               />
             </div>
             <div className="sm:col-span-2">
@@ -558,14 +558,14 @@ export default function SettingsPage() {
                 placeholder="whsec_..."
                 value={settings.paymentWebhookSecret ?? ''}
                 onChange={(e) => setSettings({ ...settings, paymentWebhookSecret: e.target.value })}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
               />
             </div>
           </div>
         </div>
 
         {/* 6. Dynamic Subscription Tiers */}
-        <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
           <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
             <Layers className="w-4 h-4 text-zinc-100" />
             <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-100">
@@ -577,12 +577,12 @@ export default function SettingsPage() {
             disabled={!isAdmin}
             value={settings.subscriptionTiersJson ?? ''}
             onChange={(e) => setSettings({ ...settings, subscriptionTiersJson: e.target.value })}
-            className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+            className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
           />
         </div>
 
         {/* 7. Security, Marketplace, and Retention */}
-        <div className="p-6 border border-[#262626] bg-[#171717] space-y-4">
+        <div className="p-6 border border-[#262626] bg-[#171717] rounded-xl space-y-4">
           <div className="flex items-center gap-2 pb-2 border-b border-[#262626]">
             <Shield className="w-4 h-4 text-zinc-100" />
             <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-100">
@@ -597,7 +597,7 @@ export default function SettingsPage() {
                 disabled={!isAdmin}
                 value={settings.enforceStrictKeyRotationDays}
                 onChange={(e) => setSettings({ ...settings, enforceStrictKeyRotationDays: Number(e.target.value) })}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
               />
             </div>
             <div>
@@ -608,7 +608,7 @@ export default function SettingsPage() {
                 disabled={!isAdmin}
                 value={settings.platformFeePercent}
                 onChange={(e) => setSettings({ ...settings, platformFeePercent: Number(e.target.value) })}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
               />
             </div>
             <div>
@@ -618,7 +618,7 @@ export default function SettingsPage() {
                 disabled={!isAdmin}
                 value={settings.auditLogRetentionDays ?? 365}
                 onChange={(e) => setSettings({ ...settings, auditLogRetentionDays: Number(e.target.value) })}
-                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black rounded-none disabled:opacity-50"
+                className="w-full px-3 py-2 bg-[#171717] border border-[#262626] text-zinc-100 text-xs focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 rounded-md disabled:opacity-50"
               />
             </div>
           </div>
@@ -630,7 +630,7 @@ export default function SettingsPage() {
             type="button"
             onClick={handleResetDefaults}
             disabled={saving || !isAdmin}
-            className="flex items-center gap-2 px-4 py-2 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] text-xs font-bold uppercase rounded-none transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-2 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium text-xs font-bold uppercase transition-colors disabled:opacity-50"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Reset Defaults</span>
@@ -638,7 +638,7 @@ export default function SettingsPage() {
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-2 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium text-xs font-bold uppercase rounded-none transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-6 py-2 border border-[#262626] bg-[#3ECF8E] text-[#0f0f0f] hover:bg-[#34b27b] rounded-full font-medium text-xs font-bold uppercase transition-colors disabled:opacity-50"
           >
             <Save className="w-3.5 h-3.5" />
             <span>{saving ? 'Saving...' : isAdmin ? 'Save All Preferences' : 'Save Fleet Preferences'}</span>

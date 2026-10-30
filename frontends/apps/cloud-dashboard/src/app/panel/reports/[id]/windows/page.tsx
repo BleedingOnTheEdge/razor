@@ -122,20 +122,20 @@ export default function WalkForwardWindowsPage() {
           COMPILING WALK-FORWARD WINDOW TELEMETRY FROM CLOUD API...
         </div>
       ) : error ? (
-        <div className="p-4 border border-[#262626] text-rose-400 font-bold">
+        <div className="p-4 border border-rose-800/40 bg-rose-950/20 text-rose-300 font-bold rounded-xl">
           ERROR: {error}
         </div>
       ) : (
         <div className="space-y-6">
           {/* Summary Stat Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div className="p-3 border border-[#262626] bg-[#141414]">
+            <div className="p-3 border border-[#262626] bg-[#141414] rounded-lg">
               <span className="text-[11px] font-bold text-zinc-100 uppercase tracking-wider block">Total Splits</span>
               <span className="text-lg font-bold mt-1 block font-mono">{totalWindows} Windows</span>
               <span className="text-[10px] text-zinc-500 font-sans mt-0.5 block">{inSamplePct}% IS / {outOfSamplePct}% OOS</span>
             </div>
 
-            <div className="p-3 border border-[#262626] bg-[#141414]">
+            <div className="p-3 border border-[#262626] bg-[#141414] rounded-lg">
               <span className="text-[11px] font-bold text-zinc-100 uppercase tracking-wider block">Avg WFE Ratio</span>
               <span className="text-lg font-bold mt-1 block font-mono text-[#3ECF8E]">
                 {(windows.reduce((acc, w) => acc + w.wfeRatio, 0) / windows.length).toFixed(2)}
@@ -143,7 +143,7 @@ export default function WalkForwardWindowsPage() {
               <span className="text-[10px] text-zinc-500 font-sans mt-0.5 block">Walk-Forward Efficiency</span>
             </div>
 
-            <div className="p-3 border border-[#262626] bg-[#141414]">
+            <div className="p-3 border border-[#262626] bg-[#141414] rounded-lg">
               <span className="text-[11px] font-bold text-zinc-100 uppercase tracking-wider block">Robustness Certification</span>
               <span className="text-lg font-bold mt-1 block font-mono text-[#3ECF8E]">
                 [VERIFIED]
@@ -151,7 +151,7 @@ export default function WalkForwardWindowsPage() {
               <span className="text-[10px] text-zinc-500 font-sans mt-0.5 block">Passes OOS Degradation Bounds</span>
             </div>
 
-            <div className="p-3 border border-[#262626] bg-[#141414]">
+            <div className="p-3 border border-[#262626] bg-[#141414] rounded-lg">
               <span className="text-[11px] font-bold text-zinc-100 uppercase tracking-wider block">Execution Engine</span>
               <span className="text-lg font-bold mt-1 block font-mono">
                 {report?.engineInstanceId ? formatHash(report.engineInstanceId, 6) : 'Local'}
@@ -205,12 +205,12 @@ export default function WalkForwardWindowsPage() {
                       {w.wfeRatio.toFixed(2)}
                     </td>
                     <td className="py-3 px-3 text-center">
-                      <span className={`px-2 py-0.5 border font-bold text-[10px] ${
+                      <span className={`px-2.5 py-0.5 rounded-full border font-bold text-[10px] uppercase ${
                         w.robustnessStatus === 'Robust'
-                          ? 'border-green-600 bg-green-50 text-green-700'
+                          ? 'border-[#3ECF8E]/30 bg-emerald-950/20 text-[#3ECF8E]'
                           : w.robustnessStatus === 'Moderate'
-                          ? 'border-amber-600 bg-amber-50 text-amber-700'
-                          : 'border-rose-500/30 bg-red-50 text-red-700'
+                          ? 'border-amber-500/30 bg-amber-950/20 text-amber-400'
+                          : 'border-rose-800/30 bg-rose-950/20 text-rose-400'
                       }`}>
                         [{w.robustnessStatus.toUpperCase()}]
                       </span>

@@ -136,7 +136,7 @@ export function DynamicParameterGenerator({
   };
 
   return (
-    <div className="border border-[#262626] bg-[#171717] p-5 font-mono space-y-4">
+    <div className="border border-[#262626] bg-[#171717] rounded-xl p-5 font-mono space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#262626]">
         <div>
@@ -177,7 +177,7 @@ export function DynamicParameterGenerator({
                 onClick={() => handleApplyPreset(preset.key, preset.defaultValue)}
                 className={`text-[11px] px-2.5 py-1 border transition-colors ${
                   isAlreadyAdded
-                    ? 'border-zinc-300 bg-[#1f1f1f] text-zinc-400 cursor-not-allowed'
+                    ? 'border-[#262626] bg-[#1f1f1f] text-zinc-500 rounded-full cursor-not-allowed'
                     : 'border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] font-bold'
                 }`}
               >
@@ -191,7 +191,7 @@ export function DynamicParameterGenerator({
       {/* Dynamic Rows */}
       <div className="space-y-3 pt-2">
         {entries.length === 0 ? (
-          <div className="py-6 text-center text-xs text-zinc-500 border border-dashed border-zinc-300">
+          <div className="py-6 text-center text-xs text-zinc-500 border border-dashed border-[#262626] rounded-xl">
             No parameters configured. Click &quot;Add Parameter&quot; or select a preset above.
           </div>
         ) : (
@@ -199,7 +199,7 @@ export function DynamicParameterGenerator({
             <div key={entry.id} className="space-y-1">
               <div className="flex items-center gap-2">
                 {/* Index / drag pill */}
-                <div className="w-7 h-10 border border-[#262626] bg-[#1f1f1f] flex items-center justify-center font-bold text-xs text-zinc-100 shrink-0">
+                <div className="w-7 h-10 border border-[#262626] bg-[#1f1f1f] rounded-md flex items-center justify-center font-bold text-xs text-zinc-100 shrink-0">
                   {index + 1}
                 </div>
 
@@ -210,7 +210,7 @@ export function DynamicParameterGenerator({
                     value={entry.key}
                     onChange={(e) => handleKeyChange(entry.id, e.target.value)}
                     placeholder="ParameterName (e.g. StopLossPct)"
-                    className="w-full px-3 py-2 border border-[#262626] bg-[#171717] text-xs font-bold text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black h-10"
+                    className="w-full px-3 py-2 border border-[#262626] bg-[#171717] rounded-md text-xs font-bold text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 h-10"
                   />
                 </div>
 
@@ -224,10 +224,10 @@ export function DynamicParameterGenerator({
                     value={entry.value}
                     onChange={(e) => handleValueChange(entry.id, e.target.value)}
                     placeholder="Validated Value (e.g. 2.5, true, 50)"
-                    className={`w-full px-3 py-2 border text-xs font-mono text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-black h-10 ${
+                    className={`w-full px-3 py-2 border rounded-md text-xs font-mono text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-[#3ECF8E] focus:ring-1 focus:ring-[#3ECF8E]/30 h-10 ${
                       entry.error
-                        ? 'border-rose-500/30 bg-red-50 focus:border-rose-500/30'
-                        : 'border-[#262626] bg-[#141414] focus:bg-white'
+                        ? 'border-rose-500/30 bg-rose-950/20 focus:border-rose-500/50'
+                        : 'border-[#262626] bg-[#141414] focus:bg-[#171717]'
                     }`}
                   />
                   {entry.error ? (
@@ -241,7 +241,7 @@ export function DynamicParameterGenerator({
                 <button
                   type="button"
                   onClick={() => handleRemoveRow(entry.id)}
-                  className="w-10 h-10 border border-[#262626] bg-[#171717] hover:bg-red-50 hover:border-rose-500/30 text-zinc-100 hover:text-rose-400 flex items-center justify-center shrink-0 transition-colors"
+                  className="w-10 h-10 border border-[#262626] bg-[#171717] hover:bg-rose-950/40 hover:border-rose-500/50 text-zinc-100 hover:text-rose-400 rounded-md flex items-center justify-center shrink-0 transition-colors"
                   title="Remove parameter"
                   aria-label="Remove parameter"
                 >

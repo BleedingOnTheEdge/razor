@@ -11,7 +11,7 @@ export const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      'inline-flex h-9 items-center justify-center rounded-lg bg-[#171717] border border-[#262626] p-1 text-zinc-400 font-sans',
+      'inline-flex h-9 items-center justify-center rounded-lg bg-white border border-zinc-200 p-1 text-zinc-500 font-sans',
       className
     )}
     {...props}
@@ -26,7 +26,7 @@ export const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      'inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-xs font-medium font-sans ring-offset-[#0f0f0f] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3ECF8E] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-[#222222] data-[state=active]:text-[#3ECF8E] data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-[#333333]',
+      'inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-xs font-medium font-sans ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3ECF8E] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-emerald-200 data-[state=active]:font-semibold',
       className
     )}
     {...props}

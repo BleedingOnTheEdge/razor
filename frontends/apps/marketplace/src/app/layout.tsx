@@ -15,8 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className="min-h-screen bg-[#0f0f0f] text-[#ededed] font-sans antialiased selection:bg-[#3ECF8E]/30 selection:text-[#3ECF8E] flex flex-col justify-between">
+    <html lang="en" className="light">
+      <body className="min-h-screen bg-[#f8fafc] text-zinc-900 font-sans antialiased selection:bg-[#3ECF8E]/30 selection:text-emerald-900 flex flex-col justify-between">
         <AuthProvider>
           <ToastProvider>
             <div>
@@ -26,7 +26,7 @@ export default function RootLayout({
               </main>
             </div>
 
-            <footer className="border-t border-[#262626] py-8 text-center text-xs text-zinc-500 font-mono bg-[#171717]/60">
+            <footer className="border-t border-zinc-200 py-8 text-center text-xs text-zinc-500 font-mono bg-white">
               <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <span>Razor Marketplace • Curated Trading Ecosystem</span>
                 <span>Compatible with Razor Engine v1.0.0 LTS</span>

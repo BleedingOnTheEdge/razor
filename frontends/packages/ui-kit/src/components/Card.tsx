@@ -15,9 +15,9 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          'rounded-xl bg-[#171717] border border-[#262626] p-6 text-zinc-100 shadow-sm shadow-black/40',
+          'rounded-xl bg-white border border-zinc-200 p-6 text-zinc-900 shadow-sm shadow-slate-100',
           interactive &&
-            'transition-all duration-150 hover:border-[#383838] hover:bg-[#1c1c1c] active:scale-[0.99] cursor-pointer',
+            'transition-all duration-150 hover:border-zinc-300 hover:bg-zinc-50/50 active:scale-[0.99] cursor-pointer',
           className
         )}
         {...props}
@@ -40,7 +40,7 @@ export const CardTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttribut
   ({ className = '', ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn('text-base font-semibold leading-none tracking-tight text-zinc-100 font-sans', className)}
+      className={cn('text-base font-semibold leading-none tracking-tight text-zinc-900 font-sans', className)}
       {...props}
     />
   )
@@ -49,7 +49,7 @@ CardTitle.displayName = 'CardTitle';
 
 export const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
   ({ className = '', ...props }, ref) => (
-    <p ref={ref} className={cn('text-xs text-zinc-400 font-sans leading-relaxed', className)} {...props} />
+    <p ref={ref} className={cn('text-xs text-zinc-500 font-sans leading-relaxed', className)} {...props} />
   )
 );
 CardDescription.displayName = 'CardDescription';
@@ -63,7 +63,7 @@ CardContent.displayName = 'CardContent';
 
 export const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className = '', ...props }, ref) => (
-    <div ref={ref} className={cn('flex items-center pt-4 border-t border-[#262626]', className)} {...props} />
+    <div ref={ref} className={cn('flex items-center pt-4 border-t border-zinc-200', className)} {...props} />
   )
 );
 CardFooter.displayName = 'CardFooter';

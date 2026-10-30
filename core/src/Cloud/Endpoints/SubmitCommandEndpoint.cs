@@ -67,7 +67,7 @@ internal sealed class SubmitCommandEndpoint(
     /// <inheritdoc/>
     public override void Configure()
     {
-        Post("/api/instances/{instanceId}/commands");
+        Post("/api/instances/{instanceId}/commands", "/api/engines/{instanceId}/commands");
         Summary(summary =>
         {
             summary.Summary = "Submit a command to an Engine instance";

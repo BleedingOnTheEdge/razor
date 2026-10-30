@@ -229,12 +229,12 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
       onClick: () => setRotateOpen(true),
     },
     {
-      label: '[REVOKE API KEY]',
+      label: 'Revoke API Key',
       onClick: () => setRevokeOpen(true),
       danger: true,
     },
     {
-      label: '[DECOMMISSION ENGINE]',
+      label: 'Decommission Engine',
       onClick: () => setDeleteOpen(true),
       danger: true,
     },
@@ -261,13 +261,13 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
               <span>{instance?.name || instance?.engineId || 'Engine Instance'}</span>
             </h1>
             {badge && (
-              <span className="px-2.5 py-1 text-xs font-bold border border-[#262626] bg-[#141414] text-zinc-200">
+              <span className="px-2.5 py-1 text-xs font-bold rounded-full border border-[#262626] bg-[#141414] text-zinc-200">
                 [{badge.label?.toUpperCase()}]
               </span>
             )}
-            <span className="px-2.5 py-1 text-xs font-bold border border-[#262626] bg-[#141414] text-zinc-200 flex items-center gap-1.5">
+            <span className="px-2.5 py-1 text-xs font-bold rounded-full border border-[#262626] bg-[#141414] text-zinc-200 flex items-center gap-1.5">
               <span
-                className={`w-2 h-2 ${
+                className={`w-2 h-2 rounded-full ${
                   instance?.isConnected ? 'bg-[#3ECF8E] text-[#0f0f0f]' : 'bg-black'
                 }`}
               />
@@ -286,13 +286,13 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
             className="px-3.5 py-1.5 border border-[#262626] bg-[#3ECF8E] hover:bg-[#34b27b] text-[#0f0f0f] rounded-full font-bold text-xs transition-colors flex items-center gap-1.5"
           >
             <Radio className="w-3.5 h-3.5" />
-            <span>[LIVE MANAGER]</span>
+            <span>Live Manager</span>
           </Link>
 
           {/* Refresh: Always visible outside */}
           <button
             onClick={loadDetails}
-            className="px-3 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] text-xs font-bold transition-colors flex items-center gap-1.5"
+            className="px-3.5 py-1.5 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full text-xs font-bold transition-colors flex items-center gap-1.5"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Refresh</span>
@@ -300,7 +300,7 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
 
           {/* Grouped Actions Hamburger Dropdown */}
           <ActionDropdown
-            label="[MANAGE ENGINE ▾]"
+            label="Manage Engine ▾"
             items={manageDropdownItems}
             align="right"
           />
@@ -311,44 +311,44 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
       <div className="sticky top-0 z-20 bg-[#171717] py-2 border-b border-[#262626] flex items-center gap-2 overflow-x-auto text-xs font-bold">
         <a
           href="#overview"
-          className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] transition-colors"
+          className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium transition-colors"
         >
           # OVERVIEW
         </a>
         <a
           href="#telemetry"
-          className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] transition-colors"
+          className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium transition-colors"
         >
           # TELEMETRY
         </a>
         <a
           href="#extensions"
-          className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] transition-colors"
+          className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium transition-colors"
         >
           # EXTENSIONS ({instance?.manifest?.length || 0})
         </a>
         <a
           href="#commands"
-          className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] transition-colors"
+          className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium transition-colors"
         >
           # COMMANDS ({commands.length})
         </a>
         <a
           href="#livestreams"
-          className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium border border-[#262626] transition-colors"
+          className="px-3 py-1 border border-[#262626] bg-[#171717] hover:bg-[#222222] text-zinc-200 rounded-full font-medium transition-colors"
         >
           # LIVE STREAM
         </a>
       </div>
 
       {loading && (
-        <div className="py-12 text-center text-sm font-bold text-zinc-100 border border-[#262626]">
+        <div className="py-12 text-center text-sm font-bold text-zinc-300 border border-[#262626] bg-[#171717] rounded-xl">
           [LOADING ENGINE CONFIGURATION & TELEMETRY STATE...]
         </div>
       )}
 
       {error && (
-        <div className="p-4 border border-[#262626] text-rose-400 text-sm font-bold">
+        <div className="p-4 border border-rose-800/40 bg-rose-950/20 text-rose-300 text-sm font-bold rounded-xl">
           [ERROR]: {error}
         </div>
       )}
