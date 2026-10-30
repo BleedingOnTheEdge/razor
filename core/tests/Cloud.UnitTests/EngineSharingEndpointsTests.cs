@@ -208,4 +208,155 @@ public sealed class EngineSharingEndpointsTests
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
+
+    private static readonly string[] SampleItems = ["a", "b", "c"];
+
+    [Fact]
+    public void EngineShare_IsActive_CoversAllBranchCombinations()
+    {
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        var share = new EngineShare { ExpiresAtUtc = now.AddHours(1), IsRevoked = false };
+        Assert.True(share.IsActive(now));
+
+        share.IsRevoked = true;
+        Assert.False(share.IsActive(now));
+
+        share.IsRevoked = false;
+        share.ExpiresAtUtc = now.AddHours(-1);
+        Assert.False(share.IsActive(now));
+    }
+
+    [Fact]
+    public void PagedResult_And_FlexibleNullableGuidConverter_CoverAllEdgeCases()
+    {
+        // PagedResult branch coverage
+        var empty = PagedResult.Create(Array.Empty<string>(), null, null);
+        Assert.Equal(0, empty.TotalCount);
+        Assert.Equal(1, empty.TotalPages);
+        Assert.Equal(1, empty.Page);
+        Assert.Equal(25, empty.PageSize);
+        Assert.Empty(empty.Items);
+
+        var paginated = PagedResult.Create(SampleItems, 2, 2);
+        Assert.Equal(3, paginated.TotalCount);
+        Assert.Equal(2, paginated.TotalPages);
+        Assert.Equal(2, paginated.Page);
+        Assert.Equal(2, paginated.PageSize);
+        Assert.Single(paginated.Items);
+        Assert.Equal("c", paginated.Items[0]);
+
+        // FlexibleNullableGuidConverter branch coverage
+        var options = new JsonSerializerOptions { Converters = { new FlexibleNullableGuidConverter() } };
+        Guid? fromNull = JsonSerializer.Deserialize<Guid?>("null", options);
+        Assert.Null(fromNull);
+
+        Guid? fromEmptyStr = JsonSerializer.Deserialize<Guid?>("\"\"", options);
+        Assert.Null(fromEmptyStr);
+
+        Guid? fromWhitespace = JsonSerializer.Deserialize<Guid?>("\"   \"", options);
+        Assert.Null(fromWhitespace);
+
+        Guid? fromInvalid = JsonSerializer.Deserialize<Guid?>("\"not-a-valid-guid\"", options);
+        Assert.Null(fromInvalid);
+
+        Guid? fromNumber = JsonSerializer.Deserialize<Guid?>("12345", options);
+        Assert.Null(fromNumber);
+
+        Guid id = Guid.NewGuid();
+        Guid? fromValid = JsonSerializer.Deserialize<Guid?>($"\"{id}\"", options);
+        Assert.Equal(id, fromValid);
+
+        string serializedNull = JsonSerializer.Serialize<Guid?>(null, options);
+        Assert.Equal("null", serializedNull);
+
+        string serializedValid = JsonSerializer.Serialize<Guid?>(id, options);
+        Assert.Equal($"\"{id}\"", serializedValid);
+    }
+
+    [Fact]
+    public async Task EngineRegistrationService_ShareMethodsAndAccessControl_CoversAllBranches()
+    {
+        using var factory = new CloudWebApplicationFactory();
+        SeededAccount owner = await factory.Database.SeedAccountAsync("share-service-owner").ConfigureAwait(true);
+        SeededAccount other = await factory.Database.SeedAccountAsync("share-service-other").ConfigureAwait(true);
+        var regService = new EngineRegistrationService(factory.Database, new TestTimeProvider(DateTimeOffset.UtcNow));
+
+        RegistrationOutcome outcome = await regService
+            .RegisterAsync(owner.AccountId, owner.LicenseId, "share-engine-test", "Share Test Engine", CancellationToken.None)
+            .ConfigureAwait(true);
+        Guid instanceId = outcome.Instance!.Id;
+
+        // 1. CheckInstanceAccessAsync: All null identifiers returns true
+        bool allNullAccess = await regService.CheckInstanceAccessAsync(instanceId, null, null, null, "Read").ConfigureAwait(true);
+        Assert.True(allNullAccess);
+
+        // 2. CheckInstanceAccessAsync: Non-existent instance returns false
+        bool missingInstanceAccess = await regService.CheckInstanceAccessAsync(Guid.NewGuid(), owner.AccountId, null, null, "Read").ConfigureAwait(true);
+        Assert.False(missingInstanceAccess);
+
+        // 3. CheckInstanceAccessAsync: Owner access returns true
+        bool ownerAccess = await regService.CheckInstanceAccessAsync(instanceId, owner.AccountId, null, null, "Control").ConfigureAwait(true);
+        Assert.True(ownerAccess);
+
+        // 4. CheckInstanceAccessAsync: Non-owner without share returns false
+        bool nonOwnerAccess = await regService.CheckInstanceAccessAsync(instanceId, other.AccountId, null, null, "Control").ConfigureAwait(true);
+        Assert.False(nonOwnerAccess);
+
+        // 5. CreateShareAsync: Error cases
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            regService.CreateShareAsync(Guid.NewGuid(), owner.AccountId, "test@test.com", sharedWithUserId: null, expiresAtUtc: DateTimeOffset.UtcNow.AddDays(1)));
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+            regService.CreateShareAsync(instanceId, other.AccountId, "test@test.com", sharedWithUserId: null, expiresAtUtc: DateTimeOffset.UtcNow.AddDays(1)));
+
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            regService.CreateShareAsync(instanceId, owner.AccountId, "test@test.com", sharedWithUserId: null, expiresAtUtc: DateTimeOffset.UtcNow.AddDays(-1)));
+
+        // 6. Create valid shares for userId and userEmail
+        Guid targetUserId = Guid.NewGuid();
+        EngineShare userShare = await regService.CreateShareAsync(
+            instanceId, owner.AccountId, null, sharedWithUserId: targetUserId,
+            expiresAtUtc: DateTimeOffset.UtcNow.AddDays(2), canRead: true, canControl: true, canRunFlows: false).ConfigureAwait(true);
+
+        EngineShare emailShare = await regService.CreateShareAsync(
+            instanceId, owner.AccountId, "target@user.com", sharedWithUserId: null,
+            expiresAtUtc: DateTimeOffset.UtcNow.AddDays(2), canRead: true, canControl: false, canRunFlows: true).ConfigureAwait(true);
+
+        // 7. GetSharesAsync
+        IReadOnlyList<EngineShare> shares = await regService.GetSharesAsync(instanceId).ConfigureAwait(true);
+        Assert.Equal(2, shares.Count);
+
+        // 8. CheckInstanceAccessAsync: Test actions Control, RunFlows, Read
+        bool userCanControl = await regService.CheckInstanceAccessAsync(instanceId, null, targetUserId, null, "Control").ConfigureAwait(true);
+        Assert.True(userCanControl);
+        bool userCanRunFlows = await regService.CheckInstanceAccessAsync(instanceId, null, targetUserId, null, "RunFlows").ConfigureAwait(true);
+        Assert.False(userCanRunFlows);
+        bool userCanRead = await regService.CheckInstanceAccessAsync(instanceId, null, targetUserId, null, "Read").ConfigureAwait(true);
+        Assert.True(userCanRead);
+
+        bool emailCanControl = await regService.CheckInstanceAccessAsync(instanceId, null, null, "target@user.com", "Control").ConfigureAwait(true);
+        Assert.False(emailCanControl);
+        bool emailCanRunFlows = await regService.CheckInstanceAccessAsync(instanceId, null, null, "target@user.com", "RunFlows").ConfigureAwait(true);
+        Assert.True(emailCanRunFlows);
+
+        // 9. ListAsync with share filters
+        var userInstances = await regService.ListAsync(other.AccountId, userId: targetUserId).ConfigureAwait(true);
+        Assert.Contains(userInstances, i => i.Id == instanceId);
+
+        var emailInstances = await regService.ListAsync(other.AccountId, userEmail: "target@user.com").ConfigureAwait(true);
+        Assert.Contains(emailInstances, i => i.Id == instanceId);
+
+        // 10. RevokeShareAsync: Error cases and success
+        bool missingRevoke = await regService.RevokeShareAsync(Guid.NewGuid(), owner.AccountId).ConfigureAwait(true);
+        Assert.False(missingRevoke);
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+            regService.RevokeShareAsync(userShare.Id, other.AccountId));
+
+        bool revoked = await regService.RevokeShareAsync(userShare.Id, owner.AccountId).ConfigureAwait(true);
+        Assert.True(revoked);
+
+        bool revokedAccess = await regService.CheckInstanceAccessAsync(instanceId, null, targetUserId, null, "Read").ConfigureAwait(true);
+        Assert.False(revokedAccess);
+    }
 }
