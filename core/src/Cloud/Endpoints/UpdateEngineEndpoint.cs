@@ -33,7 +33,7 @@ internal sealed class UpdateEngineEndpoint(EngineRegistrationService registratio
 {
     public override void Configure()
     {
-        Put("/api/instances/{instanceId}");
+        Put("/api/instances/{instanceId}", "/api/engines/{instanceId}");
         Summary(s =>
         {
             s.Summary = "Update engine instance properties";

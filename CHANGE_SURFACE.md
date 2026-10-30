@@ -270,6 +270,7 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `core/src/Engine/project.json`: Added publish target delegating to node scripts/build-engine.mjs.
 - `package.json`: Added helper scripts for dev orchestration, direct engine execution, and test running.
 - `core/src/Cloud/Endpoints/GetInstanceEndpoint.cs`: Injected EngineSessionRegistry to synchronize real-time socket connectivity and fresh heartbeats with IsConnected response state.
+- `core/src/Cloud/Endpoints/GetInstanceManifestEndpoint.cs`: FastEndpoints controller for querying engine instance extension manifests.
 - `core/src/Cloud/Endpoints/ListInstancesEndpoint.cs`: Factored recent heartbeat timestamp freshness into IsConnected status calculation.
 - `core/src/Cloud/Services/ProfileService.cs`: Added self-healing auto-provisioning of ExtensionManifestEntry for valid marketplace extensions on slot configuration.
 - `frontends/apps/cloud-dashboard/src/app/layout.tsx`: Pure light mode enforcement; removed dark class and styled background for zero dark flash.

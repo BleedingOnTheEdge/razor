@@ -22,7 +22,7 @@ internal sealed class DeleteEngineEndpoint(EngineRegistrationService registratio
 {
     public override void Configure()
     {
-        Delete("/api/instances/{instanceId}");
+        Delete("/api/instances/{instanceId}", "/api/engines/{instanceId}");
         Summary(s =>
         {
             s.Summary = "Delete engine instance";

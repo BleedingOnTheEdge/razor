@@ -30,7 +30,7 @@ internal sealed class RotateEngineKeyEndpoint(EngineRegistrationService registra
 {
     public override void Configure()
     {
-        Post("/api/instances/{instanceId}/rotate-key");
+        Post("/api/instances/{instanceId}/rotate-key", "/api/engines/{instanceId}/rotate-key");
         Summary(s =>
         {
             s.Summary = "Rotate engine API key";
