@@ -79,12 +79,16 @@ cat << 'EOF' > .gitignore
 *.log
 *.sqlite
 *.sqlite*
+/bin
 /core
 /frontends
+/mobile
+/templates
 /tests
 /docs
 /samples
 /scripts
+*.md
 .env
 .env.*
 !.env.example

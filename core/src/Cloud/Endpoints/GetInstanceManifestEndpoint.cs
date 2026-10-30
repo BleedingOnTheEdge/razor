@@ -27,7 +27,7 @@ internal sealed class GetInstanceManifestEndpoint(ProfileService profiles)
     /// <inheritdoc/>
     public override void Configure()
     {
-        Get("/api/instances/{instanceId}/manifest");
+        Get("/api/instances/{instanceId}/manifest", "/api/engines/{instanceId}/manifest");
         Summary(summary =>
         {
             summary.Summary = "Get an Engine instance's reported manifest";

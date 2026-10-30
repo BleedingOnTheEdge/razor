@@ -118,7 +118,7 @@ internal sealed class GetInstanceEndpoint(ProfileService profiles, Cloud.Engine.
     /// <inheritdoc/>
     public override void Configure()
     {
-        Get("/api/instances/{instanceId}");
+        Get("/api/instances/{instanceId}", "/api/engines/{instanceId}");
         Summary(summary =>
         {
             summary.Summary = "Get an Engine instance's stored state";

@@ -23,7 +23,7 @@ internal sealed class RevokeEngineEndpoint(EngineRegistrationService registratio
 {
     public override void Configure()
     {
-        Post("/api/instances/{instanceId}/revoke");
+        Post("/api/instances/{instanceId}/revoke", "/api/engines/{instanceId}/revoke");
         Summary(s =>
         {
             s.Summary = "Revoke engine instance access";

@@ -149,7 +149,8 @@ internal sealed class RegisterEngineEndpoint(EngineRegistrationService registrat
         switch (outcome.Status)
         {
             case ServiceStatus.NotFound:
-                await Send.NotFoundAsync(cancellationToken).ConfigureAwait(false);
+                AddError(outcome.FailureReason ?? "The requested account or license was not found.");
+                await Send.ErrorsAsync(StatusCodes.Status404NotFound, cancellationToken).ConfigureAwait(false);
                 return;
             case ServiceStatus.Rejected:
                 AddError(outcome.FailureReason ?? "The request was refused.");
