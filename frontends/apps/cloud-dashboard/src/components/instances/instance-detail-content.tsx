@@ -246,7 +246,7 @@ export function InstanceDetailContent({ instanceId }: { instanceId: string }) {
       <div className="flex items-center gap-2 text-xs text-zinc-100">
         <Link href="/panel/instances" className="hover:underline flex items-center gap-1 font-bold">
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Fleet</span>
+          <span>[BACK TO FLEET]</span>
         </Link>
         <span>/</span>
         <span className="font-bold">Engine {instance?.name || formatHash(instanceId, 6)}</span>

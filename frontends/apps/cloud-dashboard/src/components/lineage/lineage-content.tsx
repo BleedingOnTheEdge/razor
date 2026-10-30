@@ -159,7 +159,7 @@ export function LineageContent({ runId }: { runId: string }) {
           <span>Back to Runs</span>
         </Link>
         <span>/</span>
-        <span className="text-zinc-300">Run {formatHash(runId, 6)}</span>
+        <span className="text-zinc-700">Run {formatHash(runId, 6)}</span>
         <span>/</span>
         <span className="text-[#3ECF8E] font-semibold">Lineage Explorer</span>
       </div>
@@ -173,7 +173,7 @@ export function LineageContent({ runId }: { runId: string }) {
               <span>Execution Lineage & Reproduction</span>
             </h2>
           </div>
-          <p className="text-sm text-zinc-400 mt-1 font-sans">
+          <p className="text-sm text-zinc-600 mt-1 font-sans">
             Hierarchical DAG visualization of parent-child execution lineages, checkpoints, and append-only intervention forks.
           </p>
         </div>
