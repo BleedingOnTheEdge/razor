@@ -58,60 +58,37 @@ internal sealed partial class EngineRegistrationService(
             {
                 accountId = defaultAccount.Id;
             }
-            else
-            {
-                defaultAccount = new Account
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "Default Organization",
-                    CreatedAt = timeProvider.GetUtcNow()
-                };
-                db.Accounts.Add(defaultAccount);
-                await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                accountId = defaultAccount.Id;
-            }
-        }
-        else
-        {
-            bool accountExists = await db.Accounts
-                .AnyAsync(a => a.Id == accountId, cancellationToken)
-                .ConfigureAwait(false);
-            if (!accountExists)
-            {
-                Account? defaultAccount = await db.Accounts
-                    .FirstOrDefaultAsync(cancellationToken)
-                    .ConfigureAwait(false);
-                if (defaultAccount is not null)
-                {
-                    accountId = defaultAccount.Id;
-                }
-                else
-                {
-                    defaultAccount = new Account
-                    {
-                        Id = accountId,
-                        Name = "Default Organization",
-                        CreatedAt = timeProvider.GetUtcNow()
-                    };
-                    db.Accounts.Add(defaultAccount);
-                    await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                }
-            }
         }
 
-        License? license = null;
+        bool accountExists = await db.Accounts
+            .AnyAsync(a => a.Id == accountId, cancellationToken)
+            .ConfigureAwait(false);
+        if (!accountExists)
+        {
+            return new RegistrationOutcome(ServiceStatus.NotFound, "No account with that identifier.", null, null);
+        }
+
+        License? license;
         if (licenseId != Guid.Empty)
         {
             license = await db.Licenses
                 .FirstOrDefaultAsync(l => l.Id == licenseId, cancellationToken)
                 .ConfigureAwait(false);
-            if (license is not null && license.AccountId != accountId)
+            if (license is null)
             {
-                license = null;
+                return new RegistrationOutcome(ServiceStatus.NotFound, "No licence with that identifier.", null, null);
+            }
+
+            if (license.AccountId != accountId)
+            {
+                return new RegistrationOutcome(
+                    ServiceStatus.Rejected,
+                    "The licence belongs to a different account.",
+                    null,
+                    null);
             }
         }
-
-        if (license is null)
+        else
         {
             license = await db.Licenses
                 .FirstOrDefaultAsync(l => l.AccountId == accountId && l.Status == LicenseStatus.Active, cancellationToken)

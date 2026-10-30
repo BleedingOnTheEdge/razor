@@ -71,7 +71,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         aria-busy={isLoading}
         className={cn(
           'inline-flex items-center justify-center font-sans whitespace-nowrap select-none transition-all duration-150',
-          'active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f0f0f]',
+          'active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white',
           'disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100',
           radiusClass,
           variantStyles[variant],

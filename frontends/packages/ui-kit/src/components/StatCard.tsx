@@ -39,18 +39,18 @@ export const StatCard: React.FC<StatCardProps> = ({
       </div>
 
       <div className="flex items-baseline justify-between gap-3">
-        <div className="text-2xl font-semibold tracking-tight text-zinc-900 font-mono tabular-nums">
+        <div className="text-2xl font-semibold tracking-tight text-zinc-900 font-sans tabular-nums">
           {value}
         </div>
         {trend && (
           <span
             className={cn(
-              'inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full font-mono tabular-nums border',
+              'inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full font-sans tabular-nums border',
               trend.neutral
-                ? 'bg-[#222222] text-zinc-500 border-[#2e2e2e]'
+                ? 'bg-zinc-100 text-zinc-600 border-zinc-200'
                 : trend.positive
-                ? 'bg-[#3ECF8E]/10 text-[#3ECF8E] border-[#3ECF8E]/25'
-                : 'bg-rose-500/10 text-rose-400 border-rose-500/25'
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                : 'bg-rose-50 text-rose-700 border-rose-200'
             )}
           >
             {trend.value}
