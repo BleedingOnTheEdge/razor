@@ -83,6 +83,19 @@ section,
   background-color: #f1f5f9 !important;
 }
 
+.bg-\[\#222222\] {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+.hover\:bg-\[\#141414\]:hover {
+  background-color: #f1f5f9 !important;
+}
+
+.hover\:bg-\[\#141414\]\/80:hover {
+  background-color: #f8fafc !important;
+}
+
 .hover\:bg-\[\#222222\]:hover {
   background-color: #f1f5f9 !important;
 }
@@ -95,12 +108,63 @@ section,
   background-color: #f8fafc !important;
 }
 
-.border-\[\#262626\] {
+.hover\:bg-\[\#1f1f1f\]:hover {
+  background-color: #f1f5f9 !important;
+}
+
+/* Emerald green light mode variants */
+.bg-emerald-950\/20,
+.bg-emerald-950\/30,
+.bg-emerald-950\/40,
+.bg-emerald-950,
+.bg-emerald-900\/20,
+.bg-emerald-900\/30,
+.bg-emerald-900\/40 {
+  background-color: #ecfdf5 !important;
+  color: #047857 !important;
+  border-color: #a7f3d0 !important;
+}
+
+/* Rose / Danger light mode variants */
+.bg-rose-950\/20,
+.bg-rose-950\/30,
+.bg-rose-950\/40,
+.bg-rose-950,
+.bg-rose-900\/20,
+.bg-rose-900\/30 {
+  background-color: #fff1f2 !important;
+  color: #be123c !important;
+  border-color: #fecdd3 !important;
+}
+
+/* Purple light mode variants */
+.bg-purple-950\/20,
+.bg-purple-950\/30,
+.bg-purple-950\/40 {
+  background-color: #faf5ff !important;
+  color: #6b21a8 !important;
+  border-color: #e9d5ff !important;
+}
+
+/* Borders & Dividers */
+.border-\[\#262626\],
+.border-\[\#222222\],
+.border-\[\#1f1f1f\],
+.border-\[\#2e2e2e\],
+.border-\[\#333333\] {
   border-color: #e2e8f0 !important;
 }
 
 .border-\[\#383838\] {
   border-color: #cbd5e1 !important;
+}
+
+/* Tailwind divide classes */
+.divide-\[\#262626\] > :not([hidden]) ~ :not([hidden]),
+.divide-\[\#222222\] > :not([hidden]) ~ :not([hidden]),
+.divide-\[\#1f1f1f\] > :not([hidden]) ~ :not([hidden]),
+.divide-\[\#333333\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: #e2e8f0 !important;
 }
 
 .text-zinc-100 {
