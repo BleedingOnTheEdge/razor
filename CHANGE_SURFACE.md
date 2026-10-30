@@ -367,6 +367,7 @@ Fully adapt and institutionalize the enterprise product engineering operating sy
 - `core/tests/Cloud.UnitTests/CommunityAndTicketingTests.cs`: Unit and integration test suites.
 - `core/tests/Cloud.UnitTests/Lineage/FlowOrchestratorTests.cs`: Unit and integration test suites.
 - `core/tests/Cloud.UnitTests/ManifestAndCommandTests.cs`: Unit and integration test suites.
+- `core/tests/Cloud.UnitTests/EngineSharingEndpointsTests.cs`: Unit and integration test suites for engine sharing, access delegation, and branch coverage.
 - `core/tests/Cloud.UnitTests/TestSupport/CloudTestContext.cs`: Unit and integration test suites.
 - `core/tests/Engine.UnitTests/Management/Commands/CommandDispatcherTests.cs`: Unit and integration test suites.
 - `core/tests/Engine.UnitTests/Management/Tasks/OptimizationCheckpointTests.cs`: Unit and integration test suites.
