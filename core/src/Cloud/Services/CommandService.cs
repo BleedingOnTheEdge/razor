@@ -71,7 +71,7 @@ internal sealed class CommandService(
                 }
             }
         }
-        catch
+        catch (System.Text.Json.JsonException)
         {
             // Ignore parameter extraction faults
         }
@@ -367,7 +367,7 @@ internal sealed class CommandService(
                                 flowRun.WinningDnaJson = dnaEl.GetRawText();
                             }
                         }
-                        catch
+                        catch (System.Text.Json.JsonException)
                         {
                             // Keep defaults if payload cannot be unpacked
                         }

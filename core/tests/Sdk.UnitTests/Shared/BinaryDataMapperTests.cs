@@ -243,6 +243,21 @@ public sealed class MemoryMappedTickListTests : IDisposable
     }
 
     [Fact]
+    public void Concurrent_MemoryMappedTickList_Readers_Work()
+    {
+        var ticks = new Tick[] { new(1, 2, 3, 4), new(5, 6, 7, 8) };
+        BinaryDataMapper.WriteTicksToBinary(_file, ticks);
+
+        using var reader1 = new MemoryMappedTickList(_file);
+        using var reader2 = new MemoryMappedTickList(_file);
+
+        Assert.Equal(2, reader1.Count);
+        Assert.Equal(2, reader2.Count);
+        Assert.Equal(reader1[0].Time, reader2[0].Time);
+        Assert.Equal(reader1[1].Time, reader2[1].Time);
+    }
+
+    [Fact]
     public void NonGeneric_Enumerator_Works()
     {
         var ticks = new Tick[] { new(1, 2, 3, 4), new(5, 6, 7, 8) };

@@ -5,6 +5,8 @@
 // -----------------------------------------------------------------------------
 
 namespace Engine.Management.Tasks;
+
+using System.Text.Json;
 /// <summary>
 /// Configuration for a live trading session, parsed from Cloud command parameters.
 /// </summary>
@@ -47,7 +49,7 @@ internal sealed record LiveConfiguration
                     dict = new Dictionary<string, object>(parsed, StringComparer.OrdinalIgnoreCase);
                 }
             }
-            catch
+            catch (JsonException)
             {
             }
         }
@@ -61,7 +63,7 @@ internal sealed record LiveConfiguration
                     dict = new Dictionary<string, object>(parsed, StringComparer.OrdinalIgnoreCase);
                 }
             }
-            catch
+            catch (JsonException)
             {
             }
         }

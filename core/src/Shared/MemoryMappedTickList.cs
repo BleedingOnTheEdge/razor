@@ -29,6 +29,7 @@ public sealed class MemoryMappedTickList : IReadOnlyList<Tick>, IDisposable
     /// <exception cref="NotSupportedException">
     /// The file contains more than <c>2,147,483,647</c> ticks, which exceeds the maximum supported count.
     /// </exception>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "FileStream ownership is transferred to MemoryMappedFile with leaveOpen=false.")]
     public unsafe MemoryMappedTickList(string filePath)
     {
         ArgumentNullException.ThrowIfNull(filePath);
@@ -86,7 +87,21 @@ public sealed class MemoryMappedTickList : IReadOnlyList<Tick>, IDisposable
             return;
         }
 
-        _mmf = MemoryMappedFile.CreateFromFile(filePath, FileMode.Open);
+        FileStream fileStream = new(
+            filePath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            4096,
+            FileOptions.SequentialScan);
+
+        _mmf = MemoryMappedFile.CreateFromFile(
+            fileStream,
+            mapName: null,
+            capacity: 0,
+            MemoryMappedFileAccess.Read,
+            HandleInheritability.None,
+            leaveOpen: false);
 
         _accessor = _mmf.CreateViewAccessor(0, fileLength,
             MemoryMappedFileAccess.Read);
@@ -145,7 +160,7 @@ public sealed class MemoryMappedTickList : IReadOnlyList<Tick>, IDisposable
     /// </remarks>
     ~MemoryMappedTickList() => Dispose(false);
 
-    private void Dispose(bool disposing)
+    private unsafe void Dispose(bool disposing)
     {
         if (_disposed)
         {
@@ -154,9 +169,21 @@ public sealed class MemoryMappedTickList : IReadOnlyList<Tick>, IDisposable
 
         _disposed = true;
 
+        try
+        {
+            if (_basePointer != null && _accessor != null)
+            {
+                _accessor.SafeMemoryMappedViewHandle.ReleasePointer();
+                _basePointer = null;
+            }
+        }
+        catch
+        {
+            // Defensive against already invalid handle during finalization
+        }
+
         if (disposing)
         {
-            _accessor?.SafeMemoryMappedViewHandle.ReleasePointer();
             _accessor?.Dispose();
             _mmf?.Dispose();
         }

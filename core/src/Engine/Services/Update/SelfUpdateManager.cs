@@ -247,7 +247,7 @@ internal sealed class SelfUpdateManager : ISelfUpdateManager, IDisposable
             .Skip(5);
         foreach (var file in allBackups)
         {
-            try { File.Delete(file); } catch { }
+            try { File.Delete(file); } catch (IOException) { }
         }
 
         await Task.CompletedTask.ConfigureAwait(false);

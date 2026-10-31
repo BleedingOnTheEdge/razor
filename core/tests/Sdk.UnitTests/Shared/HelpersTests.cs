@@ -46,8 +46,19 @@ public class TimeHelpersTests
     }
 
     [Fact]
+    public void Roundtrip_UnixMilliseconds_Preserves_SubSecond_Precision()
+    {
+        var dt = new DateTime(2025, 5, 20, 12, 34, 56, 789, DateTimeKind.Utc);
+        long unixMs = TimeHelpers.DateTimeToUnixMilliseconds(dt);
+        DateTime roundtrip = TimeHelpers.UnixMillisecondsToDateTime(unixMs);
+
+        Assert.Equal(dt, roundtrip);
+        Assert.Equal(789, roundtrip.Millisecond);
+    }
+
+    [Fact]
     public void FromUnixSeconds_Negative_Timestamp() =>
-        Assert.True(TimeHelpers.FromUnixSeconds(-1) > 0);
+    Assert.True(TimeHelpers.FromUnixSeconds(-1) > 0);
 }
 
 public class ValidationHelpersTests

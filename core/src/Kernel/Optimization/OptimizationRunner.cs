@@ -290,9 +290,7 @@ public sealed class OptimizationRunner
             {
                 state = state with { NeuralNetworkState = _neuralNetwork.SerializeState() };
             }
-#pragma warning disable CA1031
-            catch
-#pragma warning restore CA1031
+            catch (Exception ex) when (ex is not OutOfMemoryException)
             {
                 // Best effort
             }
@@ -315,9 +313,7 @@ public sealed class OptimizationRunner
             {
                 _neuralNetwork.DeserializeState(state.NeuralNetworkState);
             }
-#pragma warning disable CA1031
-            catch
-#pragma warning restore CA1031
+            catch (Exception ex) when (ex is not OutOfMemoryException)
             {
                 // Best effort
             }

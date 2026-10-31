@@ -82,7 +82,7 @@ internal sealed class RunBacktestHandler : CommandHandlerBase
                 initialBalance = cfg.InitialBalance;
             }
         }
-        catch
+        catch (System.Text.Json.JsonException)
         {
         }
 
