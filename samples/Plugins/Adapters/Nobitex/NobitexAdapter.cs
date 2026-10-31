@@ -150,7 +150,7 @@ internal sealed class NobitexAdapter : IAdapterCapability, IDisposable
         using (FileStream fs = new(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
         using (BinaryWriter writer = new(fs))
         {
-            // Chronos Magic Header
+            // Razor Magic Header
             writer.Write(0x53524843u);
             writer.Write(1);
 

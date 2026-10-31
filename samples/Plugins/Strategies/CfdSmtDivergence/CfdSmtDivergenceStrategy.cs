@@ -1,4 +1,4 @@
-// Chronos/src/Samples/Plugins/Strategies/CfdSmtDivergence/CfdSmtDivergenceStrategy.cs
+// Razor/src/Samples/Plugins/Strategies/CfdSmtDivergence/CfdSmtDivergenceStrategy.cs
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;

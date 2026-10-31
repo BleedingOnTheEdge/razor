@@ -5,7 +5,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>", Scope = "member", Target = "~M:Engine.Communication.CloudConnector.RunAsync(System.Threading.CancellationToken)~System.Threading.Tasks.Task")]
+[assembly: SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "Console output for CLI and engine diagnostic telemetry; no localization required.", Scope = "member", Target = "~M:Engine.Communication.CloudConnector.RunAsync(System.Threading.CancellationToken)~System.Threading.Tasks.Task")]
 
 // Suppress CA1303 for all console output in CloudConnector – CLI output does not require localization.
 [assembly: SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "Console output for CLI; no localization required.", Scope = "type", Target = "Engine.Communication.CloudConnector")]

@@ -15,7 +15,7 @@ namespace Samples.Plugins.Adapters.MT5;
 /// </summary>
 [AdapterName("MT5")]
 [SuppressMessage("Design", "CA1812:Avoid uninstantiated internal classes",
-    Justification = "Instantiated by the Chronos plugin loader via attribute discovery.")]
+    Justification = "Instantiated by the Razor plugin loader via attribute discovery.")]
 internal sealed class Mt5Adapter : IAdapterCapability, IDisposable
 {
     private readonly ILogger<Mt5Adapter> _logger;
@@ -234,7 +234,7 @@ internal sealed class Mt5Adapter : IAdapterCapability, IDisposable
             File.Delete(destinationPath);
         }
 
-        // This cuts the file out of MT5's directory and moves it to Chronos cache
+        // This cuts the file out of MT5's directory and moves it to Razor cache
         File.Move(response.FilePath, destinationPath);
 
         // === ADDED: store the retention policy for this file ===

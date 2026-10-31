@@ -1,2 +1,2 @@
-# chronos-core
+# razor-samples
 

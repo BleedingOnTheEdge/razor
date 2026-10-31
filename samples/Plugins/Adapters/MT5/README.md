@@ -9,14 +9,14 @@
 </file>
 
 
-<file path="Chronos/src/Samples/Plugins/Adapters/MT5/winsock.mqh">
+<file path="Razor/src/Samples/Plugins/Adapters/MT5/winsock.mqh">
 ```mqh
 //+------------------------------------------------------------------+
 //|                                                  winsock.mqh     |
-//|                      Copyright 2026, Chronos Co.                 |
+//|                      Copyright 2026, Razor Co.                 |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2026, Chronos Co."
-#property link      "https://chronos.com"
+#property copyright "Copyright 2026, Razor Co."
+#property link      "https://razor.BleedingOnTheEdge.com"
 
 // Structures must be defined BEFORE they are used in #import
 struct WSADATA
@@ -65,21 +65,21 @@ struct sockaddr_in
 </file>
 
 
-<file path="Chronos/src/Samples/Plugins/Properties/AssemblyInfo.cs">
+<file path="Razor/src/Samples/Plugins/Properties/AssemblyInfo.cs">
 ```cs
 using Abstractions.Adapters;
 using Abstractions.Plugins;
 
-[assembly: ChronosSdkVersion("1.0.0")]
+[assembly: RazorSdkVersion("1.0.0")]
 [assembly: AdapterVersion("1.0.0")]
 
 ```
 </file>
 
 
-<file path="Chronos/src/Samples/Plugins/Strategies/CfdSmtDivergence/CfdSmtDivergenceStrategy.cs">
+<file path="Razor/src/Samples/Plugins/Strategies/CfdSmtDivergence/CfdSmtDivergenceStrategy.cs">
 ```cs
-// Chronos/src/Samples/Plugins/Strategies/CfdSmtDivergence/CfdSmtDivergenceStrategy.cs
+// Razor/src/Samples/Plugins/Strategies/CfdSmtDivergence/CfdSmtDivergenceStrategy.cs
 
 using System.Collections.Concurrent;
 using Abstractions.Shared;
@@ -445,7 +445,7 @@ internal sealed class CfdSmtDivergenceStrategy : StrategyBase
 </file>
 
 
-<file path="Chronos/src/Samples/Plugins/Strategies/CfdSmtDivergence/SessionFilter.cs">
+<file path="Razor/src/Samples/Plugins/Strategies/CfdSmtDivergence/SessionFilter.cs">
 ```cs
 namespace Samples.Plugins.Strategies.CfdSmtDivergence;
 
@@ -504,7 +504,7 @@ internal sealed class SessionFilter
 </file>
 
 
-<file path="Chronos/src/Samples/Plugins/Strategies/CfdSmtDivergence/WorkTimeFilter.cs">
+<file path="Razor/src/Samples/Plugins/Strategies/CfdSmtDivergence/WorkTimeFilter.cs">
 ```cs
 namespace Samples.Plugins.Strategies.CfdSmtDivergence;
 
@@ -558,7 +558,7 @@ internal sealed class WorkTimeFilter
 </file>
 
 
-<file path="Chronos/src/Samples/Samples.csproj">
+<file path="Razor/src/Samples/Samples.csproj">
 ```csproj
 <Project Sdk="Microsoft.NET.Sdk">
 
@@ -593,7 +593,7 @@ internal sealed class WorkTimeFilter
 </file>
 
 
-<file path="Chronos/src/Samples/Program.cs">
+<file path="Razor/src/Samples/Program.cs">
 ```cs
 using System.Collections.Immutable;
 using Abstractions.Adapters;
@@ -871,9 +871,9 @@ internal static class Program
 </file>
 
 
-<file path="Chronos/.editorconfig">
+<file path="Razor/.editorconfig">
 ```
-# Chronos .editorconfig – strict C# coding standards
+# Razor .editorconfig – strict C# coding standards
 
 root = true
 
@@ -994,7 +994,7 @@ tab_width = 4
 </file>
 
 
-<file path="Chronos/Directory.Build.props">
+<file path="Razor/Directory.Build.props">
 ```props
 <Project>
     <PropertyGroup>
@@ -1012,8 +1012,8 @@ tab_width = 4
 
         <Version>0.1.0</Version>
         <Authors>Sina Valizadeh</Authors>
-        <Company>Chronos</Company>
-        <Copyright>© 2026 Chronos</Copyright>
+        <Company>Razor</Company>
+        <Copyright>© 2026 Razor</Copyright>
     </PropertyGroup>
 </Project>
 
@@ -1021,7 +1021,7 @@ tab_width = 4
 </file>
 
 
-<file path="Chronos/global.json">
+<file path="Razor/global.json">
 ```json
 {
     "sdk": {
@@ -1035,4 +1035,4 @@ tab_width = 4
 </file>
 
 
-<file path="Chronos/docs/Chronos Plugin Developer Guide (v1.0.0 LTS).md">
+<file path="Razor/docs/Razor Plugin Developer Guide (v1.0.0 LTS).md">

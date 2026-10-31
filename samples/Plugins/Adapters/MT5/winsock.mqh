@@ -1,9 +1,9 @@
 ﻿//+------------------------------------------------------------------+
 //|                                                  winsock.mqh     |
-//|                      Copyright 2026, Chronos Co.                 |
+//|                      Copyright 2026, Razor Co.                 |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2026, Chronos Co."
-#property link      "https://chronos.com"
+#property copyright "Copyright 2026, Razor Co."
+#property link      "https://razor.BleedingOnTheEdge.com"
 
 // Structures must be defined BEFORE they are used in #import
 struct WSADATA
