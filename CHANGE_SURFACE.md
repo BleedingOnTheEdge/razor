@@ -1,73 +1,63 @@
 ---
-title: "Dev Tooling, CRLF, and Configuration Foundations"
+title: "Core Memory, Determinism, Precision, and Resilience Overhaul"
 author: "sinavali"
 created_date: "2026-10-31"
-target_branch: "fix/tooling-crlf-and-config"
-risk_level: "LOW"
+target_branch: "fix/core-memory-and-resilience"
+risk_level: "MEDIUM"
 affected_projects:
   - "core"
-  - "samples"
-  - "frontends"
-  - "scripts"
 ---
 
-# Change Surface: Dev Tooling, CRLF, and Configuration Foundations
+# Change Surface: Core Memory, Determinism, Precision, and Resilience Overhaul
 
 ## 1. Intent & Business Rationale
-Resolve fundamental developer tooling, execution environment, and configuration issues:
-- Fix Linux execution failure caused by CRLF line endings on executable scripts in `scripts/bin/*` and `scripts/*.mjs` (Issue #87).
-- Enforce `eol=lf` in `.gitattributes` for shell scripts, Node scripts, and CLI wrappers.
-- Remove invalid duplicate XML attributes and insecure HTTP protocol flags from `nuget.config` files (Issue #88).
-- Add central `core/VERSION.txt` initialized to `1.0.0` for SemVer resolution in MSBuild (Issue #89).
-- Replace all legacy "Chronos" references with "Razor" across samples, adapters, build props, and readmes, and remove redundant C# `.editorconfig` from `frontends/` (Issue #90).
-- Replace unjustified `<Pending>` Code Analysis suppression in `GlobalSuppressions.cs` with valid technical rationale (Issue #91).
+Remediate core trading engine memory management, time precision, determinism, and exception resilience:
+- Fix pointer handle leak on finalization in `MemoryMappedTickList` and add `FileShare.Read` for concurrent readers (Issue #92).
+- Eliminate non-deterministic PRNG and system clock leaks in `MockPaperTradingAdapter` by introducing deterministic seedable generation and time provider abstraction (Issue #93).
+- Prevent sub-second precision truncation in `TimeHelpers` with millisecond and microsecond conversions (Issue #94).
+- Replace bare `catch` blocks swallowing exceptions across backend services with explicit typed exception filters and structured resilience (Issue #95).
+- Expand `IOptimizer` lifecycle contracts and implement `OnnxNeuralNetworkAdapter` implementing `INeuralNetworkModel` (Issue #96).
 
 ## 2. Affected Monorepo Projects
 - `core`
-- `samples`
-- `frontends`
-- `scripts`
 
 ## 3. Code Surface
 ### Modified Files
-- `.gitattributes`
-- `core/VERSION.txt`
-- `core/nuget.config`
-- `core/src/Engine/GlobalSuppressions.cs`
-- `frontends/.editorconfig`
-- `frontends/README.md`
-- `nuget.config`
-- `samples/.editorconfig`
-- `samples/Directory.Build.props`
-- `samples/Plugins/Adapters/MT5/Mql5BridgeEA.mq5`
-- `samples/Plugins/Adapters/MT5/Mt5Adapter.cs`
-- `samples/Plugins/Adapters/MT5/README.md`
-- `samples/Plugins/Adapters/MT5/winsock.mqh`
-- `samples/Plugins/Adapters/Nobitex/NobitexAdapter.cs`
-- `samples/Plugins/Strategies/CfdSmtDivergence/CfdSmtDivergenceStrategy.cs`
-- `samples/README.md`
-- `samples/nuget.config`
-- `scripts/bin/audit-runner`
-- `scripts/bin/check-nc-items`
-- `scripts/bin/engine`
-- `scripts/bin/ep`
-- `scripts/bin/validate-change-surface`
-- `scripts/bin/verify-agent-manifests`
-- `scripts/bin/verify-nx-targets`
-- `scripts/build-engine.mjs`
-- `scripts/dev-all.mjs`
-- `scripts/run-engine.mjs`
-- `scripts/test-all.mjs`
+- `core/src/Cloud/Endpoints/FlowRunView.cs`
+- `core/src/Cloud/Services/CommandService.cs`
+- `core/src/Cloud/Services/FlowOrchestrator.cs`
+- `core/src/Cloud/Services/RunReportService.cs`
+- `core/src/Engine/Communication/BinaryTransferManager.cs`
+- `core/src/Engine/Communication/CloudConnector.cs`
+- `core/src/Engine/Management/Commands/Handlers/RunBacktestHandler.cs`
+- `core/src/Engine/Management/Commands/Handlers/StartOptimizationHandler.cs`
+- `core/src/Engine/Management/Tasks/BacktestConfiguration.cs`
+- `core/src/Engine/Management/Tasks/LiveConfiguration.cs`
+- `core/src/Engine/Services/Update/SelfUpdateManager.cs`
+- `core/src/Kernel/Brokers/LiveBroker.Session.cs`
+- `core/src/Kernel/Indicators/IndicatorRegistry.cs`
+- `core/src/Kernel/NeuralNetworks/OnnxNeuralNetworkAdapter.cs`
+- `core/src/Kernel/Optimization/IOptimizer.cs`
+- `core/src/Kernel/Optimization/OptimizationRunner.cs`
+- `core/src/Sdk/Slots/Adapter/MockPaperTradingAdapter.cs`
+- `core/src/Shared/Helpers.cs`
+- `core/src/Shared/MemoryMappedTickList.cs`
+- `core/tests/Kernel.UnitTests/NeuralNetworks/OnnxNeuralNetworkAdapterTests.cs`
+- `core/tests/Sdk.UnitTests/Shared/BinaryDataMapperTests.cs`
+- `core/tests/Sdk.UnitTests/Shared/HelpersTests.cs`
+- `core/tests/Sdk.UnitTests/Shared/MockPaperTradingAdapterTests.cs`
 
 ## 4. Test Surface
 ### Unit & Integration Suites
-- `core/tests/Engine.UnitTests`
-- `scripts/bin/ep preflight`
+- `core/tests/Kernel.UnitTests/NeuralNetworks/OnnxNeuralNetworkAdapterTests.cs`
+- `core/tests/Sdk.UnitTests/Shared/BinaryDataMapperTests.cs`
+- `core/tests/Sdk.UnitTests/Shared/HelpersTests.cs`
+- `core/tests/Sdk.UnitTests/Shared/MockPaperTradingAdapterTests.cs`
 
 ## 5. Invariants
-- Execution scripts on Linux must have valid LF line endings and executable permissions.
-- NuGet package configurations must enforce TLS 1.2+ HTTPS without insecure downgrade flags.
-- Branding must be strictly unified under Razor.
+- UTC timestamps preserved across all persistence models and conversions.
+- Unmanaged pointer handles must be safely released during both normal disposal and GC finalization.
+- Algorithmic simulations must be 100% deterministic given the same random seed.
 
 ## 6. Risk Matrix
 - Rollback: Revert commits via standard git rollback.

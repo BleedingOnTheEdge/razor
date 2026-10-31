@@ -30,10 +30,22 @@ public sealed class MockPaperTradingAdapter : IAdapterCapability
 
     private double _balance = 100000.0; // $100,000 initial paper capital
     private bool _isConnected;
+    private readonly Func<long> _timeProvider;
+    private readonly Random _random;
+    private readonly Lock _randomLock = new();
 
     /// <summary>Initialises a new instance of the <see cref="MockPaperTradingAdapter"/> class.</summary>
-    public MockPaperTradingAdapter()
+    public MockPaperTradingAdapter() : this(seed: 42, timeProvider: null)
     {
+    }
+
+    /// <summary>Initialises a new instance of the <see cref="MockPaperTradingAdapter"/> class with deterministic seed and time provider.</summary>
+    /// <param name="seed">Deterministic PRNG seed.</param>
+    /// <param name="timeProvider">Optional time provider returning UTC ticks.</param>
+    public MockPaperTradingAdapter(int seed, Func<long>? timeProvider = null)
+    {
+        _random = new Random(seed);
+        _timeProvider = timeProvider ?? (() => DateTime.UtcNow.Ticks);
         Calculator = new PaperTradingCalculator();
 
         // Seed standard instruments with variations
@@ -129,13 +141,17 @@ public sealed class MockPaperTradingAdapter : IAdapterCapability
         }
 
         double spread = Math.Max(0.0001, prices.Ask - prices.Bid);
-        double delta = (Random.Shared.NextDouble() - 0.495) * (prices.Bid * 0.0005);
+        double delta;
+        lock (_randomLock)
+        {
+            delta = (_random.NextDouble() - 0.495) * (prices.Bid * 0.0005);
+        }
         double newBid = Math.Max(0.0001, prices.Bid + delta);
         double newAsk = newBid + spread;
 
         _currentPrices[symbol] = (newBid, newAsk);
 
-        var tick = new Tick(DateTime.UtcNow.Ticks, newBid, newAsk, 1.0, true);
+        var tick = new Tick(_timeProvider(), newBid, newAsk, 1.0, true);
         OnTickReceived?.Invoke(symbol, tick);
     }
 
@@ -394,7 +410,7 @@ public sealed class MockPaperTradingAdapter : IAdapterCapability
             : 100.0;
 
         const int recordCount = 500;
-        long startTicks = request.StartTime.Ticks > 0 ? request.StartTime.Ticks : DateTime.UtcNow.AddHours(-1).Ticks;
+        long startTicks = request.StartTime.Ticks > 0 ? request.StartTime.Ticks : _timeProvider() - TimeSpan.TicksPerHour;
 
         using (FileStream fs = new(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
         using (BinaryWriter writer = new(fs))
@@ -403,9 +419,10 @@ public sealed class MockPaperTradingAdapter : IAdapterCapability
             writer.Write(1);
 
             double currentBid = basePrice;
+            Random historyRng = new(request.Symbol.GetHashCode(StringComparison.Ordinal) ^ 0x5F3759DF);
             for (int i = 0; i < recordCount; i++)
             {
-                currentBid += (Random.Shared.NextDouble() - 0.495) * (currentBid * 0.0002);
+                currentBid += (historyRng.NextDouble() - 0.495) * (currentBid * 0.0002);
                 double currentAsk = currentBid + 0.5;
                 long tickTime = startTicks + (i * TimeSpan.TicksPerSecond);
 
@@ -439,7 +456,7 @@ public sealed class MockPaperTradingAdapter : IAdapterCapability
     {
         if (File.Exists(filePath))
         {
-            try { File.Delete(filePath); } catch { /* ignore */ }
+            try { File.Delete(filePath); } catch (IOException) { /* ignore */ }
         }
         return Task.CompletedTask;
     }

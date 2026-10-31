@@ -249,7 +249,7 @@ internal sealed class StartOptimizationHandler : CommandHandlerBase
                 }
             }
         }
-        catch
+        catch (Exception ex) when (ex is not OutOfMemoryException)
         {
         }
 

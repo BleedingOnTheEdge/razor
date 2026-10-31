@@ -93,7 +93,7 @@ internal sealed partial class FlowOrchestrator(
                 dict["FlowRunId"] = run.Id.ToString();
                 commandParamsJson = System.Text.Json.JsonSerializer.Serialize(dict);
             }
-            catch
+            catch (System.Text.Json.JsonException)
             {
                 // Fallback to raw configurationJson
             }
@@ -142,7 +142,7 @@ internal sealed partial class FlowOrchestrator(
                             }
                         }
                     }
-                    catch
+                    catch (Exception ex) when (ex is not OutOfMemoryException)
                     {
                     }
                 }, CancellationToken.None);

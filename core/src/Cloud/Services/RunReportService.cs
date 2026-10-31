@@ -216,7 +216,7 @@ internal sealed class RunReportService
                     Fitness: fitness,
                     SourceRunId: run.Id);
             }
-            catch
+            catch (System.Text.Json.JsonException)
             {
             }
         }

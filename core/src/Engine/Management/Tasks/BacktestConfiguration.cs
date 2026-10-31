@@ -55,7 +55,7 @@ internal sealed record BacktestConfiguration
                     dict = new Dictionary<string, object>(parsed, StringComparer.OrdinalIgnoreCase);
                 }
             }
-            catch
+            catch (JsonException)
             {
             }
         }
@@ -69,7 +69,7 @@ internal sealed record BacktestConfiguration
                     dict = new Dictionary<string, object>(parsed, StringComparer.OrdinalIgnoreCase);
                 }
             }
-            catch
+            catch (JsonException)
             {
             }
         }

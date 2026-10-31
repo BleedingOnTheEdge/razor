@@ -57,6 +57,10 @@ public static class TimeHelpers
     public static DateTime UnixToDateTime(long unixTimestamp)
         => DateTimeOffset.FromUnixTimeSeconds(unixTimestamp).UtcDateTime;
 
+    /// <summary>Converts a Unix millisecond timestamp to a UTC DateTime.</summary>
+    public static DateTime UnixMillisecondsToDateTime(long unixMs)
+        => DateTimeOffset.FromUnixTimeMilliseconds(unixMs).UtcDateTime;
+
     /// <summary>Converts a DateTime to a Unix timestamp.</summary>
     public static long DateTimeToUnix(DateTime dateTime)
     {
@@ -64,5 +68,14 @@ public static class TimeHelpers
             ? DateTime.SpecifyKind(dateTime, DateTimeKind.Utc)
             : dateTime.ToUniversalTime();
         return new DateTimeOffset(utc).ToUnixTimeSeconds();
+    }
+
+    /// <summary>Converts a DateTime to a Unix timestamp in milliseconds, preserving sub-second precision.</summary>
+    public static long DateTimeToUnixMilliseconds(DateTime dateTime)
+    {
+        DateTime utc = dateTime.Kind == DateTimeKind.Unspecified
+            ? DateTime.SpecifyKind(dateTime, DateTimeKind.Utc)
+            : dateTime.ToUniversalTime();
+        return new DateTimeOffset(utc).ToUnixTimeMilliseconds();
     }
 }

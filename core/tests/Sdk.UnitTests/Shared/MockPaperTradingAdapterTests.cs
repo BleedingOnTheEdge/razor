@@ -283,4 +283,26 @@ public sealed class MockPaperTradingAdapterTests
         Assert.Equal(1.0, cancelPendingResp.ExecutedVolume);
     }
 
+    [Fact]
+    public void Deterministic_Seed_Generates_Identical_Tick_Stream()
+    {
+        long fixedTime = 17000000000000000;
+        var adapter1 = new MockPaperTradingAdapter(seed: 12345, () => fixedTime);
+        var adapter2 = new MockPaperTradingAdapter(seed: 12345, () => fixedTime);
+
+        Tick? tick1 = null;
+        Tick? tick2 = null;
+
+        adapter1.OnTickReceived += (_, t) => tick1 = t;
+        adapter2.OnTickReceived += (_, t) => tick2 = t;
+
+        adapter1.EmitTick("BTC-USD");
+        adapter2.EmitTick("BTC-USD");
+
+        Assert.NotNull(tick1);
+        Assert.NotNull(tick2);
+        Assert.Equal(tick1.Value.Bid, tick2.Value.Bid);
+        Assert.Equal(tick1.Value.Ask, tick2.Value.Ask);
+        Assert.Equal(tick1.Value.Time, tick2.Value.Time);
+    }
 }

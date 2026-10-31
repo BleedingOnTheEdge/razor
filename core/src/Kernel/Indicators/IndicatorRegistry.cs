@@ -157,7 +157,7 @@ internal sealed class IndicatorRegistry : IIndicatorRegistry
                 sb.Append(json);
                 sb.Append('|');
             }
-            catch
+            catch (NotSupportedException)
             {
                 // Fallback: use type name and hash code.
                 sb.Append(argType.FullName);

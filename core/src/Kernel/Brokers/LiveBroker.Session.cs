@@ -211,7 +211,7 @@ public sealed partial class LiveBroker
         _tickProcessorCts.Cancel();
         if (_tickProcessorTask != null)
         {
-            try { await _tickProcessorTask.ConfigureAwait(false); } catch { }
+            try { await _tickProcessorTask.ConfigureAwait(false); } catch (Exception) { }
         }
         _tickProcessorCts.Dispose();
         _inFlightCleanupTimer.Dispose();

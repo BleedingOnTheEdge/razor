@@ -121,7 +121,7 @@ internal sealed class FlowRunView
             {
                 winningDna = System.Text.Json.JsonSerializer.Deserialize<object>(run.WinningDnaJson);
             }
-            catch
+            catch (System.Text.Json.JsonException)
             {
             }
         }
