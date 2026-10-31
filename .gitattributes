@@ -18,7 +18,9 @@
 # Scripts and manifests that must stay LF: a CRLF shebang or line ending breaks
 # them on Linux, and they are not C#/XML/MSBuild so `.editorconfig` does not
 # govern them.
+scripts/bin/*  text eol=lf
 *.sh   text eol=lf
+*.mjs  text eol=lf
 *.py   text eol=lf
 *.yml  text eol=lf
 *.yaml text eol=lf

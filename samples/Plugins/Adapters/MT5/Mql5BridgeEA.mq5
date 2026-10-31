@@ -1,10 +1,10 @@
 ﻿//+------------------------------------------------------------------+
-//|                                      Chronos MT5 Bridge EA.mq5   |
-//|                                   Copyright 2026, Chronos Co.    |
-//|                                             https://chronos.com  |
+//|                                      Razor MT5 Bridge EA.mq5   |
+//|                                   Copyright 2026, Razor Co.    |
+//|                                             https://razor.BleedingOnTheEdge.com  |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2026, Chronos Co."
-#property link      "https://chronos.com"
+#property copyright "Copyright 2026, Razor Co."
+#property link      "https://razor.BleedingOnTheEdge.com"
 #property version   "2.01"
 #property strict
 
@@ -97,7 +97,7 @@ int OnInit()
    }
 
    HostSymbol = _Symbol;
-   Print("Chronos Bridge EA listening on port ", BridgePort);
+   Print("Razor Bridge EA listening on port ", BridgePort);
    EventSetMillisecondTimer(10);   // poll every 10 ms
    return INIT_SUCCEEDED;
 }
@@ -287,7 +287,7 @@ void CheckExecutionUpdates()
                "{\"requestId\":null,\"command\":\"execution\",\"payload\":{\"ticket\":%I64u,\"symbol\":\"%s\",\"type\":\"%s\",\"state\":\"Filled\",\"executedVolume\":%f,\"executedPrice\":%f,\"remainingVolume\":0.0,\"commission\":%f,\"realizedPnL\":%f,\"timestamp\":%I64d,\"comment\":\"\"}}",
                ticket,
                PositionGetString(POSITION_SYMBOL),
-               MqlTypeToChronosType((int)PositionGetInteger(POSITION_TYPE)),
+               MqlTypeToRazorType((int)PositionGetInteger(POSITION_TYPE)),
                PositionGetDouble(POSITION_VOLUME),
                PositionGetDouble(POSITION_PRICE_CURRENT),
                PositionGetDouble(POSITION_COMMISSION),
@@ -307,7 +307,7 @@ void CheckExecutionUpdates()
                "{\"requestId\":null,\"command\":\"execution\",\"payload\":{\"ticket\":%I64u,\"symbol\":\"%s\",\"type\":\"%s\",\"state\":\"New\",\"executedVolume\":0.0,\"executedPrice\":0.0,\"remainingVolume\":%f,\"commission\":0.0,\"realizedPnL\":0.0,\"timestamp\":%I64d,\"comment\":\"\"}}",
                ticket,
                OrderGetString(ORDER_SYMBOL),
-               MqlTypeToChronosType((int)OrderGetInteger(ORDER_TYPE)),
+               MqlTypeToRazorType((int)OrderGetInteger(ORDER_TYPE)),
                OrderGetDouble(ORDER_VOLUME_CURRENT),
                TimeCurrent()
             );
@@ -450,7 +450,7 @@ void ProcessMessage(string json)
          ArrayResize(data, totalSize);
          int pos = 0;
 
-         // Chronos Magic Header 0x53524843 ("CHRS") + Version 1
+         // Razor Magic Header 0x53524843 ("CHRS") + Version 1
          IntToArrayLittleEndian(1397901379, data, pos); pos += 4;
          IntToArrayLittleEndian(1, data, pos); pos += 4;
 
@@ -500,7 +500,7 @@ void ProcessMessage(string json)
          else                            price = SymbolInfoDouble(symbol, SYMBOL_BID);
       }
       Trade.SetExpertMagicNumber(0);
-      if(Trade.PositionOpen(symbol, orderType, volume, price, sl, tp, "Chronos"))
+      if(Trade.PositionOpen(symbol, orderType, volume, price, sl, tp, "Razor"))
       {
          ulong ticket = Trade.ResultOrder();
          SendResponse(requestId, "executeOrder",
@@ -752,7 +752,7 @@ void DoubleToArrayLittleEndian(double value, uchar &arr[], int start)
 //+------------------------------------------------------------------+
 //| Serialization helpers                                             |
 //+------------------------------------------------------------------+
-string MqlTypeToChronosType(int mqlType)
+string MqlTypeToRazorType(int mqlType)
 {
    switch(mqlType)
    {
@@ -772,7 +772,7 @@ string PositionToJson()
       "{\"ticket\":%I64u,\"symbol\":\"%s\",\"type\":\"%s\",\"volume\":%f,\"openPrice\":%f,\"openTime\":%I64d,\"closePrice\":%f,\"closeTime\":%I64d,\"sl\":%f,\"tp\":%f,\"commission\":%f,\"swap\":%f,\"profit\":%f}",
       PositionGetInteger(POSITION_TICKET),
       PositionGetString(POSITION_SYMBOL),
-      MqlTypeToChronosType((int)PositionGetInteger(POSITION_TYPE)),
+      MqlTypeToRazorType((int)PositionGetInteger(POSITION_TYPE)),
       PositionGetDouble(POSITION_VOLUME),
       PositionGetDouble(POSITION_PRICE_OPEN),
       PositionGetInteger(POSITION_TIME),
@@ -792,7 +792,7 @@ string OrderToJson()
       "{\"ticket\":%I64u,\"symbol\":\"%s\",\"type\":\"%s\",\"volume\":%f,\"price\":%f,\"sl\":%f,\"tp\":%f}",
       OrderGetInteger(ORDER_TICKET),
       OrderGetString(ORDER_SYMBOL),
-      MqlTypeToChronosType((int)OrderGetInteger(ORDER_TYPE)),
+      MqlTypeToRazorType((int)OrderGetInteger(ORDER_TYPE)),
       OrderGetDouble(ORDER_VOLUME_CURRENT),
       OrderGetDouble(ORDER_PRICE_OPEN),
       OrderGetDouble(ORDER_SL),
