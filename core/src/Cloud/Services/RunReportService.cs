@@ -110,10 +110,10 @@ internal sealed class RunReportService
         }
 
         ReportWinningDna? winningDna = ExtractOrBuildWinningDna(run);
-        IReadOnlyList<ReportTradeItem> trades = ExtractOrBuildTrades(run);
-        IReadOnlyList<ReportEquityPoint> equityCurve = ExtractOrBuildEquityCurve(run, trades);
+        List<ReportTradeItem> trades = ExtractOrBuildTrades(run);
+        List<ReportEquityPoint> equityCurve = ExtractOrBuildEquityCurve(run, trades);
         ReportDetailedMetrics? detailedMetrics = ExtractOrBuildDetailedMetrics(run, trades);
-        IReadOnlyList<ReportGenerationProgress>? genProgress = ExtractOrBuildGenerationProgress(run);
+        List<ReportGenerationProgress>? genProgress = ExtractOrBuildGenerationProgress(run);
 
         return new RunReport(
             RunId: run.Id,
@@ -348,136 +348,53 @@ internal sealed class RunReportService
                     }
                 }
             }
-            catch
+            catch (System.Text.Json.JsonException)
             {
-                // Fall back to seed-based generation
+                // Missing or invalid payload telemetry - return clean empty collection
             }
         }
 
-        int count = run.TradeCount ?? 28;
-        if (count <= 0)
-        {
-            count = 28;
-        }
-
-        decimal totalProfit = run.NetProfit ?? 2450.00m;
-        int seed = (int)(run.BaseSeed ?? 42);
-        DateTimeOffset start = run.CreatedAt;
-        DateTimeOffset end = run.CompletedAt ?? start.AddHours(2);
-
-        return BuildTradesForSeed(count, totalProfit, seed, start, end);
+        return [];
     }
 
-    private static List<ReportTradeItem> BuildTradesForSeed(
-        int count,
-        decimal totalProfit,
-        int seed,
-        DateTimeOffset start,
-        DateTimeOffset end,
-        int ticketOffset = 100000)
+    private static List<ReportEquityPoint> ExtractOrBuildEquityCurve(FlowRun run, List<ReportTradeItem> trades)
     {
-#pragma warning disable CA5394
-        var random = new Random(seed);
-        double totalSpanSeconds = end > start ? (end - start).TotalSeconds : 7200.0;
-        double avgInterval = Math.Max(5.0, (totalSpanSeconds * 0.85) / Math.Max(1, count));
-        DateTimeOffset currentClock = start.AddSeconds(10);
-
-        int winningCount = Math.Max(1, (int)Math.Round(count * 0.65));
-        int losingCount = Math.Max(0, count - winningCount);
-
-        var pnlList = new List<decimal>(count);
-        decimal sumLosses = 0m;
-
-        for (int i = 0; i < losingCount; i++)
+        if (!string.IsNullOrWhiteSpace(run.ResultPayloadJson))
         {
-            decimal loss = Math.Round((decimal)(random.NextDouble() * 75.0 + 35.0), 2);
-            pnlList.Add(-loss);
-            sumLosses += loss;
-        }
-
-        decimal requiredGrossProfit = totalProfit + sumLosses;
-        decimal targetWinAvg = requiredGrossProfit / Math.Max(1, winningCount);
-        decimal currentGrossProfit = 0m;
-
-        for (int i = 0; i < winningCount; i++)
-        {
-            if (i == winningCount - 1)
+            try
             {
-                decimal lastWin = Math.Round(requiredGrossProfit - currentGrossProfit, 2);
-                if (lastWin <= 0)
+                using var doc = System.Text.Json.JsonDocument.Parse(run.ResultPayloadJson);
+                var root = doc.RootElement.TryGetProperty("Result", out var r) && r.ValueKind == System.Text.Json.JsonValueKind.Object
+                    ? r
+                    : doc.RootElement;
+
+                if (root.TryGetProperty("EquityCurve", out var eqEl) && eqEl.ValueKind == System.Text.Json.JsonValueKind.Array)
                 {
-                    lastWin = Math.Round(targetWinAvg, 2);
+                    var items = System.Text.Json.JsonSerializer.Deserialize<List<DtoEquityPointItem>>(eqEl.GetRawText(), GenerationJsonOptions);
+                    if (items is { Count: > 0 })
+                    {
+                        return items.Select(p => new ReportEquityPoint(
+                            Timestamp: p.Timestamp ?? run.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
+                            Balance: p.Balance,
+                            Equity: p.Equity,
+                            DrawdownPct: p.DrawdownPct)).ToList();
+                    }
                 }
-                pnlList.Add(lastWin);
             }
-            else
+            catch (System.Text.Json.JsonException)
             {
-                decimal win = Math.Round(targetWinAvg * (decimal)(0.70 + (random.NextDouble() * 0.60)), 2);
-                if (win <= 0)
-                {
-                    win = Math.Round(targetWinAvg * 0.85m, 2);
-                }
-                pnlList.Add(win);
-                currentGrossProfit += win;
             }
         }
 
-        // Deterministically shuffle trades across the timeline
-        for (int i = pnlList.Count - 1; i > 0; i--)
+        if (trades.Count == 0)
         {
-            int swapIdx = random.Next(i + 1);
-            (pnlList[i], pnlList[swapIdx]) = (pnlList[swapIdx], pnlList[i]);
+            return [];
         }
 
-        double basePrice = 64250.0;
-        var trades = new List<ReportTradeItem>(count);
-
-        for (int i = 0; i < count; i++)
-        {
-            decimal pnl = pnlList[i];
-            bool isWin = pnl >= 0;
-            string exitReason = isWin ? "TakeProfit" : "StopLoss";
-
-            double stepJitter = (random.NextDouble() * 0.4 + 0.8) * avgInterval;
-            DateTimeOffset openTime = currentClock;
-            double durationSeconds = Math.Max(12.0, stepJitter * 0.65 + random.Next(5, 20));
-            DateTimeOffset closeTime = openTime.AddSeconds(durationSeconds);
-            currentClock = openTime.AddSeconds(Math.Max(durationSeconds + 2.0, stepJitter));
-
-            string side = (i % 2 == 0) ? "Buy" : "Sell";
-            double vol = Math.Round(0.25 + (random.NextDouble() * 1.5), 2);
-            double openPrice = Math.Round(basePrice + (random.NextDouble() * 400.0 - 200.0), 2);
-            double deltaPrice = (double)pnl / Math.Max(0.1, vol);
-            double closePrice = Math.Round(side == "Buy" ? openPrice + deltaPrice : openPrice - deltaPrice, 2);
-
-            trades.Add(new ReportTradeItem(
-                Ticket: ticketOffset + i + 1,
-                Symbol: "BTC/USDT",
-                Side: side,
-                Volume: vol,
-                OpenPrice: openPrice,
-                OpenTime: openTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
-                ClosePrice: closePrice,
-                CloseTime: closeTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
-                Profit: pnl,
-                ReturnPct: Math.Round((double)pnl / 1000.0, 2),
-                Commission: 1.50m,
-                Swap: 0.00m,
-                StopLoss: Math.Round(side == "Buy" ? openPrice * 0.98 : openPrice * 1.02, 2),
-                TakeProfit: Math.Round(side == "Buy" ? openPrice * 1.05 : openPrice * 0.95, 2),
-                ExitReason: exitReason));
-        }
-#pragma warning restore CA5394
-
-        return trades;
-    }
-
-    private static List<ReportEquityPoint> ExtractOrBuildEquityCurve(FlowRun run, IReadOnlyList<ReportTradeItem> trades)
-    {
         return BuildEquityCurve(run.CreatedAt, trades);
     }
 
-    private static List<ReportEquityPoint> BuildEquityCurve(DateTimeOffset start, IReadOnlyList<ReportTradeItem> trades)
+    private static List<ReportEquityPoint> BuildEquityCurve(DateTimeOffset start, List<ReportTradeItem> trades)
     {
         decimal initial = 100000m;
         decimal current = initial;
@@ -506,8 +423,33 @@ internal sealed class RunReportService
         return points;
     }
 
-    private static ReportDetailedMetrics ExtractOrBuildDetailedMetrics(FlowRun run, IReadOnlyList<ReportTradeItem> trades)
+    private static ReportDetailedMetrics ExtractOrBuildDetailedMetrics(FlowRun run, List<ReportTradeItem> trades)
     {
+        if (trades.Count == 0)
+        {
+            return new ReportDetailedMetrics(
+                GrossProfit: 0m,
+                GrossLoss: 0m,
+                ProfitFactor: 0.0,
+                WinRate: 0.0,
+                LossRate: 0.0,
+                WinningTrades: 0,
+                LosingTrades: 0,
+                SortinoRatio: 0.0,
+                CalmarRatio: 0.0,
+                Expectancy: 0m,
+                AverageWin: 0m,
+                AverageLoss: 0m,
+                WinLossRatio: 0.0,
+                LargestWin: 0m,
+                LargestLoss: 0m,
+                MaxConsecutiveWins: 0,
+                MaxConsecutiveLosses: 0,
+                AverageHoldingPeriodSeconds: 0.0,
+                MaxDrawdownPct: run.MaxDrawdown ?? 0.0,
+                MaxDrawdownAmount: 0m);
+        }
+
         var wins = trades.Where(t => t.Profit > 0).ToList();
         var losses = trades.Where(t => t.Profit <= 0).ToList();
         decimal grossProfit = wins.Sum(t => t.Profit);
@@ -653,90 +595,21 @@ internal sealed class RunReportService
                     }
                 }
             }
-            catch
+            catch (System.Text.Json.JsonException)
             {
-                // Fall back to synthetic generations
+                // Telemetry missing or invalid JSON - return empty list, never fabricate generations
             }
         }
 
-        double finalFitness = run.BestFitness ?? 0.88;
-        var list = new List<ReportGenerationProgress>();
-        double currentBest = 0.42;
-        int seed = (int)(run.BaseSeed ?? 42);
-        DateTimeOffset start = run.CreatedAt;
-        DateTimeOffset end = run.CompletedAt ?? start.AddHours(2);
+        return [];
+    }
 
-        for (int gen = 0; gen < 10; gen++)
-        {
-            double progress = (gen + 1) / 10.0;
-            currentBest = Math.Round(0.42 + (finalFitness - 0.42) * Math.Pow(progress, 0.7), 4);
-            double avgFit = Math.Round(currentBest * 0.72 + (gen * 0.01), 4);
-            double div = Math.Round(Math.Max(0.12, 0.85 - (gen * 0.07)), 3);
-
-            var populations = new List<ReportPopulationIndividual>();
-            int popCount = 6;
-            for (int ind = 0; ind < popCount; ind++)
-            {
-                double indFitness = ind == 0
-                    ? currentBest
-                    : Math.Round(Math.Max(0.15, currentBest - (ind * 0.045) + (Math.Sin(gen + ind) * 0.015)), 4);
-
-                double indDiv = Math.Round(Math.Max(0.08, div + (ind * 0.02) - 0.05), 3);
-                int fast = Math.Max(5, Math.Min(35, 14 + (ind * 2) - (gen / 2)));
-                int slow = Math.Max(25, Math.Min(120, 48 + (ind * 6) - gen));
-                double sl = Math.Round(0.015 + (ind * 0.003), 4);
-                double tp = Math.Round(0.040 + (ind * 0.006), 4);
-                double lev = 1.0;
-
-                double[] genes = [fast, slow, sl, tp, lev];
-                var parameters = new Dictionary<string, object>
-                {
-                    ["FastPeriod"] = fast,
-                    ["SlowPeriod"] = slow,
-                    ["StopLossPct"] = sl,
-                    ["TakeProfitPct"] = tp,
-                    ["Leverage"] = lev
-                };
-
-                int indTradeCount = Math.Max(8, 14 + (ind * 2) + (gen % 3));
-                decimal indProfit = Math.Round((decimal)(indFitness * 1800.0) + (decimal)(ind * 35.0), 2);
-                int indSeed = seed + (gen * 100) + (ind * 17);
-                var indTrades = BuildTradesForSeed(indTradeCount, indProfit, indSeed, start, end, ticketOffset: 200000 + (gen * 1000) + (ind * 100));
-                var indCurve = BuildEquityCurve(start, indTrades);
-
-                double totalReturn = Math.Round(indFitness * 14.5, 2);
-                double sharpe = Math.Round(Math.Max(0.6, indFitness * 2.6), 2);
-                double maxDd = Math.Round(Math.Max(1.8, 10.5 - (indFitness * 6.5) + (ind * 0.6)), 2);
-                double winRate = Math.Round(Math.Min(85.0, 48.0 + (indFitness * 32.0) - (ind * 1.5)), 1);
-                double pf = Math.Round(Math.Max(0.85, 1.1 + (indFitness * 1.6) - (ind * 0.12)), 2);
-
-                populations.Add(new ReportPopulationIndividual(
-                    Id: $"ind_g{gen + 1}_p{ind + 1}",
-                    IndividualIndex: ind + 1,
-                    Fitness: indFitness,
-                    Diversity: indDiv,
-                    Genes: genes,
-                    Parameters: parameters,
-                    TotalReturn: totalReturn,
-                    SharpeRatio: sharpe,
-                    MaxDrawdown: maxDd,
-                    WinRate: winRate,
-                    ProfitFactor: pf,
-                    TradeCount: indTradeCount,
-                    Trades: indTrades,
-                    EquityCurve: indCurve));
-            }
-
-            list.Add(new ReportGenerationProgress(
-                Generation: gen + 1,
-                BestFitness: currentBest,
-                AverageFitness: avgFit,
-                Diversity: div,
-                IsHyperMutation: gen == 4 || gen == 7,
-                Populations: populations));
-        }
-
-        return list;
+    private sealed class DtoEquityPointItem
+    {
+        public string? Timestamp { get; set; }
+        public decimal Balance { get; set; }
+        public decimal Equity { get; set; }
+        public double DrawdownPct { get; set; }
     }
 
     private sealed class DtoGenerationItem

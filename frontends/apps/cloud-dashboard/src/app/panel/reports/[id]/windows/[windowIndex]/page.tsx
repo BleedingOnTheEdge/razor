@@ -8,6 +8,32 @@ import { formatHash, formatCurrency } from '@razor/ui-kit';
 import { Layers, ArrowLeft, Dna, Activity, ShieldCheck, Check } from 'lucide-react';
 import { useToast } from '@/components/ui/toast';
 
+interface RawWalkForwardWindow {
+  windowIndex?: number;
+  inSampleRange?: string;
+  inSampleSharpe?: number;
+  inSampleReturnPct?: number;
+  inSampleTrades?: number;
+  outOfSampleRange?: string;
+  outOfSampleSharpe?: number;
+  outOfSampleReturnPct?: number;
+  outOfSampleTrades?: number;
+  parameters?: Record<string, unknown>;
+  genes?: number[];
+  genomeHash?: string;
+}
+
+interface ReportWithTelemetry {
+  walkForwardWindows?: RawWalkForwardWindow[];
+  configuration?: {
+    walkForward?: {
+      windows?: RawWalkForwardWindow[];
+      inSamplePct?: number;
+      outOfSamplePct?: number;
+    };
+  };
+}
+
 export default function WindowDetailPage() {
   const params = useParams();
   const runId = params.id as string;
@@ -44,24 +70,24 @@ export default function WindowDetailPage() {
   }, [runId]);
 
   const idxNum = parseInt(windowIndex, 10) || 1;
-  const isSharpe = Number((1.85 - (idxNum - 1) * 0.12).toFixed(2));
-  const oosSharpe = Number((1.55 - (idxNum - 1) * 0.15).toFixed(2));
-  const isReturn = Number((18.5 - (idxNum - 1) * 1.5).toFixed(2));
-  const oosReturn = Number((14.2 - (idxNum - 1) * 1.8).toFixed(2));
-  const wfe = Number((oosReturn / Math.max(1, isReturn)).toFixed(2));
+  const reportPayload = report as unknown as ReportWithTelemetry | null;
+  const telemetryWindows: RawWalkForwardWindow[] = reportPayload?.walkForwardWindows || reportPayload?.configuration?.walkForward?.windows || [];
+  const rawWindow = telemetryWindows.find((w: RawWalkForwardWindow, i: number) => (w.windowIndex ?? i + 1) === idxNum);
+
+  const hasWindowData = !!rawWindow;
+  const isSharpe = Number(rawWindow?.inSampleSharpe ?? 0);
+  const oosSharpe = Number(rawWindow?.outOfSampleSharpe ?? 0);
+  const isReturn = Number(rawWindow?.inSampleReturnPct ?? 0);
+  const oosReturn = Number(rawWindow?.outOfSampleReturnPct ?? 0);
+  const wfe = isReturn > 0 ? Number((oosReturn / isReturn).toFixed(2)) : 0;
 
   const windowDna = {
     windowIndex: idxNum,
-    genomeHash: `dna-w${idxNum}-${formatHash(runId, 6)}`,
+    genomeHash: rawWindow?.genomeHash ?? `dna-w${idxNum}-${formatHash(runId, 6)}`,
     inSampleSharpe: isSharpe,
     outOfSampleSharpe: oosSharpe,
-    parameters: {
-      FastPeriod: 12 + idxNum,
-      SlowPeriod: 45 + idxNum * 3,
-      StopLossPct: 0.02,
-      TakeProfitPct: 0.045,
-    },
-    genes: [0.02, 0.045, 12 + idxNum, 45 + idxNum * 3, 1.0],
+    parameters: rawWindow?.parameters ?? {},
+    genes: rawWindow?.genes ?? [],
   };
 
   function handleCopyDna() {
@@ -128,6 +154,14 @@ export default function WindowDetailPage() {
       ) : error ? (
         <div className="p-4 border border-rose-800/40 bg-rose-950/20 text-rose-300 font-bold rounded-xl">
           ERROR: {error}
+        </div>
+      ) : !hasWindowData ? (
+        <div className="p-12 text-center border border-dashed border-[#262626] rounded-xl bg-[#141414]">
+          <Layers className="w-8 h-8 text-zinc-500 mx-auto mb-3" />
+          <h2 className="text-sm font-semibold uppercase text-zinc-300">No Telemetry Recorded for Window #{windowIndex}</h2>
+          <p className="text-xs text-zinc-500 mt-1 max-w-md mx-auto">
+            Granular slice telemetry for this window index is not available in the run payload.
+          </p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -204,7 +238,7 @@ export default function WindowDetailPage() {
                   {Object.entries(windowDna.parameters).map(([name, val]) => (
                     <tr key={name} className="hover:bg-[#141414] transition-colors">
                       <td className="py-2 px-3 font-bold text-zinc-100">{name}</td>
-                      <td className="py-2 px-3 text-right font-mono font-bold text-zinc-100">{val}</td>
+                      <td className="py-2 px-3 text-right font-mono font-bold text-zinc-100">{String(val)}</td>
                       <td className="py-2 px-3 text-zinc-400 font-sans text-[11px]">Fitted via genetic evolution</td>
                     </tr>
                   ))}

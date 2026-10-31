@@ -57,7 +57,7 @@ The Cloud dashboard displays:
 ## Reporting
 
 All result data - trade histories, equity curves, population snapshots, per-symbol metrics,
-correlation matrices - is stored in the Cloud. Users generate reports (Excel, JSON, PDF) on demand, or
+correlation matrices - is stored in the Cloud. Users generate reports (Excel, JSON, with PDF on the v1.5 roadmap) on demand, or
 configure periodic generation.
 
 **The engine never generates formatted reports.** It streams raw data only; the Cloud renders it.

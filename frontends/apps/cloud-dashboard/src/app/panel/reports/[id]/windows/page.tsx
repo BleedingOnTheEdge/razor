@@ -21,6 +21,32 @@ interface WindowSplitSummary {
   robustnessStatus: 'Robust' | 'Moderate' | 'Degraded';
 }
 
+interface RawWalkForwardWindow {
+  windowIndex?: number;
+  inSampleRange?: string;
+  inSampleSharpe?: number;
+  inSampleReturnPct?: number;
+  inSampleTrades?: number;
+  outOfSampleRange?: string;
+  outOfSampleSharpe?: number;
+  outOfSampleReturnPct?: number;
+  outOfSampleTrades?: number;
+  parameters?: Record<string, unknown>;
+  genes?: number[];
+  genomeHash?: string;
+}
+
+interface ReportWithTelemetry {
+  walkForwardWindows?: RawWalkForwardWindow[];
+  configuration?: {
+    walkForward?: {
+      windows?: RawWalkForwardWindow[];
+      inSamplePct?: number;
+      outOfSamplePct?: number;
+    };
+  };
+}
+
 export default function WalkForwardWindowsPage() {
   const params = useParams();
   const runId = params.id as string;
@@ -53,29 +79,31 @@ export default function WalkForwardWindowsPage() {
     loadData();
   }, [runId]);
 
-  // Derive Walk-Forward window splits deterministically
-  const totalWindows = (report as any)?.configuration?.walkForward?.windowSplits || 5;
-  const inSamplePct = (report as any)?.configuration?.walkForward?.inSamplePct || 70;
-  const outOfSamplePct = (report as any)?.configuration?.walkForward?.outOfSamplePct || 30;
+  // Derive Walk-Forward window splits only from actual recorded telemetry
+  const reportPayload = report as unknown as ReportWithTelemetry | null;
+  const telemetryWindows: RawWalkForwardWindow[] = reportPayload?.walkForwardWindows || reportPayload?.configuration?.walkForward?.windows || [];
+  const totalWindows = telemetryWindows.length;
+  const inSamplePct = reportPayload?.configuration?.walkForward?.inSamplePct || 70;
+  const outOfSamplePct = reportPayload?.configuration?.walkForward?.outOfSamplePct || 30;
 
-  const windows: WindowSplitSummary[] = Array.from({ length: totalWindows }).map((_, idx) => {
-    const isSharpe = Number((1.85 - idx * 0.12).toFixed(2));
-    const oosSharpe = Number((1.55 - idx * 0.15).toFixed(2));
-    const isReturn = Number((18.5 - idx * 1.5).toFixed(2));
-    const oosReturn = Number((14.2 - idx * 1.8).toFixed(2));
-    const wfe = Number((oosReturn / Math.max(1, isReturn)).toFixed(2));
+  const windows: WindowSplitSummary[] = telemetryWindows.map((w, idx) => {
+    const isSharpe = Number(w.inSampleSharpe ?? 0);
+    const oosSharpe = Number(w.outOfSampleSharpe ?? 0);
+    const isReturn = Number(w.inSampleReturnPct ?? 0);
+    const oosReturn = Number(w.outOfSampleReturnPct ?? 0);
+    const wfe = isReturn > 0 ? Number((oosReturn / isReturn).toFixed(2)) : 0;
     const status: 'Robust' | 'Moderate' | 'Degraded' = wfe >= 0.7 ? 'Robust' : wfe >= 0.4 ? 'Moderate' : 'Degraded';
 
     return {
-      windowIndex: idx + 1,
-      inSampleRange: `Slice ${idx + 1}A (${inSamplePct}%)`,
+      windowIndex: w.windowIndex ?? idx + 1,
+      inSampleRange: w.inSampleRange ?? `Slice ${idx + 1}A (${inSamplePct}%)`,
       inSampleSharpe: isSharpe,
       inSampleReturnPct: isReturn,
-      inSampleTrades: 42 + idx * 4,
-      outOfSampleRange: `Slice ${idx + 1}B (${outOfSamplePct}%)`,
+      inSampleTrades: w.inSampleTrades ?? 0,
+      outOfSampleRange: w.outOfSampleRange ?? `Slice ${idx + 1}B (${outOfSamplePct}%)`,
       outOfSampleSharpe: oosSharpe,
       outOfSampleReturnPct: oosReturn,
-      outOfSampleTrades: 18 + idx * 2,
+      outOfSampleTrades: w.outOfSampleTrades ?? 0,
       wfeRatio: wfe,
       robustnessStatus: status,
     };
@@ -124,6 +152,14 @@ export default function WalkForwardWindowsPage() {
       ) : error ? (
         <div className="p-4 border border-rose-800/40 bg-rose-950/20 text-rose-300 font-bold rounded-xl">
           ERROR: {error}
+        </div>
+      ) : windows.length === 0 ? (
+        <div className="p-12 text-center border border-dashed border-[#262626] rounded-xl bg-[#141414]">
+          <Layers className="w-8 h-8 text-zinc-500 mx-auto mb-3" />
+          <h2 className="text-sm font-semibold uppercase text-zinc-300">No Walk-Forward Telemetry Recorded</h2>
+          <p className="text-xs text-zinc-500 mt-1 max-w-md mx-auto">
+            This run did not record multi-window walk-forward splits. Ensure walk-forward validation is configured in the optimization run settings.
+          </p>
         </div>
       ) : (
         <div className="space-y-6">

@@ -54,7 +54,7 @@ reportable while a run is still in flight, not only once it completes.
   (`product:razor/blueprint/internal-architecture/report-generation-engine-role`,
   `product:razor/blueprint/internal-architecture/messaging-events`).
 - Users generate reports on demand or configure periodic generation, from data the Cloud already holds, in
-  formats including Excel, JSON and PDF
+  formats including Excel and JSON (with PDF on the v1.5 roadmap)
   (`product:razor/blueprint/product-model/control-monitoring`).
 - Progress is part of the surface: percent complete for a backtest, generation and best fitness for an
   optimisation, equity and drawdown for live

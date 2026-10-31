@@ -266,9 +266,32 @@ public sealed class RunReportServiceTests
         Assert.NotNull(report);
         Assert.NotNull(report.WinningDna);
         Assert.NotNull(report.Trades);
-        Assert.NotEmpty(report.Trades);
+        Assert.Empty(report.Trades);
         Assert.NotNull(report.EquityCurve);
-        Assert.NotEmpty(report.EquityCurve);
+        Assert.Empty(report.EquityCurve);
+    }
+
+    [Fact]
+    public void GenerateReport_RunWithMissingTelemetry_ReturnsEmptyCollectionsWithoutFabrication()
+    {
+        var run = new FlowRun
+        {
+            Id = Guid.NewGuid(),
+            Status = RunStatus.Completed,
+            Continuity = RunContinuity.Contiguous,
+            TradeCount = 25,
+            NetProfit = 1500m,
+            ResultPayloadJson = null
+        };
+
+        RunReport report = _sut.GenerateReport(run);
+        Assert.NotNull(report);
+        Assert.False(report.IsPartial);
+        Assert.False(report.HeadlineFiguresSuppressed);
+        Assert.NotNull(report.Trades);
+        Assert.Empty(report.Trades);
+        Assert.NotNull(report.EquityCurve);
+        Assert.Empty(report.EquityCurve);
     }
 }
 
