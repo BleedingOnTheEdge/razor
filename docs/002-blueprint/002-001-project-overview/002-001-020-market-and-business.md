@@ -50,7 +50,7 @@ Razor therefore treats reporting as a first-class feature. Every trade, every ti
 generation of an optimisation run produces data that is stored, processed and made available for
 interactive exploration. Traders can drill into per-symbol performance, examine correlation
 heatmaps, reconstruct equity curves from any starting point, and export fully formatted reports
-(Excel, JSON, PDF) in one action - without a spreadsheet or a statistics package.
+(Excel, JSON, and PDF on the v1.5 roadmap) in one action - without a spreadsheet or a statistics package.
 
 Real-time monitoring extends the same philosophy to live trading. The Cloud dashboard shows what the
 engine is doing, moment by moment: open positions, pending orders, current drawdown, margin

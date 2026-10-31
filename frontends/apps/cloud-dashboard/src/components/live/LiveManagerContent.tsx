@@ -36,108 +36,6 @@ import { LiveRiskConfigModal } from './LiveRiskConfigModal';
 
 export type { OpenPosition };
 
-const DEFAULT_OPEN_POSITIONS: OpenPosition[] = [
-  {
-    ticket: 90211,
-    symbol: 'BTC/USDT',
-    side: 'BUY',
-    volume: 0.75,
-    openPrice: 66200.0,
-    markPrice: 67450.0,
-    unrealizedPnl: 937.5,
-    stopLoss: 64800.0,
-    takeProfit: 69500.0,
-    openTime: new Date(Date.now() - 42 * 60 * 1000).toISOString(),
-  },
-  {
-    ticket: 90214,
-    symbol: 'ETH/USDT',
-    side: 'SELL',
-    volume: 5.0,
-    openPrice: 2640.0,
-    markPrice: 2577.8,
-    unrealizedPnl: 311.0,
-    stopLoss: 2720.0,
-    takeProfit: 2480.0,
-    openTime: new Date(Date.now() - 18 * 60 * 1000).toISOString(),
-  },
-];
-
-const DEFAULT_EXECUTED_TRADES: TradeItemPayload[] = [
-  {
-    ticket: 90198,
-    symbol: 'SOL/USDT',
-    side: 'BUY',
-    volume: 25.0,
-    openPrice: 154.2,
-    closePrice: 161.8,
-    openTime: new Date(Date.now() - 140 * 60 * 1000).toISOString(),
-    closeTime: new Date(Date.now() - 65 * 60 * 1000).toISOString(),
-    profit: 190.0,
-    returnPct: 4.93,
-    commission: 1.25,
-    slippageTicks: 1,
-    executionVenue: 'Binance Futures Direct',
-    exitReason: 'TakeProfit',
-    stopLoss: 149.5,
-    takeProfit: 161.8,
-  },
-  {
-    ticket: 90185,
-    symbol: 'BTC/USDT',
-    side: 'SELL',
-    volume: 0.5,
-    openPrice: 67100.0,
-    closePrice: 66420.0,
-    openTime: new Date(Date.now() - 280 * 60 * 1000).toISOString(),
-    closeTime: new Date(Date.now() - 190 * 60 * 1000).toISOString(),
-    profit: 340.0,
-    returnPct: 1.01,
-    commission: 2.1,
-    slippageTicks: 0,
-    executionVenue: 'Binance Futures Direct',
-    exitReason: 'TrailingStop',
-    stopLoss: 67800.0,
-    takeProfit: 65900.0,
-  },
-  {
-    ticket: 90172,
-    symbol: 'ETH/USDT',
-    side: 'BUY',
-    volume: 8.0,
-    openPrice: 2590.0,
-    closePrice: 2555.0,
-    openTime: new Date(Date.now() - 410 * 60 * 1000).toISOString(),
-    closeTime: new Date(Date.now() - 360 * 60 * 1000).toISOString(),
-    profit: -280.0,
-    returnPct: -1.35,
-    commission: 2.8,
-    slippageTicks: 2,
-    executionVenue: 'PaperBroker Simulation',
-    exitReason: 'StopLoss',
-    stopLoss: 2555.0,
-    takeProfit: 2680.0,
-  },
-  {
-    ticket: 90150,
-    symbol: 'AVAX/USDT',
-    side: 'BUY',
-    volume: 50.0,
-    openPrice: 28.4,
-    closePrice: 31.2,
-    openTime: new Date(Date.now() - 600 * 60 * 1000).toISOString(),
-    closeTime: new Date(Date.now() - 480 * 60 * 1000).toISOString(),
-    profit: 140.0,
-    returnPct: 9.86,
-    commission: 0.9,
-    slippageTicks: 1,
-    executionVenue: 'Binance Futures Direct',
-    exitReason: 'SignalExit',
-    stopLoss: 26.9,
-    takeProfit: 32.0,
-  },
-];
-
 export function LiveManagerContent() {
   const toast = useToast();
   const searchParams = useSearchParams();
@@ -147,10 +45,10 @@ export function LiveManagerContent() {
   const [selectedInstanceId, setSelectedInstanceId] = useState<string>(queryInstanceId || '');
   const [loading, setLoading] = useState(true);
 
-  // Live Trading State
+  // Live Trading State - Authentic telemetry
   const [isTradingPaused, setIsTradingPaused] = useState(false);
-  const [openPositions, setOpenPositions] = useState<OpenPosition[]>(DEFAULT_OPEN_POSITIONS);
-  const [executedTrades, setExecutedTrades] = useState<TradeItemPayload[]>(DEFAULT_EXECUTED_TRADES);
+  const [openPositions, setOpenPositions] = useState<OpenPosition[]>([]);
+  const [executedTrades, setExecutedTrades] = useState<TradeItemPayload[]>([]);
 
   // Modals state
   const [selectedTrade, setSelectedTrade] = useState<TradeItemPayload | null>(null);
