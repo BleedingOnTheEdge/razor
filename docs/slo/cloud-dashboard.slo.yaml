@@ -1,0 +1,20 @@
+service: cloud-dashboard
+tier: tier-1
+description: Next.js Cloud Dashboard frontend interface
+slos:
+  - id: dashboard-availability
+    description: 99.5% uptime for user panel and routing endpoints
+    target: 0.995
+    window: 30d
+    sli:
+      metric_type: availability
+    error_budget:
+      budget_percent: 0.5
+  - id: dashboard-ssr-latency
+    description: 95% of server-rendered page requests complete in under 500ms
+    target: 0.95
+    window: 30d
+    sli:
+      metric_type: latency
+    error_budget:
+      budget_percent: 5.0

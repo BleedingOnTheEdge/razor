@@ -1,0 +1,23 @@
+service: razor-cloud-api
+tier: tier-1
+description: Core Razor Cloud control plane API service
+slos:
+  - id: api-availability
+    description: 99.9% successful HTTP responses (non-5xx) over a rolling 30-day window
+    target: 0.999
+    window: 30d
+    sli:
+      metric_type: availability
+      good_events: http_requests_total{status!~"5.."}
+      total_events: http_requests_total
+    error_budget:
+      budget_percent: 0.1
+  - id: api-latency-p95
+    description: 95% of incoming API requests respond in under 150ms
+    target: 0.95
+    window: 30d
+    sli:
+      metric_type: latency
+      threshold: 150ms
+    error_budget:
+      budget_percent: 5.0

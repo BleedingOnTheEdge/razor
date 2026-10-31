@@ -486,9 +486,9 @@ public sealed class EngineLifecycleTests
     private static EngineCredentials Credentials(
         string userName,
         string apiKey,
-        string password = CloudTestDatabase.Password)
+        string? password = null)
     {
-        return new EngineCredentials(userName, password, apiKey, "1.0.0", [100, 101], "public-key");
+        return new EngineCredentials(userName, password ?? CloudTestDatabase.Password, apiKey, "1.0.0", [100, 101], "public-key");
     }
 
     private static async Task<RegistrationOutcome> RegisterAsync(CloudTestDatabase database, SeededAccount account)

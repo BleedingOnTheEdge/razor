@@ -54,4 +54,7 @@ internal sealed class License
     {
         return Status == LicenseStatus.Active && (ExpiresAt is null || ExpiresAt > instant);
     }
+
+    /// <summary>Gets or sets the concurrency token for optimistic concurrency control.</summary>
+    public byte[]? RowVersion { get; set; }
 }

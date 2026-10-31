@@ -133,6 +133,7 @@ internal sealed class CloudDbContext : DbContext
             account.HasKey(a => a.Id);
             account.Property(a => a.Name).IsRequired().HasMaxLength(128);
             account.Property(a => a.SubscriptionTier).HasConversion<string>().HasMaxLength(32);
+            account.Property(a => a.RowVersion).IsConcurrencyToken();
             account.HasMany(a => a.Users).WithOne(u => u!.Account!).HasForeignKey(u => u.AccountId).OnDelete(DeleteBehavior.Cascade);
             account.HasMany(a => a.Licenses).WithOne(l => l!.Account!).HasForeignKey(l => l.AccountId).OnDelete(DeleteBehavior.Cascade);
             account.HasMany(a => a.Instances).WithOne(i => i!.Account!).HasForeignKey(i => i.AccountId).OnDelete(DeleteBehavior.Cascade);
@@ -176,6 +177,7 @@ internal sealed class CloudDbContext : DbContext
             license.HasKey(l => l.Id);
             license.Property(l => l.LicenseKey).IsRequired().HasMaxLength(128);
             license.Property(l => l.Status).HasConversion<string>().HasMaxLength(32);
+            license.Property(l => l.RowVersion).IsConcurrencyToken();
             license.HasIndex(l => l.LicenseKey).IsUnique();
             license.HasMany(l => l.Instances).WithOne(i => i!.License!).HasForeignKey(i => i.LicenseId).OnDelete(DeleteBehavior.Restrict);
         });
@@ -190,6 +192,7 @@ internal sealed class CloudDbContext : DbContext
             instance.Property(i => i.Name).IsRequired().HasMaxLength(128);
             instance.Property(i => i.ApiKeyHash).IsRequired().HasMaxLength(128);
             instance.Property(i => i.Status).HasConversion<string>().HasMaxLength(32);
+            instance.Property(i => i.RowVersion).IsConcurrencyToken();
             instance.HasIndex(i => i.EngineId).IsUnique();
             instance.HasIndex(i => i.ApiKeyHash).IsUnique();
             instance.HasOne(i => i.Profile).WithOne(p => p!.EngineInstance!).HasForeignKey<EngineProfile>(p => p.EngineInstanceId).OnDelete(DeleteBehavior.Cascade);
@@ -264,6 +267,7 @@ internal sealed class CloudDbContext : DbContext
             run.Property(r => r.ConfigurationJson).HasMaxLength(16384);
             run.Property(r => r.WinningDnaJson).HasMaxLength(65536);
             run.Property(r => r.ResultPayloadJson);
+            run.Property(r => r.RowVersion).IsConcurrencyToken();
             run.HasIndex(r => r.EngineInstanceId);
             run.HasIndex(r => r.ParentRunId);
             run.HasOne(r => r.ParentRun).WithMany(p => p!.ChildRuns).HasForeignKey(r => r.ParentRunId).OnDelete(DeleteBehavior.Restrict);
@@ -456,5 +460,33 @@ internal sealed class CloudDbContext : DbContext
             dna.HasIndex(d => d.BundleSnapshotId);
         });
     }
-}
 
+    /// <inheritdoc/>
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        UpdateRowVersions();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    /// <inheritdoc/>
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        UpdateRowVersions();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    private void UpdateRowVersions()
+    {
+        foreach (var entry in ChangeTracker.Entries())
+        {
+            if (entry.State is EntityState.Added or EntityState.Modified)
+            {
+                var prop = entry.Properties.FirstOrDefault(p => p.Metadata.Name == "RowVersion");
+                if (prop != null)
+                {
+                    prop.CurrentValue = Guid.NewGuid().ToByteArray();
+                }
+            }
+        }
+    }
+}

@@ -62,5 +62,7 @@ internal sealed class EngineInstance
 
     /// <summary>Gets the flow runs executed on this instance.</summary>
     public ICollection<FlowRun> FlowRuns { get; } = [];
-}
 
+    /// <summary>Gets or sets the concurrency token for optimistic concurrency control.</summary>
+    public byte[]? RowVersion { get; set; }
+}

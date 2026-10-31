@@ -1,0 +1,12 @@
+service: marketplace
+tier: tier-2
+description: Next.js Algorithmic Trading Marketplace frontend and licensing hub
+slos:
+  - id: marketplace-availability
+    description: 99.0% availability for item discovery, reviews, and acquisitions
+    target: 0.99
+    window: 30d
+    sli:
+      metric_type: availability
+    error_budget:
+      budget_percent: 1.0
