@@ -293,7 +293,15 @@ def run_audit(target_dir: str, max_file_lines: int = 800, max_dir_depth: int = 6
             if rel_dir != ".":
                 dir_parts = [p for p in rel_dir.replace("\\", "/").split("/") if p]
                 # Calculate nesting depth relative to the nearest subproject root if auditing from workspace root
-                if dir_parts and dir_parts[0] in {"services", "apps", "libs", "packages"} and len(dir_parts) >= 2:
+                if len(dir_parts) >= 3 and dir_parts[0] in {"frontends", "core"} and dir_parts[1] in {"apps", "packages", "src", "tests"}:
+                    sub_parts = dir_parts[3:]
+                    if len(sub_parts) >= 2 and sub_parts[0] == "src" and sub_parts[1] == "app":
+                        depth = len(sub_parts) - 2
+                    elif sub_parts and sub_parts[0] == "src":
+                        depth = len(sub_parts) - 1
+                    else:
+                        depth = len(sub_parts)
+                elif dir_parts and dir_parts[0] in {"services", "apps", "libs", "packages"} and len(dir_parts) >= 2:
                     depth = len(dir_parts) - 2
                 else:
                     depth = len(dir_parts)

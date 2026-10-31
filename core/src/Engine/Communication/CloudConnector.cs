@@ -296,7 +296,7 @@ internal sealed partial class CloudConnector : ICloudConnector, IAsyncDisposable
             await _queueCts.CancelAsync().ConfigureAwait(false);
             if (_queueProcessingTask != null)
             {
-                try { await _queueProcessingTask.ConfigureAwait(false); } catch (Exception) { }
+                try { await _queueProcessingTask.ConfigureAwait(false); } catch (OperationCanceledException) { GC.KeepAlive(_queueCts); } catch (Exception ex) { GC.KeepAlive(ex); }
             }
             _queueCts.Dispose();
             _queueCts = null;

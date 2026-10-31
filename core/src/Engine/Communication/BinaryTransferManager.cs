@@ -307,7 +307,7 @@ internal sealed class BinaryTransferManager : IDisposable
             kv.Value.FileStream?.Dispose();
             if (File.Exists(kv.Value.TempFilePath))
             {
-                try { File.Delete(kv.Value.TempFilePath); } catch (IOException) { }
+                try { File.Delete(kv.Value.TempFilePath); } catch (IOException ex) { GC.KeepAlive(ex); }
             }
         }
         _incoming.Clear();
