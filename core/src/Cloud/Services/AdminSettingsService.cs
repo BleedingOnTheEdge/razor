@@ -33,6 +33,7 @@ internal sealed class ClusterSettingsDto
     public bool RequireCurationApproval { get; set; } = true;
     public double PlatformFeePercent { get; set; } = 5.0;
     public bool AllowUnverifiedAuthors { get; set; }
+    public string PaymentProvidersJson { get; set; } = "{}";
 
     // Telemetry & Storage Retention
     public int MetricsRetentionDays { get; set; } = 30;

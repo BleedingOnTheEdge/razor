@@ -36,22 +36,34 @@ export default function MyLicensesPage() {
       setLoading(true);
       try {
         const client = getApiClient();
-        const res = await client.GET('/api/marketplace/items');
-        const items = res.data || [];
+        const [itemsRes, acqRes] = await Promise.all([
+          client.GET('/api/marketplace/items'),
+          fetch('/api/marketplace/acquisitions').then((r) => (r.ok ? r.json() : [])).catch(() => []),
+        ]);
+        const items = itemsRes.data || [];
         const itemMap = new Map(items.map((i) => [i.id, i]));
 
-        // In addition to any stored acquisitions, provide default licenses for account
-        const seededLicense: AccountAcquisition = {
-          id: 'lic-cluster-core',
-          marketplaceItemId: items[0]?.id || 'core-adapter',
-          accountId: user.accountId,
-          licenseKey: `LIC-${user.subscriptionTier.toUpperCase()}-${user.accountId.slice(0, 8)}`.toUpperCase(),
-          acquiredAt: user.createdAt || new Date().toISOString(),
-          itemName: items[0]?.name || 'Standard Cluster License',
-          itemKind: items[0]?.kind || 'Adapter',
-        };
+        const acquiredList: AccountAcquisition[] = (acqRes || []).map((a: { id: string; itemId: string; accountId: string; licenseKey: string; acquiredAt: string }) => ({
+          id: a.id,
+          marketplaceItemId: a.itemId,
+          accountId: a.accountId,
+          licenseKey: a.licenseKey,
+          acquiredAt: a.acquiredAt,
+          itemName: itemMap.get(a.itemId)?.name || 'Marketplace Extension License',
+          itemKind: itemMap.get(a.itemId)?.kind || 'Extension',
+        }));
 
-        setLicenses([seededLicense]);
+        setLicenses(acquiredList.length > 0 ? acquiredList : [
+          {
+            id: 'lic-cluster-core',
+            marketplaceItemId: items[0]?.id || 'core-adapter',
+            accountId: user.accountId,
+            licenseKey: `LIC-${user.subscriptionTier.toUpperCase()}-${user.accountId.slice(0, 8)}`.toUpperCase(),
+            acquiredAt: user.createdAt || new Date().toISOString(),
+            itemName: items[0]?.name || 'Standard Cluster License',
+            itemKind: items[0]?.kind || 'Adapter',
+          }
+        ]);
       } catch {
         // Fallback gracefully
       } finally {

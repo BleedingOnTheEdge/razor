@@ -125,6 +125,7 @@ internal static class CloudApplication
         services.AddSingleton<MarketplaceService>();
         services.AddSingleton<TicketService>();
         services.AddSingleton<CommunityService>();
+        services.AddSingleton<JwtTokenService>();
         services.AddSingleton<UserService>();
         services.AddSingleton<AdminSettingsService>();
         services.AddSingleton<BundleService>();
