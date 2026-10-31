@@ -1,63 +1,56 @@
 ---
-title: "Core Memory, Determinism, Precision, and Resilience Overhaul"
+title: "Database Concurrency, Test Security, and Operational Foundations"
 author: "sinavali"
 created_date: "2026-10-31"
-target_branch: "fix/core-memory-and-resilience"
+target_branch: "feat/database-concurrency-and-multi-tenancy"
 risk_level: "MEDIUM"
 affected_projects:
   - "core"
+  - "docs"
 ---
 
-# Change Surface: Core Memory, Determinism, Precision, and Resilience Overhaul
+# Change Surface: Database Concurrency, Test Security, and Operational Foundations
 
 ## 1. Intent & Business Rationale
-Remediate core trading engine memory management, time precision, determinism, and exception resilience:
-- Fix pointer handle leak on finalization in `MemoryMappedTickList` and add `FileShare.Read` for concurrent readers (Issue #92).
-- Eliminate non-deterministic PRNG and system clock leaks in `MockPaperTradingAdapter` by introducing deterministic seedable generation and time provider abstraction (Issue #93).
-- Prevent sub-second precision truncation in `TimeHelpers` with millisecond and microsecond conversions (Issue #94).
-- Replace bare `catch` blocks swallowing exceptions across backend services with explicit typed exception filters and structured resilience (Issue #95).
-- Expand `IOptimizer` lifecycle contracts and implement `OnnxNeuralNetworkAdapter` implementing `INeuralNetworkModel` (Issue #96).
+Implement optimistic concurrency tokens across mutable database entities, eliminate static credentials, and author operational specifications:
+- Add `RowVersion` optimistic concurrency tokens to `Account`, `EngineInstance`, `FlowRun`, and `License` using EF Core concurrency token mapping and a zero-downtime migration (Issue #97).
+- Eliminate static hardcoded test passwords in `CloudTestDatabase.cs` to satisfy EP-OS secret scanning rules (Issue #98).
+- Author operational runbooks for `cloud-dashboard` and `marketplace` detailing triage and rollback procedures (Issue #99).
+- Create Service Level Objective (SLO) definitions under `docs/slo/` validated against EP-OS schema (Issue #100).
 
 ## 2. Affected Monorepo Projects
 - `core`
+- `docs`
 
 ## 3. Code Surface
 ### Modified Files
-- `core/src/Cloud/Endpoints/FlowRunView.cs`
-- `core/src/Cloud/Services/CommandService.cs`
-- `core/src/Cloud/Services/FlowOrchestrator.cs`
-- `core/src/Cloud/Services/RunReportService.cs`
-- `core/src/Engine/Communication/BinaryTransferManager.cs`
-- `core/src/Engine/Communication/CloudConnector.cs`
-- `core/src/Engine/Management/Commands/Handlers/RunBacktestHandler.cs`
-- `core/src/Engine/Management/Commands/Handlers/StartOptimizationHandler.cs`
-- `core/src/Engine/Management/Tasks/BacktestConfiguration.cs`
-- `core/src/Engine/Management/Tasks/LiveConfiguration.cs`
-- `core/src/Engine/Services/Update/SelfUpdateManager.cs`
-- `core/src/Kernel/Brokers/LiveBroker.Session.cs`
-- `core/src/Kernel/Indicators/IndicatorRegistry.cs`
-- `core/src/Kernel/NeuralNetworks/OnnxNeuralNetworkAdapter.cs`
-- `core/src/Kernel/Optimization/IOptimizer.cs`
-- `core/src/Kernel/Optimization/OptimizationRunner.cs`
-- `core/src/Sdk/Slots/Adapter/MockPaperTradingAdapter.cs`
-- `core/src/Shared/Helpers.cs`
-- `core/src/Shared/MemoryMappedTickList.cs`
-- `core/tests/Kernel.UnitTests/NeuralNetworks/OnnxNeuralNetworkAdapterTests.cs`
-- `core/tests/Sdk.UnitTests/Shared/BinaryDataMapperTests.cs`
-- `core/tests/Sdk.UnitTests/Shared/HelpersTests.cs`
-- `core/tests/Sdk.UnitTests/Shared/MockPaperTradingAdapterTests.cs`
+- `core/src/Cloud/Data/Account.cs`
+- `core/src/Cloud/Data/CloudDbContext.cs`
+- `core/src/Cloud/Data/EngineInstance.cs`
+- `core/src/Cloud/Data/FlowRun.cs`
+- `core/src/Cloud/Data/License.cs`
+- `core/src/Cloud/Migrations/20261031120000_AddOptimisticConcurrencyTokens.Designer.cs`
+- `core/src/Cloud/Migrations/20261031120000_AddOptimisticConcurrencyTokens.cs`
+- `core/tests/Cloud.UnitTests/DatabaseSchemaCompatibilityTests.cs`
+- `core/tests/Cloud.UnitTests/EngineLifecycleTests.cs`
+- `core/tests/Cloud.UnitTests/TestSupport/CloudTestDatabase.cs`
+- `docs/runbooks/cloud-dashboard.md`
+- `docs/runbooks/marketplace.md`
+- `docs/slo/cloud-api.slo.yaml`
+- `docs/slo/cloud-dashboard.slo.yaml`
+- `docs/slo/marketplace.slo.yaml`
 
 ## 4. Test Surface
 ### Unit & Integration Suites
-- `core/tests/Kernel.UnitTests/NeuralNetworks/OnnxNeuralNetworkAdapterTests.cs`
-- `core/tests/Sdk.UnitTests/Shared/BinaryDataMapperTests.cs`
-- `core/tests/Sdk.UnitTests/Shared/HelpersTests.cs`
-- `core/tests/Sdk.UnitTests/Shared/MockPaperTradingAdapterTests.cs`
+- `core/tests/Cloud.UnitTests/DatabaseSchemaCompatibilityTests.cs`
+- `core/tests/Cloud.UnitTests`
+- `scripts/ep.py slo`
+- `scripts/ep.py migration check`
 
 ## 5. Invariants
-- UTC timestamps preserved across all persistence models and conversions.
-- Unmanaged pointer handles must be safely released during both normal disposal and GC finalization.
-- Algorithmic simulations must be 100% deterministic given the same random seed.
+- Zero-downtime Expand/Contract schema changes strictly observed.
+- Zero plaintext credentials or hardcoded secret strings in source code.
+- Concurrency tokens rotated automatically on entity updates.
 
 ## 6. Risk Matrix
 - Rollback: Revert commits via standard git rollback.

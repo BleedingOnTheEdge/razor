@@ -32,4 +32,7 @@ internal sealed class Account
 
     /// <summary>Gets the Engine instances registered under the account.</summary>
     public ICollection<EngineInstance> Instances { get; } = [];
+
+    /// <summary>Gets or sets the concurrency token for optimistic concurrency control.</summary>
+    public byte[]? RowVersion { get; set; }
 }

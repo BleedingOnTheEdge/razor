@@ -109,4 +109,7 @@ internal sealed class FlowRun
 
     /// <summary>Gets or sets the detailed execution result payload JSON (trades, equity curve, granular metrics).</summary>
     public string? ResultPayloadJson { get; set; }
+
+    /// <summary>Gets or sets the concurrency token for optimistic concurrency control.</summary>
+    public byte[]? RowVersion { get; set; }
 }

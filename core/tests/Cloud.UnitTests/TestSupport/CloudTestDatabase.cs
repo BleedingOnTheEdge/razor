@@ -23,7 +23,7 @@ using Microsoft.EntityFrameworkCore;
 internal sealed class CloudTestDatabase : IDbContextFactory<CloudDbContext>, IDisposable
 {
     /// <summary>The password the seeded user is created with.</summary>
-    internal const string Password = "correct-horse-battery-staple";
+    internal static readonly string Password = Environment.GetEnvironmentVariable("TEST_FIXTURE_PASSWORD") ?? "DynamicTestFixtureSecret_Aa1!_" + Guid.NewGuid().ToString("N");
 
     private readonly SqliteConnection _connection;
     private readonly DbContextOptions<CloudDbContext> _options;
