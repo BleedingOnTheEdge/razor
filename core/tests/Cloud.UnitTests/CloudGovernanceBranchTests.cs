@@ -24,7 +24,8 @@ public sealed class CloudGovernanceBranchTests
     {
         using var testDb = new CloudTestDatabase();
         var hasher = new PasswordHasher<User>();
-        var users = new UserService(testDb, new CloudOptions(), TimeProvider.System, hasher);
+        var opts = new CloudOptions();
+        var users = new UserService(testDb, opts, TimeProvider.System, hasher, new JwtTokenService(opts, TimeProvider.System));
 
         // Seed an initial user
         using (CloudDbContext db = testDb.CreateDbContext())
@@ -99,7 +100,8 @@ public sealed class CloudGovernanceBranchTests
     {
         using var testDb = new CloudTestDatabase();
         var hasher = new PasswordHasher<User>();
-        var users = new UserService(testDb, new CloudOptions(), TimeProvider.System, hasher);
+        var opts = new CloudOptions();
+        var users = new UserService(testDb, opts, TimeProvider.System, hasher, new JwtTokenService(opts, TimeProvider.System));
 
         Guid accountId = Guid.NewGuid();
         Guid user1Id = Guid.NewGuid();
@@ -165,7 +167,8 @@ public sealed class CloudGovernanceBranchTests
     {
         using var testDb = new CloudTestDatabase();
         var hasher = new PasswordHasher<User>();
-        var users = new UserService(testDb, new CloudOptions(), TimeProvider.System, hasher);
+        var opts = new CloudOptions();
+        var users = new UserService(testDb, opts, TimeProvider.System, hasher, new JwtTokenService(opts, TimeProvider.System));
 
         // 1. AuthenticateAsync fails for unknown users (no backdoor auto-provisioning)
         AuthSessionResponse? unauth = await users.AuthenticateAsync("unknown-user", "pass").ConfigureAwait(true);
@@ -471,7 +474,8 @@ public sealed class CloudGovernanceBranchTests
     {
         using var testDb = new CloudTestDatabase();
         var hasher = new PasswordHasher<User>();
-        var users = new UserService(testDb, new CloudOptions(), TimeProvider.System, hasher);
+        var opts = new CloudOptions();
+        var users = new UserService(testDb, opts, TimeProvider.System, hasher, new JwtTokenService(opts, TimeProvider.System));
         SeededAccount seeded = await testDb.SeedAccountAsync("whitespace-profile-user").ConfigureAwait(true);
 
         // Update with whitespace values to test null assignment branch
@@ -550,7 +554,8 @@ public sealed class CloudGovernanceBranchTests
     {
         using var testDb = new CloudTestDatabase();
         var hasher = new PasswordHasher<User>();
-        var users = new UserService(testDb, new CloudOptions(), TimeProvider.System, hasher);
+        var opts = new CloudOptions();
+        var users = new UserService(testDb, opts, TimeProvider.System, hasher, new JwtTokenService(opts, TimeProvider.System));
 
         SeededAccount op = await testDb.SeedAccountAsync("imp-operator").ConfigureAwait(true);
         SeededAccount trader = await testDb.SeedAccountAsync("imp-trader").ConfigureAwait(true);

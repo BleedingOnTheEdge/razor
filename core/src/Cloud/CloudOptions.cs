@@ -36,6 +36,9 @@ internal sealed class CloudOptions
     /// <summary>The environment variable that supplies the management API key.</summary>
     internal const string ManagementApiKeyVariable = "CLOUD_MANAGEMENT_API_KEY";
 
+    /// <summary>The environment variable that supplies the JWT signing key.</summary>
+    internal const string JwtSecretVariable = "CLOUD_JWT_SECRET";
+
     /// <summary>The environment variable that supplies the required capability list.</summary>
     internal const string RequiredCapabilitiesVariable = "CLOUD_REQUIRED_CAPABILITIES";
 
@@ -77,6 +80,9 @@ internal sealed class CloudOptions
 
     /// <summary>Gets or sets the shared secret that authenticates callers of the management API.</summary>
     public string? ManagementApiKey { get; set; }
+
+    /// <summary>Gets or sets the cryptographic secret used to sign and verify user JWTs.</summary>
+    public string JwtSecret { get; set; } = "razor-enterprise-jwt-super-secret-hmac-sha256-signing-token-key-2026!";
 
     /// <summary>
     /// Gets the capability identifiers the Engine must support to authenticate (002-020-020 §3.3 step 2).

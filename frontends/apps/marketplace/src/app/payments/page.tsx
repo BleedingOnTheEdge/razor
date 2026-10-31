@@ -59,7 +59,6 @@ export default function MarketplacePaymentsPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      // Persist in local storage or cloud db settings
       const configs = {
         nowPayments: { enabled: nowPaymentsEnabled, apiKey: nowPaymentsApiKey, ipnSecret: nowPaymentsIpnSecret, sandbox: nowPaymentsSandbox },
         paymento: { enabled: paymentoEnabled, merchantToken: paymentoMerchantToken, clientId: paymentoClientId },
@@ -67,10 +66,16 @@ export default function MarketplacePaymentsPage() {
         stripe: { enabled: stripeEnabled, publishableKey: stripePublishableKey, secretKey: stripeSecretKey },
         updatedAt: new Date().toISOString(),
       };
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('razor_marketplace_payment_providers', JSON.stringify(configs));
+      // Persist securely to backend database settings instead of vulnerable browser localStorage
+      const res = await fetch('/api/admin/payments/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ configJson: JSON.stringify(configs) }),
+      });
+      if (!res.ok) {
+        throw new Error('Backend rejected payment configuration');
       }
-      toast.success('Configuration Saved', 'Payment providers updated successfully for Marketplace.');
+      toast.success('Configuration Saved', 'Payment providers updated securely on server.');
     } catch {
       toast.error('Save Failed', 'Failed to store payment provider configurations.');
     } finally {

@@ -53,7 +53,8 @@ internal sealed partial class UserService(
     IDbContextFactory<CloudDbContext> contextFactory,
     CloudOptions options,
     TimeProvider timeProvider,
-    Microsoft.AspNetCore.Identity.IPasswordHasher<User> passwordHasher)
+    Microsoft.AspNetCore.Identity.IPasswordHasher<User> passwordHasher,
+    JwtTokenService jwtTokenService)
 {
     /// <summary>Retrieves or seeds the default active user profile.</summary>
     public async Task<UserProfileView> GetOrCreateDefaultUserAsync(
@@ -183,7 +184,7 @@ internal sealed partial class UserService(
             return null;
         }
 
-        string token = options.ManagementApiKey ?? "dev-cloud-management-key-3000";
+        string token = jwtTokenService.GenerateToken(user.Id, user.AccountId, user.UserName, user.Role);
         return new AuthSessionResponse(token, MapToView(user));
     }
 
@@ -210,7 +211,7 @@ internal sealed partial class UserService(
 
         User user = await ProvisionUserInternalAsync(db, name, password, accountName, role, tier, cancellationToken)
             .ConfigureAwait(false);
-        string token = options.ManagementApiKey ?? "dev-cloud-management-key-3000";
+        string token = jwtTokenService.GenerateToken(user.Id, user.AccountId, user.UserName, user.Role);
         return new AuthSessionResponse(token, MapToView(user));
     }
 
