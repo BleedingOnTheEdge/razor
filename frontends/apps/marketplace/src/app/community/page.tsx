@@ -6,10 +6,12 @@ import { getApiClient } from '@/lib/api-client';
 import type { CommunityThreadPayload } from '@razor/api-client';
 import { MessageSquare, ThumbsUp, Plus, Search, Tag, Sparkles, Filter, Loader2, Calendar } from 'lucide-react';
 import { useToast } from '@/components/ui/toast';
+import { useAuth } from '@/context/auth-context';
 
 const CATEGORIES = ['All', 'Announcements', 'Strategies', 'Additives', 'Feedback', 'General'] as const;
 
 export default function CommunityPage() {
+  const { user } = useAuth();
   const [threads, setThreads] = useState<CommunityThreadPayload[]>([]);
   const [category, setCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -21,7 +23,7 @@ export default function CommunityPage() {
   // Create form state
   const [newTitle, setNewTitle] = useState('');
   const [newCategory, setNewCategory] = useState('Strategies');
-  const [newAuthor, setNewAuthor] = useState('AlphaResearcher');
+  const [newAuthor, setNewAuthor] = useState(user?.userName || user?.email || 'Community Member');
   const [newBadge, setNewBadge] = useState('Developer');
   const [newContent, setNewContent] = useState('');
 

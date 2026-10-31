@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import OperatorTicketsPage from '@/app/tickets/page';
+import OperatorTicketsPage from '@/app/panel/tickets/page';
 import { ToastProvider } from '@/components/ui/toast';
 
 const mockGet = vi.fn();

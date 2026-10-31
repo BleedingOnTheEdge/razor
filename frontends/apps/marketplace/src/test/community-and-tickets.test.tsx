@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import CommunityPage from '@/app/community/page';
 import TicketsPage from '@/app/tickets/page';
@@ -86,7 +86,7 @@ describe('Marketplace Community and Ticketing Views', () => {
     });
 
     const upvoteButton = screen.getByLabelText('Upvote discussion');
-    fireEvent.click(upvoteButton);
+    await act(async () => { fireEvent.click(upvoteButton); });
 
     expect(mockPost).toHaveBeenCalledWith(
       '/api/community/threads/{threadId}/upvote',

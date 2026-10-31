@@ -1,7 +1,8 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { LiveManagerContent } from '@/components/live/LiveManagerContent';
+import { LiveManagerContent, type OpenPosition } from '@/components/live/LiveManagerContent';
 import { ToastProvider } from '@/components/ui/toast';
+import type { TradeItemPayload } from '@/lib/api-client';
 
 const mockInstances = [
   {
@@ -14,6 +15,54 @@ const mockInstances = [
     createdAt: '2026-10-10T12:00:00Z',
     lastSeenAt: '2026-10-12T12:00:00Z',
     isConnected: true,
+  },
+];
+
+const testPositions: OpenPosition[] = [
+  {
+    ticket: 90211,
+    symbol: 'BTC/USDT',
+    side: 'BUY',
+    volume: 0.75,
+    openPrice: 66200.0,
+    markPrice: 67450.0,
+    unrealizedPnl: 937.5,
+    stopLoss: 64800.0,
+    takeProfit: 69500.0,
+    openTime: '2026-10-10T10:00:00Z',
+  },
+  {
+    ticket: 90214,
+    symbol: 'ETH/USDT',
+    side: 'SELL',
+    volume: 5.0,
+    openPrice: 2640.0,
+    markPrice: 2577.8,
+    unrealizedPnl: 311.0,
+    stopLoss: 2720.0,
+    takeProfit: 2480.0,
+    openTime: '2026-10-10T10:30:00Z',
+  },
+];
+
+const testTrades: TradeItemPayload[] = [
+  {
+    ticket: 90198,
+    symbol: 'SOL/USDT',
+    side: 'BUY',
+    volume: 25.0,
+    openPrice: 154.2,
+    closePrice: 161.8,
+    openTime: '2026-10-10T08:00:00Z',
+    closeTime: '2026-10-10T09:00:00Z',
+    profit: 190.0,
+    returnPct: 4.93,
+    commission: 1.25,
+    slippageTicks: 1,
+    executionVenue: 'Binance Futures Direct',
+    exitReason: 'TakeProfit',
+    stopLoss: 149.5,
+    takeProfit: 161.8,
   },
 ];
 
@@ -36,7 +85,7 @@ vi.mock('@/lib/api-client', () => ({
 }));
 
 describe('LiveManagerContent Component', () => {
-  it('renders live trading overview, telemetry gauges, positions, and executed trade ledger', async () => {
+  it('renders live trading overview, telemetry gauges, and clean idle state by default', async () => {
     render(
       <ToastProvider>
         <LiveManagerContent />
@@ -48,11 +97,9 @@ describe('LiveManagerContent Component', () => {
       expect(screen.getByText('REAL-TIME VENUE')).toBeInTheDocument();
       expect(screen.getByText('Open Unrealized PnL')).toBeInTheDocument();
       expect(screen.getByText('Realized Daily PnL')).toBeInTheDocument();
-      expect(screen.getByText(/Active Open Positions/i)).toBeInTheDocument();
-      expect(screen.getAllByText('BTC/USDT').length).toBeGreaterThan(0);
-      expect(screen.getAllByText('ETH/USDT').length).toBeGreaterThan(0);
-      expect(screen.getByText(/Live Executed Trade Fill Ledger/i)).toBeInTheDocument();
-      expect(screen.getByText('SOL/USDT')).toBeInTheDocument();
+      expect(screen.getByText(/Active Open Positions \(0\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/All capital currently in cash reserve/i)).toBeInTheDocument();
+      expect(screen.getByText(/Live Executed Trade Fill Ledger \(0\)/i)).toBeInTheDocument();
     });
   });
 
@@ -127,7 +174,7 @@ describe('LiveManagerContent Component', () => {
   it('opens granular trade detail modal when an executed trade fill row is clicked', async () => {
     render(
       <ToastProvider>
-        <LiveManagerContent />
+        <LiveManagerContent initialTrades={testTrades} />
       </ToastProvider>
     );
 
@@ -155,7 +202,7 @@ describe('LiveManagerContent Component', () => {
   it('flattens and closes an open position upon clicking Flatten / Close', async () => {
     render(
       <ToastProvider>
-        <LiveManagerContent />
+        <LiveManagerContent initialPositions={testPositions} />
       </ToastProvider>
     );
 

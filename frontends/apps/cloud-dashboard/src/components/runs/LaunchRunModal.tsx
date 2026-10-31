@@ -122,8 +122,9 @@ export function LaunchRunModal({
     return () => { active = false; };
   }, [selectedInstanceId, isOpen, initialDna]);
 
-  function applyDnaPayload(dnaInput: any) {
-    const d: WinningDnaPayload = dnaInput?.winningDna || dnaInput?.dna || dnaInput;
+  function applyDnaPayload(dnaInput: unknown) {
+    const raw = dnaInput as Record<string, unknown> | null;
+    const d = (raw?.winningDna || raw?.dna || raw) as WinningDnaPayload;
     if (!d || typeof d !== 'object') {
       throw new Error('Input is not a valid JSON object.');
     }

@@ -41,7 +41,7 @@ export function ItemDetailContent({ itemId }: ItemDetailContentProps) {
 
   // Review modal state
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  const [reviewAuthor, setReviewAuthor] = useState('Senior Trader');
+  const [reviewAuthor, setReviewAuthor] = useState(user?.userName || user?.email || 'Senior Trader');
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);

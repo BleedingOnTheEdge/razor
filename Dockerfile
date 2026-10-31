@@ -32,8 +32,14 @@ COPY deploy/nginx.conf /etc/nginx/nginx.conf
 COPY deploy/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
-# Ensure persistent data directory exists for SQLite storage
-RUN mkdir -p /app/data
+# Ensure persistent data directory exists for SQLite storage and configure non-root razor user
+RUN mkdir -p /app/data && \
+    groupadd -g 10001 razor && \
+    useradd -u 10001 -g razor -s /bin/bash -m razor && \
+    mkdir -p /var/log/nginx /var/lib/nginx /tmp/nginx && \
+    chown -R razor:razor /app /var/log/nginx /var/lib/nginx /tmp/nginx
+
+USER razor
 
 EXPOSE 3000
 

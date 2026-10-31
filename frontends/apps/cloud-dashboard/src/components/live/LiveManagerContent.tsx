@@ -36,7 +36,15 @@ import { LiveRiskConfigModal } from './LiveRiskConfigModal';
 
 export type { OpenPosition };
 
-export function LiveManagerContent() {
+export interface LiveManagerContentProps {
+  initialPositions?: OpenPosition[];
+  initialTrades?: TradeItemPayload[];
+}
+
+export function LiveManagerContent({
+  initialPositions = [],
+  initialTrades = [],
+}: LiveManagerContentProps = {}) {
   const toast = useToast();
   const searchParams = useSearchParams();
   const queryInstanceId = searchParams.get('instanceId');
@@ -47,8 +55,8 @@ export function LiveManagerContent() {
 
   // Live Trading State - Authentic telemetry
   const [isTradingPaused, setIsTradingPaused] = useState(false);
-  const [openPositions, setOpenPositions] = useState<OpenPosition[]>([]);
-  const [executedTrades, setExecutedTrades] = useState<TradeItemPayload[]>([]);
+  const [openPositions, setOpenPositions] = useState<OpenPosition[]>(initialPositions);
+  const [executedTrades, setExecutedTrades] = useState<TradeItemPayload[]>(initialTrades);
 
   // Modals state
   const [selectedTrade, setSelectedTrade] = useState<TradeItemPayload | null>(null);
