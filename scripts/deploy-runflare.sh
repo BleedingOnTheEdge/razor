@@ -13,6 +13,16 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 cd "${ROOT_DIR}"
 
+restore_ignores() {
+  if [ -f .gitignore.bak ]; then
+    mv .gitignore.bak .gitignore 2>/dev/null || true
+  fi
+  if [ -f .runflareignore.bak ]; then
+    mv .runflareignore.bak .runflareignore 2>/dev/null || true
+  fi
+}
+trap restore_ignores EXIT INT TERM
+
 echo "🧹 1. Cleaning up previous distribution artifacts..."
 rm -rf dist 2>/dev/null || true
 mkdir -p dist/cloud dist/dashboard dist/marketplace
@@ -95,16 +105,6 @@ cat << 'EOF' > .gitignore
 EOF
 
 cp .gitignore .runflareignore
-
-restore_ignores() {
-  if [ -f .gitignore.bak ]; then
-    mv .gitignore.bak .gitignore 2>/dev/null || true
-  fi
-  if [ -f .runflareignore.bak ]; then
-    mv .runflareignore.bak .runflareignore 2>/dev/null || true
-  fi
-}
-trap restore_ignores EXIT INT TERM
 
 python3 -c "
 import pty, os, sys, subprocess, struct, termios, fcntl, time

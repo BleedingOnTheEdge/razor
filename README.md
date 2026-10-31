@@ -68,7 +68,7 @@ All documents in this repository are versioned with the Razor release. The curre
 
 ## Contributing to Documentation
 
-Documentation is maintained alongside the codebase. Improvements, corrections, and additions should be submitted via pull requests to the `core` repository. All documentation must adhere to the [Razor Principles](Razor%20Principles.md) and be written in clear, professional English.
+Documentation is maintained alongside the codebase. Improvements, corrections, and additions should be submitted via pull requests to the `core` repository. All documentation must adhere to the [Razor Principles](docs/005-cross-cutting/005-001-principles/INDEX.md) and be written in clear, professional English.
 
 ---
 

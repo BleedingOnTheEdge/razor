@@ -111,7 +111,7 @@ vi.mock('next/navigation', () => ({
 
 vi.mock('@/lib/api-client', () => ({
   getApiClient: () => ({
-    GET: vi.fn().mockImplementation((path: string, options?: any) => {
+    GET: vi.fn().mockImplementation((path: string, options?: { params?: { path?: { runId?: string } } }) => {
       const targetId = options?.params?.path?.runId;
       if (path.includes('100b05e8') || targetId?.includes('100b05e8')) {
         return Promise.resolve({ data: mockGranularReport, error: null });

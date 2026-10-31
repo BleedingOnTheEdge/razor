@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import SettingsPage from '@/app/settings/page';
+import SettingsPage from '@/app/panel/settings/page';
 import { ToastProvider } from '@/components/ui/toast';
 import * as AuthContextModule from '@/context/auth-context';
 
@@ -99,7 +99,7 @@ describe('SettingsPage Role Permissions & Apple Design Mode', () => {
     expect(commissionInput).toBeDisabled();
   });
 
-  it('renders admin full control view with editable cluster governance', () => {
+  it('renders admin full control view with editable cluster governance', async () => {
     vi.spyOn(AuthContextModule, 'useAuth').mockReturnValue({
       user: {
         userId: 'usr-admin-1',
@@ -144,7 +144,7 @@ describe('SettingsPage Role Permissions & Apple Design Mode', () => {
     expect(commissionInput).not.toBeDisabled();
 
     // Saving preferences
-    fireEvent.click(screen.getByText('Save All Preferences'));
+    await act(async () => { fireEvent.click(screen.getByText('Save All Preferences')); });
     expect(localStorage.getItem('razor_setting_fee')).toBe('2.5');
   });
 });

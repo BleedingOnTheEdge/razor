@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import MarketplaceCataloguePage from '@/app/page';
 
@@ -77,7 +77,7 @@ describe('Marketplace Catalogue Page', () => {
     });
 
     const strategyTab = screen.getByRole('tab', { name: 'Strategy' });
-    fireEvent.click(strategyTab);
+    await act(async () => { fireEvent.click(strategyTab); });
 
     expect(mockGet).toHaveBeenCalledWith('/api/marketplace/items', expect.objectContaining({
       params: expect.objectContaining({
@@ -86,7 +86,7 @@ describe('Marketplace Catalogue Page', () => {
     }));
 
     const searchInput = screen.getByPlaceholderText(/Search extensions/i);
-    fireEvent.change(searchInput, { target: { value: 'Imbalance' } });
+    await act(async () => { fireEvent.change(searchInput, { target: { value: 'Imbalance' } }); });
 
     expect(mockGet).toHaveBeenCalledWith('/api/marketplace/items', expect.objectContaining({
       params: expect.objectContaining({
